@@ -36,8 +36,16 @@ export interface ProjectMetadata {
   slicer: SlicerKind;
   /** Material de impresión detectado (PLA, PETG, ABS, ASA...). */
   material: string;
-  /** Temperatura de hotend, en °C. */
-  hotendTemp: number;
+  /**
+   * Temperatura de hotend, en °C.
+   *
+   * Opcional porque no todos los slicers la escriben como comentario de cabecera
+   * legible (algunos la emiten solo como código `M104` dentro del cuerpo). Su
+   * ausencia significa "el slicer no lo escribió", nunca "vale cero": un `0 °C` de
+   * hotend es una temperatura físicamente imposible y presentarla como dato
+   * sería peor que reconocer que no se ha leído.
+   */
+  hotendTemp?: number;
   /**
    * Temperatura de cama, en °C.
    *
@@ -49,8 +57,16 @@ export interface ProjectMetadata {
    * así que quien lo consume debe tratarlo como "no medido", no como "cama mala".
    */
   bedTemp?: number;
-  /** Altura de capa, en mm. */
-  layerHeight: number;
+  /**
+   * Altura de capa, en mm.
+   *
+   * Opcional por la misma razón que {@link hotendTemp}: si la clave no está en la
+   * cabecera, no se ha medido. Un `0 mm` sería una afirmación de que la pieza se
+   * imprimió sin separación entre capas, que no es lo que dice un G-code sin este
+   * dato. Quien lo use para estimar riesgo debe tratar la ausencia como "sin
+   * penalizar", no como "capa fina".
+   */
+  layerHeight?: number;
   /** Tiempo estimado de impresión, en segundos. */
   printTime: number;
   /**

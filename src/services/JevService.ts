@@ -112,8 +112,13 @@ function estimateWarpingRisk(metadata: ProjectMetadata, missingData: string[]): 
     bedPenalty = 0.2;
   }
 
-  // Las capas más gruesas enmascaran menos la deformación acumulada.
-  const layerPenalty = metadata.layerHeight > 0.25 ? 0.05 : 0;
+  // Las capas más gruesas enmascaran menos la deformación acumulada. La
+  // ausencia de altura de capa no penaliza: no hay evidencia de capa fina, así
+  // que subir el riesgo por un dato que no se ha leído sería injustificado. La
+  // comprobación es explícita y no la coerción de `undefined > 0.25`, para que
+  // quede claro que es una decisión y no un accidente del lenguaje.
+  const layerPenalty =
+    metadata.layerHeight !== undefined && metadata.layerHeight > 0.25 ? 0.05 : 0;
 
   return clamp01(base + bedPenalty + layerPenalty);
 }

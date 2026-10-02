@@ -22,15 +22,6 @@ const GCODE_EXTENSIONS = ['.gcode', '.gco'] as const;
  * 10 KiB. Bajarlo afinaría la lectura, pero cualquier slicer futuro con más
  * metadatos (perfiles, datos deodo, notas de usuario) se quedaría fuera.
  */
-/** Latencia simulada para que los estados de carga de la UI sean visibles. */
-const MOCK_LATENCY_MS = 400;
-
-/** Resuelve tras `ms` milisegundos. Sustituye al trabajo real de lectura. */
-const wait = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
 const HEADER_BYTES = 256 * 1024;
 
 /**
@@ -350,11 +341,9 @@ export async function parseGcode(file: File): Promise<ProjectMetadata> {
 
   switch (slicer) {
     case 'cura':
-      await wait(MOCK_LATENCY_MS);
       return extractCura(header, file.name);
     case 'prusa':
     case 'orca':
-      await wait(MOCK_LATENCY_MS);
       return extractPrusaOrca(header, file.name);
     case 'unknown':
       break;
@@ -422,9 +411,9 @@ function extractCura(header: string, filename: string): ProjectMetadata {
     slicer: 'cura',
     material: required.material,
     printTime: required.printTime,
-    hotendTemp: readCuraNumber(header, 'PRINT_TEMPERATURE') ?? 0,
+    hotendTemp: readCuraNumber(header, 'PRINT_TEMPERATURE'),
     bedTemp: readCuraNumber(header, 'BED_TEMPERATURE'),
-    layerHeight: readCuraNumber(header, 'Layer height') ?? 0,
+    layerHeight: readCuraNumber(header, 'Layer height'),
     hasOverhangs: readCuraBoolean(header, 'Support'),
   };
 }
@@ -452,9 +441,9 @@ function extractPrusaOrca(header: string, filename: string): ProjectMetadata {
     slicer: detectSlicer(header),
     material: required.material,
     printTime: required.printTime,
-    hotendTemp: readKeyValueNumber(header, 'nozzle_temperature') ?? 0,
+    hotendTemp: readKeyValueNumber(header, 'nozzle_temperature'),
     bedTemp: readFirstKeyValueNumber(header, BED_TEMPERATURE_KEYS),
-    layerHeight: readKeyValueNumber(header, 'layer_height') ?? 0,
+    layerHeight: readKeyValueNumber(header, 'layer_height'),
     filamentUsed: readFirstKeyValueNumber(header, FILAMENT_GRAM_KEYS),
     hasOverhangs: readFirstKeyValueBoolean(header, SUPPORT_KEYS),
   };
