@@ -32,6 +32,28 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
+
+  /*
+   * Ajustes de renderizado de texto que vienen del reset del navegador.
+   *
+   * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
+   * oscura siempre, no solo cuando el sistema operativo lo es. Sin él, las
+   * barras de desplazamiento —que en móvil están siempre a la vista— se pintan
+   * claras sobre un fondo oscuro, y los controles nativos hacen lo mismo. El
+   * boilerplate traía `light dark`, que delegaba en el SO y por eso fallaba en
+   * el móvil con tema claro.
+   *
+   * El suavizado importa más de lo que parece en esta paleta: texto casi blanco
+   * sobre un fondo muy oscuro produce bordes duros que se ven peor sin
+   * antialiasing. `font-synthesis` evita que el navegador invente un grosor de
+   * negrita falso cuando no hay una cara de la familia que lo traiga.
+   */
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 }
 
 * {
