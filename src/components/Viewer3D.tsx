@@ -205,6 +205,11 @@ function buildStl(data: ArrayBuffer): THREE.Object3D {
  * A diferencia del STL, aquí se respetan los materiales que declara el archivo
  * (grupos de color, texturas o propiedades PBR del slicer): son información de
  * la pieza que el usuario espera ver, no algo que la app deba pisar.
+ *
+ * El 3MF sí trae una convención de ejes fiable: la especificación lo define
+ * siempre Z-up, con el origen en una esquina de la cama. El STL, en cambio, se
+ * exporta desde fuentes con criterios dispares (Thingiverse, Printables,
+ * Tinkercad...) y muchos ya se ven bien sin tocar, así que se deja como llega.
  */
 function buildThreeMf(data: ArrayBuffer): THREE.Object3D | null {
   const group = new ThreeMFLoader().parse(data);
@@ -216,9 +221,12 @@ function buildThreeMf(data: ArrayBuffer): THREE.Object3D | null {
 
   if (meshCount === 0) return null;
 
-  // El grupo llega en el origen pero con las coordenadas reales del slicer, que
-  // miden en milímetros y tienen su origen en una esquina de la cama de
-  // impresión: se recentra el conjunto entero para que la escena quede limpia.
+  // Z-up -> Y-up, que es lo que espera three.js por defecto.
+  group.rotation.x = -Math.PI / 2;
+
+  // El recentrado va después de rotar a propósito: la caja envolvente solo
+  // refleja la rotación si las matrices del grupo ya están al día, y calcularla
+  // antes dejaría el modelo descentrado.
   const box = new THREE.Box3().setFromObject(group);
   if (!box.isEmpty()) {
     const center = box.getCenter(new THREE.Vector3());
