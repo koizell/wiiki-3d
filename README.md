@@ -76,6 +76,43 @@ que es donde hay que ir para aflojarlo, no implementada.
 
 ---
 
+# Verificar el layout
+
+Los valores del layout responsivo se eligieron midiendo el DOM en un navegador
+real, no leyendo el CSS. Los scripts que lo hacen están en `scripts/verify/` y
+se documentan en [`scripts/verify/README.md`](scripts/verify/README.md).
+
+```bash
+npm run build            # los scripts miden dist/, no el código fuente
+npm run verify:layout    # 29 viewports x 3 estados, con aserciones
+npm run verify:teclado   # ¿las acciones son alcanzables con teclado?
+```
+
+`verify:layout` sale con código 1 si el layout se rompe, así que vale como paso
+de CI. Necesita el Chromium de Playwright (`npx playwright install chromium`) y
+las librerías de sistema que él imply; si tu imagen no las trae, el README de
+`scripts/verify/` explica cómo resolverlo sin `sudo`.
+
+Si tocas `src/components/Viewer3D.tsx`, mira `modelPixels()` en
+`scripts/verify/probe.mjs`: replica su aritmética de encuadre, y si no se
+actualiza a la vez, el barrido comparará números viejos sin avisar.
+
+## Herramientas de apoyo
+
+Las skills de UX que se usaron para el layout (patrones de navegación,
+responsive, accesibilidad) vienen de `ux-toolkit` y **no se versionan**. Para
+recuperarlas en otra máquina:
+
+```bash
+npx ux-toolkit install --project
+```
+
+Se ignoran `.opencode/skills/`, `.opencode/agents/` y `.opencode/commands/` por
+subdirectorio, no el directorio entero, por si algún día hay config de OpenCode
+del proyecto que sí deba versionarse.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

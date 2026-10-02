@@ -46,3 +46,15 @@ chrome/
 # Próxima vez: pasa --user-data-dir=/tmp/... al invocar lighthouse para que
 # Chrome no cree el perfil en el CWD.
 *lighthouse.*/
+
+# Skills, agentes y comandos de ux-toolkit. Se ignoran por subdirectorio y no el
+# directorio entero, por si algún día hay config de OpenCode del proyecto ahí que
+# sí deba versionarse. Se reinstalan con `npx ux-toolkit install --project`
+# (documentado en el README).
+.opencode/skills/
+.opencode/agents/
+.opencode/commands/
+
+# Salida de los scripts de verificación de layout (capturas y JSON en bruto).
+# El código de los scripts sí se versiona, en scripts/verify/.
+scripts/verify/out/
