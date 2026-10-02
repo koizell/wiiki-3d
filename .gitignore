@@ -33,3 +33,6 @@ dist-ssr
 
 # OpenCode local
 opencode wiiki-3d
+
+# Fixtures locales (G-codes reales de usuario, no se suben)
+test-fixtures/
