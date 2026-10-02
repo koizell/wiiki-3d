@@ -850,6 +850,11 @@ body {
    * encogerse por debajo de su contenido, y el panel se queda con todo lo que
    * mide en vez de con el hueco que hay.
    *
+   * OJO: esto aplica sólo a partir de 1200px. Entre 768 y 1199 el bloque de
+   * más abajo deshace toda esta cadena, porque en una ventana baja el reparto
+   * `1fr 1fr` deja al visor en 165px y al panel en 160px visibles, y no hay
+   * forma de repartir 598px entre dos cosas que necesitan 434px y 508px. Ver
+   * ese bloque.
    */
   .sidebar-right {
     display: flex;
@@ -871,9 +876,133 @@ body {
    * cabecera puede quedarse pegada a su propia columna en lugar de al scroll de
    * la página. Al revés, la cabecera se iría por delante y el contenido se vería
    * por detrás.
+   *
+   * Como antes: esto sólo es cierto a partir de 1200px. En el tramo 768–1199 el
+   * documento es el que scrollea, y entonces la cabecera vuelve a `sticky`.
    */
   .panel-header {
     position: static;
+  }
+}
+
+/* --- 768–1199px: el visor manda en su alto y el documento scrollea -----------
+ * Este es el único tramo donde el layout NO reparte el alto de la ventana, y la
+ * razón es aritmética. A 768×667, tras el `.top-bar` de 69px quedan 598px:
+ *
+ *   visor cómodo      ~300px
+ *   + cromo del visor   134px   (.file-info 70 + gap 16 + padding 48)
+ *   ------------------ ------
+ *   fila del visor      434px
+ *   panel con datos     508px   (medido con el G-code de Creality del repo)
+ *   ------------------ ------
+ *   necesario           942px   contra 598px disponibles
+ *
+ * No existe reparto que deje a los dos cómodos: sobran 344px. La pregunta útil
+ * no es "cuánto le doy a cada uno" sino "qué saco de la caja de altura fija", y
+ * lo que sale es el panel. Es el patrón "supporting pane" apilado de Material 3,
+ * donde el detalle deja de tener scroll propio.
+ *
+ * Qué gana y qué pierde, medido con un STL real cargado:
+ *
+ *                     antes (1fr 1fr)   después (E)
+ *   visor 768×667          165px            313px   +90%
+ *   modelo en pantalla     127px            241px   +90%
+ *   proporción             3.03             1.60    siempre
+ *   panel 768×667          160px            508px   entero
+ *   scroll de              panel            documento
+ *
+ * Lo que se pierde, y es deliberado:
+ *
+ * 1. EL DOCUMENTO SCROLLEA en este tramo. A 768×667 la página mide 1103px. La
+ *    app queda con tres modelos de scroll: documento en móvil, documento en
+ *    tablet, panel en escritorio. El comentario del bloque de 768 que dice que
+ *    "el panel scrollea y no la página" aplica sólo a partir de 1200px.
+ *
+ * 2. EL ALTO DEL VISOR PASA A DEPENDER DEL ANCHO, no de la ventana. 313px a
+ *    667, a 900 y a 1024 de alto — que es la ganancia real frente al reparto
+ *    equitativo, donde el visor saltaba de 165 a 344 al rotar el tablet. El
+ *    precio son dos(viewports) donde el visor baja un poco porque el ancho ya
+ *    no da para más: 344 -> 313 a 768×1024 (−9%) y 515 -> 473 a 1024×1366
+ *    (−8%). En ventanas verticales y estrechas queda fondo vacío al final de la
+ *    página en lugar de un visor más alto.
+ *
+ * Por eso `aspect-ratio` y no un suelo en `dvh`: el alto sale del ancho
+ * disponible, que es el único eje que no cambia al rotar el dispositivo.
+ */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  /*
+   * `height: auto` deshace el shell de altura fija del bloque de 768, y las
+   * filas vuelven a dimensionarse por su contenido. Es lo que deja que el visor
+   * y el panel se apilen sin repartirse una altura que no les da la vida.
+   *
+   * `min-height: 100dvh` se conserva para que el fondo rellene la ventana
+   * cuando el contenido no la llena. Sin él, el sobrante de abajo mostraría el
+   * color del `body` y no el del shell, que es el mismo, pero el documento
+   * dejaría de medir lo que mide la ventana.
+   */
+  .app-container {
+    grid-template-rows: auto auto auto;
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  /*
+   * `aspect-ratio: 16/10` es lo que decide el alto del visor, y no un `1fr`.
+   * MDN avisa de que `aspect-ratio` se ignora si el alto y el ancho están
+   * ambos puestos de forma explícita, así que las dos declaraciones siguientes
+   * van juntas: `flex: 0 0 auto` le quita `flex: 1` para que la caja no se
+   * estire dentro de `.viewer-container`, y `min-height: 0` anula el suelo en
+   * `dvh` que trae la base móvil.
+   *
+   * El suelo en `dvh` era la primera opción y se descartó por dos motivos
+   * medidos: dentro de una fila `1fr` no llega a activarse nunca (la fila ya
+   * recibe más de lo que pide), y si se fuerza, el visor reclama más alto del
+   * que su fila tiene y `.canvas-area { overflow: hidden }` lo recorta en
+   * silencio —el WebGL se dimensiona con `clientHeight`, así que el modelo se
+   * encuadraría contra un alto que no se ve.
+   *
+   * `.canvas-placeholder` lleva lo mismo porque comparte eslabón: también es
+   * `flex: 1` dentro de `.viewer-container` y también se aplana, y es lo que se
+   * ve con un G-code.
+   */
+  .viewer-3d-container,
+  .canvas-placeholder {
+    aspect-ratio: 16 / 10;
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  /*
+   * Estas cuatro declaraciones desmontan la cadena de alturas del bloque de
+   * 768, que ya no hace falta aquí. Se anulan en vez de moverse al tramo de
+   * 1200px porque desde 1200px el layout es de una sola fila de contenido y el
+   * panel vuelve a ser columna, que es exactamente lo que el bloque de 1200px
+   * ya restaura por su cuenta con su propio `grid-template-rows`.
+   *
+   * `display: block` + `min-height: auto` deshacen la columna flex que hacía
+   * falta para que `overflow-y: auto` tuviera una altura que medir; sin altura
+   * que medir, `overflow-y` no tiene nada que hacer.
+   */
+  .sidebar-right {
+    display: block;
+    min-height: auto;
+  }
+
+  .panel-body {
+    flex: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  /*
+   * `position: sticky` recupera lo que el bloque de 768 hizo con `static`. Con
+   * el documento como scroll, la cabecera del panel vuelve a poder pegarse al
+   * scroll de la página, que es justo lo que se quiere: al bajar a la
+   * recomendación del final, "Panel de Análisis" sigue a la vista y se ve de
+   * quién es ese bloque largo.
+   */
+  .panel-header {
+    position: sticky;
   }
 }
 
