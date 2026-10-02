@@ -36,3 +36,13 @@ opencode wiiki-3d
 
 # Fixtures locales (G-codes reales de usuario, no se suben)
 test-fixtures/
+
+# Navegadores descargados por herramientas de auditoría (no subir nunca)
+chrome/
+/chrome/
+# Próxima vez: npx @puppeteer/browsers install chrome@stable --path ~/.cache/puppeteer
+
+# Perfiles de Chrome que deja Lighthouse al auditar (artefacto local).
+# Próxima vez: pasa --user-data-dir=/tmp/... al invocar lighthouse para que
+# Chrome no cree el perfil en el CWD.
+*lighthouse.*/
