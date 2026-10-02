@@ -1,0 +1,13 @@
+name = "wiiki-3d-jev-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://wiiki-3d.com"
+
+# JEV_API_KEY va con `wrangler secret put JEV_API_KEY`, NUNCA aquí.
+#
+# Es la razón de existir de este Worker: el frontend es estático y se sirve desde
+# GitHub Pages, así que cualquier variable de entorno que Vite incruste en el
+# bundle es legible con F12. La key tiene que vivir en el entorno del Worker, no
+# en el código del cliente.
