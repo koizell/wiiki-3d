@@ -3,13 +3,26 @@ import type { ProjectMetadata } from './types';
 /**
  * ParserService — extrae los metadatos de impresión de un archivo G-code.
  *
- * TODO: hoy devuelve datos simulados. Cuando implemente el parseo real habrá
- * que leer el contenido con `file.text()`, detectar el slicer (Cura, PrusaSlicer,
- * BambuStudio...) y mapear sus comentarios de cabecera a `ProjectMetadata`.
+ * La lectura es parcial a propósito: los slicers escriben todos los metadatos en
+ * los primeros kilobytes del archivo (Cura los emite justo después de la línea
+ * de Genius), así que no hay motivo para traerse un G-code de 200 MB a memoria.
+ *
+ * TODO: el parseo sigue devolviendo datos simulados. Cuando implemente el
+ * parseo real habrá que detectar el slicer (Cura, PrusaSlicer, BambuStudio...)
+ * y mapear sus comentarios de cabecera a `ProjectMetadata`.
  */
 
 /** Extensiones que este servicio sabe interpretar. */
 const GCODE_EXTENSIONS = ['.gcode', '.gco'] as const;
+
+/**
+ * Tamaño de la ventana de lectura inicial, en bytes.
+ *
+ * 256 KiB es un margen muy holgado: las cabeceras reales ocupan entre 1 y
+ * 10 KiB. Bajarlo afinaría la lectura, pero cualquier slicer futuro con más
+ * metadatos (perfiles, datos deodo, notas de usuario) se quedaría fuera.
+ */
+const HEADER_BYTES = 256 * 1024;
 
 /** Latencia simulada para que los estados de carga de la UI sean visibles. */
 const MOCK_LATENCY_MS = 400;
@@ -19,6 +32,23 @@ const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+
+/**
+ * Lee únicamente la cabecera de un archivo G-code.
+ *
+ * Se usa `file.slice()` en lugar de `file.text()` porque `text()` trae el
+ * archivo entero a memoria de una sentada: en un G-code de 200 MB eso significa
+ * 200 MB de string en el hilo principal más el coste de decodificarlo, y la
+ * interfaz se congela mientras ocurre. `slice()` es perezoso —no lee nada del
+ * disco hasta que se consume— y `Blob.text()` decodifica solo ese trozo, así
+ * que el trabajo real se limita a unos cientos de kilobytes.
+ *
+ * @param file Archivo `.gcode` / `.gco` seleccionado por el usuario.
+ * @returns El texto de los primeros {@link HEADER_BYTES} del archivo.
+ */
+export async function readGcodeHeader(file: File): Promise<string> {
+  return file.slice(0, HEADER_BYTES).text();
+}
 
 /**
  * Extrae los metadatos de impresión de un archivo G-code.
