@@ -5,8 +5,17 @@
   --border: #2a3138;
   --text-primary: #e8ecf1;
   --text-secondary: #8b949e;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
+  /*
+   * El acento se oscureció de #3b82f6 a #2563eb porque el azul anterior solo
+   * daba 3,68:1 con texto blanco, por debajo del 4,5:1 que WCAG AA exige a
+   * cualquier tamaño de fuente. El valor nuevo da 5,17:1.
+   *
+   * Un solo token arregla los dos consumidores que fallaban —.btn-primary y
+   * .badge— sin tocar su tipografía ni su estructura. `--accent-hover` pasó a
+   * ser el tono siguiente de la misma rampa (#1d4ed8), que con blanco da 6,70:1.
+   */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
