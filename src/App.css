@@ -323,6 +323,22 @@ body {
   border-radius: 8px;
 }
 
+/*
+ * Aviso informativo para formatos que se ven pero no se analizan. Comparte la
+ * silueta de `.panel-recommendation` (filete de acento a la izquierda) pero con
+ * fondo azul suave y en color de texto normal: el archivo está bien, lo que
+ * falta es el análisis, así que no debe leerse como un fallo.
+ */
+.panel-unsupported {
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: rgba(59, 130, 246, 0.08);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
 /* Panel de análisis: datos del proyecto y diagnóstico */
 .panel-body {
   display: flex;

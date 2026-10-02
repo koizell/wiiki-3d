@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import Viewer3D from './components/Viewer3D';
+import Viewer3D, { type ViewerFormat } from './components/Viewer3D';
 import AnalysisPanel, { type AnalysisStatus } from './components/AnalysisPanel';
 import { parseGcode } from './services/ParserService';
 import { classifyWithJev } from './services/JevService';
 import type { JevClassification, ProjectMetadata } from './services/types';
 
 /** Formatos que la app sabe enrutar, deducidos de la extensión del archivo. */
-type FileType = 'stl' | 'gcode' | 'obj' | 'unknown';
+type FileType = 'stl' | 'gcode' | '3mf' | 'obj' | 'unknown';
 
 /** Extensiones que el visor 3D sabe maquetar. */
 const STL_EXTENSIONS = ['.stl'] as const;
+/**
+ * El 3MF es el proyecto de los slicers actuales (BambuStudio, PrusaSlicer,
+ * OrcaSlicer). Se comprueba antes que G-code y STL porque su contenido es un
+ * ZIP con el modelo y no un flujo de comandos: el orden de las comprobaciones
+ * documenta esa diferencia en lugar de darla por supuesta.
+ */
+const THREEMF_EXTENSIONS = ['.3mf'] as const;
 /** Extensiones que el panel de análisis sabe interpretar. */
 const GCODE_EXTENSIONS = ['.gcode', '.gco'] as const;
 /** Extensiones aceptadas por el input pero aún sin soporte en el visor. */
@@ -26,10 +33,16 @@ const OBJ_EXTENSIONS = ['.obj'] as const;
  */
 function detectFileType(filename: string): FileType {
   const name = filename.toLowerCase();
+  if (THREEMF_EXTENSIONS.some((ext) => name.endsWith(ext))) return '3mf';
   if (STL_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'stl';
   if (GCODE_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'gcode';
   if (OBJ_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'obj';
   return 'unknown';
+}
+
+/** Acota el tipo de archivo a los que el visor 3D puede construir. */
+function isViewerFormat(fileType: FileType | null): fileType is ViewerFormat {
+  return fileType === 'stl' || fileType === '3mf';
 }
 
 /** Explica en el área central por qué un formato todavía no se puede mostrar. */
@@ -37,7 +50,7 @@ function unsupportedFileMessage(fileType: FileType, filename: string): string {
   if (fileType === 'obj') {
     return 'El visor 3D para archivos .obj todavía no está disponible. El análisis técnico se reserva a los archivos G-code.';
   }
-  return `"${filename}" tiene un formato no compatible. Sube un archivo .stl, .gcode o .gco.`;
+  return `"${filename}" tiene un formato no compatible. Sube un archivo .stl, .3mf, .gcode o .gco.`;
 }
 
 /** Normaliza cualquier excepción a un mensaje presentable. */
@@ -58,14 +71,19 @@ function App() {
     const selected = event.target.files?.[0];
     if (!selected) return;
 
+    const detectedType = detectFileType(selected.name);
+
     setFile(selected);
-    setFileType(detectFileType(selected.name));
+    setFileType(detectedType);
     // El análisis anterior se descarta: si el nuevo archivo es un STL o no es
     // analizable, el panel debe volver a su estado inicial, no al anterior.
     setMetadata(null);
     setClassification(null);
     setAnalysisError(null);
-    setAnalysisStatus('idle');
+    // Solo el G-code entra en la cola de análisis. El resto no está "pendiente":
+    // el panel explica desde el principio que ese formato no se analiza, en
+    // lugar de seguir invitando a subir un archivo que el usuario ya ha subido.
+    setAnalysisStatus(detectedType === 'gcode' ? 'idle' : 'unsupported');
   };
 
   const handleClearFile = () => {
@@ -79,7 +97,7 @@ function App() {
 
   useEffect(() => {
     // Solo el G-code tiene metadatos de impresión que analizar; el resto de
-    // formatos deja el panel en `idle`.
+    // formatos ya quedó en `unsupported` al subir el archivo.
     if (!file || fileType !== 'gcode') return;
 
     // Los servicios todavía no aceptan una señal de cancelación, así que el
@@ -115,7 +133,7 @@ function App() {
   }, [file, fileType]);
 
   const showUploadZone = !file;
-  const showViewer = fileType === 'stl';
+  const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === 'gcode';
   const showUnsupported = fileType === 'obj' || fileType === 'unknown';
 
@@ -133,7 +151,7 @@ function App() {
           <input
             id="file-upload"
             type="file"
-            accept=".stl,.gcode,.gco,.obj"
+            accept=".stl,.3mf,.gcode,.gco,.obj"
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
@@ -158,7 +176,7 @@ function App() {
             <div className="upload-zone">
               <div className="upload-icon">⬆</div>
               <h2>Arrastra tu archivo aquí</h2>
-              <p>Soporta STL, G-code (Cura, PrusaSlicer, BambuStudio)</p>
+              <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
               <label htmlFor="file-upload" className="btn-primary">
                 Seleccionar Archivo
               </label>
@@ -170,7 +188,7 @@ function App() {
                 <button className="btn-danger" onClick={handleClearFile}>X</button>
               </div>
 
-              {showViewer && <Viewer3D file={file} />}
+              {viewerFormat && <Viewer3D file={file} fileType={viewerFormat} />}
 
               {showGcodeNotice && (
                 <div className="canvas-placeholder">
@@ -202,6 +220,7 @@ function App() {
             metadata={metadata}
             classification={classification}
             error={analysisError}
+            fileType={fileType ?? undefined}
           />
         </aside>
       </div>

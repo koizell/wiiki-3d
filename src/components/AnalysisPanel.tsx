@@ -10,20 +10,60 @@ import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/
  * renderizando cada estado por separado.
  */
 
-/** Fases del análisis, en el orden en las que se recorren. */
+/**
+ * Fases del análisis, en el orden en las que se recorren.
+ *
+ * `unsupported` no es una fase: es el estado terminal de los formatos que se
+ * pueden ver pero no analizar. Existe para que el panel no invite a subir un
+ * archivo cuando ya hay uno cargado, y para no gastar ese mensaje en errores.
+ */
 export type AnalysisStatus =
   | 'idle'
   | 'parsing'
   | 'classifying'
   | 'done'
-  | 'error';
+  | 'error'
+  | 'unsupported';
+
+/**
+ * Formatos que el panel sabe nombrar en su aviso. El `Record` obliga a
+ * declararlos todos: si `App` aprende a enrutar un formato nuevo, el
+ * compilador reclama el texto que falta.
+ */
+type AnalysisFileType = 'stl' | 'gcode' | '3mf' | 'obj' | 'unknown';
 
 interface AnalysisPanelProps {
   status: AnalysisStatus;
   metadata: ProjectMetadata | null;
   classification: JevClassification | null;
   error: string | null;
+  /**
+   * Formato del archivo cargado. Solo se usa en el estado `unsupported`, para
+   * decir en concreto por qué ese archivo no se analiza; opcional porque el
+   * resto de estados no lo necesitan.
+   */
+  fileType?: AnalysisFileType;
 }
+
+/**
+ * Aviso por formato: informativo, no un error. Solo el G-code lleva metadatos de
+ * impresión (material, temperaturas, altura de capa...), así que el resto de
+ * formatos se aclara en lugar de analizarse.
+ */
+const UNSUPPORTED_MESSAGE: Record<AnalysisFileType, string> = {
+  stl:
+    'Los archivos STL no contienen metadatos de impresión. Para ver el ' +
+    'análisis técnico, sube un archivo G-code (.gcode o .gco).',
+  '3mf':
+    'Los archivos .3mf se pueden visualizar en 3D, pero el análisis técnico ' +
+    'está reservado a archivos G-code. Para un análisis completo, exporta tu ' +
+    'proyecto como G-code.',
+  obj: 'El análisis técnico está disponible para archivos G-code. Los archivos .obj no se analizan.',
+  unknown: 'Formato no compatible. Sube un archivo .stl, .3mf, .gcode o .gco.',
+  gcode:
+    'No se han encontrado metadatos de impresión en este G-code. Vuelve a ' +
+    'exportarlo desde el slicer para que incluya la cabecera con los ajustes.',
+};
 
 /** Mensaje de carga asociado a cada fase en curso. */
 const LOADING_MESSAGE: Record<'parsing' | 'classifying', string> = {
@@ -42,7 +82,7 @@ const RISK_CLASS: Record<RiskLevel, string> = {
   'Crítico': 'risk-critico',
 };
 
-function AnalysisPanel({ status, metadata, classification, error }: AnalysisPanelProps) {
+function AnalysisPanel({ status, metadata, classification, error, fileType }: AnalysisPanelProps) {
   if (status === 'parsing' || status === 'classifying') {
     return (
       <p className="panel-loading" role="status" aria-live="polite">
@@ -55,6 +95,17 @@ function AnalysisPanel({ status, metadata, classification, error }: AnalysisPane
     return (
       <p className="panel-error" role="alert">
         {error ?? 'No se ha podido completar el análisis del archivo.'}
+      </p>
+    );
+  }
+
+  // Hay archivo cargado pero este formato no lleva datos analizables. Se
+  // distingue del `idle` porque el mensaje de "sube un archivo" sería falso
+  // aquí: el usuario ya lo ha subido, simplemente no es analizable.
+  if (status === 'unsupported') {
+    return (
+      <p className="panel-unsupported" role="status">
+        {UNSUPPORTED_MESSAGE[fileType ?? 'unknown']}
       </p>
     );
   }
