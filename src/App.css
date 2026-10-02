@@ -54,7 +54,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-}
 
 * {
   margin: 0;
@@ -68,18 +67,104 @@ body {
   color: var(--text-primary);
 }
 
+/*
+ * Shell de la aplicación: mapa del layout.
+ *
+ * `.app-container` es el grid y lleva las cuatro zonas nombradas. La navegación
+ * se declara como zona aunque en móvil esté en `position: fixed` y fuera de
+ * flujo: al fixarla conserva su `grid-area`, así que cuando por debajo del
+ * breakpoint vuelve a la columna no hay que volver a colocarla.
+ *
+ * `grid-template-areas` en lugar de `grid-column` a mano: el layout entero se
+ * lee de un vistazo como un diagrama, y reordenar una zona es cambiar su
+ * nombre en una línea en lugar de reetiqueteando varios `grid-column` que se
+ * desincronizan en cuanto alguien toca uno solo.
+ */
 .app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  display: grid;
+  grid-template-areas:
+    "header"
+    "main"
+    "panel";
+  /*
+   * Filas de contenido, no `1fr`: en móvil el scroll es del documento, así que
+   * las filas se dimensionan por su contenido y lo que sobra de alto queda abajo,
+   * bajo la barra de navegación. Fijar la altura del shell obligaría a
+   * recortar el panel, que es lo más alto de los tres.
+   */
+  grid-template-rows: auto auto auto;
+  /*
+   * `align-content: start` es imprescindible aquí, y no es cosmético.
+   *
+   * Con filas `auto` y un contenedor más alto que su contenido, el
+   * `align-content` por defecto —que en grid se comporta como `stretch`— reparte
+   * el espacio sobrante entre todas las filas por igual. Y "repartir el sobrante"
+   * en filas `auto` quiere decir "inflarlas": a 375×667 la app ocupa 636px de
+   * 667, sobran 31px, cada fila crece ~10px y no se nota. A 375×900 sobran 264px
+   * y el header —cuyo contenido real mide 28 + 8 + 44 + 19 = 99px — se inflaba
+   * hasta 179px.
+   *
+   * `start` deja el sobrante al final, que es justo lo que promete el comentario
+   * de `grid-template-rows` de arriba.
+   *
+   * A partir de 768px las filas son `1fr` y llenan solas el contenedor, así que
+   * no hay sobrante que repartir y la declaración no cambia nada allí.
+   */
+  align-content: start;
+  min-height: 100dvh;
+  /*
+   * Hueco de la barra inferior fija. 44px del `min-height` de los items + el
+   * padding vertical de 0.6rem de la barra, redondeado a 60px. El
+   * `env(safe-area-inset-bottom)` evita que el indicador del iPhone quede
+   * debajo de la barra en vez de encima; en el resto de navegadores vale 0 y no
+   * cambia nada.
+   */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  /* Los bordes laterales del notch y el waterdrop en horizontal. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/*
+ * `display: contents` es lo que permite que las tres piezas del contenido sean
+ * zonas del grid del shell sin tocar el JSX.
+ *
+ * Sin esto habría dos opciones, y las dos son peores: mover `<header>` dentro de
+ * `.main-layout` en `App.tsx` (cambio de markup), o mantener dos contenedores
+ * distintos — `.app-container` flex vertical y `.main-layout` grid — y que el
+ * reparto de columnas tenga que coordinarse entre los dos. Con `contents`,
+ * `.main-layout` deja de generar caja y sus tres hijos pasan a ser grid items
+ * del shell, junto al header.
+ *
+ * Su `display: contents` también se traga el `flex: 1` y el `overflow: hidden`
+ * que tenía, que es exactamente lo que se quería quitar: el recorte lo hace el
+ * `overflow: hidden` de `.viewer-3d-container`, que es donde está el canvas
+ * WebGL y donde sí hace falta para respetar las esquinas redondeadas.
+ *
+ * El riesgo habitual de `display: contents` es que el elemento desaparezca del
+ * árbol de accesibilidad. Aquí no hay nada que perder: `.main-layout` es un
+ * `div` sin rol, sin nombre y sin contenido propio.
+ */
+.main-layout {
+  display: contents;
 }
 
 /* Barra superior */
 .top-bar {
+  grid-area: header;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.5rem;
+  gap: 0.5rem;
+  /*
+   * El header se lleva sus acciones a una fila propia por debajo del logotipo.
+   * Motivo medido: logo (≈128px) + "Subir Archivo" (≈116px) + "Iniciar Sesión"
+   * (≈132px) + gaps (8px) + padding horizontal (24px) ≈ 424px, y el viewport de
+   * referencia es de 375px. Sin esto los botones se parten en dos líneas y la
+   * barra queda descuadrada, en lugar de ceder con dignidad.
+   */
+  flex-wrap: wrap;
+  padding: 0.6rem 0.75rem;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
 }
@@ -99,12 +184,35 @@ body {
 
 .top-nav {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/*
+ * Áreas táctiles.
+ *
+ * El mínimo de 44×44px es la recomendación de Apple HIG y el objetivo más
+ * exigente de WCAG 2.2 (2.5.5); el mínimo absoluto de la AA (2.5.8) son 24px.
+ * Se aplica a todo el ancho, no solo a móvil, por una razón práctica: CSS no
+ * puede distinguir un dedo de un ratón, y un móvil puede tener 1200px de ancho.
+ * El coste en escritorio son ~11px de alto en la barra superior.
+ *
+ * `inline-flex` + `align-items: center` van en los botones porque el "X" de
+ * `.btn-danger` es un carácter suelto: sin centrarlo, el área táctil crece hacia
+ * abajo y el texto se descuadra respecto al centro real del botón.
+ */
+.btn-primary,
+.btn-ghost,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
 }
 
 .btn-primary {
-  display: inline-block;
   background: var(--accent);
   color: white;
   border: none;
@@ -143,35 +251,59 @@ body {
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  min-width: 44px;
 }
 
 .btn-danger:hover {
   background: #dc2626;
 }
 
-/* Layout principal */
-.main-layout {
-  display: grid;
-  grid-template-columns: 220px 1fr 320px;
-  flex: 1;
-  overflow: hidden;
+/* Navegación */
+.sidebar-left {
+  /*
+   * Barra inferior fija en móvil.
+   *
+   * Es `position: fixed` y no un reordenamiento con grid porque el orden del DOM
+   * ya pone la navegación antes del área principal: el hueco de la barra se
+   * reserva en `.app-container` con el `padding-bottom`, así que ninguna
+   * fotografía del diseño depende de cuánto alto dé el texto.
+   *
+   * `border-top` en lugar de `border-right`: la barra toca el borde inferior de
+   * la pantalla, y un filete lateral ahí no separa nada de nada.
+   */
+  grid-area: nav;
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  padding: 0.3rem 0.35rem calc(0.3rem + env(safe-area-inset-bottom));
 }
 
-/* Sidebar izquierda */
-.sidebar-left {
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
-  padding: 1rem 0.5rem;
+.sidebar-left ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+  list-style: none;
 }
 
 .nav-item {
-  list-style: none;
-  padding: 0.65rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 44px;
+  padding: 0.4rem 0.2rem;
   border-radius: 6px;
   cursor: pointer;
   color: var(--text-secondary);
-  margin-bottom: 0.25rem;
   transition: all 0.15s;
+  /* Emoji encima y texto debajo: en una barra de 375px, cuatro items en fila
+     salen a ~85px cada uno y "BambuStudio" no cabe de otra forma. */
+  font-size: 0.65rem;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .nav-item:hover {
@@ -182,22 +314,25 @@ body {
 .nav-item.active {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-left: 3px solid var(--accent);
+  /* El indicador de "aquí estás" apunta hacia arriba en una barra horizontal,
+     por eso el filete se mueve del lateral al superior. */
+  border-top: 3px solid var(--accent);
 }
 
 /* Área central */
 .canvas-area {
+  grid-area: main;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at center, #1a1f26 0%, #0f1115 100%);
-  padding: 2rem;
+  padding: 1rem;
   overflow: hidden;
 }
 
 .upload-zone {
   text-align: center;
-  padding: 3rem 4rem;
+  padding: 1.5rem 1rem;
   border: 2px dashed var(--border);
   border-radius: 12px;
   max-width: 500px;
@@ -224,14 +359,35 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   gap: 1rem;
+  /*
+   * El estirado va aquí y no como `height: 100%`.
+   *
+   * Con el padre a altura automática —el caso móvil, donde el scroll es del
+   * documento— un `height: 100%` no tiene contra qué medirse, resuelve a
+   * `auto`, `.viewer-container` colapsa y `.viewer-3d-container` se queda a
+   * cero píxeles. El visor desaparecería sin un solo error en consola.
+   * `align-self: stretch` sí funciona contra un padre automático, porque lo
+   * estira en su eje transversal.
+   *
+   * Hace falta porque `.canvas-area { align-items: center }` centra a sus hijos,
+   * lo cual es justo lo que quiere la zona de subida —que es su otro hijo— pero
+   * no el visor, que necesita llenar el alto. Medido: a 1200×667, sin esta
+   * declaración, `.viewer-container` se queda en 88px y el canvas WebGL en
+   * **0px**.
+   *
+   * Sólo hace algo a partir de 1200px. Por debajo las filas del grid son
+   * `auto`, así que la fila del área central ya mide exactamente lo que mide su
+   * contenido y estirarse o centrarse da el mismo resultado.
+   */
+  align-self: stretch;
 }
 
 .file-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   background: var(--bg-panel);
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -242,6 +398,22 @@ body {
   font-weight: 500;
   font-size: 0.9rem;
   color: var(--accent-text);
+  /*
+   * `.file-name` es flex item de `.file-info` y ahí sí que manda `min-width:
+   * auto`. Un G-code de OrcaSlicer sale con nombres largos
+   * (`proyecto_4.2h_PLA_0.2mm.gcode`) y sin esto el nombre empuja la fila, y
+   * `overflow: hidden` de `.canvas-area` lo recorta en silencio: se ve el
+   * nombre a medias y parece que el archivo se ha subido mal.
+   *
+   * El arreglo va aquí y no en los grid items porque `.canvas-area` ya tiene
+   * `overflow` distinto de `visible`, lo que hace que su `min-width: auto`
+   * ya resuelva a 0: ponerlo ahí no cambiaría nada.
+   *
+   * `anywhere` y no `break-word` a propósito: el primero también reduce el
+   * ancho de contribución mínima, que es lo que deja que la fila encoja.
+   */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .viewer-3d-container {
@@ -251,6 +423,13 @@ body {
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-dark);
+  /*
+   * Suelo de altura del visor en móvil. Va en el hijo, no en `.canvas-area`:
+   * `.canvas-area` con `min-height` no impide que `.viewer-3d-container` colapse
+   * a cero, porque el colapso viene del eslabón intermedio. Es el mínimo para
+   * que orbitar una pieza con `OrbitControls` sea manejable con un dedo.
+   */
+  min-height: 40dvh;
 }
 
 .viewer-overlay {
@@ -266,26 +445,45 @@ body {
   color: var(--text-secondary);
   font-size: 1rem;
   z-index: 10;
+  padding: 1rem;
+  text-align: center;
 }
 
 .viewer-overlay.error {
   color: var(--danger);
 }
 
-/* Sidebar derecha */
+/* Panel de análisis */
 .sidebar-right {
+  grid-area: panel;
   background: var(--bg-panel);
-  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   padding: 1rem;
 }
 
 .panel-header {
+  /*
+   * Sticky al scroll del documento, que en móvil es el único que hay: el panel
+   * crece con su contenido y no genera contexto de scroll propio. El objetivo es
+   * que "Panel de Análisis" siga a la vista mientras se baja a la recomendación
+   * del final, para que quede claro que el bloque largo de debajo pertenece al
+   * panel y no al visor.
+   *
+   * En tablet y escritorio el panel sí scrollea por su cuenta, y entonces la
+   * cabecera se fija a su propia columna en lugar de al documento.
+   */
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
+  /* El fondo es opaco a propósito: sin esto el texto de los datos se transparenta
+     por debajo al desplazarse por debajo del cabecera. */
+  background: var(--bg-panel);
 }
 
 .panel-header h3 {
@@ -317,12 +515,18 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
   border: 1px dashed var(--border);
   border-radius: 12px;
   background: var(--bg-panel);
+  /*
+   * El mismo suelo que el visor 3D, y por el mismo motivo: también es
+   * `flex: 1` dentro de `.viewer-container`. Sin esto el aviso se aplana en
+   * móvil —y es justo lo que se ve con un G-code, el caso más habitual de la app.
+   */
+  min-height: 40dvh;
 }
 
 .canvas-error {
@@ -388,7 +592,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  overflow-y: auto;
+  /*
+   * Sin una altura acotada en un ancestro, `overflow-y: auto` no hace nada: el
+   * panel crece con su contenido y quien se desplaza es el documento. En móvil
+   * eso es justo lo que se quiere, y por eso no hay que darle la altura.
+   *
+   * En escritorio el shell pasa a `height: 100dvh` y el panel sí queda acotado;
+   * es el breakpoint de 768px el que le da la cadena de alturas. Este bloque es
+   * el que se encarga de que entonces sea el panel el que scrollea y no la
+   * página entera, con la cabecera del panel fija.
+   */
 }
 
 .panel-section-title {
@@ -474,4 +687,216 @@ body {
   letter-spacing: 0.06em;
   color: var(--accent-text);
   margin-bottom: 0.35rem;
+}
+
+/* ==========================================================================
+   Breakpoints
+   --------------------------------------------------------------------------
+   Mobile-first: lo que hay arriba, sin media query, es el layout de móvil. Los
+   tres cortes siguientes sólo van devolviendo densidad y, a partir de 768px,
+   estructura.
+
+   Los números salen de la aritmética del contenido, no de la convención de
+   768/1024 que trae la literatura. El cálculo que manda es siempre el mismo:
+   las columnas fijas suman 220px (navegación) + 320px (panel), y lo que sobra
+   es lo que se lleva el visor 3D.
+   ========================================================================== */
+
+/* --- 640px: solo densidad. NO cambia el número de columnas --------------------
+ * Es el punto donde el contenido de la barra superior deja de necesitar recortes
+ * y donde la zona de subida deja de estar apretada.
+ *
+ * La barra: con el logotipo, los dos botones y los gaps, el presupuesto medido a
+ * 16px de base es 128px (logotipo) + 116px ("Subir Archivo") + 132px ("Iniciar
+ * Sesión") + 8px de hueco + 48px de padding horizontal ≈ 432px. Por debajo de
+ * 432px los tres elementos no caben en una fila y la barra se parte en dos.
+ *
+ * La zona de subida: con 2rem de padding en `.canvas-area` y 4rem en
+ * `.upload-zone`, a 375px quedaban 311px de recuadro y solo 183px de contenido
+ * útil dentro. Con 1rem y 1rem quedan 343px y 311px, que es lo que hace falta
+ * para que la frase de los formatos se lea sin partirse en tres líneas.
+ *
+ * Este corte no toca la estructura a propósito: entre 640 y 768 la app sigue
+ * con la barra inferior y el panel apilado, que es la disposición que mejor
+ * aprovecha una pantalla de móvil grande.
+ */
+@media (min-width: 640px) {
+  .top-bar {
+    flex-wrap: nowrap;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .top-nav {
+    width: auto;
+    gap: 0.75rem;
+  }
+
+  .canvas-area {
+    padding: 1.5rem;
+  }
+
+  .upload-zone {
+    padding: 2.5rem 2rem;
+  }
+
+  .sidebar-left {
+    padding: 0.45rem 0.75rem calc(0.45rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* --- 768px: la navegación vuelve a ser columna --------------------------------
+ * Es el primer corte que cambia la estructura, y el número sale de una resta:
+ * 768px menos los 220px fijos de la navegación son 548px para el visor, que es lo
+ * primero en lo que `OrbitControls` deja de ser un juego a ciegas con un dedo.
+ *
+ * Por debajo de este punto la barra inferior no es solo más cómoda: es la única
+ * disposición en la que el canvas llega a ocupar el ancho completo, porque la
+ * navegación no se lleva ninguna columna.
+ *
+ * El panel sigue apilado bajo el canvas. Con las dos sidebars en columna, 220 +
+ * 320 = 540px fijos, y el visor se quedaría con 228px: inusable. El panel no
+ * vuelve a su columna hasta 1200px.
+ */
+@media (min-width: 768px) {
+  .sidebar-left {
+    position: static;
+    inset: auto;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    padding: 1rem 0.5rem;
+  }
+
+  .sidebar-left ul {
+    display: block;
+  }
+
+  .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .nav-item.active {
+    border-top: none;
+    border-left: 3px solid var(--accent);
+  }
+
+  .app-container {
+    grid-template-areas:
+      "nav header"
+      "nav main"
+      "nav panel";
+    grid-template-columns: 220px 1fr;
+    /*
+     * Filas explícitas, y no las `auto` que trae la base.
+     *
+     * Es el paso que hace funcionar `height: 100dvh` de verdad. Con filas `auto`
+     * y una altura de contenedor definida, el `align-content` por defecto (que
+     * se comporta como `stretch` en grid) reparte el espacio sobrante entre
+     * ellas, así que el header —cuyo contenido mide ~50px — se inflaba hasta
+     * 219px a 768 y 192px a 1280. Declarando `1fr` en las filas de contenido, el
+     * sobrante va allí y solo allí.
+     *
+     * `minmax(0, 1fr)` y no `1fr` a secas: el mínimo `auto` dejaría que cada fila
+     * creciera hasta su contenido, que es justo lo que produce el recorte en
+     * lugar del scroll interno.
+     */
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    /*
+     * A partir de aquí el shell deja de crecer con el contenido y se fija a la
+     * ventana, para que el alto sobrante se lo repartan las filas `1fr` en lugar
+     * de quedarse en un hueco bajo el panel.
+     *
+     * `100dvh` y no `100vh`: en móvil la barra del navegador entra y sale, y
+     * `vh` es la altura de la ventana con la barra retraída. Con `100vh` la parte
+     * de abajo queda debajo de la barra y es inalcanzable al hacer scroll. `dvh`
+     * sí cambia con ella.
+     */
+    height: 100dvh;
+    min-height: 0;
+    /* La navegación ya no está fija: no hace falta reservar su hueco. */
+    padding-bottom: 0;
+  }
+
+  .canvas-area {
+    min-height: 0;
+  }
+
+  .viewer-3d-container,
+  .canvas-placeholder {
+    /*
+     * En tablet y escritorio el visor se estira a llenar la fila, así que el
+     * suelo de 40dvh sobra. Se quita para que en una ventana baja no llegue a
+     * forzar scroll vertical en una columna que debería caber entera.
+     */
+    min-height: 0;
+  }
+
+  /*
+   * El panel pasa a ser la columna que scrollea. La cadena de alturas que hace
+   * falta para que `overflow-y: auto` tenga contra qué medirse es:
+   *
+   *   .app-container   height: 100dvh   (justo arriba)
+   *   .sidebar-right   min-height: 0    (deja de ser automática)
+   *   .panel-body      flex: 1
+   *
+   * `min-height: 0` en el ancestro intermedio es el paso que no se puede saltar:
+   * un grid item tiene `min-height: auto` por defecto, así que sin él se niega a
+   * encogerse por debajo de su contenido, y el panel se queda con todo lo que
+   * mide en vez de con el hueco que hay.
+   *
+   */
+  .sidebar-right {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    /* Hueco para que la barra de scroll no se solape el borde del panel. */
+    padding-right: 0.25rem;
+  }
+
+  /*
+   * El scroll interno del panel ya no compite con el del documento, así que la
+   * cabecera puede quedarse pegada a su propia columna en lugar de al scroll de
+   * la página. Al revés, la cabecera se iría por delante y el contenido se vería
+   * por detrás.
+   */
+  .panel-header {
+    position: static;
+  }
+}
+
+/* --- 1200px: el panel vuelve a la derecha -------------------------------------
+ * 220px de navegación + 320px de panel = 540px fijos. A 1200px el visor se queda
+ * con 660px, y a partir de ahí es el elemento que domina el ancho de la pantalla
+ * en lugar de ser una columna más: por debajo, el `1fr` baja de 660px y el modelo
+ * queda con menos sitio que el panel que lo describe.
+ *
+ * Es el único corte que devuelve el layout original de tres columnas.
+ */
+@media (min-width: 1200px) {
+  .app-container {
+    grid-template-areas:
+      "nav header header"
+      "nav main   panel";
+    grid-template-columns: 220px 1fr 320px;
+    /* Dos filas: header al tamaño de su contenido y la única fila de contenido
+       estirándose. */
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .canvas-area {
+    padding: 2rem;
+  }
 }
