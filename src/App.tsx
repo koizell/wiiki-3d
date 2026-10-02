@@ -1,10 +1,25 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import './App.css';
-import Viewer3D, { type ViewerFormat } from './components/Viewer3D';
+import type { ViewerFormat } from './components/Viewer3D';
 import AnalysisPanel, { type AnalysisStatus } from './components/AnalysisPanel';
 import { parseGcode } from './services/ParserService';
 import { classifyWithJev } from './services/JevService';
 import type { JevClassification, ProjectMetadata } from './services/types';
+
+/**
+ * El visor 3D se carga bajo demanda.
+ *
+ * three.js pesa unos 648 KB sin minificar, y el visor solo se usa cuando el
+ * usuario sube un STL o un 3MF. Con el import estático, ese peso viajaba en el
+ * chunk inicial y se descargaba antes de que hubiera nada que ver, retrasando el
+ * primer contenido visible para una pantalla de subida que no lo necesita. Con
+ * `lazy` queda en un chunk aparte que el navegador pide cuando el visor se va a
+ * montar de verdad.
+ *
+ * El tipo sí se importa de forma estática: `import type` desaparece al compilar,
+ * así que no arrastra nada al bundle.
+ */
+const Viewer3D = lazy(() => import('./components/Viewer3D'));
 
 /** Formatos que la app sabe enrutar, deducidos de la extensión del archivo. */
 type FileType = 'stl' | 'gcode' | '3mf' | 'obj' | 'unknown';
@@ -188,7 +203,15 @@ function App() {
                 <button className="btn-danger" onClick={handleClearFile}>X</button>
               </div>
 
-              {viewerFormat && <Viewer3D file={file} fileType={viewerFormat} />}
+              {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
+                  pintan de inmediato mientras llega el chunk. El fallback reutiliza
+                  `.viewer-overlay`, el mismo estilo que el propio visor usa mientras
+                  carga el modelo, para que la transición no dé un salto visual. */}
+                <Suspense
+                  fallback={<div className="viewer-overlay">Cargando visor 3D...</div>}
+                >
+                  {viewerFormat && <Viewer3D file={file} fileType={viewerFormat} />}
+                </Suspense>
 
               {showGcodeNotice && (
                 <div className="canvas-placeholder">
