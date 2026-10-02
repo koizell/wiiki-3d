@@ -52,7 +52,10 @@ Viene de la documentación de `https://www.jevai.org/docs`, **no** de una captur
 - No se ha observado ninguna respuesta `200` real: la cuenta está sin crédito y la API rechaza la
   key antes incluso de validar el payload (un 401 arranca antes que un 400). La forma exacta del
   `data` de éxito viene de la doc, no de una captura. Si al conectar de verdad el parseo falla, es
-  aquí donde hay que ajustar, y `toClassification` es el único sitio que hay que tocar.
+  aquí donde hay que ajustar, y `toClassification` es el único sitio que hay que tocar **mientras
+  las respuestas de Jev sean completas**. Si resulta que admite respuestas parciales, hay que tocar
+  además `JevClassification` (`src/services/types.ts`) y `AnalysisPanel.tsx`, que ya sabe pintar
+  «—» para un dato ausente.
 - Qué `model` usar. La documentación solo admite identificadores de Jev, como `typesafe-ai/jev`.
 
 ### Ante la duda, el parseo falla; nunca rellena
@@ -68,7 +71,8 @@ ninguna marca que los delate, y un diagnóstico que miente es peor que un diagn�
 
 La solución de fondo sería distinguir "no medido" de cero en el tipo (`JevClassification` admitiendo
 `undefined`), pero requiere saber si Jev puede devolver respuestas parciales, y eso no se sabrá
-hasta ver un `200` real. Está anotado como pendiente, no implementado.
+hasta ver un `200` real. Está anotado en el propio `JevClassification`, en `src/services/types.ts`,
+que es donde hay que ir para aflojarlo, no implementada.
 
 ---
 

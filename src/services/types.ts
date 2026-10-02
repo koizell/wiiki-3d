@@ -104,7 +104,39 @@ export interface ProjectMetadata {
   overhangAngle?: number;
 }
 
-/** Diagnóstico devuelto por Jev para un conjunto de metadatos. */
+/**
+ * Diagnóstico devuelto por Jev para un conjunto de metadatos.
+ *
+ * Los tres campos de diagnóstico son **obligatorios a propósito**, y merece la
+ * pena decir por qué, porque en el resto de este archivo la ausencia de un dato
+ * se marca con `?`. Aquí no, y es deliberado.
+ *
+ * La diferencia está en el origen del hueco. En {@link ProjectMetadata} el `?`
+ * documenta que el slicer no escribió una cifra que sí se podía leer: una
+ * ausencia prevista, que el panel distingue y pinta como «—». En
+ * `JevClassification` el campo o viene de Jev o no viene. Dar por hecho que la
+ * API admite respuestas parciales sería inventar un tercer estado —«no medido»—
+ * que quizá no existe, y obligaría a arrastrar ese hueco por toda la vista.
+ *
+ * El coste está asumido y es el adecuado mientras las respuestas sean completas:
+ * `toClassification` falla con un error explícito ante una respuesta incompleta
+ * en lugar de rellenarla. El panel enseña un error visible, que es un problema
+ * diagnosticable; un «warping 0 %» o un «Moderado» inventados se pintarían con el
+ * badge y el porcentaje de una medición real, sin nada que los delate.
+ *
+ * Aflojar el tipo son tres cambios coordinados, no uno:
+ *
+ *   1. Este tipo, con los tres campos de diagnóstico como `| undefined`.
+ *   2. `toClassification` en `JevService.ts`, que dejaría de exigir las tres
+ *      respuestas y propagaría la ausencia en vez de lanzar.
+ *   3. `AnalysisPanel.tsx`, que ya sabe pintar «—» (`NO_DATA`) para los
+ *      opcionales de `ProjectMetadata`: ahí el trabajo es extender ese
+ *      tratamiento, no inventarlo.
+ *
+ * Falta un dato para decidir, y no es de opinión: si Jev admite respuestas
+ * parciales. Eso solo se comprueba con un 200 real, y la cuenta está a $0.00 con
+ * la API rechazando la key, así que todavía no se ha observado ninguno.
+ */
 export interface JevClassification {
   riskLevel: RiskLevel;
   /** Probabilidad de warping normalizada: 0 (imposible) a 1 (muy probable). */
