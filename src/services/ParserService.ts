@@ -1,4 +1,4 @@
-import type { ProjectMetadata } from './types';
+import type { ProjectMetadata, SlicerKind } from './types';
 
 /**
  * ParserService — extrae los metadatos de impresión de un archivo G-code.
@@ -57,8 +57,12 @@ export async function readGcodeHeader(file: File): Promise<string> {
   return file.slice(0, HEADER_BYTES).text();
 }
 
-/** Slicers cuyas cabeceras se saben interpretar. */
-export type SlicerKind = 'cura' | 'prusa' | 'orca' | 'unknown';
+/*
+ * `SlicerKind` se declara en `./types` porque forma parte del contrato que
+ * consumen los componentes. Se reexporta aquí para que quien hable de detección
+ * de slicers no tenga que saber en qué archivo vive el tipo.
+ */
+export type { SlicerKind };
 
 /**
  * Señal de detección: un comentario que solo escribe un slicer concreto.
@@ -215,6 +219,10 @@ export async function parseGcode(file: File): Promise<ProjectMetadata> {
  * Genera metadatos de prueba deterministas a partir del nombre del archivo,
  * para que cada demo del panel de análisis reaccione de forma distinta.
  * Se sustituirá por el parseo real de la cabecera G-code.
+ *
+ * Los campos que el parser real dejará sin definir (`overhangAngle`) también se
+ * omiten aquí: el mock tiene que respetar el contrato de `ProjectMetadata` o el
+ * panel mostraría datos que el parser real nunca producirá.
  */
 function buildMockMetadata(filename: string): ProjectMetadata {
   const seed = hashFilename(filename);
@@ -223,6 +231,7 @@ function buildMockMetadata(filename: string): ProjectMetadata {
 
   return {
     filename,
+    slicer: 'unknown',
     material: pick(materials, seed),
     hotendTemp: 200 + (seed % 3) * 10,
     bedTemp: 50 + (seed % 4) * 5,
@@ -230,7 +239,6 @@ function buildMockMetadata(filename: string): ProjectMetadata {
     printTime: 5400 + (seed % 5) * 1800,
     filamentUsed: 32 + (seed % 6) * 9,
     hasOverhangs: seed % 3 !== 0,
-    overhangAngle: 30 + (seed % 4) * 15,
   };
 }
 

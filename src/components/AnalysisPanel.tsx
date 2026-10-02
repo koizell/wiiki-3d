@@ -126,13 +126,14 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
         <h4 className="panel-section-title">Metadatos de impresión</h4>
         <dl className="panel-data">
           <DataRow label="Material" value={metadata.material} />
-          <DataRow label="Temp. hotend" value={`${metadata.hotendTemp} °C`} />
-          <DataRow label="Temp. cama" value={`${metadata.bedTemp} °C`} />
-          <DataRow label="Altura de capa" value={`${metadata.layerHeight} mm`} />
+          <DataRow label="Temp. hotend" value={formatCelsius(metadata.hotendTemp)} />
+          <DataRow label="Temp. cama" value={formatCelsius(metadata.bedTemp)} />
+          <DataRow label="Altura de capa" value={formatMillimetres(metadata.layerHeight)} />
           <DataRow label="Tiempo estimado" value={formatDuration(metadata.printTime)} />
-          <DataRow label="Filamento" value={`${metadata.filamentUsed} g`} />
-          <DataRow label="Voladizos" value={metadata.hasOverhangs ? 'Sí' : 'No'} />
-          <DataRow label="Ángulo máx." value={`${metadata.overhangAngle}°`} />
+          <DataRow label="Filamento" value={formatGrams(metadata.filamentUsed)} />
+          <DataRow label="Peso total" value={formatGrams(metadata.filamentWeight)} />
+          <DataRow label="Voladizos" value={formatYesNo(metadata.hasOverhangs)} />
+          <DataRow label="Ángulo máx." value={formatDegrees(metadata.overhangAngle)} />
         </dl>
       </section>
 
@@ -160,12 +161,35 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
   );
 }
 
-/** Una fila clave-valor del panel. */
-function DataRow({ label, value }: { label: string; value: string }) {
+/**
+ * Marca que se pinta en un campo que el parser no pudo rellenar.
+ *
+ * Los campos opcionales de `ProjectMetadata` quedan sin definir cuando el slicer
+ * no escribe el dato, y eso no es lo mismo que valerse cero: `0` gramos o `0°` de
+ * voladizo son afirmaciones que el G-code no contiene. El guion dice "aquí no
+ * hay dato" sin inventar uno.
+ */
+const NO_DATA = '—';
+
+/**
+ * Una fila clave-valor del panel.
+ *
+ * Acepta `undefined` para que quien la llama pueda pasar un campo opcional tal
+ * cual, sin tener que decidir en el JSX si está presente. `value` llega ya
+ * formateado: el formateo vive en las funciones de abajo porque cada unidad
+ * decide su propia manera de mostrar la ausencia de dato.
+ */
+function DataRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | undefined;
+}) {
   return (
     <div className="panel-data-row">
       <dt className="panel-data-key">{label}</dt>
-      <dd className="panel-data-value">{value}</dd>
+      <dd className="panel-data-value">{value ?? NO_DATA}</dd>
     </div>
   );
 }
@@ -176,6 +200,37 @@ function formatDuration(totalSeconds: number): string {
   const minutes = Math.round((totalSeconds % 3600) / 60);
   if (hours === 0) return `${minutes} min`;
   return `${hours} h ${String(minutes).padStart(2, '0')} min`;
+}
+
+/** `215` -> `"215 °C"`. Sin dato -> guion. */
+function formatCelsius(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : `${value} °C`;
+}
+
+/** `0.2` -> `"0.2 mm"`. Sin dato -> guion. */
+function formatMillimetres(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : `${value} mm`;
+}
+
+/** `0.93` -> `"0.93 g"`. Sin dato -> guion. */
+function formatGrams(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : `${value} g`;
+}
+
+/** `45` -> `"45°"`. Sin dato -> guion. */
+function formatDegrees(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : `${value}°`;
+}
+
+/**
+ * `true` -> `"Sí"`, `false` -> `"No"`, sin dato -> guion.
+ *
+ * El caso `false` importa: el slicer puede declarar que no hay soportes
+ * (`enable_support = 0`), y eso es un dato. Ausencia de dato es otra cosa.
+ */
+function formatYesNo(value: boolean | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return value ? 'Sí' : 'No';
 }
 
 /** `0.35` -> `"35 %"`. */

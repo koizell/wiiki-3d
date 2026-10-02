@@ -49,27 +49,69 @@ export async function classifyWithJev(
  * forma del contrato para que los componentes puedan integrarse ya contra ella.
  */
 function buildMockClassification(metadata: ProjectMetadata): JevClassification {
-  const warpingRisk = estimateWarpingRisk(metadata);
-  const needsSupport =
-    metadata.hasOverhangs || metadata.overhangAngle >= SUPPORT_ANGLE_THRESHOLD;
+  const missingData: string[] = [];
+
+  const warpingRisk = estimateWarpingRisk(metadata, missingData);
+  const needsSupport = evaluateNeedsSupport(metadata, missingData);
   const riskLevel = deriveRiskLevel(warpingRisk, needsSupport);
 
   return {
     riskLevel,
     warpingRisk,
     needsSupport,
-    recommendation: buildRecommendation(riskLevel, needsSupport),
+    recommendation: buildRecommendation(riskLevel, needsSupport, missingData),
   };
 }
 
-/** Riesgo de warping estimado: material + temperatura de cama + altura de capa. */
-function estimateWarpingRisk(metadata: ProjectMetadata): number {
+/**
+ * Decide si la pieza necesita soportes, distinguiendo "no" de "no lo sé".
+ *
+ * Sin esta distinción, `undefined >= 45` sería `false` por casualidad numérica
+ * pero el `||` con `hasOverhangs` seguiría tratándolo como un dato, y un G-code
+ * sin el flag de soportes se diagnosticaría como "no necesita soportes" cuando
+ * en realidad nadie lo comprobó. Aquí la ausencia de dato no penaliza (no hay
+ * evidencia de voladizos), pero se anota para que la recomendación admita que
+ * el diagnóstico es parcial.
+ */
+function evaluateNeedsSupport(metadata: ProjectMetadata, missingData: string[]): boolean {
+  const supportFlag = metadata.hasOverhangs;
+  const steepAngle =
+    metadata.overhangAngle !== undefined &&
+    metadata.overhangAngle >= SUPPORT_ANGLE_THRESHOLD;
+
+  if (supportFlag === undefined && metadata.overhangAngle === undefined) {
+    missingData.push(
+      'No se pudo leer la configuración de soportes del G-code, así que no se ha podido verificar si la pieza tiene voladizos.'
+    );
+  }
+
+  return supportFlag === true || steepAngle;
+}
+
+/**
+ * Riesgo de warping estimado: material + temperatura de cama + altura de capa.
+ *
+ * `missingData` se llena en el camino para que la recomendación pueda bajar la
+ * confianza del diagnóstico en vez de dejar que un dato ausente se lea como un
+ * dato favorable.
+ */
+function estimateWarpingRisk(metadata: ProjectMetadata, missingData: string[]): number {
   const base = HIGH_WARPING_MATERIALS.includes(metadata.material.toUpperCase())
     ? 0.5
     : 0.15;
 
-  // Una cama por debajo de 60 °C no adhere bien y la pieza se deforma más.
-  const bedPenalty = metadata.bedTemp < 60 ? 0.2 : 0;
+  // Una cama por debajo de 60 °C no adhere bien y la pieza se deforma más. Sin
+  // dato de cama no se aplica el término: asumir cama mala subiría el riesgo de
+  // forma injustificada, y asumir cama buena lo ocultaría.
+  let bedPenalty = 0;
+  if (metadata.bedTemp === undefined) {
+    missingData.push(
+      'No se pudo leer la temperatura de cama; el diagnóstico es menos preciso.'
+    );
+  } else if (metadata.bedTemp < 60) {
+    bedPenalty = 0.2;
+  }
+
   // Las capas más gruesas enmascaran menos la deformación acumulada.
   const layerPenalty = metadata.layerHeight > 0.25 ? 0.05 : 0;
 
@@ -87,8 +129,26 @@ function deriveRiskLevel(
   return 'Bajo';
 }
 
-/** Texto accionable que acompaña al nivel de riesgo. */
-function buildRecommendation(riskLevel: RiskLevel, needsSupport: boolean): string {
+/**
+ * Texto accionable que acompaña al nivel de riesgo.
+ *
+ * Las advertencias de datos ausentes se añaden al final: el consejo principal no
+ * debe quedar diluido, pero el usuario tiene que saber que le falta información
+ * para decidir con el diagnóstico completo.
+ */
+function buildRecommendation(
+  riskLevel: RiskLevel,
+  needsSupport: boolean,
+  missingData: readonly string[]
+): string {
+  const advice = advise(riskLevel, needsSupport);
+  if (missingData.length === 0) return advice;
+
+  return `${advice} Ten en cuenta que: ${joinSentences(missingData)}`;
+}
+
+/** Consejo principal según el riesgo, sin las advertencias de datos ausentes. */
+function advise(riskLevel: RiskLevel, needsSupport: boolean): string {
   if (needsSupport) {
     return 'La pieza tiene voladizos que requieren soportes. Actívalos en el slicer y revisa que el ángulo de voladizo sea inferior a 45°.';
   }
@@ -99,6 +159,11 @@ function buildRecommendation(riskLevel: RiskLevel, needsSupport: boolean): strin
     return 'Ajustes de cama mejorados. Considera un brim si la pieza tiene piezas grandes y estrechas.';
   }
   return 'Configuración correcta. No se detectan riesgos relevantes en esta pieza.';
+}
+
+/** Une frases en una sola, sin duplicar el punto final. */
+function joinSentences(items: readonly string[]): string {
+  return items.join(' ').replace(/\.\s*$/, '') + '.';
 }
 
 /*
