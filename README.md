@@ -108,9 +108,114 @@ recuperarlas en otra máquina:
 npx ux-toolkit install --project
 ```
 
-Se ignoran `.opencode/skills/`, `.opencode/agents/` y `.opencode/commands/` por
-subdirectorio, no el directorio entero, por si algún día hay config de OpenCode
-del proyecto que sí deba versionarse.
+Se ignoran `.opencode/skills/`, `.opencode/agents/`, `.opencode/commands/` y
+`.opencode/plugins/` por subdirectorio, no el directorio entero, por si algún día
+hay config de OpenCode del proyecto ahí que sí deba versionarse.
+
+## El grafo de conocimiento
+
+Hay un [Graphify](https://github.com/Graphify-Labs/graphify) instalado que
+construye un grafo del repo en `graphify-out/`. `AGENTS.md` le dice al agente que
+lo consulte antes de ir grepeando.
+
+### Instalación
+
+Son tres comandos, y **los tres hacen falta**:
+
+```bash
+# 1. El CLI. El paquete de PyPI se llama graphifyy con doble y;
+#    el binario se llama graphify con una sola. Sin pipx, con uv:
+uv tool install graphifyy
+
+# 2. El skill de usuario, en ~/.config/opencode/skills/graphify/.
+#    Sin esto el comando /graphify no existe.
+graphify install --platform opencode
+
+# 3. Construir el grafo
+graphify . --project --code-only
+```
+
+El paso 2 no es opcional aunque parezca redundante. `graphify opencode install`
+es otro comando, y sólo escribe `AGENTS.md` y el plugin: **no instala el skill**.
+Verificado en la 0.9.74.
+
+### El plugin no se instala, y es una decisión
+
+Graphify además intenta instalar un plugin en `.opencode/plugins/graphify.js`.
+**No funciona, y no se versiona.**
+
+Está escrito con la API de plugins de OpenCode v1: exporta una función que
+devuelve un objeto con `"tool.execute.before"`. OpenCode 2.0.22 lo carga, falla y
+lo registra como aviso en cada arranque:
+
+```
+message="failed to load plugin" target=…/.opencode/plugins/graphify.js
+cause=PluginModule.LoadError: Plugin must export a default definition with an id
+ and an effect or setup function.
+```
+
+Lo que hace ese plugin, si funcionara, es inyectar un `echo "[graphify] knowledge
+graph at…"` en el primer comando de shell de la sesión. Es un recordatorio, no una
+consulta: no lee el grafo, no responde preguntas y no dispara el skill. La
+integración funciona por `AGENTS.md` y por el skill, y está comprobada: en la
+transcripción de una sesión real, las cuatro primeras llamadas del agente fueron al
+grafo antes de tocar ningún fichero.
+
+Por eso:
+
+- `.opencode/plugins/` está en el `.gitignore`.
+- `.opencode/opencode.json` **no se versiona**, porque su única clave era `plugin`.
+  Versionar el registro de un plugin que no existe sólo daría un aviso más en cada
+  arranque.
+- `AGENTS.md` **sí se versiona**, porque es lo que hace que la integración funcione.
+
+Si algún día hace falta el recordatorio automático, portarlo son quince líneas
+(`Plugin.define`, `ctx.tool.hook`, y la clave `plugin` → `plugins`) más una
+dependencia de `@opencode/plugin` que hay que revisar con cada versión de OpenCode.
+
+### Qué cubre y qué no
+
+`--code-only` indexa los 39 ficheros de código con el AST local, sin clave de API.
+Sin esa bandera, Graphify pide una clave (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`,
+`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`) para extraer los ficheros
+no-código, y aquí no hay ninguna.
+
+Lo que **no** cubre, y conviene saberlo antes de confiar en una respuesta:
+
+- **Ni el CSS ni el Markdown.** Los extractores que trae son de C, C++, C#, Go,
+  Java, JavaScript, TypeScript, Python, Ruby, Rust, PHP, Scala, Swift, Zig, Lua,
+  Julia, PowerShell, Groovy, Elixir, Fortran, Objective-C, Verilog, JSON y
+  Bash. **No hay extractor de CSS, HTML ni Markdown.** `App.css` e `index.css`
+  no son nodos del grafo, así que ninguna pregunta sobre estilos se puede
+  responder con él.
+- **Las relaciones escritas en prosa, no en el código.** Hay **0 aristas** entre
+  `src/` y `scripts/verify/`, porque la relación entre `Viewer3D.tsx` y
+  `probe.mjs` es una duplicación a mano documentada en el README, no un import.
+  El grafo ve los dos símbolos con fichero y línea exactos
+  (`frameCamera()` en L248, `modelPixels()` en L148), pero no que sean el mismo
+  cálculo. Eso se sigue leyendo el README.
+- **El `query` en lenguaje natural es poco fiable.** En las pruebas de este
+  repo, "¿Qué ficheros dependen de App.css?" emparejó con la palabra
+  `dependencies` de `package.json` y devolvió 54 nodos de ruido JSON.
+  `graphify explain "<símbolo>"` sí es preciso y da las conexiones con
+  fichero:línea.
+
+### Frescura
+
+**El grafo es una foto, y se caduca.** Es un artefacto más del árbol de trabajo y
+no se entera de los commits. Si cambia el código y no se reconstruye, el agente
+toma decisiones sobre una foto vieja, y no avisa: los comandos no fallan, devuelven
+una respuesta que era correcta antes.
+
+```bash
+graphify update .          # tras cambiar código, antes de dar por buena una respuesta
+graphify cluster-only .    # si cambia el informe y quieres reetiquetar comunidades
+```
+
+Con 23 comunidades y sin clave de API, las etiquetas salen como `Community N`
+— es lo que dice `graphify cluster-only .`: *"no LLM backend configured; keeping
+Community N placeholders"*. Se pueden leer, pero no describen nada; el grafo sigue
+siendo útil por los nodos y las aristas.
 
 ---
 

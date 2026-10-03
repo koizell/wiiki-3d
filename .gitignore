@@ -55,6 +55,22 @@ chrome/
 .opencode/agents/
 .opencode/commands/
 
+# Plugins de OpenCode. Graphify intenta instalar aquí un plugin que usa la API de
+# plugins de la v1, y OpenCode 2 no ejecuta los plugins de la v1: carga el
+# fichero, falla y lo registra como aviso en cada arranque. Como la integración
+# funciona por `AGENTS.md` y por el skill, que sí se generan, el plugin no aporta
+# nada y se regenera con cada reinstalación de Graphify.
+# Documentado en el README.
+.opencode/plugins/
+
 # Salida de los scripts de verificación de layout (capturas y JSON en bruto).
 # El código de los scripts sí se versiona, en scripts/verify/.
 scripts/verify/out/
+
+# Grafo de conocimiento de Graphify. Son artefactos derivados, como dist/: se
+# regeneran con `graphify . --project --code-only` y con `graphify update .`
+# cuando cambia el código. graph.json llega a 300 KB y GRAPH_REPORT.md cambia de
+# forma distinta en cada reagrupación, así que versionarlos produciría conflictos
+# en cada commit sin aportar nada. La configuración que sí importa —AGENTS.md— sí
+# está versionada.
+graphify-out/
