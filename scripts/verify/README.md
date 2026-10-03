@@ -87,6 +87,47 @@ Dos detalles que hacen que la comprobación mida algo:
 Comprobado que **falla contra el código anterior**: sin el cambio, da `h1=0` en los
 dos estados de `/` y salto `1 → 3` en las tres rutas que sí tenían `<h1>`.
 
+## Cómo saber que una comprobación no está vacía
+
+**Vacía el valor que comprueba y mira si cae.** Ese es el método, y no hay atajo.
+
+Una comprobación que pasa en verde no dice que comprueba algo: dice que el valor que
+comprueba tiene el valor que tenía cuando se escribió. Las cuatro de aquí no se
+detectaron ni por lectura ni mirando si el nombre de la comprobación guardaba
+relación con lo que hacía. Se detectaron vaciando una constante a propósito.
+
+### Los cuatro casos reales, y por qué pasaban
+
+| Comprobación | Por qué pasaba en vacío |
+|---|---|
+| «el texto del enlace es su `href`» | Con la constante vacía el texto es `''` y el `href` es `mailto:`. Y `mailto:` + `''` **es** `mailto:`: comparaba dos cosas iguales y daba verde |
+| «no queda el aviso de «canal sin configurar»» | Buscaba un texto que ya no se podía escribir, porque el `if/else` que lo contenía se había ido. Una comprobación de algo imposible es una comprobación muerta |
+| «la dirección se lee en el texto de la página» | `slice(7)` de un `mailto:` vacío es `''`, y `texto.includes('')` es **siempre** cierto. Pasaba con la dirección en blanco, que era justo lo que tenía que cazar |
+| «`/contacto` menciona «contacto»» | Pasaba porque la palabra estaba **dentro del aviso que se acababa de quitar**: «falta por poner la dirección de contacto». Comprobaba la existencia del aviso, no la del contenido |
+
+El cuarto es el más interesante porque no fallaba al vaciar nada: falló solo al quitar
+una cosa que no tenía nada que ver. Una comprobación puede quedar mirando lo
+equivocado sin que nadie toque su valor, y sigue en verde.
+
+### Las tres formas de que pase sin comprobar
+
+1. **Comparar dos vacíos.** `a === a - prefijo` cuando `a` está vacío. Siempre
+   añade la condición de longitud.
+2. **`includes('')`, `startsWith('')` y `'' === ''`.** Vacíos que siempre son ciertos.
+   Corta la cadena antes de buscar.
+3. **Buscar algo que ya no se puede escribir.** Si el código que producía el texto ya
+   no está, la comprobación es histórica, y lo que vigila es la ausencia de algo en
+   vez de la presencia de lo que importa.
+
+### Y la que no se puede automatizar
+
+Una dirección de correo bien formada que rebota es indistinguible de una que
+funciona. Cuatro comprobaciones en verde y un `mailto:` que no llega a nadie. Eso no
+se caza vaciando la constante, porque **la constante está bien escrita**: lo que
+está mal es el mundo exterior. Queda una defensa manual —contrastar con la
+configuración real— y conviene dejarla escrita junto al código, para que quien lea
+sepa que la comprobación automática no la cubre.
+
 ## Los dos scripts con los que hay que tener cuidado
 
 `barrido.mjs` corre sobre la raíz y `wiki.mjs` sobre la wiki, y por eso los dos

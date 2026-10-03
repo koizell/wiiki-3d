@@ -69,13 +69,13 @@ salen.
 
 ### La publicación ya no está bloqueada por nada
 
-El canal de contacto está puesto: `hola@wiiki-3d.com`, con su `mailto:` en
+El canal de contacto está puesto: `contacto@wiiki-3d.com`, con su `mailto:` en
 `/contacto`. **AdSense ya no tiene el bloqueante de la página de contacto.**
 
 Dos decisiones detrás de esa dirección, y la segunda es la que no se ve:
 
 - **Es un buzón del dominio, no una dirección personal.** Cloudflare Email Routing
-  reenvía `hola@wiiki-3d.com` a la bandeja real; la página enseña la del dominio.
+  reenvía `contacto@wiiki-3d.com` a la bandeja real; la página enseña la del dominio.
   Un sitio que se va a monetizar y que expone un `@gmail.com` en su página de
   contacto manda una señal que la revisión de contenido no lee bien: que el
   proyecto es de alguien suelto y no de una publicación. `verify:wiki` lo comprueba.
@@ -85,6 +85,23 @@ Dos decisiones detrás de esa dirección, y la segunda es la que no se ve:
   fue el `if/else` entero en vez de dejar la rama muerta encendida, y `verify:wiki`
   comprueba que el enlace `mailto:` existe, que su texto coincide con él y que no
   queda el aviso.
+
+### Lo que ninguna comprobación puede coger aquí
+
+**Que la dirección sea la correcta.** Escribí `hola@wiiki-3d.com` y el enrutado
+configurado en Cloudflare es `contacto@wiiki-3d.com`. Cuatro comprobaciones
+automáticas en verde, un `mailto:` bien formado y una página de contacto que rebota:
+justo el requisito de AdSense que el commit anterior parecía haber desbloqueado.
+
+Ninguna expresión regular distingue una dirección que funciona de otra que rebota.
+Las cuatro comprobaciones del contacto verifican la **forma** —que haya un `mailto:`
+con algo dentro, que el texto coincida, que la dirección se lea en la página— y todas
+pasan con la dirección equivocada.
+
+La defensa es una sola y no es automática: **antes de publicar, contrastar la
+constante de `src/routes/InfoRoute.tsx` con la configuración de Email Routing.**
+Está en una constante y en un solo sitio a propósito, para que contrastarla sea
+mirar una línea.
 
 ### Los nueve artículos
 

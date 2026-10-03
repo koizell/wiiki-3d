@@ -29,23 +29,36 @@ interface Seccion {
 }
 
 /**
- * El canal de contacto.
+ * El canal de contacto: `contacto@wiiki-3d.com`.
  *
- * Es un buzón del dominio, no una dirección personal, y eso no es cosmético.
+ * ## Por qué el dominio y no una bandeja personal
  *
- * Lo que hay detrás es lo que nadie ve desde fuera —una bandeja real— mientras que
- * lo que se ve en la página es
- * `hola@wiiki-3d.com`, que es lo que la gente responde. Un sitio que se va a
- * monetizar y que enseña una dirección de Gmail en la página de contacto manda una
- * señal que la revisión de contenido no lee bien: que el proyecto es de alguien
- * suelto y no de una publicación.
+ * Lo que hay detrás es lo que nadie ve desde fuera; lo que se ve en la página es lo
+ * que la gente responde, y por eso tiene que ser del dominio. Cloudflare Email
+ * Routing reenvía a la bandeja real, y el buzón del dominio es lo único que se
+ * escribe en el código.
  *
- * Así que lo que hay que configurar es el enrutado —Cloudflare Email Routing
- * reenvía `hola@wiiki-3d.com` a la bandeja real— y lo que se escribe aquí es
- * sólo
- * la dirección pública.
+ * Un sitio que se va a monetizar y que enseña una dirección de correo personal en su
+ * página de contacto manda una señal que la revisión de contenido no lee bien: que el
+ * proyecto es de alguien suelto y no de una publicación.
+ *
+ * ## Esta constante y `scripts/verify/wiki.mjs`
+ *
+ * Las comprobaciones del contacto verifican que el enlace sea un `mailto:` con una
+ * dirección dentro, que el texto coincida con él, y que la dirección se lea en el
+ * cuerpo de la página. **Ninguna de ellas puede detectar que la dirección sea la
+ * equivocada.** Una dirección bien formada que rebota es indistinguible de una que
+ * funciona, y ahí es donde queda una página que parece resolver el requisito de
+ * AdSense y en realidad no resuelve nada.
+ *
+ * Ya ha pasado: esta constante fue `hola@wiiki-3d.com` y el enrutado configurado en
+ * Cloudflare es `contacto@wiiki-3d.com`. Cuatro comprobaciones automáticas en verde y
+ * un `mailto:` que rebotaba.
+ *
+ * La única defensa que queda es escribirla una vez y contrastarla con la
+ * configuración de enrutado antes de publicar. Está anotado en `docs/estado.md`.
  */
-const CONTACTO = 'hola@wiiki-3d.com';
+const CONTACTO = 'contacto@wiiki-3d.com';
 
 /** Las secciones de cada página, en el orden en que se leen. */
 const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string; secciones: Seccion[] }> = {
