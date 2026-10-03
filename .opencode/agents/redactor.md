@@ -80,6 +80,7 @@ sin tildes: `warping-pla.md`.
 ```yaml
 ---
 title: Warping en PLA: por qué se levanta la pieza y qué cambiar
+description: Una frase para el índice y la búsqueda.
 slug: warping-pla
 date: 2026-10-03
 updated: 2026-10-03
@@ -88,13 +89,42 @@ sources:
   - https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/pla-warping-3
 tags: [warping, pla, adhesion, temperatura]
 autor: nombre de quien escribe
+campo: [warpingRisk, riskLevel]
 ---
 ```
 
 El campo `sources` es la lista de URLs, tomada del campo `url` del frontmatter
-de cada fichero de `wiki/raw/`.
-fichero de `wiki/raw/`. **No puede faltar ni una**, y no puede llevar una que no
-esté en `wiki/raw/`.
+de cada fichero de `wiki/raw/`. **No puede faltar ni una**, y no puede llevar una
+que no esté en `wiki/raw/`.
+
+El campo `description` es una frase. Si falta, la vista usa la primera del cuerpo,
+casi siempre con la negrita puesta, así que es mejor ponerlo.
+
+## `campo`: a qué dato del panel ata este artículo
+
+**Es lo que distingue esta wiki de una enciclopedia de impresión 3D.** Cada artículo
+explica un campo que la aplicación ya le ha enseñado a quien usa la app. Cuando el
+panel dice «Riesgo de warping: 35 %», el artículo que explica ese 35 % está a un
+clic porque este campo dice que lo explica.
+
+Los nombres no se inventan. Son los de `src/services/types.ts`, y sólo estos:
+
+| Del `ProjectMetadata` | Del `JevClassification` |
+|---|---|
+| `slicer`, `material`, `hotendTemp`, `bedTemp`, `layerHeight`, `printTime`, `filamentUsed`, `filamentWeight`, `hasOverhangs`, `overhangAngle` | `riskLevel`, `warpingRisk`, `needsSupport` |
+
+Un artículo puede llevar varios. `warping-pla` lleva dos porque `riskLevel` y
+`warpingRisk` son el mismo dato dicho de dos maneras, la categoría y el número.
+
+**Si un artículo no ata a ningún campo, no debería existir.** Nadie lo encuentra:
+ni por el filtro de campos ni leyendo desde otro artículo. El filtro muestra sólo
+los campos que algún artículo declara, así que declarar uno equivocado lo enseña
+en la primera pantalla y no lleva a nada.
+
+Y hay que comprobarlo contra el frontmatter de verdad: `scripts/verify/wiki.mjs`
+falla si una entrada de `src/lib/wiki-campos.ts` apunta a un slug inexistente o a
+un artículo que no declara ese `campo`. Al escribir un artículo nuevo hay que
+añadir su entrada ahí también.
 
 ## Cómo se cita en el texto
 
@@ -106,6 +136,32 @@ Cada dato técnico lleva su fuente en la misma frase, con un enlace en Markdown:
 
 Una cita al final de la frase, no un bloque de referencias al final del artículo:
 quien lee a mitad de párrafo tiene que poder comprobarlo sin saltar.
+
+## Los enlaces cruzados: `[[slug|texto]]`
+
+Cuando un artículo nombra otro artículo, se escribe `[[slug|texto visible]]` y no
+un enlace de Markdown:
+
+> El fallo es otro, y está en [[separaciones-entre-capas|separaciones entre capas]].
+
+**No se escribe un enlace normal** a una página que todavía no existe, aunque se
+sepa que existirá. Un enlace roto en un artículo revisado es un fallo de revisión,
+y hay tres páginas así en el artículo de warping.
+
+El renderizador pregunta por la página antes de pintar:
+
+- Si existe, sale un enlace a `/wiki/slug`, con el texto que se haya escrito.
+- Si no existe, sale **el texto tal cual** con una marca punteada y sin enlace.
+
+Así que el artículo se escribe una vez y el enlace se enciende solo el día que la
+otra página está escrita, sin volver a tocar este fichero. Escribir la página
+pendiente **no obliga a revisar los artículos que ya la nombraban**.
+
+Dos reglas:
+
+- El `slug` es el nombre del fichero sin `.md`, en minúsculas y con guiones.
+- El texto visible es el que se quiera leer, y no tiene por qué coincidir con el
+  título de la otra página.
 
 ## Lo que el artículo tiene que llevar sí o sí
 

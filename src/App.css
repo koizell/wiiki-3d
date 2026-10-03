@@ -1127,3 +1127,909 @@ body {
     padding: 2rem;
   }
 }
+
+/* =============================================================================
+ * La wiki y el pie del sitio
+ *
+ * Todo lo que viene a continuación se apoya en los tokens de `:root` de arriba y
+ * no introduce ni un color literal. La razón es la misma que llevó el acento a
+ * `--accent-text`: si esta sección tuviera sus propios valores, cambiar el tema
+ * obligaría a recorrerla entera.
+ *
+ * No se tocan los cortes de 640px ni de 1200px. Todo lo responsive de aquí va con
+ * `clamp()`, con `%` o con consultas de contenedor, y por eso no necesita ninguno.
+ * Un solo tramo nuevo, al final, con `@media (min-width: 768px)` para el caso de
+ * la tabla de contenidos lateral.
+ * ========================================================================== */
+
+/* --- El pie del sitio -------------------------------------------------------
+ *
+ * Vive **fuera** de `.app-container`, como hermano suyo. La razón está medida y
+ * escrita en `src/components/SiteFooter.tsx`: como cuarta fila del grid le quita
+ * su alto a `.canvas-area`, al visor y al panel a partir de 1200px, donde las
+ * filas son `1fr` y el shell mide exactamente la ventana. Como hermano, no se
+ * mueve nada de lo que hay dentro.
+ */
+.site-footer {
+  /*
+   * El `padding-bottom` de 60px más el safe-area no es un detalle de espacio: la
+   * barra de navegación de móvil es `position: fixed; inset: auto 0 0 0`, así que
+   * se superpone al documento. El shell reserva ese hueco con su propio
+   * `padding-bottom`, y como el pie va **después** del shell se encontraría justo
+   * debajo de la barra al llegar al final: los tres enlaces quedarían debajo de
+   * ella y sin poder pulsarse.
+   *
+   * Por debajo de 768px, que es donde la barra está fija. A partir de ahí la
+   * navegación es una columna del grid y el hueco sobra, y sobra de verdad: son
+   * 60px de aire al final de cada una de las tres páginas.
+   */
+  padding: 1.25rem 1rem calc(1.25rem + 60px + env(safe-area-inset-bottom));
+  background: var(--bg-dark);
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    padding-bottom: 1.25rem;
+  }
+}
+
+.site-footer nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  justify-content: center;
+}
+
+.site-footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.25rem 0.1rem;
+}
+
+.site-footer a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/*
+ * El mismo indicador que usan `.nav-item` y `.btn-primary`, con el mismo
+ * `outline` de 2px y el mismo `offset` negativo, para que el foco tenga el mismo
+ * grosor en toda la aplicación en lugar de ser una línea de un píxel más gruesa
+ * en unos sitios y más fina en otros.
+ */
+.site-footer a:focus-visible,
+.wiki-toc a:focus-visible,
+.wiki-buscador-campo:focus-visible,
+.wiki-campos button:focus-visible,
+.wiki-texto a:focus-visible,
+.wiki-info a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+.site-footer-nota {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+/* --- El columna central, cuando la ruta la necesita -------------------------
+ *
+ * `.canvas-area` es `display: flex` con `align-items: center` y `overflow: hidden`.
+ * Eso está bien para el visor, que siempre cabe, y está mal para un artículo: un
+ * elemento centrado verticalmente que es más alto que su contenedor sobresale por
+ * arriba y por abajo, y con `overflow: hidden` la mitad de arriba se queda
+ * inalcanzable. No hay scroll que la rescate porque no hay nada que desplazarse.
+ *
+ * `align-items: flex-start` deshace el centrado, y `overflow-y: auto` convierte la
+ * columna en su propia zona desplazable por encima de 1200px, donde el shell es de
+ * altura fija. Por debajo el documento ya se desplazaba y no cambia nada.
+ *
+ * La clase la pone el shell según la ruta, no el artículo. Así el shell es el
+ * único que sabe qué forma tiene el scroll, y una ruta nueva no tiene que
+ * acordarse de más cosas que de devolver `true`.
+ */
+.app-container--columna .canvas-area {
+  align-items: flex-start;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* --- Índice de la wiki ------------------------------------------------------ */
+.wiki-index {
+  width: 100%;
+  max-width: 46rem;
+  padding: 1.5rem 0.25rem 3rem;
+}
+
+.wiki-index h1 {
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.wiki-index-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 38rem;
+}
+
+/* La caja de búsqueda. */
+.wiki-buscador {
+  margin-bottom: 1.25rem;
+}
+
+.wiki-buscador-etiqueta {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.wiki-buscador-campo {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  /* Hereda la familia tipográfica de la aplicación. Sin esto, un `input` en
+     Chromium usa la del sistema y se ve como un control de otro sitio. */
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+
+.wiki-buscador-campo::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.wiki-buscador-campo:focus {
+  border-color: var(--accent);
+}
+
+.wiki-resultados {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* El filtro por campo del parser. Es lo que hace esta wiki distinta de una
+   genérica, y por eso va en la primera pantalla y no en un desplegable. */
+.wiki-campos {
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+}
+
+.wiki-campos-titulo {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.wiki-campos ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.wiki-campos button {
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.wiki-campos button:hover {
+  border-color: var(--accent-text);
+}
+
+.wiki-campos code {
+  font-size: 0.75rem;
+}
+
+.wiki-vacio {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 1.5rem 0;
+}
+
+.wiki-vacio strong {
+  color: var(--text-primary);
+}
+
+/* Las tarjetas. */
+.wiki-lista-articulos {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.wiki-tarjeta {
+  padding: 1rem 1.1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+
+.wiki-tarjeta:hover {
+  border-color: var(--accent);
+}
+
+.wiki-tarjeta h2 {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  margin-bottom: 0.4rem;
+}
+
+.wiki-tarjeta h2 a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.wiki-tarjeta h2 a:hover {
+  color: var(--accent-text);
+}
+
+.wiki-tarjeta > p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.wiki-tarjeta-pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.6rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.wiki-tarjeta-campos code {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  color: var(--accent-text);
+}
+
+/* --- Un artículo ------------------------------------------------------------
+ *
+ * `container-type: inline-size` en `.wiki-articulo` es lo que decide que la tabla
+ * de contenidos vaya al lado sin importar cómo esté el shell. La caja central
+ * cambia de ancho con el layout —343px en móvil, unos 660px a 1200px— y un
+ * `@media` mide el viewport, no la caja. Por eso la consulta va de contenedor:
+ * es la única forma de acertar cuando lo que manda es la columna.
+ *
+ * Con `grid-template-columns: 1fr` y una consulta `min-width` en la propia
+ * contenedor, el reparto se invierte solo. Sin soporte para consultas de
+ * contenedor, que ya no es el caso de ningún navegador en servicio, la tabla de
+ * contenidos se queda encima, que es el orden de lectura correcto igualmente.
+ */
+.wiki-articulo {
+  container-type: inline-size;
+  container-name: columna-wiki;
+  width: 100%;
+  padding: 1.5rem 0.25rem 3rem;
+}
+
+.wiki-contenedor {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem 1.75rem;
+}
+
+/*
+ * `min-width: 0` en los hijos, y no es un detalle de estilo.
+ *
+ * Un elemento de grid o de flex viene con `min-width: auto`, lo que significa que
+ * **no puede encogerse por debajo del tamaño mínimo de su contenido**. Con una
+ * tabla de tres columnas y una lista de doce títulos, ese mínimo es de 462
+ * píxeles, y a 375 de pantalla el hijo se sale de su carril de 335.
+ *
+ * Lo que se ve entonces no es un desbordamiento: `.canvas-area` tiene
+ * `overflow-x: hidden`, así que el contenido se **recorta en silencio** y el
+ * documento ni siquiera muestra barra de desplazamiento horizontal. La tabla se
+ * corta por la derecha y no hay ningún aviso. Medido antes de este
+ * `min-width: 0`: 462 píxeles de contenido en 335 de carril, con `right: 482` en
+ * una ventana de 375.
+ *
+ * Con él, el hijo sí encoge, la tabla activa su propio desplazamiento
+ * horizontal —para eso está `.wiki-tabla-envoltura`— y el artículo se lee entero.
+ */
+.wiki-contenedor > * {
+  min-width: 0;
+}
+
+/*
+ * El umbral está en 48rem, y no en el que parecería lógico, porque está medido.
+ *
+ * Una columna lateral de 13rem más el hueco de 1,75rem se come 236 píxeles. Para
+ * que al texto le queden los 45 caracteres —426px medidos, a 9,47px por carácter
+ * con este cuerpo— el contenedor tiene que medir 662px, o 41,4rem. Con el umbral
+ * que tenía antes, 34rem, el reparto se activaba demasiado pronto y **a 1200px
+ * la línea de lectura caía a 37 caracteres**: más estrecha con la tabla al lado
+ * que sin ella. Un punto de corte que empeora la lectura al activarse no es un
+ * punto de corte, es un error con buen aspecto.
+ *
+ * Con 48rem el reparto sólo entra en 1440px, y medido en los cuatro lados:
+ *
+ *   375px -> 35 caracteres   (sin lateral; un móvil de 375 no da para 45 con
+ *                             cuerpo de 16px, y subir la fuente dejaría un solo
+ *                             artículo por pantalla)
+ *   640px -> 62
+ *   700px -> 68
+ *   900px -> 66
+ *  1200px -> 62
+ *  1280px -> 71
+ *  1440px -> 63   (ya con la lateral)
+ *
+ * El 35 de móvil es el único por debajo del rango y es una limitación de la
+ * pantalla, no del diseño. Está anotado en `scripts/verify/wiki.mjs` para que no
+ * se lea como un descuido cuando alguien lo vea.
+ */
+@container columna-wiki (min-width: 48rem) {
+  .wiki-contenedor {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* La tabla de contenidos. `sticky` y no `fixed` porque sólo debe moverse dentro
+   de su propia columna, y `top: 0` pegado al borde superior de la zona
+   desplazable, que a partir de 1200px es `.canvas-area` y no la ventana. */
+.wiki-toc {
+  font-size: 0.82rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--bg-panel);
+  align-self: start;
+}
+
+@container columna-wiki (min-width: 48rem) {
+  .wiki-toc {
+    position: sticky;
+    top: 0;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.wiki-toc-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.wiki-toc ol {
+  list-style: none;
+  padding: 0;
+  counter-reset: ninguno;
+}
+
+.wiki-toc li + li {
+  margin-top: 0.1rem;
+}
+
+.wiki-toc a {
+  display: block;
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.4;
+  padding: 0.2rem 0 0.2rem 0.55rem;
+  border-left: 2px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.wiki-toc a:hover {
+  color: var(--text-primary);
+}
+
+/*
+ * El indicador de la sección activa, en el mismo filete que ya usa
+ * `.nav-item[aria-current="page"]`. No es un color nuevo: es el acento, y el
+ * filete se pone a la izquierda porque en una columna estrecha el texto se
+ * alinea a la izquierda y el filete es lo único que se lee sin effort.
+ */
+.wiki-toc a[aria-current='location'] {
+  color: var(--text-primary);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Los `h3` del artículo son los pasos numerados, y en la tabla de contenidos se
+   sangran para que se distingan de las secciones sin tener que leerlas. */
+.wiki-toc-nivel-3 a {
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+}
+
+/* --- El texto del artículo --------------------------------------------------
+ *
+ * `68ch` como ancho máximo. Está dentro del rango cómodo de 45 a 75 caracteres
+ * en cuanto la caja da para eso, y en móvil manda la caja: en 375px de pantalla
+ * la columna central no llega a 45 caracteres con cuerpo de 16px, y subir la
+ * fuente hasta completar 45 dejaría un solo artículo por pantalla.
+ */
+.wiki-texto {
+  max-width: 68ch;
+  font-size: 1rem;
+  line-height: 1.68;
+  color: var(--text-primary);
+}
+
+.wiki-texto > * + * {
+  margin-top: 0.9rem;
+}
+
+.wiki-texto h1 {
+  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+  line-height: 1.22;
+  margin-bottom: 0.75rem;
+}
+
+/* `scroll-margin-top` no es cosmético: un encabezado al que se salta desde la
+   tabla de contenidos queda pegado al borde superior, y con la barra desticky por
+   encima se esconde justo debajo de ella. Este margen deja aire. */
+.wiki-texto h2,
+.wiki-texto h3 {
+  line-height: 1.3;
+  margin-top: 1.9rem;
+  margin-bottom: 0.1rem;
+  scroll-margin-top: 1.5rem;
+}
+
+.wiki-texto h2 {
+  font-size: 1.22rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.wiki-texto h3 {
+  font-size: 1.04rem;
+  color: var(--text-primary);
+}
+
+.wiki-texto h4 {
+  font-size: 0.98rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * El ancla de cada encabezado. Sale en `opacity: 0` y aparece al pasar el ratón
+ * por encima, porque una wiki se cita por URL y hace falta poder copiarla.
+ *
+ * `opacity` y no `display` porque un enlace con `display: none` no se puede
+ * enfocar con el teclado, y un enlace enfocable que no se ve es peor que uno que
+ * no existe. Con `opacity` sigue siendo tabulable y al recibir el foco vuelve a
+ * 1, que es lo que hace `tabindex="-1"` en los destinos de la tabla de
+ * contenidos para el salto con `Tab`.
+ */
+.wiki-ancla {
+  opacity: 0;
+  margin-left: 0.4rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 400;
+  transition: opacity 0.15s;
+}
+
+.wiki-texto h2:hover .wiki-ancla,
+.wiki-texto h3:hover .wiki-ancla,
+.wiki-ancla:focus-visible {
+  opacity: 1;
+}
+
+.wiki-texto a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/*
+ * Una página que la wiki todavía no tiene. No es un enlace roto: el redactor
+ * nombra las páginas que van a existir, en cualquier orden, y esto es lo que ve
+ * quien lee mientras tanto. El guion bajo lo distingue de un enlace de verdad sin
+ * necesidad de un color, que en este texto significaría otra cosa.
+ */
+.wiki-pendiente {
+  color: var(--text-secondary);
+  border-bottom: 1px dashed var(--text-secondary);
+  cursor: help;
+}
+
+.wiki-texto strong {
+  font-weight: 600;
+}
+
+.wiki-texto ul,
+.wiki-texto ol {
+  padding-left: 1.35rem;
+}
+
+.wiki-texto li + li {
+  margin-top: 0.35rem;
+}
+
+.wiki-texto li::marker {
+  color: var(--text-secondary);
+}
+
+.wiki-texto code {
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+  font-size: 0.86em;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05em 0.3em;
+}
+
+.wiki-texto pre.wiki-codigo {
+  overflow-x: auto;
+  padding: 0.85rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.wiki-texto pre.wiki-codigo code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.wiki-texto blockquote {
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 3px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/*
+ * Las tablas se desplazan en horizontal dentro de su envoltorio en lugar de
+ * desbordar el artículo. La tabla comparativa del artículo de prueba tiene tres
+ * columnas y en 375px no caben de otra manera, y una tabla que sale del ancho de
+ * la caja arrastra el desplazamiento de toda la página.
+ */
+.wiki-tabla-envoltura {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.wiki-tabla {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.wiki-tabla th,
+.wiki-tabla td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.wiki-tabla thead th {
+  background: var(--bg-hover);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.wiki-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.wiki-tabla th + th,
+.wiki-tabla td + td {
+  border-left: 1px solid var(--border);
+}
+
+.wiki-regla {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* --- El pie del artículo ---------------------------------------------------- */
+.wiki-pie {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  max-width: 68ch;
+}
+
+.wiki-pie-volver {
+  font-size: 0.9rem;
+}
+
+.wiki-fuentes h2 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 1.25rem 0 0.35rem;
+}
+
+.wiki-fuentes-nota {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.wiki-fuentes ol {
+  margin-top: 0.5rem;
+  padding-left: 1.35rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.wiki-fuentes a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+/* --- Cuando el artículo no existe ------------------------------------------ */
+.wiki-no-encontrado,
+.wiki-info {
+  max-width: 68ch;
+  line-height: 1.68;
+}
+
+.wiki-no-encontrado h1,
+.wiki-info h1 {
+  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+  line-height: 1.22;
+  margin-bottom: 0.75rem;
+}
+
+.wiki-no-encontrado p,
+.wiki-info p {
+  color: var(--text-secondary);
+}
+
+.wiki-no-encontrado p + p,
+.wiki-info section + section {
+  margin-top: 1.5rem;
+}
+
+.wiki-info section h2 {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.wiki-info a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wiki-info strong {
+  color: var(--text-primary);
+}
+
+/* El aviso de que el canal de contacto no está configurado. Comparte la
+   silueta de `.panel-unsupported` —filete de acento a la izquierda, fondo azul
+   suave— con el panel del shell, y el motivo es el mismo: en los dos casos el
+   archivo está bien y lo que falta es algo por parte de quien lo mantiene. */
+.wiki-aviso {
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: rgba(37, 99, 235, 0.1);
+  font-size: 0.9rem;
+}
+
+/* --- Animaciones ------------------------------------------------------------
+ *
+ * Tres, todas por debajo de 300 ms, y las tres anuladas por
+ * `prefers-reduced-motion`.
+ *
+ * La de entrada se dispara al montar, y el montaje se fuerza cambiando la `key`
+ * del contenedor en `WikiArticleRoute`. Sin eso, cambiar de slug reutiliza el
+ * nodo y la animación sólo se ve la primera vez.
+ *
+ * La de aparición la escriben los propios encabezados, y su estado inicial es
+ * **visible**: es JavaScript quien añade `.wiki--animado` y con ella el estado
+ * oculto. Al revés, una sección que el observador no llegara a ver se quedaría
+ * invisible para siempre, y eso en un artículo largo es contenido perdido sin
+ * ningún aviso.
+ */
+@keyframes wiki-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wiki--entrada {
+  animation: wiki-entra 0.18s ease-out both;
+}
+
+.wiki--animado .wiki-texto h2,
+.wiki--animado .wiki-texto h3 {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.wiki--animado .wiki-texto h2.wiki-seccion-visible,
+.wiki--animado .wiki-texto h3.wiki-seccion-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * Un tramo nuevo, y no se toca el de la línea 653. El de aquí tiene que anular
+ * también las transiciones de la tabla de contenidos y de las tarjetas, que
+ * tienen su propia duración y su propio origen, y meterse en aquel bloque
+ * obligaría a mover reglas que no tienen nada que ver con la wiki.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .wiki--entrada {
+    animation: none;
+  }
+
+  .wiki--animado .wiki-texto h2,
+  .wiki--animado .wiki-texto h3 {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .wiki-toc a,
+  .wiki-ancla,
+  .wiki-tarjeta,
+  .wiki-buscador-campo,
+  .wiki-campos button {
+    transition: none;
+  }
+}
+
+/* --- El enlace del panel a la wiki ------------------------------------------
+ *
+ * Va debajo del valor, en su propia línea, y no como icono junto a la etiqueta.
+ * Un icono al lado del dato se lee como parte del dato: quien no sepa lo que es
+ * lo pasa por alto, y el enlace es justo lo que hace distinta esta wiki.
+ */
+.panel-explicar {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--accent-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.panel-explicar:hover {
+  text-decoration: underline;
+}
+
+.panel-explicar:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- La barra de «dónde estoy» ---------------------------------------------
+ *
+ * Cubre el hueco que deja la tabla de contenidos al repartirse en dos columnas:
+ * ahí la tabla es fija y se ve siempre, pero por debajo de 1440px está apilada
+ * arriba y se va con el scroll, con lo que el realce de la sección activa deja de
+ * verse justo cuando más importa.
+ *
+ * Se mide el problema antes de resolverlo. Hay tres salidas, y se descartaron dos:
+ *
+ *   1. **Fija al máximo (`max-height: 30vh; overflow-y: auto`).** Es lo más corto
+ *      de escribir y no da salto, pero se queda clavada ocupando el 30 % de una
+ *      pantalla de 667px —200px— mientras se lee. Es peor que no tenerla.
+ *   2. **Mostrarla y ocultarla con `display`.** No da salto mientras está fija,
+ *      pero al aparecer desplaza el artículo 34px de golpe. Ese tirón es
+ *      exactamente lo que hace que una barra de progreso sea molesta.
+ *   3. **Ocupar su sitio siempre y cambiar sólo la opacidad.** No da salto nunca,
+ *      que es lo que importa, y arriba del todo no se nota porque va **después** de
+ *      la tabla en el DOM: contra el texto, un hueco transparente no se ve.
+ *
+ * Se eligió la tercera.
+ */
+.wiki-donde {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.8rem;
+  /* Sin `transition` de opacidad en la entrada: con `prefers-reduced-motion` ya
+     hay un tramo propio que la anula, y aquí lo que se quiere es que aparezca de
+     golpe. */
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.wiki-donde-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.wiki-donde-etiqueta {
+  flex: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+}
+
+.wiki-donde-titulo {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.35;
+  /* El texto largo se corta en vez de desbordar. En 375px el título de una
+     sección puede necesitar tres líneas y la barra no puede comerse media
+     pantalla. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*
+ * En el reparto en dos columnas la barra desaparece: la tabla de contenidos está
+ * fija al lado y se ve el realce sin necesidad de una segunda señal. Ocultarla con
+ * `display` aquí sí es lo correcto, porque no salta nada: no hay texto debajo
+ * cuya posición dependa de ella.
+ */
+@container columna-wiki (min-width: 48rem) {
+  .wiki-donde {
+    display: none;
+  }
+}

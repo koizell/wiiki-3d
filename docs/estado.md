@@ -16,11 +16,11 @@
 |---|---|---|---|
 | **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La pantalla de subida **está hecha** (`/`). Falta el historial, y dónde vive es P6. |
 | **Taller** | H-2.1, H-2.2 | No empezado | **Nada.** Es el único que no depende de ninguna decisión pendiente. |
-| **Wiki 3D** | H-1.1, H-1.2 | No empezado | Nada técnico. Falta P3 —cuántos artículos y quién los escribe— para saber si el buscador hace falta. |
+| **Wiki 3D** | H-1.1, H-1.2 | En curso | Nada técnico. Las rutas, el buscador y el primer artículo **están hechos**; falta contenido, que es trabajo de pipeline y no de código. El plan está en [`plan-de-contenido.md`](plan-de-contenido.md): nueve artículos por escribir. |
 | **Proyectos** | H-4.1 | Bloqueado | **S1 + S3**: sin backend, los datos viven en la máquina de quien los guarda. Y con P2 resuelto, guardar el análisis no permite volver a abrir el archivo en el visor. |
 
-Las cuatro rutas existen y responden. Tres pintan una pantalla que dice qué
-módulo van a ser y que no está implementado.
+Las cuatro rutas existen y responden. Dos pintan una pantalla que dice qué
+módulo van a ser y que no está implementado; la wiki ya tiene contenido.
 
 ---
 
@@ -105,6 +105,9 @@ consume un servicio externo es la clasificación de Jev, y está en modo simulad
 
 | Punto | Estado | Detalle |
 |---|---|---|
+| **Canal de contacto sin configurar** | Abierto, bloquea la publicación | `CONTACTO` en `src/routes/InfoRoute.tsx` está vacío a propósito, y la página de Contacto lo dice en pantalla en vez de enseñar un correo inventado. Es lo único que impide que esa página sirva para algo, y es un paso de publicación: poner la dirección real en ese sitio. |
+| **`CAMPOS_WIKI` es una tabla escrita a mano** | Abierto, verificado | `src/lib/wiki-campos.ts` no puede derivarse del contenido sin meter los artículos en el chunk inicial. `scripts/verify/wiki.mjs` lo comprueba contra el frontmatter real, así que desfasarse rompe la verificación y no la aplicación. Con siete campos atados habrá que decidir si un artículo puede cubrir dos o si eso duplica los enlaces del panel. |
+|---|---|---|
 | **Visor por debajo de 150 px a 640×360** | Abierto, conocido | Es la única aserción que falla de `verify:layout`: el visor mide 144 px, y por debajo de 150 px el modelo en pantalla baja de 115 px. Los otros seis controles pasan, y los 29 números dan lo mismo que antes de este trabajo. |
 | **`modelPixels()` es una réplica manual** | Abierto, documentado | `scripts/verify/probe.mjs` replica la aritmética de `frameCamera()` de `Viewer3D.tsx`, y `scripts/verify/investigacion/frame.mjs` es una tercera copia. Si la función cambia, el barrido compararía números viejos **sin avisar**. Está escrito en ambos README, pero no hay ninguna comprobación automática que detecte la desincronización. |
 | **Comunidad del grafo sin nombre** | Abierto, cosmético | Sin clave de API, `graphify cluster-only .` deja las etiquetas como `Community N`. Los nodos y las aristas sirven; las etiquetas no describen nada. |
@@ -158,7 +161,8 @@ npm run build
 npm run verify:layout     # 29 viewports x 3 estados. 6 de 7 aserciones pasan
 npm run verify:teclado    # orden de tabulación y foco visible
 npm run verify:rutas      # las cuatro rutas, la jerarquía de encabezados, el foco
+npm run verify:wiki       # la wiki y las tres páginas de información. 77 de 77
 ```
 
-Los tres salen con código 1 si algo falla. `verify:layout` falla a propósito en
+Los cuatro salen con código 1 si algo falla. `verify:layout` falla a propósito en
 640×360: es la deuda abierta de la tabla de arriba.

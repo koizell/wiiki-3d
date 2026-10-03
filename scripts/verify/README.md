@@ -62,6 +62,7 @@ comprobación falla, así que valen como paso de CI.
 | `teclado.mjs` | Si el input de fichero y los items de navegación están en el orden de tabulación. Recorre el orden real con `Tab`. |
 | `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. Más la jerarquía de encabezados, en **cinco** casos: las cuatro rutas más `/` con un archivo cargado. |
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
+| `wiki.mjs` | La wiki: `/wiki`, `/wiki/:slug` y las tres páginas de información. La búsqueda filtra sin recargar y va en la URL, la tabla de contenidos marca la sección activa **al subir y al bajar**, la barra de «dónde estoy» aparece sin empujar el texto, los enlaces cruzados a páginas que no existen salen como texto y no como enlaces rotos, el ancho de línea se mide en caracteres reales en cinco viewports, `prefers-reduced-motion` apaga las tres animaciones y deja el texto visible, y la tabla de campos atados apunta a artículos que existen y declaran ese campo. |
 | `shots.mjs` | Capturas de los dos viewports donde el reparto de altura se nota, en viewport y en página completa. |
 
 ## La comprobación de encabezados
@@ -85,6 +86,18 @@ Dos detalles que hacen que la comprobación mida algo:
 
 Comprobado que **falla contra el código anterior**: sin el cambio, da `h1=0` en los
 dos estados de `/` y salto `1 → 3` en las tres rutas que sí tenían `<h1>`.
+
+## Los dos scripts con los que hay que tener cuidado
+
+`barrido.mjs` corre sobre la raíz y `wiki.mjs` sobre la wiki, y por eso los dos
+tienen su propia lista de viewports y no comparten la misma. `barrido.mjs` mide el
+visor 3D, que en la wiki no existe, así que los 29 viewports suyos no dicen nada
+del ancho de línea de un artículo. `wiki.mjs` mide cinco, porque lo que importa ahí
+es dónde cae el corte del reparto en dos columnas, y ese depende de la caja
+central y no de la pantalla.
+
+Los dos usan `LD_LIBRARY_PATH` para las dependencias de Chromium, por el motivo que
+está en «Dependencias del sistema» más arriba.
 
 ## Otro pipeline que usa estos scripts
 

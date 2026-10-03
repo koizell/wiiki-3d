@@ -72,6 +72,43 @@ respaldo, contradicciones, páginas huérfanas y enlaces cruzados rotos.
 - **Tocar `wiki/raw/`.** Ni para corregir una errata. Si el dato estaba mal, se
   escribe un fichero nuevo.
 
+## El contrato del frontmatter
+
+Lo que la vista lee de cada artículo, y lo que por tanto tiene que escribir el
+redactor. Completo en `.opencode/agents/redactor.md`; aquí sólo la lista:
+
+| Clave | Para qué |
+|---|---|
+| `title` | Título del artículo, y el `<h1>` de la pantalla |
+| `description` | Una frase para el índice y la búsqueda. Sin ella se usa la primera del cuerpo, con la negrita puesta |
+| `slug` | El nombre del fichero sin `.md` |
+| `date`, `updated` | Lo que pinta el pie del artículo |
+| `sources` | Las URLs, y **todas** tienen que estar en `wiki/raw/` |
+| `tags` | Palabras sueltas para la búsqueda |
+| `campo` | **A qué campo del panel de análisis explica este artículo** |
+
+### `campo` es lo que hace distinta esta wiki
+
+Cada artículo se ata a un campo de `ProjectMetadata` o `JevClassification` —los
+nombres están en `src/services/types.ts`, no inventados— y el panel pone un enlace
+al artículo que explica ese dato.
+
+Es la diferencia entre una wiki de impresión 3D y esta: aquí el artículo de warping
+no es un documento que se encuentra buscando «warping», es la explicación del 35 %
+que el panel acaba de enseñar.
+
+Hay un segundo sitio con esa correspondencia: `src/lib/wiki-campos.ts`. Está escrito
+a mano y **no puede derivarse del contenido** sin meter todos los artículos en el
+chunk inicial de la aplicación. `scripts/verify/wiki.mjs` lo comprueba contra el
+frontmatter real, así que si se desfasan, rompe la verificación en vez de dejar un
+enlace roto en el panel.
+
+### Los enlaces cruzados
+
+`[[slug|texto visible]]` en el Markdown. Si la página existe, es un enlace; si no,
+sale el texto con una marca punteada. Los artículos se escriben en cualquier orden
+y el enlace se enciende solo cuando la otra página aparece.
+
 ## Contar palabras
 
 ```bash
@@ -82,6 +119,21 @@ El frontmatter no cuenta, porque es configuración. Las URLs de los enlaces tamp
 porque un enlace no se lee y contarlas inflaría el número en decenas. El método
 está escrito en el propio script para que el número que cita el revisor sea
 reproducible.
+
+## Comprobar lo que se ha escrito
+
+```bash
+npm run verify:wiki
+```
+
+Son 77 comprobaciones en el navegador: la búsqueda, la tabla de contenidos, el ancho
+de línea medido en caracteres reales, las animaciones con
+`prefers-reduced-motion`, los enlaces cruzados que no existen, y que la tabla de
+campos apunta a artículos que existen y declaran ese campo.
+
+Es el puente entre el pipeline y la vista. Un artículo puede estar perfectamente
+cocinado y aun así tener una cita sin fuente, un enlace a una página que no existe
+o un `campo` mal escrito: eso lo ve el revisor, y lo ve el navegador.
 
 ## Control de idioma
 

@@ -11,6 +11,9 @@ sources:
   - https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/
 tags: [warping, pla, adhesion, temperatura, primera-capa]
 autor: wiiki-3d
+# Los campos del panel que este artículo explica. Con esto, cuando el panel dice
+# "Riesgo de warping", el artículo que explica ese número está a un clic.
+campo: [warpingRisk, riskLevel]
 ---
 
 # Warping en PLA: por qué se levantan las esquinas y qué cambiar
@@ -87,9 +90,10 @@ distinto, con otra solución, y en ese hilo el diagnóstico fue que **no** era
 filamento ni temperatura
 ([Diem](https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/)).
 
-Si las capas se separan y la base está plana, no sigas leyendo este artículo. Cambia
-la velocidad de impresión a un valor bajo y vuelve a imprimir: si el efecto
-desaparece, es velocidad.
+Si las capas se separan y la base está plana, no sigas leyendo este artículo. Es otro
+problema, y está en [[separaciones-entre-capas|separaciones entre capas]]. Cambia la
+velocidad de impresión a un valor bajo y vuelve a imprimir: si el efecto desaparece,
+es velocidad.
 
 ## Qué cambiar, y en qué orden
 
@@ -262,12 +266,12 @@ de guitarra cuando están bien tensadas, flojas cuando chasquean
 
 ## Si te interesa
 
-- **Enclosure y warping** — es donde las fuentes se contradicen de forma aparente, y
-  el matiz es todo el contenido. Todavía no escrita.
-- **Separaciones entre capas** — el fallo que se confunde con warping, y que tiene
-  otra causa y otra solución. Todavía no escrita.
-- **Adhesión en la primera capa** — que es la mitad de este artículo, pero merece su
-  propia página. Todavía no escrita.
+- [[enclosure-y-warping|Enclosure y warping]] — es donde las fuentes se contradicen
+  de forma aparente, y el matiz es todo el contenido.
+- [[separaciones-entre-capas|Separaciones entre capas]] — el fallo que se confunde con
+  warping, y que tiene otra causa y otra solución.
+- [[adhesion-primera-capa|Adhesión en la primera capa]] — que es la mitad de este
+  artículo, pero merece su propia página.
 
 ---
 

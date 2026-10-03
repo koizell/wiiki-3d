@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
 
 /**
@@ -8,6 +9,13 @@ import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/
  * solo pinta el estado que le entrega `App`. Así el orquestado del análisis
  * (parseo -> clasificación) vive en un único sitio y el panel se puede probar
  * renderizando cada estado por separado.
+ *
+ * Con `explicar` ocurre lo mismo. El panel no sabe qué artículos hay ni cómo se
+ * llama ninguno: sólo recibe una función que, dado el nombre de un campo del
+ * análisis, dice si hay un artículo que lo explique. Quien decide eso es
+ * `src/lib/wiki-campos.ts`, y llegar hasta aquí con la tabla entera atada al
+ * panel convertiría un componente de presentación en el punto donde vive la
+ * wiki.
  */
 
 /**
@@ -43,6 +51,14 @@ interface AnalysisPanelProps {
    * resto de estados no lo necesitan.
    */
   fileType?: AnalysisFileType;
+  /**
+   * Qué artículo de la wiki explica cada campo del análisis.
+   *
+   * Se pasa como función y no como tabla para que el panel no dependa de
+   * `src/lib/wiki-campos.ts`. Con una tabla importada, el panel arrastraría la
+   * correspondencia entre campos y artículos sin poder probarlos por separado.
+   */
+  explicar?: (campo: string) => { slug: string; etiqueta: string } | null;
 }
 
 /**
@@ -82,7 +98,14 @@ const RISK_CLASS: Record<RiskLevel, string> = {
   'Crítico': 'risk-critico',
 };
 
-function AnalysisPanel({ status, metadata, classification, error, fileType }: AnalysisPanelProps) {
+function AnalysisPanel({
+  status,
+  metadata,
+  classification,
+  error,
+  fileType,
+  explicar,
+}: AnalysisPanelProps) {
   if (status === 'parsing' || status === 'classifying') {
     return (
       <p className="panel-loading" role="status" aria-live="polite">
@@ -146,9 +169,15 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
               <span className={`risk-badge ${RISK_CLASS[classification.riskLevel]}`}>
                 {classification.riskLevel}
               </span>
+              {explicar?.('riskLevel') && <Explicar articulo={explicar('riskLevel')!} />}
             </dd>
           </div>
-          <DataRow label="Riesgo de warping" value={formatPercent(classification.warpingRisk)} />
+          <DataRow
+            label="Riesgo de warping"
+            value={formatPercent(classification.warpingRisk)}
+            campo="warpingRisk"
+            explicar={explicar}
+          />
           <DataRow label="Soportes" value={classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
         </dl>
       </section>
@@ -172,6 +201,25 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
 const NO_DATA = '—';
 
 /**
+ * El enlace de «este dato tiene una explicación larga».
+ *
+ * Es lo que separa esta wiki de una genérica: el panel acaba de decir «35 %» y a
+ * un clic está el artículo que explica de dónde sale ese 35 %, con sus fuentes al
+ * pie. Sin este enlace, el artículo más completo del sitio es un documento
+ * suelto al que se llega por búsqueda.
+ *
+ * El texto del enlace es el nombre del artículo, no «más info»: «más info» no dice
+ * de qué, y aquí lo interesante es justamente qué.
+ */
+function Explicar({ articulo }: { articulo: { slug: string; etiqueta: string } }) {
+  return (
+    <Link className="panel-explicar" to={`/wiki/${articulo.slug}`}>
+      {articulo.etiqueta}
+    </Link>
+  );
+}
+
+/**
  * Una fila clave-valor del panel.
  *
  * Acepta `undefined` para que quien la llama pueda pasar un campo opcional tal
@@ -182,14 +230,27 @@ const NO_DATA = '—';
 function DataRow({
   label,
   value,
+  campo,
+  explicar,
 }: {
   label: string;
   value: string | number | undefined;
+  /**
+   * Nombre del campo en `ProjectMetadata`. Opcional porque no todos los campos
+   * tienen artículo que los explique —de `printTime` no hay ninguno, y no lo
+   * habrá— y no tiene sentido un enlace vacío donde no hay nada que enlazar.
+   */
+  campo?: string;
+  explicar?: AnalysisPanelProps['explicar'];
 }) {
+  const articulo = campo && explicar ? explicar(campo) : null;
   return (
     <div className="panel-data-row">
       <dt className="panel-data-key">{label}</dt>
-      <dd className="panel-data-value">{value ?? NO_DATA}</dd>
+      <dd className="panel-data-value">
+        {value ?? NO_DATA}
+        {articulo && <Explicar articulo={articulo} />}
+      </dd>
     </div>
   );
 }
