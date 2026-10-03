@@ -260,10 +260,16 @@ Para cada afirmación técnica **y** cada cita entrecomillada del artículo:
    la frase está en el fichero crudo.
 
 **Y hay que saber `grep`ear por partes.** Una afirmación puede estar repartida en dos
-sitios distintos del crudo y entonces sí está respaldada. Y ojo con lo contrario: los
-ficheros de `wiki/raw/` parten a 80 columnas, así que **una cita entrecomillada puede
-cruzar un salto de línea y `grep` del fragmento entero no la encuentra**. Eso no la
-convierte en inventada: hay que buscar por las dos mitades. Un `grep` mal usado
+sitios distintos del crudo y entonces sí está respaldada. Y hay un caso trampa, que se
+lleva por delante un rechazo: **algunos ficheros de `wiki/raw/` están partidos a 80
+columnas**, y una cita entrecomillada puede cruzar el salto de línea, con lo que
+`grep` del fragmento entero no la encuentra. Eso **no** la convierte en inventada: hay
+que buscar por las dos mitades.
+
+**Pero no todos los ficheros están partidos, y ahí está el riesgo.** Los hilos de foro
+lo están casi todos —entre 84 y 136 columnas—, y las fichas de Prusa no: la de `pla.md`
+llega a 880. Así que **no se puede fiar uno del ancho**: antes de concluir que una cita
+no está, mira si el fichero que la debería contener está partido. Un `grep` mal usado
 produce un rechazo falso, que es la forma más cara de equivocarse en este trabajo.
 
 Y un caso aparte: un hilo de foro es conversación. Lo que alguien dice que **va a
