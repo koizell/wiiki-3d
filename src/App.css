@@ -2062,3 +2062,112 @@ body {
     display: none;
   }
 }
+
+/* --- Taller: la calculadora de coste ---------------------------------------- *
+ *
+ * `.taller` va en una caja estrecha y centrada, como `.upload-zone`, porque es
+ * un formulario corto y no un documento. La diferencia es que no lleva borde
+ * punteado: aquí no se arrastra nada, se teclea un número, y un recuadro que
+ * parece zona de soltar insinuaría que sí.
+ *
+ * El ancho va en `max-width`, no en `width`: la caja se ajusta al texto y en
+ * 375px no queda un margen muerto a los lados.
+ */
+.taller {
+  width: 100%;
+  max-width: 22rem;
+  text-align: left;
+}
+
+/*
+ * El `h1` lleva su tamaño explícito porque el selector cambia respecto a
+ * `.upload-zone h1` y el reset `* { margin: 0 }` de arriba se comería el
+ * espacio inferior. Mismo motivo y mismo número que en el otro sitio.
+ */
+.taller-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/*
+ * Los avisos de los estados 1, 2, 3 y 4 comparten clase a propósito: son el
+ * mismo tipo de cosa —"aquí todavía no puede haber un número"— y si cada uno tuviera la
+ * suya habría cuatro reglas idénticas que se desincronizan.
+ */
+.taller-aviso {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.taller-caja {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taller-gramos {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.taller-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.taller-etiqueta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * El `inputMode="decimal"` del marcado ya pone el teclado correcto en móvil, y
+ * aquí sólo se le da la forma. Sin `width: 100%` el input mide su valor por
+ * defecto —unos veinte caracteres— y en una caja de 22rem deja un hueco
+ * irregular al lado.
+ */
+.taller-input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.taller-input:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/*
+ * El campo inválido se marca por el borde, no sólo por el texto de debajo: el
+ * color solo no es un indicador suficiente para quien no distingue el rojo, y
+ * el mensaje de error va con `aria-invalid` y `aria-describedby` para quien
+ * usa lector de pantalla.
+ */
+.taller-input-invalido {
+  border-color: var(--danger);
+}
+
+.taller-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+/*
+ * El resultado va en cuerpo grande y con `tabular-nums` porque es el número que
+ * se viene a mirar. Con cifras de ancho variable —`0,02 €` mide menos que
+ * `0,23 €`— el número bailaría de una teclea a otra y sería difícil de leer de
+ * un vistazo si ha cambiado.
+ */
+.taller-resultado {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}

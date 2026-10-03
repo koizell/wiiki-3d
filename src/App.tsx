@@ -10,6 +10,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import UploadRoute from './routes/UploadRoute';
+import TallerRoute from './routes/TallerRoute';
 import PlaceholderRoute from './routes/PlaceholderRoute';
 import AnalysisPanel from './components/AnalysisPanel';
 import SiteFooter from './components/SiteFooter';
@@ -40,8 +41,13 @@ const InfoRoute = lazy(() => import('./routes/InfoRoute'));
  * Las rutas cuyo contenido se lee haciendo scroll en lugar de caber en la caja.
  *
  * No es una lista de rutas «largas»: es la lista de rutas cuyo texto no cabe en
- * la zona central, y eso depende de la ruta y no de la ruta sola. A `/taller` y a
- * `/proyectos` les va a hacer falta, y este es el sitio donde se anotan.
+ * la zona central, y eso depende de la ruta y no de la ruta sola. `/taller` está
+ * aquí por la razón contraria, que es la interesante: **antes se suponía que
+ * necesitaría scroll y medido no lo necesita** —`npm run verify:taller` comprueba
+ * que la caja no recorta en ninguno de los cinco estados ni en los cuatro tramos—,
+ * así que no está en la lista. Cuando se añada `/historial`, esta es la misma
+ * pregunta, y la respuesta hay que medirla, no suponerla: un formulario corto
+ * dentro de `.canvas-area`, que es `overflow: hidden`, se recorta en silencio.
  *
  * Vive aquí y no en la propia ruta por una razón de layout: quien decide cómo se
  * desplaza la caja central es el shell, porque el shell es quien conoce su
@@ -243,15 +249,12 @@ function App() {
         <Routes>
           <Route element={<AppShell />}>
             <Route path="/" element={<UploadRoute />} />
-            <Route
-              path="/taller"
-              element={
-                <PlaceholderRoute
-                  title="Taller"
-                  purpose="Va a calcular cuánto cuesta una pieza a partir del material y el tiempo del G-code."
-                />
-              }
-            />
+            {/*
+              Taller no va con `lazy` a propósito: son unos pocos kilobytes de
+              aritmética y una caja de texto, y se entra desde la barra siempre.
+              Pedir otro chunk para esto sólo añadiría una espera.
+            */}
+            <Route path="/taller" element={<TallerRoute />} />
             <Route path="/wiki" element={<WikiIndexRoute />} />
             {/*
               Va **después** de `/wiki` y no antes a propósito. En React Router el
