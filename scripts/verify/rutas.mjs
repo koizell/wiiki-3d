@@ -30,6 +30,7 @@
  */
 
 import { chromium } from 'playwright';
+import { GCODE_FIXTURE } from './fixtures.mjs';
 import { startPreview } from './probe.mjs';
 
 /** Las cuatro rutas de la app, con la etiqueta que debe verse en su enlace. */
@@ -38,6 +39,23 @@ const RUTAS = [
   { path: '/taller', etiqueta: 'Taller' },
   { path: '/wiki', etiqueta: 'Wiki 3D' },
   { path: '/proyectos', etiqueta: 'Proyectos' },
+];
+
+/**
+ * Los cinco casos de encabezado, uno por cada estado de pantalla.
+ *
+ * La raíz aparece dos veces porque son dos pantallas distintas: sin archivo se
+ * pinta la zona de subida y su título; con archivo se pinta el visor y el título
+ * es el nombre del fichero. Antes de este cambio la segunda de esas pantallas no
+ * tenía ningún encabezado en la columna central, y la primera tenía un `h2`, así
+ * que ninguna de las dos tenía un `h1`.
+ */
+const CASOS_ENCABEZADOS = [
+  { ruta: '/', etiqueta: 'en / sin archivo', conArchivo: false },
+  { ruta: '/', etiqueta: 'en / con archivo cargado', conArchivo: true },
+  { ruta: '/taller', etiqueta: 'en /taller', conArchivo: false },
+  { ruta: '/wiki', etiqueta: 'en /wiki', conArchivo: false },
+  { ruta: '/proyectos', etiqueta: 'en /proyectos', conArchivo: false },
 ];
 
 /**
@@ -80,7 +98,64 @@ function probeRutas() {
       return el ? el.textContent.trim() : null;
     })(),
     canvasAreaHasContent: !!document.querySelector('.canvas-area')?.children.length,
+    // La sonda va dentro de esta función a propósito: `probeRutas` se serializa y
+    // se evalúa dentro del navegador, así que no puede cerrar sobre nada de Node.
+    encabezados: (() => {
+      const NIVELES = { H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6 };
+      return [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')].map((el) => {
+        const cs = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        // Visible de verdad: sin `display: none`, sin `visibility: hidden`, con
+        // tamaño y sin estar dentro de un contenedor oculto. Un encabezado que no
+        // se ve no existe para quien navega con lector de pantalla, y contarlo
+        // daría un falso "la jerarquía está bien".
+        const visible =
+          cs.display !== 'none' &&
+          cs.visibility !== 'hidden' &&
+          Number(cs.opacity) > 0 &&
+          r.width > 0 &&
+          r.height > 0 &&
+          !el.closest('[hidden]') &&
+          !el.closest('[aria-hidden="true"]');
+        return {
+          nivel: NIVELES[el.tagName],
+          texto: (el.textContent || '').trim().slice(0, 40),
+          visible,
+          alto: +r.height.toFixed(1),
+          fontSize: cs.fontSize,
+        };
+      });
+    })(),
   };
+}
+
+/**
+ * Resumen de la jerarquía: un h1 visible, y ningún salto de más de uno.
+ *
+ * Éste sí corre en Node, sobre lo que la sonda del navegador devolvió. Por eso
+ * la sonda está dentro de `probeRutas` y ésta fuera: `page.evaluate` serializa la
+ * función entera y la ejecuta en la página, donde no existe nada del módulo.
+ *
+ * La jerarquía la define el **orden del documento**, no dónde caiga cada cosa en
+ * pantalla. El panel de análisis va a la derecha y sus encabezados (`h3`, `h4`)
+ * van después del del centro, y ésa es la jerarquía correcta.
+ */
+function juzgarEncabezados(encabezados) {
+  const visibles = encabezados.filter((h) => h.visible);
+  const h1 = visibles.filter((h) => h.nivel === 1);
+  const saltos = [];
+  // La jerarquía empieza en 1: el primer encabezado visible no puede ser un h3
+  // sin que haya un h1 ni un h2 antes.
+  let anterior = 1;
+  for (const h of visibles) {
+    if (h.nivel > anterior + 1) {
+      saltos.push(`${anterior} → ${h.nivel} antes de "${h.texto}"`);
+    }
+    // Un encabezado de nivel menor no hace retroceder el "anterior": a partir de
+    // un h4 un h2 es legal, y tratarlo como retroceso daría falsos positivos.
+    if (h.nivel > anterior) anterior = h.nivel;
+  }
+  return { h1, visibles, saltos };
 }
 
 /**
@@ -255,6 +330,44 @@ async function main() {
           (foco.esElEnlaceActivo ? '' : ' *** NO ES EL ENLACE ACTIVO ***')
         : 'no se alcanzó el enlace con Tab'
     );
+
+    // --- Check 6: jerarquía de encabezados en los cinco casos ---
+    //
+    // Son cinco, no cuatro: la raíz tiene dos estados y cada uno tiene su h1.
+    // Con un archivo cargado, `.canvas-area` no pinta zona de subida sino
+    // `.file-info`, así que el h1 es el nombre del archivo; sin archivo, es el
+    // título de la zona de subida. Comprobar sólo `/` en estado vacío dejaría
+    // pasar justo el caso que estaba roto.
+    for (const caso of CASOS_ENCABEZADOS) {
+      await page.goto(BASE + caso.ruta, { waitUntil: 'networkidle' });
+      if (caso.conArchivo) {
+        await page.setInputFiles('#file-upload', GCODE_FIXTURE);
+        await page.waitForSelector('.file-info', { timeout: 30000 });
+        // Se espera a que el análisis llegue a un estado estable: si no, los
+        // encabezados del panel pueden no estar todavía, y la comprobación
+        // mediría un estado transitorio que nadie ve.
+        await page
+          .waitForFunction(
+            () => !!document.querySelector('.panel-section-title'),
+            null,
+            { timeout: 20000 }
+          )
+          .catch(() => {});
+        await page.waitForTimeout(500);
+      }
+      const s = await page.evaluate(probeRutas);
+      const j = juzgarEncabezados(s.encabezados);
+
+      check(
+        `[${tramo.nombre}] ${caso.etiqueta}: un solo <h1> visible y sin saltos de nivel`,
+        j.h1.length === 1 && j.saltos.length === 0,
+        `h1=${j.h1.length}${j.h1.length ? ` "${j.h1[0].texto}"` : ''} · ` +
+          `encabezados=[${s.encabezados
+            .map((h) => (h.visible ? '' : '(oculto)') + `h${h.nivel}`)
+            .join(' ')}]` +
+          (j.saltos.length ? ` *** SALTOS: ${j.saltos.join(' | ')} ***` : '')
+      );
+    }
 
     await context.close();
   }

@@ -48,7 +48,13 @@ function UploadRoute() {
     return (
       <div className="upload-zone">
         <div className="upload-icon">⬆</div>
-        <h2>Arrastra tu archivo aquí</h2>
+        {/*
+          El `<h1>` de la vista cuando no hay archivo. El otro estado de esta
+          misma ruta lo tiene en `.file-info`, así que los dos estados de `/`
+          tienen título, y es el único de los dos que puede tener: esta pantalla
+          no tiene otro contenido donde poner uno.
+        */}
+        <h1>Arrastra tu archivo aquí</h1>
         <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
         <button type="button" className="btn-primary" onClick={openFilePicker}>
           Seleccionar Archivo
@@ -60,7 +66,21 @@ function UploadRoute() {
   return (
     <div className="viewer-container">
       <div className="file-info">
-        <span className="file-name">Archivo: {file.name}</span>
+        {/*
+          El nombre del archivo es el <h1> de esta vista, y no un `h2` con otro
+          nombre al lado.
+
+          Cuando hay un archivo cargado, el área central no tiene ningún
+          encabezado: lo único que había era el `<h3>` del panel lateral, así que
+          la jerarquía saltaba de la nada al 3. Con esto, las cuatro rutas tienen
+          exactamente un `<h1>`, y el de `/` dice lo que la pantalla está
+          mostrando —el archivo abierto—, que es el título real de esta vista.
+
+          `.file-name` conserva su `font-size: 0.9rem`, y a partir de aquí ese
+          valor deja de ser decorativo: sin él, el `<h1>` mide 2em, que en esta
+          base son 32 px en vez de 14,4, y la fila de `.file-info` crece.
+        */}
+        <h1 className="file-name">Archivo: {file.name}</h1>
         <button className="btn-danger" onClick={clearFile}>
           X
         </button>

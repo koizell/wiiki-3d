@@ -379,7 +379,16 @@ body {
   margin-bottom: 1rem;
 }
 
-.upload-zone h2 {
+/*
+ * El `font-size` explícito es lo que mantiene el aspecto al subir este elemento de
+ * `h2` a `h1`. Los dos miden lo mismo (1,5 rem), así que el selector cambia y el
+ * número no: si se quitara, el `<h1>` caería en su 2em por defecto y mediría el
+ * doble. El `margin-bottom` sí hace falta, porque el reset `* { margin: 0 }` de
+ * arriba lo anula en los dos.
+ *
+ * `.file-name` hace lo mismo con su `h1`, a 0,9 rem.
+ */
+.upload-zone h1 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -431,6 +440,11 @@ body {
 
 .file-name {
   font-weight: 500;
+  /*
+   * Este `font-size` es lo que anula el `2em` por defecto del `<h1>` en el que
+   * ahora vive el nombre del archivo. No es decorativo: sin él el título mide 32
+   * px en vez de 14,4, y la fila de `.file-info` crece con un archivo cargado.
+   */
   font-size: 0.9rem;
   color: var(--accent-text);
   /*
@@ -521,7 +535,13 @@ body {
   background: var(--bg-panel);
 }
 
-.panel-header h3 {
+/*
+ * El `font-size` explícito es lo que mantiene el aspecto al subir este elemento de
+ * `h3` a `h2`. Sin él, el `h2` caería en su 1,5em por defecto y mediría el doble,
+ * haciendo crecer el panel entero y desplazando el resto de la columna. Lo mismo
+ * que en `.upload-zone h1` y en `.file-name`.
+ */
+.panel-header h2 {
   font-size: 0.95rem;
   font-weight: 600;
 }

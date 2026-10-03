@@ -96,7 +96,13 @@ function AppShell() {
 
         <aside className="sidebar-right">
           <div className="panel-header">
-            <h3>Panel de Análisis</h3>
+            {/*
+              `h2`, y no `h3`. El panel es una sección de la página, y va debajo
+              del `h1` de la vista, así que le corresponde un nivel 2. Con `h3`
+              la jerarquía saltaba de 1 a 3, y quien navega por encabezados se
+              perdía ese tramo entero.
+            */}
+            <h2>Panel de Análisis</h2>
             <span className="badge">Jev</span>
           </div>
           <AnalysisPanel

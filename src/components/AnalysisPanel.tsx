@@ -123,7 +123,7 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
   return (
     <div className="panel-body">
       <section>
-        <h4 className="panel-section-title">Metadatos de impresión</h4>
+        <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
           <DataRow label="Material" value={metadata.material} />
           <DataRow label="Temp. hotend" value={formatCelsius(metadata.hotendTemp)} />
@@ -138,7 +138,7 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
       </section>
 
       <section>
-        <h4 className="panel-section-title">Diagnóstico de Jev</h4>
+        <h3 className="panel-section-title">Diagnóstico de Jev</h3>
         <dl className="panel-data">
           <div className="panel-data-row">
             <dt className="panel-data-key">Nivel de riesgo</dt>

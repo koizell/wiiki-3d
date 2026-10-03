@@ -60,9 +60,31 @@ comprobación falla, así que valen como paso de CI.
 |---|---|
 | `barrido.mjs` | 29 viewports × 3 estados (vacío, STL, G-code). Alto del visor, alto del canvas WebGL, proporción, tamaño del modelo en pantalla, quién scrollea, si algo se recorta, alto del `.top-bar`, errores de consola. Cinco aserciones. |
 | `teclado.mjs` | Si el input de fichero y los items de navegación están en el orden de tabulación. Recorre el orden real con `Tab`. |
-| `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. No carga ficheros: el enrutado no depende del estado del análisis. |
+| `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. Más la jerarquía de encabezados, en **cinco** casos: las cuatro rutas más `/` con un archivo cargado. |
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
 | `shots.mjs` | Capturas de los dos viewports donde el reparto de altura se nota, en viewport y en página completa. |
+
+## La comprobación de encabezados
+
+`rutas.mjs` comprueba que cada ruta tiene **exactamente un `<h1>` visible** y que
+**no hay saltos de nivel** en los encabezados de la página. Son cinco casos, no
+cuatro: la raíz tiene dos estados, y cada uno tiene su `<h1>`.
+
+- `/` sin archivo: el título es el de la zona de subida.
+- `/` con archivo: el título es el nombre del archivo, en `.file-info`.
+- `/taller`, `/wiki`, `/proyectos`: el título es el de cada módulo.
+
+Dos detalles que hacen que la comprobación mida algo:
+
+- **Cuenta sólo encabezados visibles.** Uno con `display: none`, `visibility:
+  hidden` o tamaño cero no existe para quien navega con lector de pantalla, y
+  contarlo daría un falso "la jerarquía está bien".
+- **El orden es el del documento, no el visual.** El panel de análisis está a la
+  derecha y sus encabezados van después del del centro, y ésa es la jerarquía
+  correcta.
+
+Comprobado que **falla contra el código anterior**: sin el cambio, da `h1=0` en los
+dos estados de `/` y salto `1 → 3` en las tres rutas que sí tenían `<h1>`.
 
 ## Ficheros de apoyo
 
