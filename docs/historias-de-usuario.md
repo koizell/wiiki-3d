@@ -12,6 +12,32 @@
 
 ---
 
+## Al editar este documento: los `⚠️` llevan un carácter invisible
+
+Los once `⚠` de los encabezados de supuesto y de las notas llevan un **selector
+de variación**, `U+FE0F`, pegado al emoji. No se ve, pero está en el fichero. El
+recuento que da el grep de abajo es **12**, y no 11: a los once de los
+encabezados se suma el de este mismo título, que los reproduce a propósito.
+
+**No lo borres por accidente.** Un `sed` o un reemplazo sobre el rango Unicode de
+los emojis se lo lleva a todos de golpe, y el resultado es un `⚠` a secas que se
+ve distinto y deja de tener el estilo de emoji. Pasó aquí: al corregir un enlace
+interno roto se quitaron los doce de un plumazo, se restauraron con `git checkout`
+y hubo que reaplicar el commit entero.
+
+Si tienes que tocar esa zona, hazlo por el texto con el selector pegado, no por
+código de carácter. Y comprueba el recuento antes y después:
+
+```bash
+grep -c $'\uFE0F' docs/historias-de-usuario.md   # debe seguir dando 12
+```
+
+Si baja, has borrado algo que no debías. Ojo al revés también: el duodécimo estaba
+dentro de un enlace interno roto y sí sobraba; la diferencia es que aquél
+estaba pegado a un `#`, y estos van pegados a un `⚠`.
+
+---
+
 ## Qué es la app
 
 **wiiki-3d es una herramienta para quien fabrica piezas con impresoras 3D en
