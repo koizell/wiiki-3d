@@ -6,10 +6,19 @@ description: >
   escrito. Recibe un tema, no un historial de conversación.
 mode: subagent
 temperature: 0.1
-tools:
-  write: true
-  edit: false
-  bash: false
+permission:
+  # `edit: allow` concede `write`, `edit` y `apply_patch` a la vez, y es la única
+  # forma que funciona: se probó la variante con patrones anidados —
+  # `edit: {"write": allow, "edit": deny}` — y el `deny` **no se aplicó**. El
+  # cocinero editó un fichero sin ninguna denegación. El `bash: deny` de abajo sí
+  # se respeta, comprobado por lo mismo.
+  #
+  # Consecuencia, y conviene tenerla presente: **los permisos no pueden impedir que
+  # un agente toque un fichero ya escrito.** La inmutabilidad de `wiki/raw/` la
+  # sostienen el prompt de cada agente y la comprobación con git, no la
+  # herramienta. Es más débil de lo que parecía, y mejor saberlo.
+  edit: allow
+  bash: deny
 ---
 
 # Recolector

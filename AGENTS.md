@@ -48,6 +48,31 @@ al redactor con las notas; no se escribe otro desde cero.
 respaldo, contradicciones, páginas huérfanas y enlaces cruzados rotos. Es la misma
 comprobación que hace sobre un artículo, pero sobre toda la wiki.
 
+**Revisión.** Un tema ya publicado se vuelve a pasar por el ciclo entero. No es un
+parche: es el mismo `Ingest` empezando por el `cocinero`, con las fuentes nuevas ya en
+`wiki/raw/`, y termina con el `revisor` decidiendo otra vez.
+
+Esto es una capacidad del diseño, no un remedio, y por dos razones:
+
+- **`wiki/raw/` es la única capa inmutable.** Al re-procesar, el cocinero escribe
+  **sobre** el material cocinado existente: conserva los apartados que siguen valiendo
+  y corrige los que no. El redactor hace lo mismo sobre el artículo. Nadie empieza de
+  cero, porque empezar de cero tiraría trabajo que sigue siendo cierto.
+- **Los informes se acumulan y no se sobrescriben.** `wiki/reviews/` guarda una vuelta
+  por número, con el motivo del rechazo. Un artículo que necesitó tres revisiones lo
+  dice, y eso es información: un tema que se rechaza dos veces seguidas tiene un
+  problema en las fuentes o en el material cocinado, y volver a pedir un cuarto intento
+  sin mirar eso es perder el trabajo.
+
+La razón por la que hace falta la vuelta es un fallo que la vuelta anterior no podía
+ver: **el artículo y el material cocinado coinciden por construcción**, así que
+compararlos sólo detecta que el redactor se inventara algo por su cuenta. Un error que
+nace en el material cocinado aparece en las dos capas a la vez y ninguna revisión lo
+ve. Para eso hace falta volver a mirar contra `wiki/raw/`, que es donde está la
+verdad. En `warping-pla` aparecieron así cuatro afirmaciones falsas —entre ellas una
+cita entrecomillada que no estaba en ninguna fuente— después de dos revisiones
+aprobadas.
+
 ### Los cuatro agentes
 
 Están en `.opencode/agents/`, y se versionan. Cada uno recibe **rutas de ficheros,

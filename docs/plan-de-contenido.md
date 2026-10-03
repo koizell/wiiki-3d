@@ -72,6 +72,30 @@ Sin esa comprobación, el plan habría enviado al recolector a una URL muerta y 
 habría puesto en un documento URLs que no existen. Verificar cuesta un minuto;
 inventar cuesta un artículo entero.
 
+**Y hay un caso peor que la URL muerta: la que responde 200 sin contenido.**
+`https://wiki.bambulab.com/en/general/build-plate` estaba en la lista como
+verificada, devuelve 200, tiene su `<title>`… y su cuerpo son **551 caracteres** de un
+texto que dice «Please get more information from the Wiki Introduction to the Build
+Plates». Es una página de aviso escrita como si fuera contenido.
+
+Pasa todas las comprobaciones mecánicas y envenena el material: el recolector la
+registra como fuente, el cocinero la procesa, y de ahí sale un apartado entero
+llamado «tabla de materiales» con una tabla que **nunca estuvo ahí**. Así se coló una
+afirmación falsa en `warping-pla` que costó dos revisiones y tres informes.
+
+**La comprobación que de verdad vale es abrir la URL y mirar cuánto texto tiene.** Un
+200 con el título puesto y el cuerpo de quinientos caracteres no es una fuente.
+
+Por eso toda URL de esta lista se comprobó con dos cosas: el código de respuesta **y**
+el tamaño del cuerpo. La tabla de Prusa pesa 1,6 MB y trae el artículo entero; la de
+Bambu, 551 bytes y trae un puntero a otro sitio.
+
+Y una trampa de la comprobación, que se llevó por delante un rechazo en la revisión
+4: los ficheros de `wiki/raw/` parten a 80 columnas, así que **una cita entrecomillada
+puede cruzar un salto de línea y `grep` del fragmento entero no la encuentra**. No es
+que la cita sea falsa: es que hay que buscar por las dos mitades. Un `grep` mal usado
+produce un rechazo falso, que es la forma más cara de equivocarse en este pipeline.
+
 Una URL aquí es **un sitio al que ir**, no una cita. Sólo pasa a ser cita cuando el
 recolector la descarga, el contenido está y queda en `wiki/raw/`.
 
@@ -84,7 +108,14 @@ recolector la descarga, el contenido está y queda en `wiki/raw/`.
 
 ### 2 · `separaciones-entre-capas`
 
-- `https://help.prusa3d.com/article/layer-separation-and-splitting-fdm_1806` — **200**, «Layer separation and splitting FDM». **Fuente oficial directa**, y no estaba en el plan anterior
+**Las dos fuentes que el primer lote trajo y que no estaban en la lista original.** No
+aparecieron buscando: salieron de los sitemaps de Prusa y de Bambu. Verificadas con
+200 y con el título leído, y las dos son oficiales.
+
+- `https://help.prusa3d.com/article/layer-separation-and-splitting-fdm_1806` — «Layer
+  separation and splitting FDM». **Fuente oficial directa**, y no estaba en el plan
+  anterior. Explica la separación como fuerzas de warping que superan la adhesión
+  entre capas, que es exactamente la distinción diagnóstica que hace falta.
 - `https://wiki.bambulab.com/en/filament-acc/filament/print-quality/interlayer-cracking` — **200**, «Model interlayer cracking»
 - `https://help.prusa3d.com/article/layer-shifting_2020` — **200**
 - `https://help.prusa3d.com/article/warping_2011` — **200**, ya en `wiki/raw/`
