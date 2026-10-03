@@ -202,6 +202,11 @@ body {
  * `inline-flex` + `align-items: center` van en los botones porque el "X" de
  * `.btn-danger` es un carácter suelto: sin centrarlo, el área táctil crece hacia
  * abajo y el texto se descuadra respecto al centro real del botón.
+ *
+ * `font-family: inherit` es obligatorio desde que los disparadores son
+ * `<button>` en vez de `<label>`. Un `button` no hereda la familia tipográfica
+ * del padre por especificación, así que sin esta línea los botones se pintarían
+ * con la fuente del sistema y no con la de la app.
  */
 .btn-primary,
 .btn-ghost,
@@ -210,6 +215,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 44px;
+  font-family: inherit;
 }
 
 .btn-primary {

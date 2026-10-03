@@ -11,6 +11,7 @@
  */
 
 import { chromium } from 'playwright';
+import { GCODE_FIXTURE } from './fixtures.mjs';
 import { startPreview } from './probe.mjs';
 
 /** Selector de todo lo que un Tab puede alcanzar. */
@@ -77,8 +78,58 @@ async function main() {
     if (at.tag === 'BODY') break;
   }
 
+  // ---- Estado con un archivo cargado, para cubrir los controles que sólo
+  // existen entonces (el botón "X") y comprobar que el foco se ve ----
+  await page.setInputFiles('#file-upload', GCODE_FIXTURE);
+  await page.waitForFunction(() => !!document.querySelector('.panel-body'), null, {
+    timeout: 20000,
+  });
+  await page.waitForTimeout(1200);
+
+  const tabOrderConArchivo = [];
+  await page.evaluate(() => document.body.focus());
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press('Tab');
+    const at = await page.evaluate(() => {
+      const el = document.activeElement;
+      const cs = getComputedStyle(el);
+      return {
+        tag: el.tagName,
+        cls: el.className || null,
+        id: el.id || null,
+        text: (el.textContent || '').trim().slice(0, 24),
+        // Un foco que no se ve es un foco que el usuario no puede seguir.
+        outlineWidth: cs.outlineWidth,
+        outlineStyle: cs.outlineStyle,
+        outlineColor: cs.outlineColor,
+        boxShadow: cs.boxShadow === 'none' ? '' : cs.boxShadow,
+      };
+    });
+    tabOrderConArchivo.push(at);
+    if (at.tag === 'BODY') break;
+  }
+
+  // ---- Familia tipográfica de los botones ----
+  const fonts = await page.evaluate(() => {
+    const body = getComputedStyle(document.body).fontFamily;
+    const btn = document.querySelector('.btn-primary');
+    return {
+      body,
+      btn: btn ? getComputedStyle(btn).fontFamily : null,
+      input: (() => {
+        const el = document.querySelector('.upload-zone .btn-primary');
+        return el ? getComputedStyle(el).fontFamily : null;
+      })(),
+    };
+  });
+
   await context.close();
   await browser.close();
+
+  const fmt = (el) =>
+    `${el.tag}${el.id ? '#' + el.id : ''}${
+      el.cls ? '.' + String(el.cls).split(' ')[0] : ''
+    } "${el.text}"`;
 
   console.log('=== Disparador de subida de archivo ===');
   console.log(`  #file-upload existe:      ${report.inputExists}`);
@@ -87,15 +138,28 @@ async function main() {
   console.log(`  alcanzable con Tab:       ${
     report.inputDisplay === 'none' ? 'NO (display:none la saca del orden)' : 'si'
   }`);
+  console.log(`  por diseño:               display:none, se activa con .click() desde el botón`);
   for (const l of report.labels) {
     console.log(`  <label for> "${l.text}": tabIndex=${l.tabIndex}, enfocable=${l.focusable}`);
   }
 
-  console.log('\n=== Orden de tabulación real ===');
-  for (const [i, el] of tabOrder.entries()) {
-    console.log(`  ${i + 1}. ${el.tag}${el.id ? '#' + el.id : ''}${
-      el.cls ? '.' + String(el.cls).split(' ')[0] : ''
-    } "${el.text}"`);
+  const botones = report.focusables.filter((el) => el.tag === 'BUTTON');
+  console.log(`  <button> de subida:       ${botones.length ? botones.map((b) => `"${b.text}"`).join(', ') : 'NINGUNO'}`);
+
+  console.log('\n=== Orden de tabulación: estado vacío ===');
+  for (const [i, el] of tabOrder.entries()) console.log(`  ${i + 1}. ${fmt(el)}`);
+
+  console.log('\n=== Orden de tabulación: con archivo cargado ===');
+  for (const [i, el] of tabOrderConArchivo.entries()) console.log(`  ${i + 1}. ${fmt(el)}`);
+
+  console.log('\n=== Foco visible (con archivo cargado) ===');
+  for (const el of tabOrderConArchivo) {
+    const visible = el.outlineStyle !== 'none' && parseFloat(el.outlineWidth) > 0;
+    const sombra = el.boxShadow !== '';
+    console.log(
+      `  ${fmt(el).padEnd(42)} outline ${el.outlineWidth}/${el.outlineStyle}` +
+      `   sombra ${sombra ? 'si' : 'no'}   ${visible || sombra ? 'FOCO VISIBLE' : '*** SIN INDICADOR'}`
+    );
   }
 
   console.log('\n=== Elementos enfocables en la app ===');
@@ -108,6 +172,15 @@ async function main() {
     console.log(`  <${el.tag}> role=${el.role} tabIndex=${el.tabIndex} href=${el.href} onClick=${el.onClick}`);
   }
 
+  console.log('\n=== Familia tipográfica de los botones ===');
+  console.log(`  body:        ${fonts.body}`);
+  console.log(`  .btn-primary: ${fonts.btn}`);
+  console.log(
+    `  coincide con la de la app: ${
+      fonts.btn && fonts.btn === fonts.body ? 'SI' : '*** NO (falta font-family: inherit)'
+    }`
+  );
+
   // ---- Aserciones ----
   const failures = [];
   const check = (name, ok, detail) => {
@@ -115,15 +188,34 @@ async function main() {
     if (!ok) failures.push(name);
   };
 
-  check('el input de fichero es alcanzable con teclado',
-    report.inputDisplay !== 'none',
-    `display: ${report.inputDisplay}`);
-  check('existe un disparador de subida enfocable',
-    tabOrder.some((el) => el.id === 'file-upload'),
-    `tabulación: ${tabOrder.map((el) => el.tag).join(' -> ')}`);
+  const hayBotonSubida = botones.length > 0;
+  check('el input de fichero se activa desde un <button> alcanzable',
+    hayBotonSubida && tabOrder.some((el) => el.cls && String(el.cls).includes('btn-primary')),
+    hayBotonSubida
+      ? `tabulación: ${tabOrder.map((el) => el.tag + (el.cls ? '.' + String(el.cls).split(' ')[0] : '')).join(' -> ')}`
+      : 'no hay ningún <button> de subida');
+
+  check('el input oculto no es el único disparador',
+    report.labels.length === 0,
+    `${report.labels.length} <label for="file-upload"> restantes`);
+
+  check('todos los controles alcanzables tienen foco visible',
+    tabOrderConArchivo
+      .filter((el) => el.tag !== 'BODY')
+      .every((el) => (el.outlineStyle !== 'none' && parseFloat(el.outlineWidth) > 0) || el.boxShadow !== ''),
+    tabOrderConArchivo
+      .filter((el) => el.tag !== 'BODY' && el.outlineStyle === 'none' && el.boxShadow === '')
+      .map(fmt)
+      .join(', ') || 'todos con indicador');
+
+  check('`.btn-primary` hereda la familia tipográfica de la app',
+    !!fonts.btn && fonts.btn === fonts.body,
+    fonts.btn || 'sin .btn-primary');
+
   check('los items de navegación son alcanzables con teclado',
     report.navItems.every((el) => el.tag !== 'LI' || el.tabIndex >= 0),
-    report.navItems.map((el) => `${el.tag}[tabIndex=${el.tabIndex}]`).join(' '));
+    report.navItems.map((el) => `${el.tag}[tabIndex=${el.tabIndex}]`).join(' ') +
+      '  (los arregla el enrutado de la Fase C)');
 
   if (failures.length) {
     console.log(`\nFALLAN: ${failures.join(' | ')}`);

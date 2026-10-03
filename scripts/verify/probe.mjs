@@ -1,4 +1,129 @@
 /**
+ * Espera a que el chunk del visor 3D esté en caché y devuelve un `handle` con el
+ * estado del overlay en ese instante.
+ *
+ * Hay que mediciónarlo rápido porque el overlay sólo existe mientras baja el
+ * chunk. Se fuerza con `page.route`, que intercepta la petición y la retiene
+ * hasta que el script suelta el lock: así el estado de carga es reproducible en
+ * lugar de depender de cómo de rápido llegue la red.
+ *
+ * Los módulos se piden en producción con hash en el nombre, así que el patrón
+ * `/assets/Viewer3D-` los cubre sin conocer el hash exacto.
+ */
+export async function captureOverlayDuringLoad(browser, base, { width, height }) {
+  const context = await browser.newContext({
+    viewport: { width, height },
+    colorScheme: 'dark',
+  });
+  const page = await context.newPage();
+
+  let release;
+  const held = new Promise((resolve) => {
+    release = resolve;
+  });
+  let sawChunk = false;
+
+  // Importa ir a la página ANTES de instalar la ruta: si no, el chunk se pide
+  // mientras el DOM todavía no existe y la medición se hace sobre un árbol a
+  // medio montar.
+  await page.goto(base, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#file-upload', { state: 'attached', timeout: 15000 });
+
+  await page.route('**/assets/Viewer3D-*', async (route) => {
+    sawChunk = true;
+    await held; // retiene la respuesta hasta que midamos
+    await route.continue();
+  });
+
+  // El input tiene `display: none`, así que no se le puede pasar `setInputFiles`
+  // desde fuera de la página; hay que dispararle el `change` desde dentro.
+  await page.evaluate(() => {
+    const el = document.querySelector('#file-upload');
+    const dt = new DataTransfer();
+    const stl = new Uint8Array(84 + 4 * 50);
+    new DataView(stl.buffer).setUint32(80, 4, true);
+    dt.items.add(new File([stl], 'prueba.stl', { type: 'model/stl' }));
+    el.files = dt.files;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // Esperar a que aparezca el overlay del fallback.
+  for (let i = 0; i < 100; i++) {
+    if (await page.evaluate(() => !!document.querySelector('.viewer-overlay'))) break;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+
+  const loading = await page.evaluate(() => {
+    const ov = document.querySelector('.viewer-overlay');
+    if (!ov) return null;
+
+    const rect = ov.getBoundingClientRect();
+    let el = ov.parentElement;
+    let positioned = null;
+    while (el) {
+      const ps = getComputedStyle(el).position;
+      if (ps !== 'static') {
+        positioned = `${String(el.className).split(' ')[0]} (${ps})`;
+        break;
+      }
+      el = el.parentElement;
+    }
+
+    return {
+      parentClass: String(ov.parentElement.className).split(' ')[0],
+      closestPositioned: positioned,
+      position: getComputedStyle(ov).position,
+      rect: {
+        w: Math.round(rect.width),
+        h: Math.round(rect.height),
+        top: Math.round(rect.top),
+        left: Math.round(rect.left),
+      },
+      windowSize: { w: window.innerWidth, h: window.innerHeight },
+      coveringViewport:
+        rect.width >= window.innerWidth - 1 && rect.height >= window.innerHeight - 1,
+      viewerContainerHeight: Math.round(
+        document.querySelector('.viewer-container').getBoundingClientRect().height
+      ),
+    };
+  });
+
+  // Soltar el chunk y esperar a que el visor monte.
+  release();
+  for (let i = 0; i < 200; i++) {
+    const mounted = await page.evaluate(() => {
+      const ov = document.querySelector('.viewer-3d-container > .viewer-overlay');
+      return ov ? ov.textContent.trim() : null;
+    });
+    if (mounted && mounted !== 'Cargando visor 3D...') {
+      const mountedRect = await page.evaluate(() => {
+        const box = document.querySelector('.viewer-3d-container');
+        const ov = box.querySelector('.viewer-overlay');
+        const r = box.getBoundingClientRect();
+        const o = ov.getBoundingClientRect();
+        return {
+          box: { w: Math.round(r.width), h: Math.round(r.height) },
+          overlay: { w: Math.round(o.width), h: Math.round(o.height) },
+        };
+      });
+      await context.close();
+      return {
+        sawChunk,
+        loading,
+        mounted: {
+          message: mounted,
+          ...mountedRect,
+        },
+      };
+    }
+    await new Promise((r) => setTimeout(r, 50));
+  }
+
+  await context.close();
+  return { sawChunk, loading, mounted: null };
+}
+
+/**
  * Sondas compartidas por los scripts de verificación.
  *
  * Todo lo que mide la app vive aquí en un sitio, para que los números que

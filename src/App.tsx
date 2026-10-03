@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import './App.css';
 import type { ViewerFormat } from './components/Viewer3D';
 import AnalysisPanel, { type AnalysisStatus } from './components/AnalysisPanel';
@@ -82,6 +82,24 @@ function App() {
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
+  /**
+   * El input de fichero real, que no se ve ni se enfoca.
+   *
+   * Antes los dos disparadores eran `<label htmlFor="file-upload">`, y eso
+   * dejaba la subida inalcanzable con teclado: un `<label>` no es un control
+   * enfocable en ningún navegador (`tabIndex` es −1), y el input al que apunta
+   * tiene `display: none`, que lo saca del orden de tabulación aunque su
+   * `tabIndex` siga siendo 0. Medido con `npm run verify:teclado`: el único
+   * control alcanzable con Tab en toda la app era «Iniciar Sesión».
+   *
+   * Ahora los disparadores son `<button>`, que sí son controles reales, y el
+   * input se queda con `display: none` porque `display: none` no impide el
+   * `.click()` programático. Así el input deja de ser un control fantasma en el
+   * árbol de accesibilidad y el botón es lo que el teclado alcanza.
+   */
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const openFilePicker = () => fileInputRef.current?.click();
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
     if (!selected) return;
@@ -160,17 +178,18 @@ function App() {
           <span className="logo-text">wiiki-3d</span>
         </div>
         <nav className="top-nav">
-          <label htmlFor="file-upload" className="btn-primary">
+          <button type="button" className="btn-primary" onClick={openFilePicker}>
             Subir Archivo
-          </label>
+          </button>
           <input
+            ref={fileInputRef}
             id="file-upload"
             type="file"
             accept=".stl,.3mf,.gcode,.gco,.obj"
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <button className="btn-ghost">Iniciar Sesión</button>
+          <button type="button" className="btn-ghost">Iniciar Sesión</button>
         </nav>
       </header>
 
@@ -192,9 +211,9 @@ function App() {
               <div className="upload-icon">⬆</div>
               <h2>Arrastra tu archivo aquí</h2>
               <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
-              <label htmlFor="file-upload" className="btn-primary">
+              <button type="button" className="btn-primary" onClick={openFilePicker}>
                 Seleccionar Archivo
-              </label>
+              </button>
             </div>
           ) : (
             <div className="viewer-container">
@@ -204,11 +223,31 @@ function App() {
               </div>
 
               {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
-                  pintan de inmediato mientras llega el chunk. El fallback reutiliza
-                  `.viewer-overlay`, el mismo estilo que el propio visor usa mientras
-                  carga el modelo, para que la transición no dé un salto visual. */}
+                  pintan de inmediato mientras llega el chunk.
+
+                  El fallback es un `.viewer-3d-container` con su overlay dentro, y
+                  no un `.viewer-overlay` suelto. La razón es que `.viewer-overlay`
+                  es `position: absolute` y su ancestro posicionado importa: aquí no
+                  hay ninguno, así que se anclaba al viewport inicial y medía
+                  768x667 en lugar de su recuadro, tapando la pantalla entera con
+                  `z-index: 10` mientras bajaba el chunk.
+
+                  Ponerlo dentro de un `.viewer-3d-container` —que sí es
+                  `position: relative`— resuelve tres cosas a la vez: el overlay se
+                  ancla a su recuadro, mide lo mismo que medirá el visor montado
+                  (mismo `flex: 1` a >=1200 y mismo `aspect-ratio` en 768-1199), y el
+                  layout no salta al montar. Antes `.viewer-container` medía 70px
+                  durante la carga y 399px al terminar.
+
+                  Los dos mensajes son distintos a propósito: éste es la descarga del
+                  chunk (590 KB) y el del visor montado, la lectura del archivo. Son
+                  dos fases, no ruido. */}
                 <Suspense
-                  fallback={<div className="viewer-overlay">Cargando visor 3D...</div>}
+                  fallback={
+                    <div className="viewer-3d-container">
+                      <div className="viewer-overlay">Cargando visor 3D...</div>
+                    </div>
+                  }
                 >
                   {viewerFormat && <Viewer3D file={file} fileType={viewerFormat} />}
                 </Suspense>
@@ -216,8 +255,8 @@ function App() {
               {showGcodeNotice && (
                 <div className="canvas-placeholder">
                   <p>
-                    Los archivos G-code no se renderizan en 3D todavía. El
-                    análisis técnico de la pieza aparece en el panel derecho.
+                    Los archivos G-code no se renderizan en 3D todavía. Puedes ver
+                    su análisis técnico en el panel de Jev.
                   </p>
                 </div>
               )}
