@@ -31,15 +31,21 @@ interface Seccion {
 /**
  * El canal de contacto.
  *
- * **Vacío a propósito.** No hay ningún correo ni formulario de verdad en el
- * proyecto, y escribir uno inventado daría a una persona una dirección a la que
- * escribir sin que nadie vaya a leer. Con la cadena vacía la página lo dice en
- * pantalla en vez de fingir.
+ * Es un buzón del dominio, no una dirección personal, y eso no es cosmético.
  *
- * Es lo único que hay que rellenar aquí, y es un paso de publicación, no de
- * desarrollo: basta con poner la dirección real en este sitio.
+ * Lo que hay detrás es lo que nadie ve desde fuera —una bandeja real— mientras que
+ * lo que se ve en la página es
+ * `hola@wiiki-3d.com`, que es lo que la gente responde. Un sitio que se va a
+ * monetizar y que enseña una dirección de Gmail en la página de contacto manda una
+ * señal que la revisión de contenido no lee bien: que el proyecto es de alguien
+ * suelto y no de una publicación.
+ *
+ * Así que lo que hay que configurar es el enrutado —Cloudflare Email Routing
+ * reenvía `hola@wiiki-3d.com` a la bandeja real— y lo que se escribe aquí es
+ * sólo
+ * la dirección pública.
  */
-const CONTACTO = '';
+const CONTACTO = 'hola@wiiki-3d.com';
 
 /** Las secciones de cada página, en el orden en que se leen. */
 const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string; secciones: Seccion[] }> = {
@@ -104,29 +110,25 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
       {
         titulo: 'Cómo escribirnos',
         cuerpo: (
-          <>
-            {CONTACTO ? (
-              <p>
-                Escríbenos a{' '}
-                <a href={`mailto:${CONTACTO}`}>
-                  <code>{CONTACTO}</code>
-                </a>
-                . Leemos todo lo que llega.
-              </p>
-            ) : (
-              /*
-               * Sin canal configurado se dice, en la página y no en un comentario.
-               * Un formulario o un correo inventado es peor que un hueco
-               * declarado: alguien escribiría y nadie respondería.
-               */
-              <p className="wiki-aviso">
-                <strong>Este canal todavía no está configurado.</strong> Si has
-                llegado hasta aquí desde el aviso de error del panel, el problema
-                es real y merece respuesta: falta por poner la dirección de
-                contacto.
-              </p>
-            )}
-          </>
+          /*
+           * El `?:` que había aquí se ha ido con el aviso que lo acompañaba. Con la
+           * dirección puesta, una condición que puede ser falsa es una rama que
+           * nadie va a ver nunca y que el compilador tiene que seguir comprobando.
+           * Si algún día hay que volver a la versión sin canal, se vuelve a
+           * escribir entera, y no a mantenerla encendida.
+           *
+           * El aviso «este canal no está configurado» era lo correcto cuando
+           * `CONTACTO` estaba vacío y es incorrecto ahora: la página mentía al revés,
+           * diciendo que no había forma de escribir cuando la hay.
+           */
+          <p>
+            Escríbenos a{' '}
+            <a href={`mailto:${CONTACTO}`}>
+              <code>{CONTACTO}</code>
+            </a>
+            . Leemos todo lo que llega, y contestamos los errores de la wiki
+            aunque no lleguemos a contestarlo todo lo demás.
+          </p>
         ),
       },
       {

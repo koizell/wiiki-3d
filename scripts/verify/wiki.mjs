@@ -597,10 +597,102 @@ try {
     );
     await movil.ctx.close();
 
-    // Y cada página existe, responde y tiene un solo <h1>.
+    /*
+     * La página de contacto tiene que tener un `mailto:` de verdad.
+     *
+     * Se comprueba y no se da por hecho porque su historia es la de un aviso
+     *mintiendo: `CONTACTO` estuvo vacío a propósito y la página lo decía en
+     * pantalla, lo cual era honesto pero dejaba la publicación bloqueada. Al poner
+     * la dirección real, ese mismo `if/else` pasó a ser la cosa que podía volver a
+     * mentir: si alguien vacía la constante, la página vuelve a anunciar que
+     * no hay canal, y esta comprobación no se entera.
+     *
+     * Y se comprueba **el enlace**, no sólo que la dirección aparezca escrita: un
+     * texto que parece un correo y no es un enlace es lo que falla una revisión de
+     * contenido, porque se ve bien y no funciona.
+     *
+     * La primera versión de este bloque tenía cuatro comprobaciones y **dos no
+     * podían fallar**. Una comparaba el texto del enlace con su `href`, así que con
+     * `CONTACTO` vacío ambas cadenas eran cadenas vacías y pasaba: comprobaba que
+     * `mailto:` era igual a `mailto:`. Otra buscaba el aviso de «canal sin
+     * configurar», que ya no se puede escribir porque se fue el `if/else` entero: una
+     * comprobación de algo que no puede aparecer es una comprobación muerta.
+     *
+     * Se comprobó vaciando `CONTACTO` a propósito y mirando cuáles caían. Éstas
+     * son las que caen, y la cuarta es una guarda de futuro: hoy no puede fallar
+     * porque no hay ningún correo en el repo, y ése es justo el motivo por el que
+     * tiene que existir.
+     */
+    {
+      const { ctx: c, page: p } = await abrir(navegador, 1280, 800, '/contacto');
+      const contacto = await p.evaluate(() => {
+        const enlaces = [...document.querySelectorAll('.wiki-info a[href^="mailto:"]')];
+        return {
+          mailto: enlaces.map((a) => a.getAttribute('href')),
+          texto: enlaces.map((a) => a.textContent.trim()),
+          visible: document.querySelector('.wiki-info')?.textContent ?? '',
+        };
+      });
+
+      // La expresión regular exige algo antes y después de la arroba, así que un
+      // `mailto:` a secas no la cuela.
+      comprobar(
+        '/contacto: hay un enlace «mailto:» con una dirección dentro',
+        contacto.mailto.length === 1 && /^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contacto.mailto[0]),
+        contacto.mailto.join(' ') || 'ninguno'
+      );
+
+      // La condición de longitud es la que faltaba en la versión anterior: sin
+      // ella, dos cadenas vacías se comparan iguales y la comprobación pasa.
+      comprobar(
+        '/contacto: el texto del enlace es la dirección y no está vacío',
+        contacto.texto.length === 1 &&
+          contacto.texto[0].length > 0 &&
+          `mailto:${contacto.texto[0]}` === contacto.mailto[0],
+        `texto «${contacto.texto.join(' ')}» -> href «${contacto.mailto.join(' ')}»`
+      );
+
+      /*
+       * La dirección se ve también como texto, sin depender del enlace.
+       *
+       * El `slice(7)` no es cosmético: sin él, un `mailto:` vacío deja la cadena
+       * vacía, y `texto.includes('')` es siempre cierto. Esa comprobación pasaba con
+       * la dirección en blanco, que es justo el caso que tenía que cazar.
+       */
+      const direccion = (contacto.mailto[0] ?? '').slice(7);
+      comprobar(
+        '/contacto: la dirección se lee en el texto de la página',
+        direccion.length > 0 && contacto.visible.includes(direccion),
+        direccion ? `«${direccion}» se lee en la página` : 'no hay dirección'
+      );
+
+      // Guarda de futuro, no estado: que nadie pegue un correo personal en la
+      // página de un sitio que se va a monetizar.
+      comprobar(
+        '/contacto: el buzón es del dominio, no una dirección personal',
+        !/@gmail\.com|@hotmail\.com|@outlook\.com|@yahoo\.com/.test(contacto.visible),
+        'sin correo personal en la página'
+      );
+      await c.close();
+    }
+
+    /*
+     * Y cada página existe, responde y tiene un solo <h1>.
+     *
+     * La palabra que se busca es la que sostiene la página, y la comparación no
+     * distingue mayúsculas. Antes buscaba «contacto» y pasaba, pero por el motivo
+     * equivocado: la palabra estaba dentro del aviso de «canal sin configurar» que
+     * decía «falta por poner la dirección de contacto». Al quitar ese aviso, la
+     * comprobación cayó — y tenía razón: llevaba tiempo comprobando la existencia
+     * del aviso, no la del contenido. Es el mismo tipo de fallo que los otros tres
+     * de esta fase: algo que parece comprobarse y en realidad no comprueba nada.
+     *
+     * De paso, cada página se busca por una palabra que va con ella: «la wiki»
+     * para Acerca de, «Escríbenos» para Contacto, «Google AdSense» para Privacidad.
+     */
     for (const [ruta, seccion] of [
       ['/acerca-de', 'la wiki'],
-      ['/contacto', 'contacto'],
+      ['/contacto', 'escríbenos'],
       ['/privacidad', 'Google AdSense'],
     ]) {
       const { ctx: c, page: p } = await abrir(navegador, 1280, 800, ruta);
@@ -614,7 +706,11 @@ try {
         };
       });
       comprobar(`${ruta}: un solo <h1> y varias secciones`, info.h1 === 1 && info.h2 >= 2, `${info.h1} h1, ${info.h2} h2`);
-      comprobar(`${ruta}: menciona «${seccion}»`, info.texto.includes(seccion));
+      comprobar(
+        `${ruta}: el texto sostiene la página`,
+        info.texto.toLowerCase().includes(seccion.toLowerCase()),
+        `busca «${seccion}»`
+      );
       await c.close();
     }
 

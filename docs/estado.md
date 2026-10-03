@@ -67,13 +67,24 @@ el cuerpo, y llegar a 45 con 335 px de caja pide 12,6 px: peor de leer que una l
 corta con 16. Los otros cuatro anchos sí se comprueban contra el rango, y fallan si
 salen.
 
-### Lo único que bloquea la publicación
+### La publicación ya no está bloqueada por nada
 
-**El canal de contacto.** `CONTACTO` en `src/routes/InfoRoute.tsx` está vacío a
-propósito y la página de Contacto lo dice en pantalla en vez de enseñar un correo
-inventado. Es un paso de publicación, no de desarrollo: poner la dirección real en
-ese sitio. **Una página de contacto sin forma de contacto falla la revisión de
-AdSense**, así que es el bloqueante único.
+El canal de contacto está puesto: `hola@wiiki-3d.com`, con su `mailto:` en
+`/contacto`. **AdSense ya no tiene el bloqueante de la página de contacto.**
+
+Dos decisiones detrás de esa dirección, y la segunda es la que no se ve:
+
+- **Es un buzón del dominio, no una dirección personal.** Cloudflare Email Routing
+  reenvía `hola@wiiki-3d.com` a la bandeja real; la página enseña la del dominio.
+  Un sitio que se va a monetizar y que expone un `@gmail.com` en su página de
+  contacto manda una señal que la revisión de contenido no lee bien: que el
+  proyecto es de alguien suelto y no de una publicación. `verify:wiki` lo comprueba.
+- **El aviso de «canal sin configurar» ha desaparecido de la página.** Cuando
+  `CONTACTO` estaba vacío, ese aviso era honesto; con la dirección puesta, el mismo
+  `if/else` era la cosa que podía volver a mentir si alguien vacía la constante. Se
+  fue el `if/else` entero en vez de dejar la rama muerta encendida, y `verify:wiki`
+  comprueba que el enlace `mailto:` existe, que su texto coincide con él y que no
+  queda el aviso.
 
 ### Los nueve artículos
 
