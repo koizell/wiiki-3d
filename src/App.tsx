@@ -1,174 +1,34 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import './App.css';
-import type { ViewerFormat } from './components/Viewer3D';
-import AnalysisPanel, { type AnalysisStatus } from './components/AnalysisPanel';
-import { parseGcode } from './services/ParserService';
-import { classifyWithJev } from './services/JevService';
-import type { JevClassification, ProjectMetadata } from './services/types';
+import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import UploadRoute from './routes/UploadRoute';
+import PlaceholderRoute from './routes/PlaceholderRoute';
+import AnalysisPanel from './components/AnalysisPanel';
+import { AnalysisProvider } from './state/AnalysisContext';
+import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
 
 /**
- * El visor 3D se carga bajo demanda.
+ * El shell: el grid, la barra superior, la navegación y las dos columnas.
  *
- * three.js pesa unos 648 KB sin minificar, y el visor solo se usa cuando el
- * usuario sube un STL o un 3MF. Con el import estático, ese peso viajaba en el
- * chunk inicial y se descargaba antes de que hubiera nada que ver, retrasando el
- * primer contenido visible para una pantalla de subida que no lo necesita. Con
- * `lazy` queda en un chunk aparte que el navegador pide cuando el visor se va a
- * montar de verdad.
+ * Es una ruta de layout —no tiene `path`— así que `<Outlet/>` pinta la ruta
+ * activa dentro de `<main>`. El orden importa: `<Routes>` por fuera porque es lo
+ * que resuelve la ruta, y el shell por dentro porque es quien tiene el `<Outlet/>`
+ * donde meter el resultado.
  *
- * El tipo sí se importa de forma estática: `import type` desaparece al compilar,
- * así que no arrastra nada al bundle.
- */
-const Viewer3D = lazy(() => import('./components/Viewer3D'));
-
-/** Formatos que la app sabe enrutar, deducidos de la extensión del archivo. */
-type FileType = 'stl' | 'gcode' | '3mf' | 'obj' | 'unknown';
-
-/** Extensiones que el visor 3D sabe maquetar. */
-const STL_EXTENSIONS = ['.stl'] as const;
-/**
- * El 3MF es el proyecto de los slicers actuales (BambuStudio, PrusaSlicer,
- * OrcaSlicer). Se comprueba antes que G-code y STL porque su contenido es un
- * ZIP con el modelo y no un flujo de comandos: el orden de las comprobaciones
- * documenta esa diferencia en lugar de darla por supuesta.
- */
-const THREEMF_EXTENSIONS = ['.3mf'] as const;
-/** Extensiones que el panel de análisis sabe interpretar. */
-const GCODE_EXTENSIONS = ['.gcode', '.gco'] as const;
-/** Extensiones aceptadas por el input pero aún sin soporte en el visor. */
-const OBJ_EXTENSIONS = ['.obj'] as const;
-
-/**
- * Deduce el tipo de archivo a partir de su nombre.
+ * El panel de análisis se monta aquí, y no dentro de una ruta, por una razón de
+ * layout: es una columna del shell. Si estuviera en la ruta de subida, navegar a
+ * `/taller` lo desmontaría —y con D8 el análisis sobrevive a la navegación por
+ * decisión— y la columna aparecería y desaparecería en cada cambio de ruta, lo
+ * que haría saltar el grid.
  *
- * Es el punto de decisión de la app: de aquí sale tanto el componente que se
- * pinta en el área central como la cola de análisis que se dispara. Se
- * compara en minúsculas porque los navegadores entregan la extensión tal cual
- * la escribió el sistema de ficheros del usuario (`PIEZA.GCODE` es válido).
+ * Por eso el panel se ve también en los otros módulos: con un G-code cargado y
+ * estando en `/taller`, sigue enseñando el análisis de ese G-code. Es coherente
+ * con que el estado sobreviva, y evita el salto del layout. Cuando no hay
+ * archivo, `AnalysisPanel` pinta su propio estado vacío, así que no hace falta
+ * ocultarlo.
  */
-function detectFileType(filename: string): FileType {
-  const name = filename.toLowerCase();
-  if (THREEMF_EXTENSIONS.some((ext) => name.endsWith(ext))) return '3mf';
-  if (STL_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'stl';
-  if (GCODE_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'gcode';
-  if (OBJ_EXTENSIONS.some((ext) => name.endsWith(ext))) return 'obj';
-  return 'unknown';
-}
-
-/** Acota el tipo de archivo a los que el visor 3D puede construir. */
-function isViewerFormat(fileType: FileType | null): fileType is ViewerFormat {
-  return fileType === 'stl' || fileType === '3mf';
-}
-
-/** Explica en el área central por qué un formato todavía no se puede mostrar. */
-function unsupportedFileMessage(fileType: FileType, filename: string): string {
-  if (fileType === 'obj') {
-    return 'El visor 3D para archivos .obj todavía no está disponible. El análisis técnico se reserva a los archivos G-code.';
-  }
-  return `"${filename}" tiene un formato no compatible. Sube un archivo .stl, .3mf, .gcode o .gco.`;
-}
-
-/** Normaliza cualquier excepción a un mensaje presentable. */
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return 'Error inesperado al analizar el archivo.';
-}
-
-function App() {
-  const [file, setFile] = useState<File | null>(null);
-  const [fileType, setFileType] = useState<FileType | null>(null);
-  const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
-  const [classification, setClassification] = useState<JevClassification | null>(null);
-  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  /**
-   * El input de fichero real, que no se ve ni se enfoca.
-   *
-   * Antes los dos disparadores eran `<label htmlFor="file-upload">`, y eso
-   * dejaba la subida inalcanzable con teclado: un `<label>` no es un control
-   * enfocable en ningún navegador (`tabIndex` es −1), y el input al que apunta
-   * tiene `display: none`, que lo saca del orden de tabulación aunque su
-   * `tabIndex` siga siendo 0. Medido con `npm run verify:teclado`: el único
-   * control alcanzable con Tab en toda la app era «Iniciar Sesión».
-   *
-   * Ahora los disparadores son `<button>`, que sí son controles reales, y el
-   * input se queda con `display: none` porque `display: none` no impide el
-   * `.click()` programático. Así el input deja de ser un control fantasma en el
-   * árbol de accesibilidad y el botón es lo que el teclado alcanza.
-   */
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const openFilePicker = () => fileInputRef.current?.click();
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = event.target.files?.[0];
-    if (!selected) return;
-
-    const detectedType = detectFileType(selected.name);
-
-    setFile(selected);
-    setFileType(detectedType);
-    // El análisis anterior se descarta: si el nuevo archivo es un STL o no es
-    // analizable, el panel debe volver a su estado inicial, no al anterior.
-    setMetadata(null);
-    setClassification(null);
-    setAnalysisError(null);
-    // Solo el G-code entra en la cola de análisis. El resto no está "pendiente":
-    // el panel explica desde el principio que ese formato no se analiza, en
-    // lugar de seguir invitando a subir un archivo que el usuario ya ha subido.
-    setAnalysisStatus(detectedType === 'gcode' ? 'idle' : 'unsupported');
-  };
-
-  const handleClearFile = () => {
-    setFile(null);
-    setFileType(null);
-    setMetadata(null);
-    setClassification(null);
-    setAnalysisError(null);
-    setAnalysisStatus('idle');
-  };
-
-  useEffect(() => {
-    // Solo el G-code tiene metadatos de impresión que analizar; el resto de
-    // formatos ya quedó en `unsupported` al subir el archivo.
-    if (!file || fileType !== 'gcode') return;
-
-    // Los servicios todavía no aceptan una señal de cancelación, así que el
-    // `AbortController` actúa como bandera: abortar desde la limpieza impide
-    // que una promesa lenta pinte resultados de un archivo ya sustituido o de
-    // un componente desmontado.
-    const controller = new AbortController();
-
-    const runAnalysis = async () => {
-      setAnalysisStatus('parsing');
-      setAnalysisError(null);
-      try {
-        const parsedMetadata = await parseGcode(file);
-        if (controller.signal.aborted) return;
-        setMetadata(parsedMetadata);
-
-        setAnalysisStatus('classifying');
-        const jevResult = await classifyWithJev(parsedMetadata);
-        if (controller.signal.aborted) return;
-        setClassification(jevResult);
-
-        setAnalysisStatus('done');
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setAnalysisError(toErrorMessage(error));
-        setAnalysisStatus('error');
-      }
-    };
-
-    void runAnalysis();
-
-    return () => controller.abort();
-  }, [file, fileType]);
-
-  const showUploadZone = !file;
-  const viewerFormat = isViewerFormat(fileType) ? fileType : null;
-  const showGcodeNotice = fileType === 'gcode';
-  const showUnsupported = fileType === 'obj' || fileType === 'unknown';
+function AppShell() {
+  const { fileType, metadata, classification, status, error } = useAnalysis();
+  const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
 
   return (
     <div className="app-container">
@@ -187,89 +47,51 @@ function App() {
             type="file"
             accept=".stl,.3mf,.gcode,.gco,.obj"
             style={{ display: 'none' }}
-            onChange={handleFileChange}
+            onChange={(event) => {
+              const selected = event.target.files?.[0];
+              if (selected) loadFile(selected);
+            }}
           />
-          <button type="button" className="btn-ghost">Iniciar Sesión</button>
         </nav>
       </header>
 
       <div className="main-layout">
         <aside className="sidebar-left">
           <nav>
+            {/*
+              `className` como función, y no como cadena: React Router añade la
+              clase `active` por su cuenta al enlace activo, y el CSS ya no la
+              usa —el estado sale de `[aria-current="page"]`. Dejar la clase en
+              el DOM sin estilos sería ruido, y haría que alguien la encontrara,
+              cambiara el CSS por algo que no se aplica y perdiera una tarde.
+            */}
             <ul>
-              <li className="nav-item active">🏠 Inicio</li>
-              <li className="nav-item">🧰 Taller</li>
-              <li className="nav-item">📚 Wiki 3D</li>
-              <li className="nav-item">🌐 Proyectos</li>
+              <li>
+                <NavLink to="/" end className={() => 'nav-item'}>
+                  🏠 Inicio
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/taller" className={() => 'nav-item'}>
+                  🧰 Taller
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/wiki" className={() => 'nav-item'}>
+                  📚 Wiki 3D
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/proyectos" className={() => 'nav-item'}>
+                  🌐 Proyectos
+                </NavLink>
+              </li>
             </ul>
           </nav>
         </aside>
 
         <main className="canvas-area">
-          {showUploadZone ? (
-            <div className="upload-zone">
-              <div className="upload-icon">⬆</div>
-              <h2>Arrastra tu archivo aquí</h2>
-              <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
-              <button type="button" className="btn-primary" onClick={openFilePicker}>
-                Seleccionar Archivo
-              </button>
-            </div>
-          ) : (
-            <div className="viewer-container">
-              <div className="file-info">
-                <span className="file-name">Archivo: {file.name}</span>
-                <button className="btn-danger" onClick={handleClearFile}>X</button>
-              </div>
-
-              {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
-                  pintan de inmediato mientras llega el chunk.
-
-                  El fallback es un `.viewer-3d-container` con su overlay dentro, y
-                  no un `.viewer-overlay` suelto. La razón es que `.viewer-overlay`
-                  es `position: absolute` y su ancestro posicionado importa: aquí no
-                  hay ninguno, así que se anclaba al viewport inicial y medía
-                  768x667 en lugar de su recuadro, tapando la pantalla entera con
-                  `z-index: 10` mientras bajaba el chunk.
-
-                  Ponerlo dentro de un `.viewer-3d-container` —que sí es
-                  `position: relative`— resuelve tres cosas a la vez: el overlay se
-                  ancla a su recuadro, mide lo mismo que medirá el visor montado
-                  (mismo `flex: 1` a >=1200 y mismo `aspect-ratio` en 768-1199), y el
-                  layout no salta al montar. Antes `.viewer-container` medía 70px
-                  durante la carga y 399px al terminar.
-
-                  Los dos mensajes son distintos a propósito: éste es la descarga del
-                  chunk (590 KB) y el del visor montado, la lectura del archivo. Son
-                  dos fases, no ruido. */}
-                <Suspense
-                  fallback={
-                    <div className="viewer-3d-container">
-                      <div className="viewer-overlay">Cargando visor 3D...</div>
-                    </div>
-                  }
-                >
-                  {viewerFormat && <Viewer3D file={file} fileType={viewerFormat} />}
-                </Suspense>
-
-              {showGcodeNotice && (
-                <div className="canvas-placeholder">
-                  <p>
-                    Los archivos G-code no se renderizan en 3D todavía. Puedes ver
-                    su análisis técnico en el panel de Jev.
-                  </p>
-                </div>
-              )}
-
-              {showUnsupported && (
-                <div className="canvas-placeholder">
-                  <p className="canvas-error">
-                    {unsupportedFileMessage(fileType, file.name)}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          <Outlet />
         </main>
 
         <aside className="sidebar-right">
@@ -278,15 +100,91 @@ function App() {
             <span className="badge">Jev</span>
           </div>
           <AnalysisPanel
-            status={analysisStatus}
+            status={status}
             metadata={metadata}
             classification={classification}
-            error={analysisError}
+            error={error}
             fileType={fileType ?? undefined}
           />
         </aside>
       </div>
     </div>
+  );
+}
+
+/**
+ * Las cuatro rutas de la app.
+ *
+ * La raíz **es** la pantalla de subida, y no un panel de bienvenida aparte. No
+ * es una preferencia: los cuatro scripts de `scripts/verify/` cargan ficheros con
+ * `page.setInputFiles('#file-upload', …)` sobre la raíz, en 29 viewports y tres
+ * estados. Mover la subida a otra ruta los rompería, y habría que parametrizar
+ * la ruta en los cuatro scripts.
+ *
+ * Cuando "Inicio" tenga contenido, se añade debajo de la zona de subida en esta
+ * misma vista. Si algún día se mueve, se actualizan los scripts en el mismo
+ * commit.
+ *
+ * La redirección con `*` existe para que una ruta inventada no deje la pantalla
+ * en blanco: vuelve a la raíz con `replace`, para que el botón "atrás" del
+ * navegador no tenga que deshacer el salto.
+ *
+ * Modo declarativo a propósito: `BrowserRouter` + `Routes` + `Route`. No el
+ * "framework mode" de React Router, que trae un plugin de Vite, un servidor y
+ * convenciones de ficheros pensadas para renderizado en el servidor. Esta es una
+ * aplicación de una sola página, estática y servida desde GitHub Pages, y nada de
+ * eso tiene destino aquí.
+ *
+ * `NavLink` y no `Link` porque da el estado activo y `aria-current="page"`
+ * gratis, en los cuatro enlaces. Es justo lo que el bug de navegación por teclado
+ * necesitaba, y no conviene reimplementarlo a mano.
+ *
+ * Los tres módulos vacíos llevan su propósito en la propia pantalla. Esa línea
+ * sale de la sección correspondiente de `docs/historias-de-usuario.md`, donde las
+ * tres lecturas están marcadas como supuesto y no como requisito cerrado, así
+ * que el texto se cambia con la decisión de producto, no al revés.
+ */
+function App() {
+  return (
+    // El proveedor envuelve al router, no al revés: si estuviera dentro de las
+    // rutas, cambiar de ruta desmontaría el estado del archivo cargado.
+    <AnalysisProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<UploadRoute />} />
+            <Route
+              path="/taller"
+              element={
+                <PlaceholderRoute
+                  title="Taller"
+                  purpose="Va a calcular cuánto cuesta una pieza a partir del material y el tiempo del G-code."
+                />
+              }
+            />
+            <Route
+              path="/wiki"
+              element={
+                <PlaceholderRoute
+                  title="Wiki 3D"
+                  purpose="Van a ser guías de impresión 3D para consultar dentro de la aplicación."
+                />
+              }
+            />
+            <Route
+              path="/proyectos"
+              element={
+                <PlaceholderRoute
+                  title="Proyectos"
+                  purpose="Va a guardar los análisis que hagas, para volver a consultarlos sin volver a subir el archivo."
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AnalysisProvider>
   );
 }
 

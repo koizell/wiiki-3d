@@ -212,10 +212,20 @@ async function main() {
     !!fonts.btn && fonts.btn === fonts.body,
     fonts.btn || 'sin .btn-primary');
 
-  check('los items de navegación son alcanzables con teclado',
-    report.navItems.every((el) => el.tag !== 'LI' || el.tabIndex >= 0),
-    report.navItems.map((el) => `${el.tag}[tabIndex=${el.tabIndex}]`).join(' ') +
-      '  (los arregla el enrutado de la Fase C)');
+  // Antes del enrutado, los items de navegación eran `<li>` con un `onClick`: se
+  // veían, ocupaban sitio y no eran alcanzables con teclado ni se podían abrir
+  // en una pestaña nueva. Ahora tienen que ser enlaces de verdad. La condición
+  // exige `<a>` con `href` y sin `role`, y no sólo que no sea un `<li>`: un
+  // `<div role="link">` volvería a ser inalcanzable aunque pase el filtro de antes.
+  check('los items de navegación son enlaces de verdad, alcanzables con teclado',
+    report.navItems.length === 4 && report.navItems.every(
+      (el) => el.tag === 'A' && el.href && el.role === null && el.tabIndex >= 0 && !el.onClick
+    ),
+    report.navItems.length
+      ? report.navItems
+          .map((el) => `<${el.tag}${el.href ? ` href="${el.href}"` : ''}${el.role ? ` role="${el.role}"` : ''} tabIndex=${el.tabIndex}${el.onClick ? ' onclick' : ''}>`)
+          .join(' ')
+      : 'no hay items de navegación');
 
   if (failures.length) {
     console.log(`\nFALLAN: ${failures.join(' | ')}`);

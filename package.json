@@ -11,12 +11,14 @@
     "verify:layout": "node scripts/verify/barrido.mjs",
     "verify:teclado": "node scripts/verify/teclado.mjs",
     "verify:overlay": "node scripts/verify/overlay.mjs",
-    "verify:shots": "node scripts/verify/shots.mjs"
+    "verify:shots": "node scripts/verify/shots.mjs",
+    "verify:rutas": "node scripts/verify/rutas.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-router-dom": "7.18.4",
     "three": "^0.186.1"
   },
   "devDependencies": {

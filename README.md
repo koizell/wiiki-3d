@@ -86,11 +86,12 @@ se documentan en [`scripts/verify/README.md`](scripts/verify/README.md).
 npm run build            # los scripts miden dist/, no el código fuente
 npm run verify:layout    # 29 viewports x 3 estados, con aserciones
 npm run verify:teclado   # ¿las acciones son alcanzables con teclado?
+npm run verify:rutas     # las cuatro rutas x los cuatro tramos de ancho
 ```
 
-`verify:layout` sale con código 1 si el layout se rompe, así que vale como paso
-de CI. Necesita el Chromium de Playwright (`npx playwright install chromium`) y
-las librerías de sistema que él imply; si tu imagen no las trae, el README de
+Los tres salen con código 1 si algo falla, así que valen como paso de CI.
+Necesitan el Chromium de Playwright (`npx playwright install chromium`) y las
+librerías de sistema que él implica; si tu imagen no las trae, el README de
 `scripts/verify/` explica cómo resolverlo sin `sudo`.
 
 Si tocas `src/components/Viewer3D.tsx`, mira `modelPixels()` en

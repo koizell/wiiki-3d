@@ -46,12 +46,13 @@ npm run build              # los scripts miden dist/, no el código fuente
 
 npm run verify:layout      # barrido: 29 viewports x 3 estados + aserciones
 npm run verify:teclado     # ¿las acciones son alcanzables con teclado?
+npm run verify:rutas       # las cuatro rutas x los cuatro tramos de ancho
 npm run verify:overlay     # estado del overlay del Suspense
 npm run verify:shots       # capturas de 768x667 y 768x1024
 ```
 
-Los que terminan en `verify:layout` y `verify:teclado` salen con código 1 si
-alguna comprobación falla, así que valen como paso de CI.
+`verify:layout`, `verify:teclado` y `verify:rutas` salen con código 1 si alguna
+comprobación falla, así que valen como paso de CI.
 
 ## Qué mide cada script
 
@@ -59,6 +60,7 @@ alguna comprobación falla, así que valen como paso de CI.
 |---|---|
 | `barrido.mjs` | 29 viewports × 3 estados (vacío, STL, G-code). Alto del visor, alto del canvas WebGL, proporción, tamaño del modelo en pantalla, quién scrollea, si algo se recorta, alto del `.top-bar`, errores de consola. Cinco aserciones. |
 | `teclado.mjs` | Si el input de fichero y los items de navegación están en el orden de tabulación. Recorre el orden real con `Tab`. |
+| `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. No carga ficheros: el enrutado no depende del estado del análisis. |
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
 | `shots.mjs` | Capturas de los dos viewports donde el reparto de altura se nota, en viewport y en página completa. |
 

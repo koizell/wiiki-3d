@@ -6,9 +6,9 @@
 > verificada va marcada. Los supuestos son **propuestas**, no decisiones, y cada
 > uno dice explícitamente qué cambia si es falso.
 >
-> La sección que más importa es [Por qué dos de los cuatro módulos no son
-> construibles](#por-qué-dos-de-los-cuatro-módulos-no-son-construibles). No es
-> una salvedad al final: es la restricción que decide el orden de trabajo.
+> La sección que más importa es [Por qué dos de los cuatro módulos dependen de una
+> decisión sin tomar](#por-qué-dos-de-los-cuatro-módulos-dependen-de-una-decisión-sin-tomar).
+> No es una salvedad al final: es la restricción que decide el orden de trabajo.
 
 ---
 
@@ -24,9 +24,10 @@ visor 3D con órbita; los G-code no se renderizan todavía.
 
 **Estado real de esa frase:** el analizador y el visor 3D existen y funcionan. El
 diagnóstico de riesgo sale de una **heurística local** (ver ⚠️ S5). Los cuatro
-items de navegación —Inicio, Taller, Wiki 3D, Proyectos— **no llevan a ninguna
-parte**: son `<li>` con un emoji, sin ruta y sin contenido. Este documento es
-sobre esos cuatro módulos, no sobre lo que ya funciona.
+items de navegación tienen ruta desde el enrutado (`/`, `/taller`, `/wiki`,
+`/proyectos`), pero **tres de las cuatro pantallas están vacías**: cada una dice
+qué módulo va a ser y que no está implementado. Este documento es sobre esos
+cuatro módulos, no sobre lo que ya funciona.
 
 ---
 
@@ -45,15 +46,22 @@ desaparece el límite de cuota que impone [S3](#️-supuesto-s3--persistencia-en
 También cambia el diseño de "Inicio" (H-3.1), que pasa de ser local a ser una
 vista de datos remotos.
 
-### ⚠️ SUPUESTO S2 — Sin cuentas. "Iniciar Sesión" no significa nada.
+### ⚠️ SUPUESTO S2 — Sin cuentas.
 
-Hoy hay un `<button>` sin `onClick`. Con S2 se retira de la interfaz o se deja
-visible y deshabilitado con la etiqueta "próximamente". No hay proveedor de
-identidad, ni registro, ni recuperación de contraseña.
+No hay proveedor de identidad, ni registro, ni recuperación de contraseña. Que no
+haya cuentas es un **supuesto**; que el botón "Iniciar Sesión" se retire es una
+**decisión ya tomada**.
+
+**Decidido:** el botón sale de la interfaz. No se deja deshabilitado, y el motivo
+es de accesibilidad, no de gusto. Un botón deshabilitado no llega al orden de
+tabulación, así que para quien navega con teclado sería indistinguible de que no
+existe; mientras que para quien usa ratón seguiría pareciendo una acción que se
+puede pulsar. Ninguna de las dos lecturas es buena. Si algún día hay cuentas, el
+botón vuelve con el proveedor detrás.
 
 **Si es falso**, y hay cuentas, aparece un requisito transversal que **ninguna de
-las once historias de este documento contempla**: qué se puede hacer sin sesión,
-y qué pasa con los datos de un usuario que cierra sesión. Eso no es un añadido
+las ocho historias de este documento contempla**: qué se puede hacer sin sesión, y
+qué pasa con los datos de un usuario que cierra sesión. Eso no es un añadido
 pequeño, es un cambio de modelo. Habría que reescribir el documento.
 
 ### ⚠️ SUPUESTO S3 — Persistencia en IndexedDB, no en `localStorage`.
@@ -61,11 +69,15 @@ pequeño, es un cambio de modelo. Habría que reescribir el documento.
 Porque un G-code pesa entre 1 y 200 MB, y `localStorage` tiene ~5 MB de cuota.
 IndexedDB da cuotas del orden de cientos de MB y las gestiona el navegador.
 
-**Si fuera `localStorage`**, sólo se podrían guardar los **metadatos** del
-análisis (unos cientos de bytes: material, gramos, horas), nunca el archivo. Eso
-significa que "Proyectos" (H-4.1) no podría volver a mostrar el archivo, sólo el
-análisis. Y si fuera IndexedDB y el límite real de cuota resulta ser más bajo de
-lo que esperamos, H-4.1 necesita una política de purga que hoy no está diseñada.
+**Si fuera `localStorage`**, sólo se podrían guardar los **metadatos** del análisis
+(unos cientos de bytes: material, gramos, horas), nunca el archivo. Y si fuera
+IndexedDB y el límite real de cuota resultara ser más bajo de lo que esperamos,
+H-4.1 necesitaría una política de purga que hoy no está diseñada.
+
+Lo primero ya no es hipotético: guardar el análisis y no el archivo **es la
+decisión P2**. La razón por la que se ha tomado es justamente esta: el archivo no
+cabe, el análisis sí. La consecuencia —que un análisis guardado no se puede volver
+a abrir en el visor— está escrita en H-4.1 y hay que enseñarla en la interfaz.
 
 **Con S1 + S3 juntos**, los datos viven en la máquina del usuario: se pierden al
 limpiar datos del navegador, no sobreviven a un cambio de dispositivo y no se
@@ -97,7 +109,7 @@ un `200`: la cuenta de Jev está sin crédito.
 Ninguna historia de este documento depende de que el diagnóstico sea de Jev o
 heurístico, pero **el usuario final no debería leer una heurística local como si
 fuera el veredicto de un modelo entrenado**, y eso es una decisión de producto que
-no está tomada (ver [Preguntas abiertas](#preguntas-abiertas), P7).
+no está tomada (ver [Preguntas abiertas](#preguntas-abiertas), P10).
 
 ---
 
@@ -234,28 +246,34 @@ muchos, no. **No está decidido cuál**, y depende de cuántos artículos haya
 
 ## Proyectos
 
-> **Lectura de este módulo (supuesto):** biblioteca de archivos ya subidos, con sus
-> análisis. Depende de S1 y S3 **por completo**. Es el módulo con más
-> incertidumbre de los cuatro.
+> **Lectura de este módulo (supuesto):** biblioteca de los análisis ya hechos,
+> consultables sin volver a subir el archivo. Depende de S1 y S3. Con P2 resuelto
+> —se guarda el análisis, no el archivo— deja de ser el módulo con más
+> incertidumbre de los cuatro: la cuota ya no es su punto de bloqueo.
 
-⚠️ SUPUESTO S1 + S3 condicionan toda esta sección. Con S1 cierto, ver
-[la aritmética de por qué esto no es construible todavía](#por-qué-dos-de-los-cuatro-módulos-no-son-construibles).
+⚠️ SUPUESTO S1 + S3 condicionan toda esta sección.
 
-### H-4.1 · Como persona, quiero guardar un archivo con su análisis, para volver a consultarlo sin volver a subirlo
+### H-4.1 · Como persona, quiero guardar un análisis, para volver a consultarlo sin volver a subir el archivo
 
 **Criterios de aceptación**
 
-- Un análisis se puede guardar con su archivo asociado.
-- El archivo se puede volver a abrir en el visor 3D (STL, 3MF) o volver a
-  analizar (G-code).
+- Un análisis se puede guardar. Se guarda **el análisis, no el archivo** (P2).
+- Al volver a él, se ve el mismo análisis: material, gramos, horas y el
+  diagnóstico. No hace falta el archivo para eso.
 - Los proyectos se listan y se pueden borrar.
 - **El espacio ocupado por los proyectos es visible**: cuánto usa y cuánto
   queda.
 - Al llegar a un umbral de cuota, la interfaz dice cuál es el límite **antes** de
   fallar, no después.
 
-**Lo que este criterio no resuelve:** el límite de cuota. Es el punto de bloqueo
-de todo el módulo (ver P1).
+**Lo que este criterio no resuelve:** el límite de cuota (P1). Sigue sin saber
+cuánto cabe, aunque con P2 resuelto la cifra sea de otro orden de magnitud.
+
+**Lo que este criterio no puede dar, y hay que decirlo en la interfaz:** sin el
+archivo no se puede volver a abrir en el visor 3D ni volver a analizar. El
+formato del archivo y su nombre sí se guardan, para poder describir el análisis,
+pero no su contenido. Si esa limitación molesta, es la señal de que P2 debe
+reabrirse.
 
 ---
 
@@ -293,10 +311,20 @@ archivos" es una promesa sin tamaño. Los G-code reales van de 200 KB a 200 MB: 
 fixture del repo pesa 197 KB, pero un G-code laminado de verdad lleva escenas de
 700 KB y moves de miles de millones de líneas.
 
-**P2 · ¿Debe Projects guardar el archivo o sólo el análisis?** Si sólo el
-análisis, son unos cientos de bytes por entrada y el límite deja de ser un
-problema. Si el archivo, P1 es bloqueante. Es la pregunta que más condiciona el
-módulo, y es de producto, no de técnica.
+**P2 · ¿Debe Proyectos guardar el archivo o sólo el análisis? — RESUELTA.
+Sólo el análisis.**
+
+Decidido en producto. Un análisis ocupa unos cientos de bytes: material, gramos,
+horas, temperaturas. Eso hace que **la cuota deje de ser el problema central de
+este módulo**, y por tanto que P1 deje de bloquearlo entero. P1 sigue abierta
+para el resto del almacenamiento local, pero ya no es lo que impide construir
+H-4.1.
+
+Lo que **no** se resuelve con esto, y hay que decirlo claro: un análisis guardado
+sin su archivo **no se puede volver a abrir en el visor 3D**. H-4.1 lo tenía como
+criterio de aceptación, y ese criterio se ha retirado. Guardar el archivo, si
+algún día hace falta, reabre P1 y trae detrás una política de purga que hoy no
+está diseñada.
 
 **P3 · ¿Cuántos artículos va a tener la Wiki 3D y quién los escribe?** Si son
 veinte y los escribe quien mantiene el repo, basta un array en memoria. Si son
@@ -312,15 +340,30 @@ decidir si la app se los pide a la persona.
 Taller (no bloqueado) o Taller y Wiki 3D. El orden sale de la respuesta, no al
 revés.
 
-**P6 · ¿"Inicio" es la pantalla de subida con historial, o es otra cosa?** El
-nombre admite las dos lecturas, y la primera hace de Inicio casi redundante con
-Proyectos.
+**P6 · ¿"Inicio" es la pantalla de subida con historial, o es otra cosa? —
+RESUELTA en parte: la raíz `/` es la pantalla de subida.**
+
+Decidido por condicionamiento técnico, no por preferencia: los cuatro scripts de
+`scripts/verify/` cargan ficheros sobre la raíz en 29 viewports y tres estados, y
+mover la subida a otra ruta los rompería.
+
+Lo que **no** se decide con esto es dónde vive el historial de H-3.1. Si "Inicio"
+es la subida **más** su historial, Inicio y Proyectos se distinguen porque uno
+muestra lo reciente y el otro, lo guardado. Si el historial va sólo en Proyectos,
+Inicio se queda en una pantalla de subida con cuatro módulos de navegación y poco
+más. Esa parte sigue abierta.
 
 ### De identidad
 
-**P7 · ¿Qué hace "Iniciar Sesión"?** Hoy no hace nada. Con S2 se retira. Si
-tiene que hacer algo, hace falta saber **qué**: ¿guardar proyectos en la nube?
-¿identidad entre dispositivos? ¿nada y se quita?
+**P7 · ¿Qué hace "Iniciar Sesión"? — RESUELTA. Se retira el botón.**
+
+Decidido en producto, junto con S2: el botón sale de la interfaz. El motivo está
+en S2 y es de accesibilidad, no de gusto.
+
+Lo que **sigue sin decidirse** es si habrá cuentas algún día (P9). Si las hay,
+esta pregunta vuelve a abrirse con contenido nuevo: ¿guardar proyectos en la
+nube? ¿identidad entre dispositivos? Hoy no se puede contestar porque no hay
+proveedor de identidad elegido.
 
 **P8 · ¿Puede usarse la app sin sesión, y qué se pierde?** Necesario para
 escribir los criterios de aceptación de cualquier historia que toque datos
@@ -341,16 +384,23 @@ metadatos.
 
 ---
 
-## Por qué dos de los cuatro módulos no son construibles
+## Por qué dos de los cuatro módulos dependen de una decisión sin tomar
 
 Esta es la restricción que decide el orden de trabajo, y conviene tenerla delante
 antes de elegir módulo.
 
-**La aritmética.** Un G-code pesa entre 200 KB y 200 MB. El fixture del repo
-—un G-code real de Creality Print, una medalla— pesa **197 KB**, y un G-code
-laminado de verdad lleva escenas de 700 KB y moves de miles de millones de
-líneas. `localStorage` tiene ~5 MB de cuota **compartidos por todo el origen**,
-así que caben entre 20 y 25 archivos como el del fixture, y ninguno grande.
+> **Actualizado con P2 (guardar el análisis, no el archivo).** La aritmética de
+> abajo está escrita para el caso peor —guardar el archivo— y ése ya no es el
+> caso. Un análisis son unos cientos de bytes, así que la cuota deja de ser el
+> muro. Lo que queda en pie no es el tamaño: son las tres condiciones de
+> después.
+
+**La aritmética, para guardar el archivo.** Un G-code pesa entre 200 KB y 200 MB.
+El fixture del repo —un G-code real de Creality Print, una medalla— pesa **197
+KB**, y un G-code laminado de verdad lleva escenas de 700 KB y moves de miles de
+millones de líneas. `localStorage` tiene ~5 MB de cuota **compartidos por todo el
+origen**, así que caben entre 20 y 25 archivos como el del fixture, y ninguno
+grande.
 
 IndexedDB sí tiene cuotas del orden de cientos de MB. Pero:
 
@@ -361,10 +411,21 @@ IndexedDB sí tiene cuotas del orden de cientos de MB. Pero:
   es una biblioteca: es una caché que el usuario no sabe que tiene.
 - No sobrevive a un cambio de dispositivo ni a un navegador distinto.
 
+**Y con P2 resuelto.** Guardar el análisis en vez del archivo baja el coste de
+cada entrada de cientos de megabytes a cientos de bytes, y con eso cae la primera
+de las tres condiciones. Quedan dos, y ninguna depende del tamaño: los datos se
+siguen perdiendo al limpiar el navegador, y no sobreviven a un cambio de
+dispositivo.
+
 **Qué significa esto.** Inicio (H-3.1 a H-3.3) y Proyectos (H-4.1) son módulos de
 almacenamiento local. Si el usuario pierde los datos, ha perdido el módulo
 entero. Para una herramienta de análisis de una pieza propia, eso es aceptable.
 Para un taller que lleva tres años de laminados, no.
+
+Lo que cambia con P2 es **para qué se puede usar** lo guardado. Sin el archivo, un
+análisis guardado sirve para consultarlo y compararlo, pero no para volver a
+abrirlo en el visor ni volver a analizarlo. Es una biblioteca de resultados, no de
+piezas.
 
 **Y por eso la única ayuda es dejar de decidir esto por código.** Si mañana hay
 una API (S1 falso), la sección [Qué cambia si hay backend](#qué-cambia-si-hay-backend)
@@ -434,4 +495,12 @@ Lo único verificado contra el código es:
   `VITE_JEV_USE_MOCK`. La activa en desarrollo es la segunda.
 - Que el fixture del repo es un Creality Print real con cabecera completa.
 - Que el tamaño del G-code del fixture es 197 KB.
-- Que los cuatro items de navegación no tienen ruta, ni `role`, ni `tabindex`.
+- Que los cuatro items de navegación eran `<li>` sin ruta, sin `role` y sin
+  `tabindex`, y que desde el enrutado son `<a href>` con `aria-current="page"` en
+  el de la ruta activa. Medido con `npm run verify:rutas`, que además comprueba
+  que los cuatro son alcanzables con Tab y navegables con Enter.
+
+**Preguntas resueltas desde la última versión:** P2 (Proyectos guarda el análisis,
+no el archivo), P7 (el botón "Iniciar Sesión" se retira) y la parte de P6 que
+decía si "Inicio" es la pantalla de subida — lo es, la raíz `/`. P6 sigue
+abierta en lo que queda: dónde vive el historial de H-3.1.

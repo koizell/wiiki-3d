@@ -317,12 +317,41 @@ body {
   color: var(--text-primary);
 }
 
-.nav-item.active {
+/*
+ * El estado activo se marca por `aria-current="page"`, y no por una clase.
+ *
+ * Es el atributo que `NavLink` pone solo en el enlace de la ruta activa, así que
+ * el estado visual y el que anuncia un lector de pantalla no pueden
+ * desincronizarse: sale del mismo sitio. Una clase `.active` aplicada a mano
+ * podría quedar puesta en el enlace equivocado, y entonces la app diría una cosa
+ * y mostraría otra.
+ */
+.nav-item[aria-current="page"] {
   background: var(--bg-hover);
   color: var(--text-primary);
   /* El indicador de "aquí estás" apunta hacia arriba en una barra horizontal,
      por eso el filete se mueve del lateral al superior. */
   border-top: 3px solid var(--accent);
+}
+
+/*
+ * Foco visible en los enlaces de navegación.
+ *
+ * Se mide sobre el enlace **activo**, que es el caso difícil: con
+ * `background: var(--bg-hover)` puesto, el anillo dibujado hacia fuera cae en el
+ * fondo del enlace y se pierde. Por eso el `outline-offset` es negativo: mete el
+ * anillo hacia dentro, encima del fondo del propio enlace.
+ *
+ * El color es `--accent-text`, el mismo que el filete del estado activo, para que
+ * el anillo y el filete se lean como la misma señal y no como dos distintos.
+ *
+ * Medido con `npm run verify:rutas`: 2px, offset -2px, en los cuatro tramos de
+ * ancho, y con la transición terminada — `.nav-item` tiene `transition: all`, así
+ * que leer el estilo calculado sin esperar mide el valor interpolado.
+ */
+.nav-item:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
 }
 
 /* Área central */
@@ -540,6 +569,46 @@ body {
   font-size: 0.875rem;
   line-height: 1.45;
   max-width: 32rem;
+}
+
+/*
+ * Pantallas vacías de los módulos que todavía no existen.
+ *
+ * Se centran en la columna en vez de ir arriba a la izquierda porque `.canvas-area`
+ * es un contenedor flex centrado, y una pantalla vacía pegada al borde parece
+ * un error de maquetación.
+ *
+ * El orden visual va al revés que el del DOM a propósito: la línea que dice qué
+ * va a hacer el módulo —"Va a calcular cuánto cuesta una pieza…"— es el contenido,
+ * y por eso usa el color principal de texto. "Sin implementar." es el estado, y
+ * por eso va debajo, en el color secundario, que en esta paleta da 5,1:1 sobre
+ * `--bg-dark` y cumple AA.
+ *
+ * `max-width` para que la línea no se estire de lado a lado en >=1200, donde la
+ * columna central llega a 676px: a ese ancho una frase de una línea y media se
+ * lee peor que la misma frase en 46rem.
+ */
+.placeholder-route {
+  text-align: center;
+  max-width: 46rem;
+}
+
+.placeholder-route h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.placeholder-route-purpose {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+.placeholder-route-note {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 
 /* Panel de análisis: estados de carga y error */
@@ -787,7 +856,10 @@ body {
     text-align: left;
   }
 
-  .nav-item.active {
+  /* En columna el indicador vuelve al lateral. El selector es el mismo
+     (`[aria-current="page"]`) que en la barra inferior: lo que cambia es la
+     orientación del filete, no la fuente del estado. */
+  .nav-item[aria-current="page"] {
     border-top: none;
     border-left: 3px solid var(--accent);
   }
