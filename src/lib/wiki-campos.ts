@@ -46,6 +46,7 @@
 export const CAMPOS_WIKI: Record<string, { slug: string; etiqueta: string }> = {
   warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA' },
   riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA' },
+  bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama' },
 };
 
 /**

@@ -34,7 +34,38 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:4173';
 
 /** El artículo de prueba. Si algún día cambia de nombre, esto avisa en vez de fallar en silencio. */
-const SLUG = 'warping-pla';
+/**
+ * Todos los artículos, leídos del directorio de contenido.
+ *
+ * Se descubren en vez de escribirse porque una lista en el script es una lista que
+ * se queda corta: con el primer artículo no había forma de que se olvidara, y con
+ * el segundo `SLUG` seguía apuntando al primero y sus comprobaciones de estructura
+ * no se ejecutaban contra él. Un artículo que nadie comprueba es un artículo que
+ * se publica sin comprobar.
+ */
+const SLUGS = readdirSync(join(RAIZ, 'src/content/wiki'))
+  .filter((f) => f.endsWith('.md'))
+  .map((f) => f.replace(/\.md$/, ''));
+
+/**
+ * El artículo con el que se comprueba el comportamiento.
+ *
+ * El más largo, a propósito. Los bloques de scroll, de ancho de línea y de
+ * animación se ejecutan **una vez**, en un artículo, porque abrir once un navegador
+ * por artículo multiplicaría el tiempo por diez. Elegir el más largo es la elección
+ * conservadora: es el que más secciones tiene, el que más se desplaza y el que más
+ * veces dispara el espía de la tabla de contenidos. Un artículo corto pasa por los
+ * mismos bloques con menos margen para fallar.
+ */
+const SLUG = SLUGS.reduce((largo, corto) => {
+  const n = (s) => readFileSync(join(RAIZ, 'src/content/wiki', `${s}.md`), 'utf-8').length;
+  return n(corto) > n(largo) ? corto : largo;
+}, SLUGS[0]);
+
+if (SLUGS.length === 0) {
+  console.error('No hay artículos en src/content/wiki/. No hay nada que verificar.');
+  process.exit(1);
+}
 
 /**
  * Los cinco anchos.
@@ -106,6 +137,49 @@ function leerCamposOpcionales() {
   }
 
   return { tiene: (c) => opcionales.has(c), lista };
+}
+
+/**
+ * Cuenta las tablas que declara un Markdown, con sus filas de cuerpo y sus celdas.
+ *
+ * Es una maquina de tres estados porque el formato de tabla de Markdown es
+ * exactement eso: una cabecera, un separador, y un cuerpo que acaba en cuanto una
+ * linea deja de empezar por barra vertical.
+ *
+ * Se cuenta **por bloque** y no en agregado por una razon concreta: un artículo con
+ * dos tablas de distinto número de columnas tiene un total de celdas que no es
+ * múltiplo del total de filas, y comprobar el agregado da un falso fallo con el
+ * artículo perfectamente bien. Pasó con `temperatura-cama`: 4x3 mas 3x4 son 24
+ * celdas en 7 filas, y una comprobacion de «celdas multiplo de filas» falla.
+ */
+function contarTablas(markdown) {
+  const lineas = markdown.split('\n');
+  const tablas = [];
+  let i = 0;
+
+  while (i < lineas.length) {
+    const esFila = (l) => /^\s*\|/.test(l);
+    const esSeparador = (l) => /^\s*\|[\s:|-]+\|\s*$/.test(l);
+    const columnas = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').length;
+
+    // Una tabla empieza en una cabecera seguida de un separador.
+    if (!esFila(lineas[i]) || !esSeparador(lineas[i + 1] ?? '')) {
+      i++;
+      continue;
+    }
+    const ancho = columnas(lineas[i]);
+    let filas = 0;
+    let celdas = 0;
+    i += 2; // cabecera y separador
+
+    while (i < lineas.length && esFila(lineas[i]) && !esSeparador(lineas[i])) {
+      filas++;
+      celdas += columnas(lineas[i]);
+      i++;
+    }
+    tablas.push({ ancho, filas, celdas });
+  }
+  return tablas;
 }
 
 /**
@@ -237,12 +311,28 @@ try {
     await ctx.close();
   }
 
-  // --- 2. Un artículo -------------------------------------------------------
-  console.log('\n=== Un artículo ===\n');
-  {
-    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
+  // --- 2. Cada artículo -----------------------------------------------------
+  console.log('\n=== Los artículos, uno por uno ===\n');
+  for (const slug of SLUGS) {
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${slug}`);
 
-    comprobar('el artículo no da errores de consola', errores.length === 0, errores[0] ?? '');
+    comprobar(`${slug}: sin errores de consola`, errores.length === 0, errores[0] ?? '');
+
+    /*
+     * Las filas y celdas esperadas se leen del Markdown, no se escriben aquí.
+     *
+     * Escribirlas habría puesto en el script el número de filas de un artículo
+     * concreto, y con el segundo artículo la comprobación habría estado contando
+     * filas de un artículo que ya no era el que se estaba mirando.
+     *
+     * El recuento lo hace `contarTablas()`, y el porqué de que cuente por bloque
+     * está en su comentario. Resumen: la primera versión de estas comprobaciones
+     * fallaba con este artículo, y el artículo estaba bien.
+     */
+    const markdown = readFileSync(join(RAIZ, 'src/content/wiki', `${slug}.md`), 'utf-8');
+    const declaradas = contarTablas(markdown);
+    const esperadoFilas = declaradas.reduce((s, x) => s + x.filas, 0);
+    const esperadoCeldas = declaradas.reduce((s, x) => s + x.celdas, 0);
 
     const estructura = await page.evaluate(() => ({
       h1: document.querySelectorAll('.canvas-area h1').length,
@@ -250,55 +340,71 @@ try {
       h2: document.querySelectorAll('.wiki-texto h2').length,
       h3: document.querySelectorAll('.wiki-texto h3').length,
       toc: document.querySelectorAll('.wiki-toc a').length,
-      anclaFoco: document.activeElement?.tagName ?? '',
-      anclaTexto: document.activeElement?.textContent ?? '',
-      tabla: document.querySelectorAll('.wiki-tabla').length,
       filas: document.querySelectorAll('.wiki-tabla tbody tr').length,
       celdas: document.querySelectorAll('.wiki-tabla tbody td').length,
+      tablas: document.querySelectorAll('.wiki-tabla').length,
       fuentes: document.querySelectorAll('.wiki-fuentes a').length,
-      pendientes: document.querySelectorAll('.wiki-pendiente').length,
+      pendientes: [...document.querySelectorAll('.wiki-pendiente')].map((e) => e.textContent),
+      enlaces: [...document.querySelectorAll('.wiki-link')].map((e) => e.getAttribute('href')),
       codigoInyectado: document.querySelectorAll('.wiki-texto script').length,
     }));
 
-    comprobar('el artículo tiene exactamente un <h1>', estructura.h1 === 1, `"${estructura.h1Texto.slice(0, 40)}"`);
-    comprobar('el <h1> recibe el foco al entrar', estructura.anclaFoco === 'H1', `<${estructura.anclaFoco.toLowerCase()}> "${estructura.anclaTexto.slice(0, 30)}"`);
-    comprobar('hay encabezados de segundo nivel', estructura.h2 > 0, `${estructura.h2} h2 y ${estructura.h3} h3`);
-    comprobar('la tabla de contenidos tiene un enlace por sección', estructura.toc === estructura.h2 + estructura.h3, `${estructura.toc} enlaces`);
-    comprobar('la tabla comparativa se pintó entera', estructura.filas === 3 && estructura.celdas === 9, `${estructura.filas} filas, ${estructura.celdas} celdas`);
-    comprobar('las fuentes salen al pie del artículo', estructura.fuentes === 5, `${estructura.fuentes} enlaces`);
-    comprobar('el HTML del artículo no inyecta etiquetas', estructura.codigoInyectado === 0);
+    const fuentesMd = (markdown.match(/^  - https?:\/\//gm) ?? []).length;
 
-    // Los enlaces cruzados: `[[slug]]` a una página que existe y a una que no.
-    const cruzados = await page.evaluate(() => ({
-      pendientes: [...document.querySelectorAll('.wiki-pendiente')].map((e) => e.textContent),
-      enlaces: [...document.querySelectorAll('.wiki-link')].map((e) => e.getAttribute('href')),
-    }));
-    const futuras = [...new Set(cruzados.pendientes)];
+    comprobar(`${slug}: un solo <h1>`, estructura.h1 === 1, `"${estructura.h1Texto.slice(0, 44)}"`);
+    comprobar(`${slug}: el <h1> recibe el foco al entrar`, (await page.evaluate(() => document.activeElement?.tagName)) === 'H1');
+    comprobar(`${slug}: hay secciones de segundo nivel`, estructura.h2 > 0, `${estructura.h2} h2 y ${estructura.h3} h3`);
     comprobar(
-      'una página que no existe se nombra como texto, no como enlace roto',
-      cruzados.pendientes.length >= 3 && cruzados.enlaces.length === 0,
-      `${cruzados.pendientes.length} menciones de ${futuras.length} páginas, ${cruzados.enlaces.length} enlaces`
+      `${slug}: la tabla de contenidos tiene un enlace por sección`,
+      estructura.toc === estructura.h2 + estructura.h3,
+      `${estructura.toc} enlaces para ${estructura.h2 + estructura.h3} secciones`
     );
+
+    // Las tablas, contra lo que el fichero declara.
+    comprobar(
+      `${slug}: las tablas se pintan enteras`,
+      estructura.tablas === declaradas.length &&
+        estructura.filas === esperadoFilas &&
+        estructura.celdas === esperadoCeldas,
+      `pintadas ${estructura.tablas} / ${estructura.filas} / ${estructura.celdas}; ` +
+        `declara ${declaradas.length} (${declaradas.map((x) => `${x.ancho}x${x.filas}`).join(' + ')})`
+    );
+
+    // Las fuentes, contra el frontmatter.
+    comprobar(
+      `${slug}: las fuentes salen al pie y son las del frontmatter`,
+      estructura.fuentes === fuentesMd && fuentesMd > 0,
+      `${estructura.fuentes} pintadas, ${fuentesMd} declaradas`
+    );
+
+    comprobar(`${slug}: el HTML no inyecta etiquetas`, estructura.codigoInyectado === 0);
+
     /*
-     * Se comparan páginas **distintas**, no apariciones. El artículo nombra
-     * «separaciones entre capas» dos veces —en el diagnóstico y en el final— y
-     * contar las dos como dos páginas distintas daría por bueno un artículo que
-     * enlaza tres veces con lo mismo.
+     * Los enlaces cruzados. `[[slug]]` a una página que existe es un enlace; a una
+     * que no, texto con marca. Lo que no puede haber es un `<a href>` apuntando a
+     * un artículo inexistente, porque eso es un enlace roto en un artículo que ya
+     * pasó revisión.
      */
+    const roto = estructura.enlaces.filter((h) => !SLUGS.includes(h.replace('/wiki/', '')));
     comprobar(
-      'las tres páginas futuras del final están nombradas',
-      ['Enclosure y warping', 'Separaciones entre capas', 'Adhesión en la primera capa'].every(
-        (n) => futuras.includes(n)
-      ),
-      futuras.join(' · ')
+      `${slug}: ningún enlace apunta a un artículo inexistente`,
+      roto.length === 0,
+      roto.length ? roto.join(' ') : `${estructura.enlaces.length} enlaces, ${estructura.pendientes.length} menciones de páginas pendientes`
+    );
+    comprobar(
+      `${slug}: las páginas futuras se nombran como texto`,
+      !estructura.pendientes.some((t) => /^https?:/.test(t)),
+      `${estructura.pendientes.length} pendiente(s)`
     );
 
-    // La tabla se desplaza dentro de su envoltorio y no arrastra la página.
-    const tablaOk = await page.evaluate(() => {
+    // La tabla tiene desplazamiento horizontal propio, si hay tablas.
+    const tablaOx = await page.evaluate(() => {
       const env = document.querySelector('.wiki-tabla-envoltura');
       return env ? getComputedStyle(env).overflowX : null;
     });
-    comprobar('la tabla tiene desplazamiento horizontal propio', tablaOk === 'auto', `overflow-x: ${tablaOk}`);
+    if (estructura.tablas > 0) {
+      comprobar(`${slug}: la tabla se desplaza en su propia caja`, tablaOx === 'auto', `overflow-x: ${tablaOx}`);
+    }
 
     await ctx.close();
   }
@@ -773,11 +879,30 @@ try {
       }))
     );
 
+    /*
+     * Cuáles filas **deben** tener enlace sale de `src/lib/wiki-campos.ts`, no de un
+     * número escrito aquí.
+     *
+     * La primera versión de esta comprobación decía «desde los dos campos atados» y
+     * contaba 2. Al añadir `bedTemp` a la tabla, sin tocar el script, dejó de pasar:
+     * el artículo nuevo estaba bien enlazado y la comprobación contaba de más. Es el
+     * mismo modo de fallo que las tablas por bloque, y por el mismo motivo: un
+     * número escrito en el script describe el mundo de hoy y no el de mañana.
+     */
     const conEnlace = filas.filter((f) => f.enlace);
+    const atados = new Set(
+      [...readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8').matchAll(/^\s{2}(\w+):\s*\{/gm)].map(
+        (m) => m[1]
+      )
+    );
+    const esperadas = filas.filter((f) => atados.has(CAMPO_POR_FILA[f.clave]));
+    const sinEnlace = esperadas.filter((f) => !f.enlace);
+
     comprobar(
-      'el panel enlaza al artículo desde los dos campos atados',
-      conEnlace.length === 2 && conEnlace.every((f) => f.enlace === `/wiki/${SLUG}`),
-      conEnlace.map((f) => `${f.clave} -> ${f.enlace}`).join(' · ')
+      'el panel enlaza a su artículo desde todos los campos atados',
+      esperadas.length > 0 && sinEnlace.length === 0 && conEnlace.length === esperadas.length,
+      `enlazan ${conEnlace.length}: ${conEnlace.map((f) => `${f.clave} -> ${f.enlace}`).join(' · ')}` +
+        (sinEnlace.length ? ` | SIN ENLACE: ${sinEnlace.map((f) => f.clave).join(', ')}` : '')
     );
 
     const sinDato = filas.filter((f) => f.valor === '—');

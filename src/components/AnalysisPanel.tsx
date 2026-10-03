@@ -150,7 +150,20 @@ function AnalysisPanel({
         <dl className="panel-data">
           <DataRow label="Material" value={metadata.material} />
           <DataRow label="Temp. hotend" value={formatCelsius(metadata.hotendTemp)} />
-          <DataRow label="Temp. cama" value={formatCelsius(metadata.bedTemp)} />
+          {/*
+            `campo="bedTemp"` es lo que hace que esta fila enlace al artículo que
+            explica la temperatura de cama. Se descubrió con una comprobación que
+            comparaba las filas del panel contra `src/lib/wiki-campos.ts`: el campo
+            estaba en la tabla y la fila no lo pedía, así que el enlace no salía
+            nunca y la tabla prometía una cosa que la vista no cumplía. Sin el
+            `campo`, esta fila es idéntica a la de al lado.
+          */}
+          <DataRow
+            label="Temp. cama"
+            value={formatCelsius(metadata.bedTemp)}
+            campo="bedTemp"
+            explicar={explicar}
+          />
           <DataRow label="Altura de capa" value={formatMillimetres(metadata.layerHeight)} />
           <DataRow label="Tiempo estimado" value={formatDuration(metadata.printTime)} />
           <DataRow label="Filamento" value={formatGrams(metadata.filamentUsed)} />
