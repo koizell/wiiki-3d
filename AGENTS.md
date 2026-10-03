@@ -101,3 +101,26 @@ nativo de subagentes basta y no añade dependencias.
   los tres.
 - **Tocar `wiki/raw/`.** Ni para corregir una errata. Si el dato estaba mal, se
   escribe un fichero nuevo.
+
+  Y aquí hay que ser exacto sobre **qué sostiene esa regla**, porque no es lo que
+  parece. **No son las herramientas.** Se probó la configuración fina que debería
+  conceder `write` y denegar `edit` por separado:
+
+  ```yaml
+  permission:
+    edit: { "write": allow, "edit": deny }
+  ```
+
+  y **el `deny` no se aplicó**: el cocinero editó un fichero sin ninguna
+  denegación, con la misma naturalidad con la que escribe uno nuevo. La forma
+  cortafija `bash: deny` sí se respeta, así que el fallo es de la forma anidada, no
+  del sistema de permisos. Y como la clave `edit` protege `write`, `edit` y
+  `apply_patch` a la vez, **no hay ninguna configuración que conceda escribir sin
+  poder reescribir**. Los cuatro agentes van con `edit: allow`, y la diferencia la
+  hace el prompt de cada uno.
+
+  Lo que sostiene la inmutabilidad son dos cosas y ninguna es una herramienta: **el
+  prompt** de cada agente, que dice qué no toca, y **`git diff wiki/raw/`**, que hay
+  que mirar antes de cada commit. Si alguna vez un `git status` muestra un fichero de
+  `wiki/raw/` modificado, la causa es un agente que desobedeció, no un fallo de la
+  configuración. No hay nada debajo que la sujete.

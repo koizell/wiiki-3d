@@ -44,8 +44,13 @@ Cada una pasa o falla. **El veredicto es APROBADO sólo si pasan las cinco.**
 ### 1 · Cada afirmación técnica tiene respaldo
 
 Recorre el artículo **dato a dato**, no párrafo a párrafo. Para cada temperatura,
-velocidad, ángulo, cantidad o afirmación técnica, comprueba que aparece en
-`wiki/cooked/` y que la cita del artículo apunta a una fuente real.
+velocidad, ángulo, cantidad o afirmación técnica, `grep` el fragmento en `wiki/raw/`.
+
+**`wiki/cooked/` es donde buscar, nunca donde comprobar.** El material cocinado es
+una capa intermedia, y una afirmación puede estar ahí y no estar en la fuente —las
+cuatro fabricaciones de `warping-pla` estaban las cuatro en `wiki/cooked/`, y tres de
+ellas las inventó el propio material cocinado—. Que el artículo coincida con él no
+prueba nada, porque los dos se escribieron el uno desde el otro.
 
 Fallan aquí:
 
@@ -92,11 +97,12 @@ justificando su existencia.
 
 - Cada URL de `sources` está en `wiki/raw/` con ese mismo `url`.
 - No hay dos fuentes repetidas en la lista.
-- **Ninguna cita entrecomillada del artículo puede faltar en `wiki/raw/`.** Para
-  cada una, `grep` el fragmento en `wiki/raw/` y tiene que estar. Si no aparece,
-  está inventada, y es motivo de rechazo aunque suene verosímil y encaje con el
-  material cocinado. Ver el apartado de más abajo, que es la regla que más ha
-  costado.
+- **Toda afirmación técnica del artículo se comprueba en `wiki/raw/`, y las citas
+  entrecomilladas también.** Para cada una, `grep` el fragmento en `wiki/raw/`. Si no
+  aparece, está inventada, y es motivo de rechazo aunque suene verosímil y encaje con
+  el material cocinado. Y si aparece, todavía hay que pasar las tres preguntas de
+  atribución, exactitud y contexto. El apartado de más abajo es la regla que más ha
+  costado, y va con los cuatro casos reales que la hicieron necesaria.
 - La primera cita está en la primera mitad del artículo, no al final.
 
 **Sobre los enlaces a páginas que todavía no existen: no son un fallo.** El artículo
@@ -170,7 +176,7 @@ Un `[[slug]]` a una página que no existe **no es este fallo** y no se anota aqu
   en `wiki/raw/warping-pla-prusa-foro.md` con las temperaturas antes y después.
 ```
 
-## La regla que más ha costado: una cita tiene que estar en el fichero crudo
+## La regla que más ha costado: toda afirmación se comprueba en el fichero crudo
 
 **Comprueba contra `wiki/raw/`, no contra `wiki/cooked/`.**
 
@@ -197,15 +203,68 @@ venían de hilos de foro:
 
 Todas cuatro pasaron dos revisiones.
 
+### Tres preguntas, para cada afirmación técnica del artículo
+
+No son tres pasos: son tres formas distintas de mentir que las cuatro fabricaciones
+usaron entre ellas. **De las cuatro, sólo una era una cita entrecomillada.** Las otras
+tres eran paráfrasis, y una regla sobre citas no las habría visto nunca.
+
+**1 · ¿La atribución es correcta? ¿Quién lo dijo, y es esa persona la que lo dijo?**
+
+No basta con que el dato esté en alguna parte del hilo: tiene que estar en la
+intervención de quien se le atribuye. El caso: los radios de 3 mm se le atribuían a
+Lichtjaeger y a Zakalawe, y eran de **Elias Spors, en otro hilo, cinco años después**.
+El artículo encadenaba los dos casos como si fueran el mismo hilo, separando lo que
+funcionó de lo que no.
+
+Para cada afirmación con nombre de persona, `grep` en `wiki/raw/` y mira **en qué
+intervención** está. Si el hilo tiene varias voces, el nombre tiene que coincidir con
+la voz que escribió la frase.
+
+**2 · ¿La afirmación es exacta? ¿Dice esto, o dice algo más débil?**
+
+La fuente dice «**I suspect would** make the most difference» y el artículo cuenta que
+«resolvió su caso con un enclosure». Una sospecha en condicional se convirtió en un
+resultado. Y en el mismo caso había dos detalles inventados encima: «sin tapa» y «con
+espuma de embalaje». **Tres cosas falsas en una frase**, y ninguna se delata por rareza:
+suenan exactamente como debería sonar un caso resuelto.
+
+La prueba que funciona es mirar **el tiempo verbal y el modo**. Un caso resuelto se
+cuenta en pasado; una fuente que planea habla en futuro —«I will setup»— o en
+condicional —«I would», «I suspect», «might», «should»—. Si el artículo cuenta algo en
+pasado y la fuente habla en condicional, es una paráfrasis que exageró, y eso es
+motivo de rechazo aunque el resto de la frase cuadre.
+
+**3 · ¿El contexto es el correcto? ¿Se están mezclando dos fuentes en una frase?**
+
+El chaflán: la fuente dice «chamfered the edges of the shape in **Fusion**». Fusion es
+Fusion 360, un programa de CAD, y el artículo decía «en el laminador». La atribución
+era correcta —lo dijo esa persona, en ese hilo— pero **la herramienta estaba
+cambiada**, y eso convierte una instrucción buena en una imposible: el laminador sólo
+trae chaflán de esquina, no de arista.
+
+Cuando una frase nombre una herramienta, un programa, un ajuste o un fichero, `grep`
+**el nombre propio**, no la frase entera. El nombre propio es lo que delata el cambio
+de contexto.
+
 ### Qué hacer, en concreto
 
-Para cada afirmación técnica y **cada cita entrecomillada** del artículo:
+Para cada afirmación técnica **y** cada cita entrecomillada del artículo:
 
 1. `grep` el fragmento en `wiki/raw/`.
-2. Si aparece, está respaldada. Anota el fichero y la línea.
+2. Si aparece, pasa a las tres preguntas de arriba. Aparecer **no** es estar respaldado:
+   también hay que comprobar quién lo dijo, si es tan exacto como el artículo lo
+   cuenta, y si el nombre propio es el correcto.
 3. **Si no aparece, está inventada.** Da igual que suene verosímil, que encaje con el
    material cocinado, o que haya salido en una revisión anterior: lo que cuenta es si
    la frase está en el fichero crudo.
+
+**Y hay que saber `grep`ear por partes.** Una afirmación puede estar repartida en dos
+sitios distintos del crudo y entonces sí está respaldada. Y ojo con lo contrario: los
+ficheros de `wiki/raw/` parten a 80 columnas, así que **una cita entrecomillada puede
+cruzar un salto de línea y `grep` del fragmento entero no la encuentra**. Eso no la
+convierte en inventada: hay que buscar por las dos mitades. Un `grep` mal usado
+produce un rechazo falso, que es la forma más cara de equivocarse en este trabajo.
 
 Y un caso aparte: un hilo de foro es conversación. Lo que alguien dice que **va a
 hacer** no es lo que hizo, y dos personas de dos hilos distintos no son una
