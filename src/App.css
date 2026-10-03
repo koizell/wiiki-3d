@@ -1574,10 +1574,39 @@ body {
 
 /* --- El texto del artículo --------------------------------------------------
  *
- * `68ch` como ancho máximo. Está dentro del rango cómodo de 45 a 75 caracteres
- * en cuanto la caja da para eso, y en móvil manda la caja: en 375px de pantalla
- * la columna central no llega a 45 caracteres con cuerpo de 16px, y subir la
- * fuente hasta completar 45 dejaría un solo artículo por pantalla.
+ * `68ch` como ancho máximo. Está dentro del rango cómodo de 45 a 75 caracteres en
+ * cuanto la caja da para eso, y por encima de 640px da: medido, 62 a 71.
+ *
+ * ## Por qué a 375px se queda en 35 y no se toca
+ *
+ * Porque **45 caracteres son aritméticamente imposibles** a 375px, y no es una
+ * cuestión de ajuste. Medido con la fuente real en pantalla, un carácter ocupa
+ * 9,47px, así que 45 necesitan 426px de caja — y la pantalla tiene 375. Aunque el
+ * texto tocara los dos bordes.
+ *
+ * La pregunta útil entonces es cuánta línea se gana quitando relleno, y la
+ * respuesta está medida aplicando cada candidato en el navegador:
+ *
+ *   relleno/lado   caja   caracteres
+ *        20px      335        35      <- lo que hay ahora
+ *        16px      343        36
+ *        12px      351        37      <- 16px menos por lado
+ *         8px      359        38
+ *         4px      367        39
+ *         0px      375        40      <- sin relleno: el texto pegado al borde
+ *
+ * Quitar 16px por lado gana **dos** caracteres, 35 -> 37. Y llegar a 40 exige quitar
+ * los 40px de relleno, con el texto pegado al borde de la pantalla, y aun así no se
+ * llega al suelo de la guía. Comprar un carácter a costa de aire en la pantalla, y
+ * dos a costa de un salto en el margen, no es una mejora: es un trueque a peor.
+ *
+ * La otra vía es bajar el cuerpo, y ahí está el otro extremo del trato: llegar a 45
+ * caracteres con 335px de caja pide un cuerpo de 12,6px. Un cuerpo de 12,6 en un
+ * móvil es peor de leer que una línea corta con cuerpo de 16, y una wiki se lee.
+ *
+ * Así que el 35 se queda, y `scripts/verify/wiki.mjs` lo avisa en cada ejecución en
+ * vez de darlo por bueno en silencio. Los otros cuatro anchos sí se comprueban contra
+ * el rango, y fallan si salen.
  */
 .wiki-texto {
   max-width: 68ch;

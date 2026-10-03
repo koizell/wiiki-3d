@@ -24,6 +24,81 @@ módulo van a ser y que no está implementado; la wiki ya tiene contenido.
 
 ---
 
+## Wiki 3D: fase 3 cerrada, contenido pendiente
+
+**Ruta, buscador, tabla de contenidos y el panel atado a los artículos: hechos, en
+`d357ddf`.** Verificado con `scripts/verify/wiki.mjs`, nuevo, 84 de 84.
+
+Los tres fallos que sólo salieron al medir están en el historial del commit y
+vuelven a aparecer aquí porque son el tipo de cosa que no se ve en una captura:
+
+| Fallo | Por qué no se veía |
+|---|---|
+| Contenido recortado a 375 px | Los hijos del grid vienen con `min-width: auto` y no pueden encogerse: 462 px de contenido en un carril de 335. Con `overflow-x: hidden` **no hay barra horizontal**, así que se recorta sin aviso |
+| Línea de 37 caracteres a 1200 px | El umbral del reparto en dos columnas la estrechaba **al activarse**. Medido carácter a carácter, 9,47 px, no `ch` |
+| El realce no se movía a partir de 1200 px | El `scroll` lo escuchaba `window` y quien se desplaza es `.canvas-area`; y la línea de lectura nacía del propio artículo, que al bajar arrastraba el umbral |
+
+### Las tres decisiones que cierran el contenido
+
+**1 · Un artículo puede cubrir varios campos; un campo, nunca dos artículos.**
+`warpingRisk` y `riskLevel` son el mismo dato en dos versiones, la categoría y el
+número, y que el panel enlace desde dos sitios al mismo artículo no es duplicación.
+Al revés sí hay ambigüedad, y el panel no sabría a cuál mandar.
+`src/lib/wiki-campos.ts` lo hace cumplir `verify:wiki`: un campo con dos slugs es un
+error de datos que el `Record` se tragaría en silencio.
+
+**2 · El panel enlaza siempre, y el artículo explica por qué puede faltar.** Un
+artículo atado a un campo **opcional** de `ProjectMetadata` lleva una sección que
+contesta por qué el slicer de este G-code no lo escribió. Que el panel haya pintado
+«—» es una razón más para leer el artículo, no menos.
+`verify:wiki` lee la lista de opcionales de `src/services/types.ts` y no de una copia,
+para que añadir un campo opcional al tipo no deje de exigir su sección en silencio.
+
+`warping-pla` **no** lleva esa sección, y está comprobado: `warpingRisk` y
+`riskLevel` son obligatorios en `JevClassification`.
+
+**3 · La línea de 35 caracteres a 375 px se queda, y es un límite, no una deuda.**
+El suelo de 45 caracteres es **aritméticamente imposible** a 375 px: un carácter
+ocupa 9,47 px medidos, así que 45 necesitan 426 px de caja y la pantalla tiene 375.
+Medido también cuánto gana quitando relleno: 16 px por lado dan **dos** caracteres,
+35 → 37, y llegar a 40 exige quitar los 40 px con el texto pegado al borde de la
+pantalla. Comprar un carácter a costa de aire no es una mejora. La otra vía es bajar
+el cuerpo, y llegar a 45 con 335 px de caja pide 12,6 px: peor de leer que una línea
+corta con 16. Los otros cuatro anchos sí se comprueban contra el rango, y fallan si
+salen.
+
+### Lo único que bloquea la publicación
+
+**El canal de contacto.** `CONTACTO` en `src/routes/InfoRoute.tsx` está vacío a
+propósito y la página de Contacto lo dice en pantalla en vez de enseñar un correo
+inventado. Es un paso de publicación, no de desarrollo: poner la dirección real en
+ese sitio. **Una página de contacto sin forma de contacto falla la revisión de
+AdSense**, así que es el bloqueante único.
+
+### Los nueve artículos
+
+`docs/plan-de-contenido.md` los tiene: el orden justificado, las fuentes candidatas
+**verificadas una a una con `curl` y con su `<title>` leído**, los comandos de los
+cuatro agentes, once criterios de aceptación medibles, y la advertencia de por qué
+van en lotes de dos o tres y no de golpe.
+
+Dos cosas que salieron de recoger esas fuentes y que **no se han aplicado**:
+
+- **La tabla de materiales de Bambu sí se lee** —seis `<table>` reales— y da la
+  temperatura de cama por material: PLA **35–65 °C**, PETG 60–80, ABS y ASA
+  90–100, PC 100–120. Eso **resuelve la contradicción 1** del material cocinado: los
+  dos números que allí parecían discrepar son los dos extremos de un mismo rango por
+  material. Y el techo de 65 °C deja de ser «una sola fuente, de foro» y pasa a estar
+  en la tabla oficial de Bambu.
+- **La contradicción 3 del enclosure tiene respuesta oficial**: para PLA, con la cama
+  por encima de 45 °C, Bambu recomienda abrir la puerta frontal y quitar la tapa
+  superior. Los dos fabricantes llegan a lo mismo desde lados opuestos.
+
+No se ha tocado `wiki/cooked/` ni el artículo: son salida del pipeline, y el artículo
+ya pasó revisión. Queda anotado para que lo haga el pipeline.
+
+---
+
 ## Decisiones pendientes
 
 Sólo las abiertas. Las resueltas están en el documento de historias, marcadas
@@ -105,8 +180,7 @@ consume un servicio externo es la clasificación de Jev, y está en modo simulad
 
 | Punto | Estado | Detalle |
 |---|---|---|
-| **Canal de contacto sin configurar** | Abierto, bloquea la publicación | `CONTACTO` en `src/routes/InfoRoute.tsx` está vacío a propósito, y la página de Contacto lo dice en pantalla en vez de enseñar un correo inventado. Es lo único que impide que esa página sirva para algo, y es un paso de publicación: poner la dirección real en ese sitio. |
-| **`CAMPOS_WIKI` es una tabla escrita a mano** | Abierto, verificado | `src/lib/wiki-campos.ts` no puede derivarse del contenido sin meter los artículos en el chunk inicial. `scripts/verify/wiki.mjs` lo comprueba contra el frontmatter real, así que desfasarse rompe la verificación y no la aplicación. Con siete campos atados habrá que decidir si un artículo puede cubrir dos o si eso duplica los enlaces del panel. |
+| **`CAMPOS_WIKI` es una tabla escrita a mano** | Abierto, verificado | `src/lib/wiki-campos.ts` no puede derivarse del contenido sin meter los artículos en el chunk inicial. `scripts/verify/wiki.mjs` lo comprueba contra el frontmatter real, así que desfasarse rompe la verificación y no la aplicación. Con siete campos atados habrá que vigilar que no aparezcan dos enlaces al mismo artículo en la misma sección del panel. |
 |---|---|---|
 | **Visor por debajo de 150 px a 640×360** | Abierto, conocido | Es la única aserción que falla de `verify:layout`: el visor mide 144 px, y por debajo de 150 px el modelo en pantalla baja de 115 px. Los otros seis controles pasan, y los 29 números dan lo mismo que antes de este trabajo. |
 | **`modelPixels()` es una réplica manual** | Abierto, documentado | `scripts/verify/probe.mjs` replica la aritmética de `frameCamera()` de `Viewer3D.tsx`, y `scripts/verify/investigacion/frame.mjs` es una tercera copia. Si la función cambia, el barrido compararía números viejos **sin avisar**. Está escrito en ambos README, pero no hay ninguna comprobación automática que detecte la desincronización. |

@@ -26,6 +26,7 @@
 
 import { chromium } from 'playwright';
 import { readFileSync, readdirSync } from 'node:fs';
+import { GCODE_FIXTURE } from './fixtures.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -75,6 +76,59 @@ const CARACTERES_MAX = 75;
  * que se queden desincronizadas sin que ninguna de las dos avise.
  */
 const PREFIJO_ESTRECHO = '375x667';
+
+/**
+ * Qué campos de los dos contratos de datos son opcionales, leído del propio
+ * `src/services/types.ts` y no escrito aquí.
+ *
+ * La lista se deriva a propósito. Copiarla en este script haría que añadir un
+ * campo opcional a `ProjectMetadata` dejara de exigir su sección sin que nada
+ * fallara: el script seguiría leyendo su copia vieja y daría verde.
+ *
+ * No es un parser de TypeScript y no pretende serlo: busca la declaración de la
+ * interfaz, se queda hasta su llave de cierre y lee los `nombre?:` de dos líneas
+ * por encima. Si algún día el tipo se rompe de otra forma, el script avisa de que
+ * no ha encontrado campos opcionales en vez de pasarlo por alto.
+ */
+function leerCamposOpcionales() {
+  const fuente = readFileSync(join(RAIZ, 'src/services/types.ts'), 'utf-8');
+  const opcionales = new Set();
+  const lista = [];
+
+  for (const interfaz of ['ProjectMetadata', 'JevClassification']) {
+    const desde = fuente.indexOf(`export interface ${interfaz}`);
+    if (desde === -1) continue;
+    const cuerpo = fuente.slice(desde, fuente.indexOf('\n}', desde));
+    for (const m of cuerpo.matchAll(/^ {2}(\w+)\?:/gm)) {
+      opcionales.add(m[1]);
+      lista.push(m[1]);
+    }
+  }
+
+  return { tiene: (c) => opcionales.has(c), lista };
+}
+
+/**
+ * De la etiqueta que ve la persona al nombre del campo en el contrato de datos.
+ *
+ * El panel enseña «Peso total» y el tipo se llama `filamentWeight`, y no hay forma
+ * de pasar de uno a otro sin un mapa: los rótulos son para las personas y los
+ * nombres de campo son para el código, y no se parecen.
+ */
+const CAMPO_POR_FILA = {
+  'Material': 'material',
+  'Temp. hotend': 'hotendTemp',
+  'Temp. cama': 'bedTemp',
+  'Altura de capa': 'layerHeight',
+  'Tiempo estimado': 'printTime',
+  'Filamento': 'filamentUsed',
+  'Peso total': 'filamentWeight',
+  'Voladizos': 'hasOverhangs',
+  'Ángulo máx.': 'overhangAngle',
+  'Nivel de riesgo': 'riskLevel',
+  'Riesgo de warping': 'warpingRisk',
+  'Soportes': 'needsSupport',
+};
 
 const resultados = [];
 let fallos = 0;
@@ -588,6 +642,84 @@ try {
     await priv.ctx.close();
   }
 
+  // --- 11. El enlace del panel, con dato y sin dato ------------------------
+  console.log('\n=== El enlace del panel a la wiki ===\n');
+  {
+    /*
+     * El panel con un G-code cargado, porque es la única forma de ver los enlaces
+     * en su sitio. El fixture deja dos campos opcionales sin dato —`Peso total` y
+     * `Ángulo máx.`—, y eso es lo que permite comprobar la regla de la segunda
+     * decisión sin tener que inventar un G-code: **el enlace no depende del
+     * valor**.
+     *
+     * Ahora mismo los dos campos atados —`warpingRisk` y `riskLevel`— son
+     * obligatorios, así que el caso del enlace con «—» se comprueba en vacío, y
+     * esto lo deja escrito: en cuanto haya artículo para `filamentUsed`,
+     * `filamentWeight`, `hasOverhangs` u `overhangAngle`, la comprobación empieza a
+     * mirar de verdad. Si el enlace desapareciera al no haber dato, falla aquí el
+     * primer día, no cuando alguien lo note.
+     */
+    const ctx = await navegador.newContext({
+      viewport: { width: 1280, height: 800 },
+      colorScheme: 'dark',
+    });
+    const page = await ctx.newPage();
+    await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+    await page.setInputFiles('#file-upload', GCODE_FIXTURE);
+    await page.waitForSelector('.file-info', { timeout: 30000 });
+    await page.waitForTimeout(1200);
+
+    const filas = await page.evaluate(() =>
+      [...document.querySelectorAll('.panel-data-row')].map((f) => ({
+        clave: f.querySelector('.panel-data-key')?.textContent.trim() ?? '',
+        valor: f.querySelector('.panel-data-value')?.childNodes[0]?.textContent?.trim() ?? '',
+        enlace: f.querySelector('.panel-explicar')?.getAttribute('href') ?? null,
+      }))
+    );
+
+    const conEnlace = filas.filter((f) => f.enlace);
+    comprobar(
+      'el panel enlaza al artículo desde los dos campos atados',
+      conEnlace.length === 2 && conEnlace.every((f) => f.enlace === `/wiki/${SLUG}`),
+      conEnlace.map((f) => `${f.clave} -> ${f.enlace}`).join(' · ')
+    );
+
+    const sinDato = filas.filter((f) => f.valor === '—');
+    comprobar(
+      'el fixture deja campos opcionales sin dato, que es lo que hace falta para esta comprobación',
+      sinDato.length >= 2,
+      `«${sinDato.map((f) => f.clave).join('», «')}»`
+    );
+
+    // De los campos sin dato, los que tengan artículo tienen que enlazar igual.
+    const enlaces = readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8');
+    const conArticulo = [...enlaces.matchAll(/^\s{2}(\w+):\s*\{\s*slug:/gm)].map((m) => m[1]);
+    const sinDatoConArticulo = sinDato.filter((f) => conArticulo.includes(CAMPO_POR_FILA[f.clave]));
+    comprobar(
+      'un campo sin dato sigue enlazando a su artículo',
+      sinDatoConArticulo.every((f) => f.enlace !== null),
+      sinDatoConArticulo.length === 0
+        ? `ninguno de los campos sin dato («${sinDato.map((f) => f.clave).join('», «')}») tiene artículo todavía; en cuanto tenga uno, esta comprobación deja de estar en vacío`
+        : sinDatoConArticulo.map((f) => `${f.clave}: ${f.enlace ?? 'SIN ENLACE'}`).join(' · ')
+    );
+
+    // El enlace tiene que ser alcanzable y visible, no sólo estar en el DOM.
+    const enlace = page.locator('.panel-explicar').first();
+    comprobar('el enlace del panel es alcanzable con teclado', (await enlace.evaluate((e) => e.tabIndex >= 0)) === true);
+    const foco = await enlace.evaluate((e) => {
+      e.focus();
+      const s = getComputedStyle(e);
+      return { trazo: s.outlineWidth, visible: e === document.activeElement };
+    });
+    comprobar(
+      'el enlace del panel muestra foco visible',
+      foco.visible && foco.trazo !== '0px',
+      `outline-width: ${foco.trazo}`
+    );
+
+    await ctx.close();
+  }
+
   // --- 10. La tabla campo -> artículo, contra los artículos de verdad -------
   console.log('\n=== La tabla de campos atados a artículos ===\n');
   {
@@ -595,6 +727,17 @@ try {
      * `src/lib/wiki-campos.ts` está a mano y es un segundo sitio que puede
      * desfasarse. Se comprueba contra el frontmatter real de los artículos, que es
      * donde vive la verdad.
+     *
+     * Y la dirección de la comprobación es deliberada: **cada campo apunta a un
+     * artículo**, no «cada artículo tiene un campo». Son dos reglas distintas:
+     *
+     *   - Un artículo puede cubrir varios campos. `warping-pla` cubre `riskLevel` y
+     *     `warpingRisk`, que son el mismo dato en dos versiones. Que el panel
+     *     enlace desde dos sitios al mismo artículo no es duplicación.
+     *   - Un campo no puede apuntar a dos artículos. Ahí sí hay ambigüedad y el
+     *     panel no sabría a cuál mandar. Como la tabla es un `Record`, una clave
+     *     repetida con dos slugs no da error: JavaScript se queda con la última en
+     *     silencio. De ahí que se compruebe sobre el texto.
      */
     const fuente = readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8');
     const entradas = [...fuente.matchAll(/^\s{2}(\w+):\s*\{\s*slug:\s*'([^']+)'/gm)].map((m) => ({
@@ -603,24 +746,75 @@ try {
     }));
     comprobar('la tabla de campos tiene entradas', entradas.length > 0, `${entradas.length}`);
 
-    const articulos = readdirSync(join(RAIZ, 'src/content/wiki')).filter((f) => f.endsWith('.md'));
+    // Un mismo campo, dos slugs: el `Record` se tragaría el duplicado sin avisar.
+    const porCampo = new Map();
+    for (const e of entradas) {
+      if (!porCampo.has(e.campo)) porCampo.set(e.campo, new Set());
+      porCampo.get(e.campo).add(e.slug);
+    }
+    const ambiguos = [...porCampo.entries()].filter(([, slugs]) => slugs.size > 1);
+    comprobar(
+      'ningún campo apunta a dos artículos distintos',
+      ambiguos.length === 0,
+      ambiguos.length ? ambiguos.map(([c, s]) => `${c} -> ${[...s].join(' y ')}`).join('; ') : `${entradas.length} campos, un artículo cada uno`
+    );
+
+    // Y al revés: que ningún campo quede apuntando a un artículo que no exista o
+    // que no lo declare.
+    const opcionales = leerCamposOpcionales();
     for (const { campo, slug } of entradas) {
       const ruta = join(RAIZ, 'src/content/wiki', `${slug}.md`);
-      let ok = false;
+      let declarado = false;
       let detalle = 'el fichero no existe';
       try {
         const texto = readFileSync(ruta, 'utf-8');
         const linea = texto.match(/^campo:\s*\[(.*)\]/m);
-        ok = Boolean(linea && linea[1].split(',').map((s) => s.trim()).includes(campo));
-        detalle = ok
+        declarado = Boolean(linea && linea[1].split(',').map((s) => s.trim()).includes(campo));
+        detalle = declarado
           ? `${campo} -> ${slug}, declarado en el frontmatter`
           : `el artículo existe pero no declara «campo: ${campo}»`;
       } catch {
-        ok = false;
+        declarado = false;
       }
-      comprobar(`«${campo}» apunta a un artículo que existe y lo declara`, ok, detalle);
+      comprobar(`«${campo}» apunta a un artículo que existe y lo declara`, declarado, detalle);
+
+      /*
+       * La sección que exige la segunda decisión, y sólo cuando el campo es
+       * opcional.
+       *
+       * Un artículo atado a un campo obligatorio —`material`, `printTime`, y los
+       * tres de `JevClassification`— no la necesita: el slicer siempre escribe
+       * esos, así que no hay caso «no me lo ha dado» que contestar. Y en un campo
+       * opcional, esa sección es el contenido que explica por qué el panel de
+       * quien lo lee acaba de pintar «—», que es material real y es la mitad de lo
+       * que esta wiki sabe y una genérica no.
+       *
+       * `warping-pla` **no** pasa por aquí: `warpingRisk` y `riskLevel` son
+       * obligatorios en `JevClassification`.
+       */
+      if (declarado && opcionales.tiene(campo)) {
+        const cuerpo = readFileSync(ruta, 'utf-8');
+        const titulos = [...cuerpo.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1]);
+        const tieneSeccion = titulos.some(
+          (h) => /por qué/i.test(h) && /slicer|dato/i.test(h)
+        );
+        comprobar(
+          `«${campo}» es opcional, así que su artículo explica por qué puede faltar`,
+          tieneSeccion,
+          tieneSeccion
+            ? `«${titulos.find((h) => /por qué/i.test(h) && /slicer|dato/i.test(h))}»`
+            : `secciones presentes: ${titulos.slice(0, 4).join(' · ')}`
+        );
+      }
     }
-    comprobar('con artículos escritos hay al menos un campo atado', entradas.length > 0 && articulos.length > 0);
+
+    const articulos = readdirSync(join(RAIZ, 'src/content/wiki')).filter((f) => f.endsWith('.md'));
+    comprobar('hay artículos escritos y al menos un campo atado', entradas.length > 0 && articulos.length > 0, `${articulos.length} artículo(s)`);
+    comprobar(
+      'la lista de campos opcionales se ha podido leer de types.ts',
+      opcionales.lista.length > 0,
+      `${opcionales.lista.length} opcionales: ${opcionales.lista.join(', ')}`
+    );
   }
 } finally {
   await navegador.close();

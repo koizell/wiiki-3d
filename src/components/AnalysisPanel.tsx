@@ -243,6 +243,22 @@ function DataRow({
   campo?: string;
   explicar?: AnalysisPanelProps['explicar'];
 }) {
+  /*
+   * El enlace se decide **fuera** de la comprobación del valor, y a propósito.
+   *
+   * Cuando el slicer no escribe un campo opcional, el panel pinta «—», y ahí el
+   * artículo sigue enlazando. El artículo explica el concepto, no esta instancia:
+   * que el G-code de este usuario no traiga el campo es **una razón más para
+   * leerlo**, porque la sección «Por qué tu slicer puede no escribir este dato» viene
+   * justo a contestar eso. Poner el enlace dentro de «si hay valor» dejaría sin
+   * salida a quien más lo necesita.
+   *
+   * Los dos únicos campos atados ahora mismo —`warpingRisk` y `riskLevel`— son
+   * obligatorios, así que este camino todavía no se ha visto en un G-code real.
+   * `scripts/verify/wiki.mjs` lo vigila con el fixture, que sí deja `Peso total` y
+   * `Ángulo máx.` sin dato, para que en cuanto haya artículo para uno de esos dos
+   * el enlace con «—» quede comprobado desde el primer día.
+   */
   const articulo = campo && explicar ? explicar(campo) : null;
   return (
     <div className="panel-data-row">
