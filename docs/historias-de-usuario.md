@@ -215,6 +215,9 @@ no está tomada (ver [Preguntas abiertas](#preguntas-abiertas), P10).
 - El resultado indica de dónde sale cada número: se ven los gramos, el precio por
   gramo y el coste calculado.
 
+> **Diseño aprobado:** [`docs/taller.md`](taller.md). Las decisiones que implementan
+> estos criterios están ahí, y con ellas la razón de cada una.
+
 ### H-2.2 · Como persona, quiero ver el coste desglosado, para entender qué parte es material y qué parte es máquina
 
 **Criterios de aceptación**
