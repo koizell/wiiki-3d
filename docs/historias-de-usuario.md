@@ -42,7 +42,7 @@ un fichero en memoria.
 
 **Si es falso**, y hay una API, entonces H-3.2, H-3.3 y H-4.1 cambian por
 completo (ver [Qué cambia si hay backend](#qué-cambia-si-hay-backend)) y
-desaparece el límite de cuota que impone [S3](#️-supuesto-s3--persistencia-en-indexeddb-no-localstorage).
+desaparece el límite de cuota que impone [S3](#-supuesto-s3--persistencia-en-indexeddb-no-en-localstorage).
 También cambia el diseño de "Inicio" (H-3.1), que pasa de ser local a ser una
 vista de datos remotos.
 
@@ -266,8 +266,11 @@ muchos, no. **No está decidido cuál**, y depende de cuántos artículos haya
 - Al llegar a un umbral de cuota, la interfaz dice cuál es el límite **antes** de
   fallar, no después.
 
-**Lo que este criterio no resuelve:** el límite de cuota (P1). Sigue sin saber
-cuánto cabe, aunque con P2 resuelto la cifra sea de otro orden de magnitud.
+**Lo que este criterio no resuelve:** nada de cuota. P1 está resuelta y medida: un
+análisis ocupa entre 397 y 651 B, así que en el `localStorage` más pequeño que se
+ha medido caben 8 053 ([el método](#el-tamaño-real-de-un-análisis)). El aviso de
+umbral sigue teniendo sentido, porque es una precaución honesta, pero ya no es el
+criterio que bloquea el módulo.
 
 **Lo que este criterio no puede dar, y hay que decirlo en la interfaz:** sin el
 archivo no se puede volver a abrir en el visor 3D ni volver a analizar. El
@@ -301,30 +304,52 @@ Explícitamente. No es que se haga más tarde: es que no se hace.
 
 ## Preguntas abiertas
 
-Las del Grupo 1, sin responder. Cada una bloquea algo concreto.
+Cada una bloquea algo concreto. Las marcadas **RESUELTA** ya no bloquean: están
+aquí con su respuesta, para que se vea qué se decidió y con qué datos.
+
+**Estado:** once preguntas, tres resueltas —P1, P2 y la parte de P6 que decía si
+"Inicio" es la pantalla de subida—. Quedan **ocho** por responder.
 
 ### Bloqueantes
 
 **P1 · ¿Cuánto espacio hay en `localStorage` e IndexedDB en la práctica, y
-cuántos análisis caben?** Bloquea H-4.1 entera. Sin esa cifra, "biblioteca de
-archivos" es una promesa sin tamaño. Los G-code reales van de 200 KB a 200 MB: el
-fixture del repo pesa 197 KB, pero un G-code laminado de verdad lleva escenas de
-700 KB y moves de miles de millones de líneas.
+cuántos análisis caben? — RESUELTA. La cuota no es una restricción.**
+
+Medido, no estimado. El método, para que el número sea repetible, está en
+[El tamaño real de un análisis](#el-tamaño-real-de-un-análisis). La cifra:
+
+| Criterio | Valor |
+|---|---|
+| Tamaño de un análisis | **397–651 B** (JSON UTF-8) |
+| Peor caso con 20 000 análisis | **12,42 MB** |
+| En `localStorage` de 5 MB, la cota más baja medida | **8 053 análisis** |
+| En IndexedDB de 100 MB, cota conservadora | **161 071 análisis** |
+| Respecto al G-code | el análisis es el **0,20 %** del archivo |
+
+**La pregunta dejó de ser bloqueante.** Cuando P1 era relevante —guardando el
+archivo— los G-code reales iban de 200 KB a 200 MB y la cuota era el muro. Con P2
+resuelto el único dato que se guarda es el análisis, y 651 B no son un problema de
+espacio en ningún almacenamiento de navegador.
+
+**Lo que queda no es una cifra que medir, sino una promesa que cumplir.** Con P2
+resuelto, el único límite real de "Proyectos" es que un análisis guardado **no se
+puede volver a abrir en el visor 3D**: sin el archivo no hay malla que mostrar ni
+G-code que volver a analizar. Eso es de producto —qué se le promete a quien
+guarda— y no de almacenamiento. Si algún día se quiere guardar también el
+archivo, P1 vuelve a ser relevante con el archivo de vuelta en la ecuación, y con
+él una política de purga que hoy no está diseñada.
 
 **P2 · ¿Debe Proyectos guardar el archivo o sólo el análisis? — RESUELTA.
 Sólo el análisis.**
 
-Decidido en producto. Un análisis ocupa unos cientos de bytes: material, gramos,
-horas, temperaturas. Eso hace que **la cuota deje de ser el problema central de
-este módulo**, y por tanto que P1 deje de bloquearlo entero. P1 sigue abierta
-para el resto del almacenamiento local, pero ya no es lo que impide construir
-H-4.1.
+Decidido en producto, y medido: un análisis ocupa entre 397 y 651 B
+([el método](#el-tamaño-real-de-un-análisis)), así que la cuota deja de ser el
+problema central de este módulo y P1 deja de bloquearlo entero.
 
 Lo que **no** se resuelve con esto, y hay que decirlo claro: un análisis guardado
 sin su archivo **no se puede volver a abrir en el visor 3D**. H-4.1 lo tenía como
-criterio de aceptación, y ese criterio se ha retirado. Guardar el archivo, si
-algún día hace falta, reabre P1 y trae detrás una política de purga que hoy no
-está diseñada.
+criterio de aceptación, y ese criterio se ha retirado. Ese límite es de producto,
+no de almacenamiento.
 
 **P3 · ¿Cuántos artículos va a tener la Wiki 3D y quién los escribe?** Si son
 veinte y los escribe quien mantiene el repo, basta un array en memoria. Si son
@@ -384,16 +409,102 @@ metadatos.
 
 ---
 
+## El tamaño real de un análisis
+
+La medición que responde [P1](#preguntas-abiertas). Va aquí, y no dentro de la
+pregunta, porque es un dato que se puede repetir.
+
+### El número
+
+Con los datos del fixture real del repo —
+`test-fixtures/Argentina T-shirt medal_PLA_2m56s.gcode` — pasado por `parseGcode` y
+por `classifyWithJev`:
+
+| Objeto | Bytes |
+|---|---|
+| `metadata` (`ProjectMetadata`) | 192 |
+| `classification` (`JevClassification`) | 174 |
+| Los dos juntos | **397** |
+
+Y el rango, que es lo que hace que la cifra signifique algo. Un solo G-code da un
+solo número, y ese número no generaliza. Dos cabeceras sintéticas en el formato
+`; clave = valor` de la familia Prusa/Orca —el único que el parser acepta—
+pasadas por el mismo parser y el mismo clasificador:
+
+| Caso | Bytes |
+|---|---|
+| Fixture real | **397** |
+| Mínimo sintético: sólo las dos claves obligatorias, nombre corto | 469 |
+| Máximo sintético: todas las claves del parser, nombre de 118 caracteres | **651** |
+
+**El rango es 397–651 B, y la variación entre el peor y el mejor caso es de 1,64
+veces.** El mínimo lo da el fixture, no la cabecera sintética: su nombre de archivo
+y su cadena de material son más cortos que los del caso mínimo a propósito. Lo que
+más pesa en el peor caso no son los números, sino el nombre del archivo y la cadena
+del material.
+
+### Por qué el tamaño no depende del archivo
+
+El análisis sale de la cabecera que escribió el slicer, no del contenido. Un G-code
+de 197 KB y uno de 200 MB dan un análisis del mismo tamaño. **El tamaño del archivo
+no entra en la cuenta.**
+
+### Cuántos caben
+
+Calculado con el **peor** caso, 651 B. Si el módulo aguanta con el peor caso,
+aguanta siempre.
+
+| Almacenamiento | Análisis |
+|---|---|
+| `localStorage`, 5 MB, la cota más baja medida | **8 053** |
+| `localStorage`, 10 MB, Chrome y Firefox actuales | 16 107 |
+| IndexedDB, 100 MB, cota conservadora | 161 071 |
+| IndexedDB, 1 GB | 1 649 373 |
+
+Y las dos referencias que lo enmarcan:
+
+- El análisis es el **0,20 %** del tamaño del G-code del fixture: 498 veces más
+  pequeño.
+- 20 000 análisis ocupan **12,42 MB** en el peor caso.
+
+**Conclusión: la cuota no es una restricción.** Incluso en el `localStorage` más
+pequeño que se ha medido caben más de 8 000 análisis, y el caso de uso de la app
+es el de una persona que analiza sus propias piezas.
+
+### Cómo se midió, para que se pueda repetir
+
+- El parser y el clasificador se empaquetaron con **rolldown**, que es lo que usa
+  Vite 8, desde los ficheros reales del proyecto. No se copiaron a mano: una copia
+  escrita a mano mediría la copia, no el código que corre en producción.
+- `import.meta.env` se sustituyó por los valores leídos del `.env` del repo, que
+  es exactamente la sustitución que hace Vite al construir. El script se niega a
+  seguir si queda un solo `import.meta.env` sin sustituir.
+- La ruta simulada es la que hay activa en `.env`, `VITE_JEV_USE_MOCK=true`, así
+  que la clasificación medida es la de `mockClassify`, la heurística local. Con la
+  ruta real el texto de la recomendación sería el de Jev, y el tamaño del análisis
+  sería el mismo orden, porque depende de la longitud de una frase.
+- `src/services/` **no se ha modificado**. Es una transformación de tiempo de
+  compilación sobre una copia, como la que hace Vite.
+
+### Lo que esta medición no dice
+
+No dice cuánto crece una biblioteca de análisis con el tiempo, ni qué pasa cuando
+la persona guarda cientos. Eso no es una pregunta de bytes: es de diseño de
+interfaz, qué se lista, cómo se ordena y cómo se borra. Son las historias H-3.2 y
+H-3.3, y no dependen de esta cifra.
+
+---
+
 ## Por qué dos de los cuatro módulos dependen de una decisión sin tomar
 
 Esta es la restricción que decide el orden de trabajo, y conviene tenerla delante
 antes de elegir módulo.
 
-> **Actualizado con P2 (guardar el análisis, no el archivo).** La aritmética de
-> abajo está escrita para el caso peor —guardar el archivo— y ése ya no es el
-> caso. Un análisis son unos cientos de bytes, así que la cuota deja de ser el
-> muro. Lo que queda en pie no es el tamaño: son las tres condiciones de
-> después.
+> **Actualizado con P1 y P2.** La aritmética de abajo está escrita para el caso
+> peor —guardar el archivo— y ése ya no es el caso. Un análisis son 397–651 B
+> ([medido](#el-tamaño-real-de-un-análisis)), así que **la cuota deja de ser el
+> muro**. Lo que queda en pie son las otras dos condiciones: los datos se pierden
+> al limpiar el navegador, y no sobreviven a un cambio de dispositivo.
 
 **La aritmética, para guardar el archivo.** Un G-code pesa entre 200 KB y 200 MB.
 El fixture del repo —un G-code real de Creality Print, una medalla— pesa **197
@@ -411,11 +522,12 @@ IndexedDB sí tiene cuotas del orden de cientos de MB. Pero:
   es una biblioteca: es una caché que el usuario no sabe que tiene.
 - No sobrevive a un cambio de dispositivo ni a un navegador distinto.
 
-**Y con P2 resuelto.** Guardar el análisis en vez del archivo baja el coste de
-cada entrada de cientos de megabytes a cientos de bytes, y con eso cae la primera
-de las tres condiciones. Quedan dos, y ninguna depende del tamaño: los datos se
+**Y con P1 y P2 resueltos.** Guardar el análisis en vez del archivo baja el coste
+de cada entrada de cientos de megabytes a 397–651 B, y con eso cae la primera de
+las tres condiciones. Quedan dos, y **ninguna depende del tamaño**: los datos se
 siguen perdiendo al limpiar el navegador, y no sobreviven a un cambio de
-dispositivo.
+dispositivo. El número está medido en
+[El tamaño real de un análisis](#el-tamaño-real-de-un-análisis).
 
 **Qué significa esto.** Inicio (H-3.1 a H-3.3) y Proyectos (H-4.1) son módulos de
 almacenamiento local. Si el usuario pierde los datos, ha perdido el módulo
@@ -442,9 +554,10 @@ documento, sólo a reemplazar las historias afectadas.
 
 ### Qué se resuelve solo
 
-- **P1 (cuota).** Deja de ser una pregunta abierta: el límite pasa a ser el del
-  servidor. Los criterios de H-4.1 sobre espacio usado y umbral dejan de
-  aplicar y se sustituyen por los de permisos.
+- **P1 (cuota).** Ya está resuelta, así que aquí no se resuelve nada: el límite
+  simplemente deja de ser el del navegador y pasa a ser el del servidor. Los
+  criterios de H-4.1 sobre espacio usado y umbral siguen aplicando, pero por
+  otra razón, y se sustituyen por los de permisos.
 - **H-3.2 y H-3.3 (borrado).** Necesitan confirmación de red y manejo de error
   de red. Si el borrado falla en el servidor, la entrada **no** debe desaparecer
   de la lista.
@@ -495,12 +608,17 @@ Lo único verificado contra el código es:
   `VITE_JEV_USE_MOCK`. La activa en desarrollo es la segunda.
 - Que el fixture del repo es un Creality Print real con cabecera completa.
 - Que el tamaño del G-code del fixture es 197 KB.
+- Que un análisis serializado ocupa entre 397 y 651 B, y que en el `localStorage`
+  más pequeño medido caben 8 053. El método, con el empaquetado y la sustitución
+  de `import.meta.env`, está en
+  [El tamaño real de un análisis](#el-tamaño-real-de-un-análisis).
 - Que los cuatro items de navegación eran `<li>` sin ruta, sin `role` y sin
   `tabindex`, y que desde el enrutado son `<a href>` con `aria-current="page"` en
   el de la ruta activa. Medido con `npm run verify:rutas`, que además comprueba
   que los cuatro son alcanzables con Tab y navegables con Enter.
 
-**Preguntas resueltas desde la última versión:** P2 (Proyectos guarda el análisis,
-no el archivo), P7 (el botón "Iniciar Sesión" se retira) y la parte de P6 que
-decía si "Inicio" es la pantalla de subida — lo es, la raíz `/`. P6 sigue
-abierta en lo que queda: dónde vive el historial de H-3.1.
+**Preguntas resueltas desde la última versión:** P1 (la cuota no es una
+restricción, medido), P2 (Proyectos guarda el análisis, no el archivo), P7 (el
+botón "Iniciar Sesión" se retira) y la parte de P6 que decía si "Inicio" es la
+pantalla de subida — lo es, la raíz `/`. P6 sigue abierta en lo que queda: dónde
+vive el historial de H-3.1.
