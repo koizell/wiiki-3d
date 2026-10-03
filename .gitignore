@@ -52,8 +52,20 @@ chrome/
 # sí deba versionarse. Se reinstalan con `npx ux-toolkit install --project`
 # (documentado en el README).
 .opencode/skills/
-.opencode/agents/
 .opencode/commands/
+
+# Los agentes del pipeline LLM Wiki (recolector, cocinero, redactor, revisor)
+# son config del proyecto y sí se versionan. Los de ux-toolkit no: se reinstalan
+# con `npx ux-toolkit install --project` (documentado en el README).
+#
+# El patrón lleva `/*` y no el directorio entero por una razón de git: no baja a
+# un directorio excluido, así que con el directorio excluido las negaciones de
+# abajo no tendrían efecto y estos cuatro ficheros seguirían ignorados.
+.opencode/agents/*
+!.opencode/agents/recolector.md
+!.opencode/agents/cocinero.md
+!.opencode/agents/redactor.md
+!.opencode/agents/revisor.md
 
 # Plugins de OpenCode. Graphify intenta instalar aquí un plugin que usa la API de
 # plugins de la v1, y OpenCode 2 no ejecuta los plugins de la v1: carga el

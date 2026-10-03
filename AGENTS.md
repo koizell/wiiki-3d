@@ -10,3 +10,69 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## El grafo del conocimiento: LLM Wiki
+
+Este proyecto tiene un segundo grafo, distinto del de `graphify`: el de la Wiki 3D,
+que se construye a partir de fuentes de internet y no de código. Las dos cosas se
+llaman grafo y no tienen nada que ver.
+
+Es el patrón de Karpathy: **en vez de recuperar fragmentos en tiempo de consulta,
+el modelo compila el conocimiento una vez y lo mantiene**. No hay base de datos
+vectorial, ni búsqueda semántica, ni servidor. Hay Markdown y cuatro agentes.
+
+### Las tres capas, y su frontera
+
+| Capa | Dónde | Quién escribe | Regla |
+|---|---|---|---|
+| **Fuentes crudas** | `wiki/raw/` | `recolector` | **Inmutable.** Un fichero escrito ahí no se toca jamás. |
+| **Material cocinado** | `wiki/cooked/` | `cocinero` | Las afirmaciones ya extraídas, cada una con su fuente. |
+| **La wiki** | `src/content/wiki/` | `redactor` | Los artículos que se leen, con frontmatter. |
+
+La frontera es lo importante: **el redactor no lee `wiki/raw/`, lee `wiki/cooked/`.**
+No escribe un dato que no esté cocinado, porque el cocinero es el que decide qué
+está respaldado. Si el redactor pudiera llegar a las fuentes crudas, se saltaría el
+filtro, y el filtro es la mitad del valor del patrón.
+
+### Las tres operaciones
+
+**Ingest.** Añadir una fuente es el ciclo completo: `recolector` la trae a
+`wiki/raw/`, `cocinero` la procesa en `wiki/cooked/`, `redactor` escribe en
+`src/content/wiki/`, y `revisor` verifica. Si el revisor rechaza, el artículo vuelve
+al redactor con las notas; no se escribe otro desde cero.
+
+**Query.** Para una pregunta sobre impresión 3D, primero `wiki/cooked/`, después
+`src/content/wiki/`, y sólo si no hay nada `wiki/raw/`. Al revés que con `graphify`.
+
+**Lint.** Cada cierto tiempo, el `revisor` recorre la wiki buscando afirmaciones sin
+respaldo, contradicciones, páginas huérfanas y enlaces cruzados rotos. Es la misma
+comprobación que hace sobre un artículo, pero sobre toda la wiki.
+
+### Los cuatro agentes
+
+Están en `.opencode/agents/`, y se versionan. Cada uno recibe **rutas de ficheros,
+nunca el historial de conversación**, y devuelve **rutas de ficheros**, nunca
+texto para las personas.
+
+| Agente | Escribe | Devuelve |
+|---|---|---|
+| `recolector` | `wiki/raw/` | Rutas, y una línea por fuente |
+| `cocinero` | `wiki/cooked/` | Rutas |
+| `redactor` | `src/content/wiki/` | La ruta y el contador de palabras |
+| `revisor` | Un informe | `APROBADO` o `RECHAZADO` con notas |
+
+Se delegan con la herramienta `task`. No hay orquestación externa: el sistema
+nativo de subagentes basta y no añade dependencias.
+
+### Lo que no puede pasar
+
+- **Un artículo sin fuentes reales.** Cada dato técnico lleva su cita, y la cita
+  apunta a una URL que está en `wiki/raw/`. Sin eso el sitio no pasa revisión de
+  contenido, y el patrón no sirve de nada.
+- **Relleno.** Un párrafo sin ningún dato concreto sobra, por bien escrito que esté.
+  La longitud es un mínimo de 800 palabras, no un objetivo a alcanzar.
+- **Una contradicción resuelta por el redactor.** Si dos fuentes discrepan, el
+  artículo explica el matiz. Elegir una y callar las demás es el fallo más grave de
+  los tres.
+- **Tocar `wiki/raw/`.** Ni para corregir una errata. Si el dato estaba mal, se
+  escribe un fichero nuevo.

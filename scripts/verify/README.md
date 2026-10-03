@@ -86,6 +86,12 @@ Dos detalles que hacen que la comprobación mida algo:
 Comprobado que **falla contra el código anterior**: sin el cambio, da `h1=0` en los
 dos estados de `/` y salto `1 → 3` en las tres rutas que sí tenían `<h1>`.
 
+## Otro pipeline que usa estos scripts
+
+La Wiki 3D tiene su propio pipeline de generación, con cuatro agentes, en
+[`scripts/wiki/`](../wiki/README.md). No comparte nada con estos scripts salvo el
+hábito de que un número citado en un informe tiene que ser reproducible.
+
 ## Ficheros de apoyo
 
 `probe.mjs` tiene las sondas y la aritmética de `frameCamera`. La comparte
