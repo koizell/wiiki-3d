@@ -1,0 +1,437 @@
+# Historias de usuario — wiiki-3d
+
+> **Estado: borrador con supuestos.** Este documento **no describe el producto**:
+> lo que existe hoy es un analizador de un solo fichero. Describe lo que los
+> módulos necesitarían para ser construidos, y cada afirmación que no está
+> verificada va marcada. Los supuestos son **propuestas**, no decisiones, y cada
+> uno dice explícitamente qué cambia si es falso.
+>
+> La sección que más importa es [Por qué dos de los cuatro módulos no son
+> construibles](#por-qué-dos-de-los-cuatro-módulos-no-son-construibles). No es
+> una salvedad al final: es la restricción que decide el orden de trabajo.
+
+---
+
+## Qué es la app
+
+**wiiki-3d es una herramienta para quien fabrica piezas con impresoras 3D en
+casa y quiere saber si el laminado que ha elegido va a salir bien antes de
+gastarse el filamento.** Sube un G-code exportado del slicer, y la app lee la
+cabecera que el slicer escribió (material, temperaturas, altura de capa, tiempo,
+gramos) y devuelve un diagnóstico de riesgo: nivel de riesgo, probabilidad de
+warping, y si la pieza necesita soportes. Los formatos STL y 3MF se ven en un
+visor 3D con órbita; los G-code no se renderizan todavía.
+
+**Estado real de esa frase:** el analizador y el visor 3D existen y funcionan. El
+diagnóstico de riesgo sale de una **heurística local** (ver ⚠️ S5). Los cuatro
+items de navegación —Inicio, Taller, Wiki 3D, Proyectos— **no llevan a ninguna
+parte**: son `<li>` con un emoji, sin ruta y sin contenido. Este documento es
+sobre esos cuatro módulos, no sobre lo que ya funciona.
+
+---
+
+## Los cuatro supuestos
+
+Se usan en todo el documento. Cada historia affected indica cuáles la condicionan.
+
+### ⚠️ SUPUESTO S1 — Sin backend. Todo vive en el navegador.
+
+No hay API, no hay servidor, no hay base de datos. Lo único que la app tiene es
+un fichero en memoria.
+
+**Si es falso**, y hay una API, entonces H-3.2, H-3.3 y H-4.1 cambian por
+completo (ver [Qué cambia si hay backend](#qué-cambia-si-hay-backend)) y
+desaparece el límite de cuota que impone [S3](#️-supuesto-s3--persistencia-en-indexeddb-no-localstorage).
+También cambia el diseño de "Inicio" (H-3.1), que pasa de ser local a ser una
+vista de datos remotos.
+
+### ⚠️ SUPUESTO S2 — Sin cuentas. "Iniciar Sesión" no significa nada.
+
+Hoy hay un `<button>` sin `onClick`. Con S2 se retira de la interfaz o se deja
+visible y deshabilitado con la etiqueta "próximamente". No hay proveedor de
+identidad, ni registro, ni recuperación de contraseña.
+
+**Si es falso**, y hay cuentas, aparece un requisito transversal que **ninguna de
+las once historias de este documento contempla**: qué se puede hacer sin sesión,
+y qué pasa con los datos de un usuario que cierra sesión. Eso no es un añadido
+pequeño, es un cambio de modelo. Habría que reescribir el documento.
+
+### ⚠️ SUPUESTO S3 — Persistencia en IndexedDB, no en `localStorage`.
+
+Porque un G-code pesa entre 1 y 200 MB, y `localStorage` tiene ~5 MB de cuota.
+IndexedDB da cuotas del orden de cientos de MB y las gestiona el navegador.
+
+**Si fuera `localStorage`**, sólo se podrían guardar los **metadatos** del
+análisis (unos cientos de bytes: material, gramos, horas), nunca el archivo. Eso
+significa que "Proyectos" (H-4.1) no podría volver a mostrar el archivo, sólo el
+análisis. Y si fuera IndexedDB y el límite real de cuota resulta ser más bajo de
+lo que esperamos, H-4.1 necesita una política de purga que hoy no está diseñada.
+
+**Con S1 + S3 juntos**, los datos viven en la máquina del usuario: se pierden al
+limpiar datos del navegador, no sobreviven a un cambio de dispositivo y no se
+pueden compartir. Esto es asumible para un análisis de una pieza propia, y no lo
+es para un taller.
+
+### ⚠️ SUPUESTO S4 — El alcance realista son 2 módulos, no 4.
+
+**Taller** (calculadora) y **Wiki 3D** (contenido estático) no necesitan
+persistencia y se pueden construir con S1. **Proyectos** (biblioteca de archivos)
+e **Inicio** (análisis recientes) dependen de S1 y S3, y con S1 cierto tienen un
+límite de cuota que hay que decidir antes de prometerlos.
+
+**Si S4 se acepta**, el enrutado tiene sentido ahora mismo —permite tener cuatro
+pantallas vacías verificables y navegación real— pero **llenar los módulos no**.
+Construir enrutado primero es trabajo que no se tira: es la condición para que
+Taller y Wiki 3D existan, y es lo que arregla el bug de navegación por teclado
+(los items son hoy `<li>` sin `tabindex`, sin `role` y sin `href`, así que no son
+alcanzables con teclado).
+
+### ⚠️ SUPUESTO S5 — El diagnóstico de riesgo es heurístico, no de un modelo.
+
+**Nota de contexto, no un supuesto a decidir.** `JevService` tiene dos rutas: una
+real contra un Worker de Cloudflare, y una heurística local que se activa con
+`VITE_JEV_USE_MOCK=true`. **La que está activa en desarrollo es la heurística**
+(está en `.env`). El propio código documenta que la ruta real nunca ha devolvido
+un `200`: la cuenta de Jev está sin crédito.
+
+Ninguna historia de este documento depende de que el diagnóstico sea de Jev o
+heurístico, pero **el usuario final no debería leer una heurística local como si
+fuera el veredicto de un modelo entrenado**, y eso es una decisión de producto que
+no está tomada (ver [Preguntas abiertas](#preguntas-abiertas), P7).
+
+---
+
+## Inicio
+
+> **Lectura de este módulo (supuesto):** la pantalla de subida que ya existe, más
+> una lista de análisis recientes si S3 sale adelante. No es un panel de
+> bienvenida ni un dashboard. Si "Inicio" fuera otra cosa, todo lo de abajo cambia.
+
+⚠️ SUPUESTO S1 y S3 condicionan H-3.1 en adelante.
+
+### H-3.1 · Como persona que vuelve a la app, quiero ver mis análisis recientes, para no tener que volver a subir el mismo archivo
+
+**Criterios de aceptación**
+
+- Al abrir la app, si hay análisis guardados, aparece una lista con al menos:
+  nombre del archivo, fecha, material y nivel de riesgo.
+- La lista ordena por fecha descendente.
+- Pulsar una entrada vuelve a mostrar el análisis completo (los 9 campos de
+  metadatos y el diagnóstico), **sin necesidad de volver a subir el archivo**.
+- Si no hay nada guardado, la pantalla de subida ocupa el lugar entero, sin
+  mensaje de error ni estado vacío con adornos.
+- La lista es usable a 375 px de ancho: los nombres largos de archivo se rompen
+  en varias líneas, no se recortan en silencio ni desbordan.
+
+### H-3.2 · Como persona, quiero borrar un análisis de mi historial, para no acumular datos que ya no necesito
+
+**Criterios de aceptación**
+
+- Cada entrada de la lista tiene una acción de borrado.
+- El borrado pide confirmación: el nombre del archivo y el hecho de que no se
+  puede deshacer.
+- Tras confirmar, la entrada desaparece de la lista y sus datos se borran del
+  almacenamiento. No queda un registro fantasma.
+- Si el borrado falla, la entrada sigue en la lista y se muestra un error. La
+  interfaz no dice que se borró algo que sigue ahí.
+
+### H-3.3 · Como persona, quiero vaciar todo el historial de una vez, para no tener que ir borrando uno a uno
+
+**Criterios de aceptación**
+
+- Hay una acción de "vaciar todo", distinta del borrado individual y más difícil
+  de pulsar por accidente.
+- Pide confirmación explícita que dice **cuántos** análisis se van a borrar.
+- Después de vaciar, la app vuelve al estado de primera vez: pantalla de subida,
+  historial vacío.
+- El borrado de datos es una operación local, así que **no necesita confirmación
+  de red** y funciona sin conexión.
+
+---
+
+## Taller
+
+> **Lectura de este módulo (supuesto):** calculadora de coste y tiempo a partir de
+> los metadatos que el parser ya extrae —material, gramos, horas—, para responder
+> "¿cuánto me cuesta esta pieza?". Sin persistencia, sin backend, sin cuentas.
+> **Es el único módulo cuyo alcance se puede escribir hoy con los datos que ya
+> tenemos.**
+>
+> Si "Taller" fuera un editor de perfiles de laminado o un comparador de
+> slicers, esto no aplica.
+
+⚠️ Ningún supuesto lo bloquea. Es el módulo con menor incertidumbre.
+
+### H-2.1 · Como persona que imprime mucho, quiero calcular cuánto me cuesta una pieza, para decidir si merece la pena imprimirla
+
+**Criterios de aceptación**
+
+- Dados los metadatos de un análisis (material, gramos, tiempo, peso total),
+  la calculadora devuelve un coste en euros.
+- **El precio por gramo del filamento es un dato que mete la persona**, no uno
+  que la app conoce: el parser no extrae precios y no hay backend (S1).
+- Si falta el precio del material, la calculadora lo dice y no devuelve un
+  número inventado. Es la misma regla que ya aplica `JevService`: **ante la
+  duda, falla; nunca rellena**.
+- Si faltan los gramos o el tiempo del G-code, ocurre lo mismo.
+- El resultado indica de dónde sale cada número: se ven los gramos, el precio por
+  gramo y el coste calculado.
+
+### H-2.2 · Como persona, quiero ver el coste desglosado, para entender qué parte es material y qué parte es máquina
+
+**Criterios de aceptación**
+
+- El coste se separa en coste de filamento y coste de máquina.
+- El de filamento sale de gramos × precio. El de máquina requiere la potencia y
+  el precio de la energía, que son **datos de configuración de la persona**, no
+  del G-code.
+- Con sólo los datos del G-code, se puede calcular el coste de filamento. El de
+  máquina necesita configuración que la app no tiene.
+
+**Nota de alcance:** el reparto entre filamento y máquina es una decisión de
+producto pendiente (ver P4). Puede que la app no deba calcularlo y basarse con
+mostrar el coste de material.
+
+---
+
+## Wiki 3D
+
+> **Lectura de este módulo (supuesto):** contenido propio dentro de la app, en
+> Markdown, versionado con el código. Si "Wiki 3D" fuera una wiki externa, esto no
+> es un módulo sino un conjunto de enlaces, y la decisión de producto sería si
+> abrir enlaces externos o no.
+
+⚠️ SUPUESTO S1 lo condiciona: sin backend, el contenido es un fichero en el
+repositorio, no algo que se pueda editar desde la app.
+
+### H-1.1 · Como persona que está aprendiendo a imprimir, quiero leer guías dentro de la app, para no tener que salir a buscar
+
+**Criterios de aceptación**
+
+- Hay un índice navegable de artículos.
+- Cada artículo se puede leer sin conexión (S1: el contenido va en el bundle).
+- La lectura es usable a 375 px, que es donde se va a leer la mayoría de las
+  veces.
+- **No hay editor.** El contenido es de sólo lectura. Esto es consecuencia de S1,
+  no una decisión de producto tomada.
+- El contenido se renderiza desde Markdown, no desde HTML arbitrario: no hay
+  superficie de inyección.
+
+### H-1.2 · Como persona, quiero buscar entre los artículos, para encontrar algo concreto sin recorrerlos todos
+
+**Criterios de aceptación**
+
+- Hay un campo de búsqueda en el índice.
+- La búsqueda cubre título y cuerpo del artículo.
+- Funciona sin conexión.
+
+**Nota de alcance:** la búsqueda sobre el contenido del bundle implica un índice.
+Con pocos artículos, un `includes()` sobre un array en memoria basta; con
+muchos, no. **No está decidido cuál**, y depende de cuántos artículos haya
+(ver P3).
+
+---
+
+## Proyectos
+
+> **Lectura de este módulo (supuesto):** biblioteca de archivos ya subidos, con sus
+> análisis. Depende de S1 y S3 **por completo**. Es el módulo con más
+> incertidumbre de los cuatro.
+
+⚠️ SUPUESTO S1 + S3 condicionan toda esta sección. Con S1 cierto, ver
+[la aritmética de por qué esto no es construible todavía](#por-qué-dos-de-los-cuatro-módulos-no-son-construibles).
+
+### H-4.1 · Como persona, quiero guardar un archivo con su análisis, para volver a consultarlo sin volver a subirlo
+
+**Criterios de aceptación**
+
+- Un análisis se puede guardar con su archivo asociado.
+- El archivo se puede volver a abrir en el visor 3D (STL, 3MF) o volver a
+  analizar (G-code).
+- Los proyectos se listan y se pueden borrar.
+- **El espacio ocupado por los proyectos es visible**: cuánto usa y cuánto
+  queda.
+- Al llegar a un umbral de cuota, la interfaz dice cuál es el límite **antes** de
+  fallar, no después.
+
+**Lo que este criterio no resuelve:** el límite de cuota. Es el punto de bloqueo
+de todo el módulo (ver P1).
+
+---
+
+## Fuera de alcance
+
+Explícitamente. No es que se haga más tarde: es que no se hace.
+
+- **Renderizado de G-code en 3D.** El aviso del canvas dice que no está
+  disponible. Interpretar un G-code como malla es un proyecto aparte, con su
+  investigación.
+- **Soporte de `.obj` en el visor.** El parser acepta el formato y el visor no.
+  Hoy sale un aviso lo dice explícitamente.
+- **Edición de contenido de la Wiki 3D desde la app.** Consecuencia de S1.
+- **Multi-usuario, compartir proyectos, colaboración.** Con S2 no hay cuentas; con
+  S1 no hay servidor. Las dos cosas caen a la vez.
+- **Exportar el informe.** Ni PDF, ni CSV, ni imagen. No está pedido en ningún
+  sitio.
+- **Comparar dos laminados.** H-2.1 calcula el coste de una pieza; no
+  hay comparación entre dos configuraciones.
+- **Historial de cambios de un mismo G-code.** Cada análisis es independiente.
+- **Integración real con Jev.** Depende de que la cuenta de Jev tenga crédito. Ver
+  S5.
+
+---
+
+## Preguntas abiertas
+
+Las del Grupo 1, sin responder. Cada una bloquea algo concreto.
+
+### Bloqueantes
+
+**P1 · ¿Cuánto espacio hay en `localStorage` e IndexedDB en la práctica, y
+cuántos análisis caben?** Bloquea H-4.1 entera. Sin esa cifra, "biblioteca de
+archivos" es una promesa sin tamaño. Los G-code reales van de 200 KB a 200 MB: el
+fixture del repo pesa 197 KB, pero un G-code laminado de verdad lleva escenas de
+700 KB y moves de miles de millones de líneas.
+
+**P2 · ¿Debe Projects guardar el archivo o sólo el análisis?** Si sólo el
+análisis, son unos cientos de bytes por entrada y el límite deja de ser un
+problema. Si el archivo, P1 es bloqueante. Es la pregunta que más condiciona el
+módulo, y es de producto, no de técnica.
+
+**P3 · ¿Cuántos artículos va a tener la Wiki 3D y quién los escribe?** Si son
+veinte y los escribe quien mantiene el repo, basta un array en memoria. Si son
+cientos y hay varias personas, hace falta un índice de búsqueda de verdad.
+
+### De alcance
+
+**P4 · ¿Cómo se desglosa el coste en la calculadora?** Sólo material, o material
++ máquina. Si el desglose necesita potencia y precio de la energía, hay que
+decidir si la app se los pide a la persona.
+
+**P5 · ¿Cuál es el primero de los cuatro?** Con S4, la respuesta natural es
+Taller (no bloqueado) o Taller y Wiki 3D. El orden sale de la respuesta, no al
+revés.
+
+**P6 · ¿"Inicio" es la pantalla de subida con historial, o es otra cosa?** El
+nombre admite las dos lecturas, y la primera hace de Inicio casi redundante con
+Proyectos.
+
+### De identidad
+
+**P7 · ¿Qué hace "Iniciar Sesión"?** Hoy no hace nada. Con S2 se retira. Si
+tiene que hacer algo, hace falta saber **qué**: ¿guardar proyectos en la nube?
+¿identidad entre dispositivos? ¿nada y se quita?
+
+**P8 · ¿Puede usarse la app sin sesión, y qué se pierde?** Necesario para
+escribir los criterios de aceptación de cualquier historia que toque datos
+persistentes.
+
+**P9 · ¿Es multi-usuario?** Si sí, S1 y S2 caen los dos, y este documento hay que
+reescribirlo entero.
+
+### De lo que ya funciona
+
+**P10 · ¿Se cambia algo de lo actual antes de añadir nada?** Los formatos
+soportados, el visor de G-code no implementado, y la ruta real de Jev (S5) son
+decisiones abiertas.
+
+**P11 · ¿Se puede tocar `JevService.ts`?** Está marcado como cerrado. Entender
+su contrato hace falta para el módulo de Taller (H-2.1), que consume sus
+metadatos.
+
+---
+
+## Por qué dos de los cuatro módulos no son construibles
+
+Esta es la restricción que decide el orden de trabajo, y conviene tenerla delante
+antes de elegir módulo.
+
+**La aritmética.** Un G-code pesa entre 200 KB y 200 MB. El fixture del repo
+—un G-code real de Creality Print, una medalla— pesa **197 KB**, y un G-code
+laminado de verdad lleva escenas de 700 KB y moves de miles de millones de
+líneas. `localStorage` tiene ~5 MB de cuota **compartidos por todo el origen**,
+así que caben entre 20 y 25 archivos como el del fixture, y ninguno grande.
+
+IndexedDB sí tiene cuotas del orden de cientos de MB. Pero:
+
+- La cuota depende del navegador y del espacio en disco. **No hay una cifra que
+  pueda ponerse en la interfaz sin medirla en el dispositivo del usuario.**
+- Los datos se pierden al limpiar datos del navegador. Una biblioteca de
+  proyectos que el usuario borra sin querer, y que no está en ningún servidor, no
+  es una biblioteca: es una caché que el usuario no sabe que tiene.
+- No sobrevive a un cambio de dispositivo ni a un navegador distinto.
+
+**Qué significa esto.** Inicio (H-3.1 a H-3.3) y Proyectos (H-4.1) son módulos de
+almacenamiento local. Si el usuario pierde los datos, ha perdido el módulo
+entero. Para una herramienta de análisis de una pieza propia, eso es aceptable.
+Para un taller que lleva tres años de laminados, no.
+
+**Y por eso la única ayuda es dejar de decidir esto por código.** Si mañana hay
+una API (S1 falso), la sección [Qué cambia si hay backend](#qué-cambia-si-hay-backend)
+aplica tal cual y el problema desaparece. Si no la hay, la decisión correcta
+probablemente es no construir H-3.1 a H-3.3 ni H-4.1, y criar sólo Taller y Wiki
+3D, que funcionan sin persistencia.
+
+---
+
+## Qué cambia si hay backend
+
+Por si aparece una API. El objetivo es que añadirla no obligue a reescribir este
+documento, sólo a reemplazar las historias afectadas.
+
+### Qué se resuelve solo
+
+- **P1 (cuota).** Deja de ser una pregunta abierta: el límite pasa a ser el del
+  servidor. Los criterios de H-4.1 sobre espacio usado y umbral dejan de
+  aplicar y se sustituyen por los de permisos.
+- **H-3.2 y H-3.3 (borrado).** Necesitan confirmación de red y manejo de error
+  de red. Si el borrado falla en el servidor, la entrada **no** debe desaparecer
+  de la lista.
+- **H-2.1 (precio del filamento).** El precio puede venir del servidor, con su
+  fecha, en vez de teclearlo cada vez. H-2.1 no cambia de propósito: cambian sus
+  criterios de aceptación.
+
+### Qué cambia de forma sustancial
+
+**H-3.1 · Inicio pasa a ser una vista remota.** "Mis análisis recientes" ya no
+salen del navegador, sino de una consulta. Los estados que hay que diseñar son
+distintos: carga, error de red, y sesión caducada. **El estado de sesión
+caducada no existe hoy en ninguna historia, y con S2 falso es imprescindible.**
+
+**H-4.1 · Proyectos se vuelve compartible.** La historia "borrar" pasa
+de ser local a necesitar permisos. Aparece una pregunta que hoy no existe: si un
+proyecto se puede compartir con otra persona, ¿quién puede borrarlo? Eso ya es
+multi-usuario, que es P9.
+
+### Qué no cambia
+
+- **Wiki 3D.** Sigue siendo contenido estático. Un backend no mejora unos
+  artículos que se leen.
+- **Taller.** Sigue sin necesitar identidad. Con o sin backend, es una
+  calculadora sobre datos que ya tenemos.
+
+### Y qué hay que decidir antes
+
+Con S1 falso, **S2 también cae**: una API sin cuentas no tiene proprietors, y
+entonces cualquiera puede ver los proyectos de cualquiera. Eso es una decisión de
+seguridad que no se puede tomar por omisión. Hay que elegir entre cuentas, o un
+modelo de "un usuario por instalación" donde el servidor no sabe quién eres.
+
+---
+
+## Lo que este documento no sabe
+
+Si algo de aquí se lee como un hecho y no lo es, es porque está marcado con ⚠️ y
+tiene su supuesto con su "qué cambia si es falso". **Si ves algo que parece un
+hecho y no lleva marca, es un error de este documento**: no hay nada verificado
+aquí que no venga de leer el código.
+
+Lo único verificado contra el código es:
+
+- Los metadatos que extrae el parser: material, temperatura hotend y cama, altura
+  de capa, tiempo, gramos, peso, voladijos y ángulo. Nueve campos.
+- Las rutas de `JevService`: real contra un Worker, y heurística local con
+  `VITE_JEV_USE_MOCK`. La activa en desarrollo es la segunda.
+- Que el fixture del repo es un Creality Print real con cabecera completa.
+- Que el tamaño del G-code del fixture es 197 KB.
+- Que los cuatro items de navegación no tienen ruta, ni `role`, ni `tabindex`.
