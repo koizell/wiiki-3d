@@ -14,6 +14,18 @@ revisado: 2026-10-03
 
 # Temperatura de cama
 
+> **Nota de revisión (tercera vuelta del material cocinado).** Esta vuelta no repite
+> el repaso anterior: la contradicción del PETG en la página de Bambu, la acetona
+> prohibida por uno y autorizada por el otro, y el dato de la cama sucia ya estaban
+> resueltos. Lo que queda es otra cosa — **había texto en `wiki/raw/` que nunca llegó
+> aquí**. Dos avisos de seguridad sin cocinar —la acetona que viene **dentro** de otros
+> disolventes, y la espera a que la pieza se enfríe antes de soltarla—, una
+> contraindicación de lavado que ha salido al hacerlo, y trece puntos sueltos que estaban
+> en las fuentes y en ninguna lista. Dos de ellos han resultado ser **contradicciones
+> nuevas** (5 y 6), que es la clase de cosa que no se busca: se encuentra. Lo que se ha
+> mirado y se ha dejado fuera está en `### Revisado y no incorporado`, al final de
+> `## Sin respaldo`, para que el silencio no se confunda con no haber leído.
+>
 > **Nota de revisión (segunda vuelta).** Se ha repasado todo el fichero contra
 > `wiki/raw/` con tres preguntas: quién dijo la afirmación, si es tan exacta como
 > aquí, y si el nombre propio es el correcto. Tres cambios de fondo: **una cita
@@ -45,6 +57,24 @@ problema de las fuentes: es el contenido del artículo.
 - **OrcaSlicer**, en su tabla de rangos estándar —son once filas de material—: PLA
   **50 – 60 °C** de cama, cámara ambiente. ABS 90–100, ASA 90–100, PC 100–120, TPU 40–60.
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+- **Las filas menos conocidas de las dos tablas, que no se habían usado todavía y que
+  sirven para los materiales que no son PLA, PETG ni ABS.** De Prusa: PETG HT **110 °C**,
+  HIPS 100–110, PP 70–100, CPE 90–110, Glow in the dark 85, PVA / BVOH 60, Wood / metal
+  filled 60–100, y una fila agregada «Composite materials» de 40–120 °C. De OrcaSlicer:
+  Nylon 6 y Nylon 12 **90–110 °C**, PC-ABS 95–110, HIPS 90–110, PP 80–105, Acetal (POM)
+  **100–130 °C**, que es el techo de cama más alto de todo el lote.
+  — [Prusa Research](https://help.prusa3d.com/filament-material-guide),
+  [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+
+  **Dos advertencias al publicarlas.** «Composite materials, 40–120 °C» es una fila
+  que **agrega** composites distintos, no un material: no se puede leer como «el
+  filamento con fibra va a 120 °C» sin más. Y la fila de **PEI (150 °C) queda fuera**,
+  porque viene desalignada en el original —ya está anotado en `## Tirado`—.
+- **Las tablas son genéricas, y las dos lo dicen.** «Actual optimal temperatures may vary
+  based on **specific filament brands and printer models**. Always refer to the filament
+  manufacturer's recommendations and calibrations for best results.» Es la razón por la
+  que las cifras del artículo no son un valor de tu bobina concreta.
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
 
 ### Por qué hay un rango y no una cifra
 
@@ -71,6 +101,37 @@ problema de las fuentes: es el contenido del artículo.
   sheet**». La página **también propone el remedio**: «We recommend using a separating
   agent (e.g. a glue stick)», y manda a las guías de material.
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+- **La primera capa tiene su propia temperatura, y es una decisión aparte.** En la
+  sección Bed, después de la lista de variables: «Set the bed temperature for the selected
+  material for **First Layer and Other Layers** for each Bed type», y «Using a higher
+  temperature for **the first layer** can help improve adhesion to the build surface but
+  be cautious of potential deformations like elephant foot». Eso es lo que explican las
+  doce variables del apartado de abajo: **dos por chapa**, no una.
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+- **El principio que hay detrás de los umbrales de Bambu, escrito por otra casa.** «It
+  is important to monitor the chamber temperature to ensure that it does not exceed **the
+  filament's deformation temperature**». Bambu publica el umbral ya calculado por
+  material —45 °C para el PLA, 60 o 70 para el PETG— y esta frase es la regla general que
+  los produce. **No hay que elegir entre las dos:** la una es el principio y la otra la
+  tabla.
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+- **El motivo por el que la temperatura de cama no basta, en tres partes.** «In general,
+  following the manufacturer's recommendations, **maintaining a clean bed (free from oils
+  or fingerprints), ensuring a stable chamber temperature, and having a properly leveled
+  bed** will produce reliable results». Ni una de las tres es la cifra.
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+- **Y para los materiales que se contraen mucho, la cámara es el factor, no la cama.**
+  «For challenging prints involving materials with **high shrinkage (e.g., nylons or
+  polycarbonate)** or geometries prone to warping, dialed-in settings are critical. In
+  these cases, **chamber temperature becomes a major factor in preventing detachment** and
+  ensuring print success.»
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+- **El coste de la cámara caliente, que es el otro lado de «súbela y abre la tapa».** «For
+  high-temperature materials like ABS, ASA, PC, and PA, a higher chamber temperature can
+  help suppress or reduce warping and potentially lead to higher interlayer bonding
+  strength. **However, at the same time, a higher chamber temperature will reduce the
+  efficiency of air filtration for ABS and ASA.**» Filtra peor quien más la necesita.
+  — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
 - **El reverso de esa adhesión excesiva, del lado de la limpieza, es el acetona —no el
   IPA.** Es lo que la misma página dice, y conviene decirlo porque es el único sitio
   donde el acetona aparece como aparece: la PEI lisa «can lose its adhesive powers after
@@ -79,6 +140,26 @@ problema de las fuentes: es el contenido del artículo.
   surface brittle». Y con una prohibición explícita: «For the textured and the satin
   steel sheets, do not use acetone at all!»
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+- **La prohibición no acaba en la primera frase, y la segunda es la que cuesta dinero.**
+  Literal, en la línea siguiente: «Other chemical solvents, like **Nail polish remover
+  or brake-cleaner, can also contain acetone (acetates)**».
+  — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+
+  **Lo que esto cambia:** el problema no es el bote que pone «acetona» en la etiqueta,
+  es cualquier disolvente que **la lleve dentro sin decirlo**. Quien tenga un
+  quitaesmalte y una chapa texturizada no está usando acetona —está usando
+  quitaesmalte— y la prohibición no le llega, con el mismo daño. **Las dos frases van
+  juntas en la cita; citada sólo la primera, el aviso pierde su mitad útil.** Es el
+  mismo error de forma que el de la columna de chapa de Prusa: el dato no es falso,
+  está mal atribuido.
+- **Y que Prusa prohíba el acetona en la chapa no significa que no lo recomiende en
+  ninguna parte.** La misma Knowledge Base, en la ficha del PLA, lo da como pegamento:
+  «Some of the PLA filaments can be also partially dissolved and glued with **acetone**
+  (or you can simply glue it with superglue)». **No es una contradicción**: la
+  prohibición es sobre la *chapa*, y esto es sobre la *pieza*. Pero las dos frases van
+  a aparecer el mismo día en la misma búsqueda, y quien lea la segunda sin la primera
+  concluye que Prusa ha banido el acetona de la impresión 3D.
+  — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
 - **Hay un techo, y se puede calcular**: «As a general guideline, you can use the glass
   transition temperature (Tg) of the material and **subtract 5–10 °C** to estimate a safe
   upper limit for bed temperature.»
@@ -119,6 +200,38 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   del autor y no una medición. Que bajara la cama esté ya probado y falló sí se puede
   escribir, y es lo más firme que sale de aquí.
   — [Zakalawe, foro de Prusa](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/)
+- **Lo que el hilo también probó y falló, y faltaba.** «Google suggested a brim, lower
+  bed temp, and **slower print speed, none of which helped so far**» (filas 33-34, partido
+  a 80 columnas: buscar `helped so far` o `slower print speed`). Es el mismo tipo de dato
+  que bajar la cama a 40 °C: **un fallo declarado por quien lo probó**, no una opinión.
+  El «so far» es suyo y hay que conservarlo.
+  — [Zakalawe, foro de Prusa](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/)
+- **Lo que sí funcionó, con su precio.** «Using a **three-layer raft did help**, but that
+  made for a nasty surface finish on the part, and seems like rather overkill to fix
+  this». Un raft que arregla el despegue arruinando la superficie: es el mismo patrón
+  que el +5–10 °C, cambiar una cosa por otra, y por eso lo mismo no es «la cama» como
+  respuesta única.
+  — [Zakalawe, foro de Prusa](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/)
+- **El cuarto post, que es de otro usuario, habla de limpieza y no de temperatura.**
+  Diagnostica la cama sucia y monta una rutina: «By the looks of the bed, soap and hot
+  water is your best choice... but you might want to do an alcohol scrub first to get the
+  old PLA residue off», «**Alcohol rinse: every few prints**», «Once in a while, an alcohol
+  rinse is helpful to remove PLA residue. **It does not remove finger oils well**» y «**Handle
+  the bed only by the edges**».
+
+  **Fichero partido a 80 columnas: filas 106-107, 109 y 111-116.** Los tres fragmentos
+  largos no salen con `grep` de una vez, porque la línea se parte por la mitad. Para
+  comprobarlos: `soap and hot water is your best choice`, `Alcohol rinse: every few
+  prints`, `remove finger oils well`, `Handle the bed only by the edges`.
+  — [foro de Prusa, post del 28/06/2019](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/)
+
+  **Dos de estas tienen respaldo de fábrica, y una es la que explica el diagnóstico de
+  la cama sucia.** «It does not remove finger oils well» es exactamente lo que dice la
+  Knowledge Base al recomendar jabón para «some oils and sugars that gather over time
+  and **that IPA does not remove**». Y «no toques la superficie con las manos» es la
+  primera línea de esa misma página: «If you don't touch the print surface with your hands
+  or dirty tools, then you don't have to clean it before every print». **La frecuencia
+  —«every few prints»— es sólo del foro y no la corroboran.**
 
 ### La chapa cambia la cifra, y no es un detalle
 
@@ -130,6 +243,12 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   careful and not move the nozzle too low, or you will damage your sheet!» Y la lisa
   «works better for printing parts that have a small contact area with the print
   surface».
+  — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
+- **Y la lista de chapas es más larga que la tabla.** En la misma frase: «PLA is
+  printable **not only on PEI surface, but also on glass, Kapton tape, or using a glue
+  stick**». O sea, el 60 °C de la cabecera es el valor para PEI; fuera de ella la
+  cifra no se dice en ninguna parte de esa página, y quien la aplique a cristal o a
+  Kapton se la está inventando.
   — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
 
 ### Subir la cama tiene un segundo efecto: la cámara
@@ -172,12 +291,55 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   cuidado al flexionar la chapa, «as the smooth PEI foil can tear» —que sale en la
   sección de pegamento, no en la de acetona.
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+- **Las tres contraindicaciones del lavado con jabón, que son concretas y no estaban
+  cocinadas.** De la misma frase, completa: «a few drops of dish soap and **warm water
+  (not hot!)**. This should **not be done often**, and **do not submerge the sheet
+  completely in hot water** [...] Make sure to use **only dish soap** and **dry the sheet
+  well before using it**». Tres cosas que se pueden hacer mal sin querer: echarle agua
+  demasiado caliente, dejarla en remojo, y aclarar con un detergente de los de casa en
+  lugar de jabón de platos.
+  — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+
+  **Cuidado con esta una:** Prusa escribe «warm water (not hot!)» y Bambu escribe «hot
+  water» para la misma operación. Es la contradicción 6, y no se resuelve aquí.
 - Bambu dice lo mismo con otras palabras y una advertencia **más fuerte**: «Regularly
   clean the plate surface with dish soap and hot water to remove dust, grease, and other
   residues that affect adhesion» y «**Do not clean the plate with acetone**, as it may
   damage the surface». Donde Prusa concede el acetona en la PEI lisa, Bambu lo prohíbe
   en general.
   — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+
+### Antes de soltar la pieza: hay que esperar a que se enfríe
+
+De la sección **«2. Removing Prints»** de la página de Bambu, fila 78 del fichero. No
+había ninguna palabra de esto en el material cocinado, y es la otra mitad de la
+adhesión: una cama bien puesta no sirve de nada si la pieza se arranca en caliente.
+
+- **Esperar.** «After printing, wait a few minutes until the plate and model have fully
+  cooled before removing the print. This makes removal easier and helps **avoid
+  scratching the plate or damaging the bottom of the model**.»
+  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+- **Cómo se suelta, una vez fría.** «remove the build plate and **gently flex it** to
+  release the model **and the purge tower (if any)**».
+  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+- **La torre de purga sale con la pieza**, no se separa antes. Detalle pequeño, y es el
+  que impide que quien busque su pieza corte la base al intentar separarla.
+  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+
+**Lo que dice la fuente y lo que no.** La fuente dice las tres cosas, y el motivo de la
+primera: rayar la chapa o **dañar la base de la pieza**. Lo que **no** dice —y por eso
+no puede publicarse como si lo dijera— es que quitar en caliente deforma la base y que
+ese resultado se confunde después con warping. Es una inferencia física razonable, pero
+ninguna de las seis fuentes de este fichero la enuncia, y este artículo no la va a
+enunciar como dato.
+
+**Corroboración, y viene de la otra casa.** Prusa, en la misma página que recomienda no
+tocar la chapa con las manos: «When removing prints with a large surface area, you may
+have to assist the process using a spatula. Be gentle when flexing the sheet and
+removing the print as **the smooth PEI foil can tear**». Dos fabricantes, el mismo gesto
+—flexionar con cuidado— y el mismo riesgo sobre la chapa. Lo que **no** dice Prusa es
+esperar a que enfríe: eso sale sólo de Bambu, y no lo corrobora nadie en este lote.
+  — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
 
 ## Contradicciones
 
@@ -272,6 +434,62 @@ dos dejando claro que la página se contradice consigo misma. Lo que no vale es
 encadenarlas como si fuera una progresión: es el tipo de frase que se fabrica sin
 querer al resumir, y que nadie comprueba después porque suena a verdad.
 
+### 5. El PETG tiene tres cifras de cama, y una de ellas es de otro material
+
+Ésta tampoco la había señalado nadie, y sale de las tablas, no de la página de Bambu.
+
+- **Bambu**, por filamento y pegamento **y** en las tres chapas de la segunda tabla:
+  PETG **60 – 80 °C**. La página es coherente consigo misma aquí.
+  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+- **Prusa**, tabla de materiales, fila PETG: **70 – 90 °C**.
+  — [Prusa Research](https://help.prusa3d.com/filament-material-guide)
+- **Prusa**, misma tabla, **fila distinta**: «PETG HT | No, No, No | 270 °C, **110 °C**».
+  No es el PETG de la fila de arriba: es una variante aparte, con su propio nombre y su
+  propia boquilla.
+  — [Prusa Research](https://help.prusa3d.com/filament-material-guide)
+
+**El matiz, en dos partes.**
+
+1. **60–80 y 70–90 no son el mismo rango**, aunque se solapen entre 70 y 80: una chapa de
+   65 °C está dentro del de Bambu y **fuera** del de Prusa, y una de 85 °C al revés. Es el
+   mismo caso que el del PLA en la contradicción 1 —fabricantes distintos, materiales de
+   familia parecidos— y se escribe como contraste, no promediando.
+2. **El 110 °C es el PETG HT, y por eso no se puede subir al PETG.** Es el error que esta
+   entrada existe para impedir: una tabla con «PETG 70–90» y «PETG HT 110» al lado
+   invita a escribir «Prusa lleva el PETG hasta 110 °C». **No lo dice nadie en este
+   lote**, y quien lo escriba se está saltando el nombre de la fila.
+
+Lo que sí se puede escribir es lo contrario y es más útil: **el PETG es el material donde
+las tres fuentes se separan más**, 60, 70 y 90, y donde la variante HT se sale del rango
+de las otras dos por 20 grados. Si el PETG es tu material, la fuente que manda es la del
+fabricante de tu bobina, no la tabla de otro.
+
+### 6. Para limpiar la chapa, un fabricante dice agua caliente y el otro dice que no
+
+Pequeña, y con una contraindicación detrás, que es por lo que no vale descartarla como
+una diferencia de redacción.
+
+- **Prusa:** «you can clean the steel sheet with a few drops of dish soap and **warm water
+  (not hot!)**», y además «**do not submerge the sheet completely in hot water**».
+  — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+- **Bambu:** «Regularly clean the plate surface with dish soap and **hot water** to remove
+  dust, grease, and other residues that affect adhesion».
+  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+
+**El matiz.** Los dos juegan con agua y jabón, así que la operación es la misma; lo que
+difieren es la temperatura, y Prusa además pone un paréntesis para que no se pueda leer
+de otra manera. **No es un error tipográfico de uno de los dos**: Bambu enlaza a su propia
+guía de limpieza de la Textured PEI, que es donde uno acaba si quiere el dato exacto de
+su chapa. **Esa guía no está en `wiki/raw/`**, así que aquí no se puede decir qué
+recomienda.
+
+**Lo que el artículo tiene que hacer con esto, y lo que no:** puede publicar las dos
+citas y decir que los dos fabricantes se contradicen en un punto pequeño, y puede
+recomendar «agua tibia y jabón» como la lectura que no se equivoca ninguna de las dos,
+porque Prusa lo dice y Bambu no lo prohíbe para su chapa. Lo que no vale es **elegir una y
+borrar la otra**: quien limpie una chapa Textured PEI con agua hirviendo porque Bambu lo
+dijo habrá hecho exactamente lo que Prusa prohíbe por escrito.
+
 ## Sin respaldo
 
 Una sola fuente, o ninguna. El redactor puede usarlas marcadas como lo que son.
@@ -310,6 +528,25 @@ Una sola fuente, o ninguna. El redactor puede usarlas marcadas como lo que son.
 - **Los 190 – 240 °C de boquilla para PLA de Bambu, con su ±10 °C.** Están en la
   segunda tabla de la misma página. Es de otro campo —el de hotend— y entra aquí sólo
   porque comparte documento. **[FUENTE PARA OTRO ARTÍCULO]**
+
+### Revisado y no incorporado
+
+Lo que se ha encontrado leyendo las seis fuentes enteras y **se ha dejado fuera a
+propósito**. No es relleno: es material que existe, que está en `wiki/raw/` con su línea,
+y que alguien tiene que coger para otro artículo. Se anota para que el revisor vea que
+está mirado, y para que no se pierda.
+
+| Qué | Dónde está | Por qué fuera de aquí |
+|---|---|---|
+| **Los siete consejos de slicer del segundo post del hilo**: brim, subir la altura de primera capa, subir el ancho de línea, reducir capas de fondo, reducir infill, esquinas redondeadas, raft | hilo, filas 56-87 | Son de warping, no de temperatura, y llegan como lista de consejos de un usuario. Los redondeados ya entran por el «chamfered the edges» del antes y después. Van a [[warping-pla]] |
+| **La columna HARDWARE de la tabla de Prusa** (enclosure, drybox, boquilla endurecida): ABS, ASA, PC y PA con «Recommended»; secador para PETG y PA; boquilla endurecida para compuestos | `prusa-kb-filament-material-guide`, filas 18-31 | Es requisito de máquina, no temperatura de cama. Corrobora la fila «Enclosed printer» de Bambu y es de [[enclosure-y-warping]] y del artículo de materiales |
+| **La fila del PETG HT, aparte de su cifra de cama** | `prusa-kb-filament-material-guide`, fila 16 | El material es de otro artículo; de él aquí sólo la cifra, y con la advertencia de la contradicción 5 |
+| **Biodegradabilidad del PLA, compostaje a más de 80 °C, y contacto con alimentos** | `prusa-kb-pla`, filas 25 y 27 | Contexto de qué es el PLA. No es temperatura de cama. El recolector ya avisó de que se podía descartar |
+| **Alisado químico del PLA: cloroformo, benceno caliente, tetraidrofurano** | `prusa-kb-pla`, fila 54 | **Aviso de seguridad de verdad, pero de otro proceso.** No es temperatura de cama ni limpieza de chapa: es post-proceso con disolventes peligrosos. Pasa al artículo de post-proceso, donde «sólo se puede en condiciones de laboratorio» y «sólo por técnicos especializados» es el titular |
+| **Los 12 comentarios de usuario de la ficha del PLA** | no están en el fichero | No los trajo el recolector y no hay nada que cocinar |
+| **El M191 y el M141, y los ejemplos de CLI (`--supertack-plate-temp=1`)** | `orcaslicer`, filas 41, 51 y 83-85 | Mecánica interna de cómo se manda el comando, no qué valor poner. Los **nombres de variables sí están cocinados**, que es lo que le sirve a este artículo |
+| **«I will setup an enclosure» del que abrió el hilo**, y el «**first layer hotter**» de Peter M | hilo, filas 31 y 135 | Los dos son intención y consejos sin cifra ni resultado. El primero nunca se probó en el hilo. Publicables sólo marcados como lo que son, y no hacen falta aquí |
+| **La fila de PEI (150 °C) de la tabla de Prusa** | `prusa-kb-filament-material-guide`, fila 31 | Ya está en `## Tirado`: viene desaliñada en el original. No se ha vuelto a tocar |
 
 ## Tirado
 
@@ -375,5 +612,11 @@ Qué se ha eliminado y por qué. El redactor no usa nada de esto.
 | temperatura de cama | [[enclosure-y-warping\|Enclosure y warping]] | Subir la cama por encima de 45 °C con PLA obliga a abrir la tapa |
 | temperatura de cama | [[slicer\|Qué slicer escribió esto]] | El perfil pone la temperatura solo, y el nombre de la clave decide si el dato llega |
 | temperatura de cama | acetona frente a IPA | Dos recomendaciones opuestas de dos fabricantes sobre el mismo disolvente: Prusa lo concede en la PEI lisa, Bambu lo prohíbe |
+| temperatura de cama | acetona que no dice que es acetona | La prohibición de Prusa no llega a quien usa quitaesmalte: el disolvente lleva acetona dentro y no lo pone en la etiqueta |
+| temperatura de cama | esperar a que enfríe antes de soltar la pieza | Una base deformada al arrancar en caliente acaba diagnosticada como warping, y el warping se busca en la cama |
+| temperatura de cama | temperatura de primera capa | OrcaSlicer da dos por chapa, `_initial_layer` y normal; subir sólo la primera es un ajuste distinto de subir la cama entera |
+| temperatura de cama | PETG HT | Es la fila que hace que «Prusa lleva el PETG a 110 °C» sea falso: es otro material con otro nombre |
+| temperatura de cama | limpieza con agua y jabón | Un fabricante dice caliente y el otro «not hot!», y el segundo además prohíbe sumergir la chapa |
+| temperatura de cama | alisado químico | El mismo disolvente que daña la chapa sirve, en la página del PLA, para pegar la pieza: son objetos distintos y dos frases del mismo fabricante |
 | bedTemp | limpieza de la chapa | El aceite de la piel es la causa número uno de fallo de adhesión, y no se arregla con grados |
 | bedTemp | live-Z | Cambiar de chapa cambia también la altura de la boquilla, no sólo la temperatura |
