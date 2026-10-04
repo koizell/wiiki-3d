@@ -2171,3 +2171,265 @@ body {
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
+
+/* --- El historial: lista, recientes y confirmaciones ------------------------- *
+ *
+ * `.recientes` y `.historial` comparten la fila porque es la misma información
+ * en dos densidades: mismo nombre, mismo material, mismo nivel de riesgo. Lo que
+ * cambia es cuántas hay y si cabe la fecha, y eso lo resuelve el contenedor, no
+ * la fila.
+ */
+
+/*
+ * El aviso va en `role="status"` en el marcado, y no aquí, porque es una región
+ * viva: se pinta después de que React sepa si hay almacenamiento, y quien esté
+ * leyendo la página oiga el motivo en vez de encontrarse con un hueco.
+ *
+ * `--warning` en vez de `--danger`: no es un error, es una limitación del sitio
+ * donde se está, y el análisis funciona igual. Pintarlo de rojo haría pensar que
+ * algo va mal.
+ */
+.historial-aviso {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
+  border-radius: 8px;
+  max-width: 34rem;
+}
+
+/*
+ * `.historial` no lleva `max-width` propio porque su hijo sí, y un `max-width`
+ * en el padre que no se usa sólo hace que las cajas midan distinto a lo que
+ * parecen.
+ */
+.historial,
+.recientes {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.historial-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.9rem;
+}
+
+/*
+ * La lista es `flex` vertical con `gap`, y no `<ul>` con `margin` por lado: el
+ * reset `* { margin: 0 }` de arriba ya hace ese trabajo, y los `<li>` no traen
+ * viñeta con `list-style: none`.
+ */
+.historial-lista,
+.recientes-lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/*
+ * `.historial-fila` es `flex` con `space-between`, y no `grid` con dos columnas,
+ * porque el nombre puede ocupar tres líneas en móvil y el botón tiene que
+ * quedarse pegado arriba. Con `grid` el botón se iría al centro de la fila y
+ * quedaría a media altura de un nombre largo.
+ */
+.historial-fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.historial-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/*
+ * El nombre **se rompe en varias líneas**, y no se recorta.
+ *
+ * H-3.1 lo dice: «los nombres largos de archivo se rompen en varias líneas, no se
+ * recortan en silencio ni desbordan». La primera versión de esto traía
+ * `white-space: nowrap` y `text-overflow: ellipsis`, que es exactamente lo que el
+ * criterio prohíbe: un nombre de archivo es lo único que identifica el análisis,
+ * y si aparece «pieza-de-…」 no se puede saber cuál era.
+ *
+ * `overflow-wrap: anywhere` parte la palabra en cualquier punto, y es lo que hace
+ * falta con nombres de archivo: no tienen espacios, así que sin esto una sola
+ * palabra larga no se rompería por ningún sitio y desbordaría.
+ */
+.historial-nombre,
+.recientes-nombre {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.historial-meta,
+.recientes-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * Un color por nivel de riesgo, con cuatro clases y no cuatro valores sueltos.
+ * El `riskLevel` es texto en castellano y llega del clasificador; si el
+ * clasificador añadiera un nivel, esta regla no le daría color en vez de darle
+ * el de otro.
+ */
+.historial-riesgo--bajo {
+  color: var(--success);
+}
+
+.historial-riesgo--moderado {
+  color: var(--warning);
+}
+
+.historial-riesgo--alto,
+.historial-riesgo--critico {
+  color: var(--danger);
+}
+
+/*
+ * La fila de los recientes es sólo texto: sin caja, sin borde y sin botón. Es un
+ * resumen de lo que acabas de hacer, y una caja por fila haría que cinco
+ * entradas ocuparan más pantalla que la zona de subida.
+ */
+.recientes {
+  margin-top: 1.25rem;
+}
+
+.recientes-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.recientes-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.2rem 0;
+  min-width: 0;
+}
+
+.recientes-enlace {
+  display: inline-block;
+  margin-top: 0.6rem;
+  color: var(--accent-text);
+  font-size: 0.85rem;
+}
+
+/*
+ * `min-height: 44px` en el enlace. Un enlace de texto de 0,85rem mide unos
+ * veinte píxeles de alto, y el objetivo táctil mínimo son 44. Sin esto, el
+ * enlace que lleva a la lista completa —el único camino a los análisis
+ * guardados— sería el control más pequeño de la pantalla.
+ */
+@media (pointer: coarse) {
+  .recientes-enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+.historial-vaciar {
+  margin-top: 0.5rem;
+}
+
+/* --- La confirmación de borrado ---------------------------------------------- *
+ *
+ * Capa fija a pantalla completa, porque «vaciar todo» no se puede deshacer y el
+ * fondo tiene que quedar fuera de alcance de un clic.
+ */
+.confirmacion-capa {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 200;
+}
+
+.confirmacion {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 26rem;
+  width: 100%;
+}
+
+.confirmacion-texto {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.1rem;
+}
+
+.confirmacion-botones {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* --- Los botones de abrir un análisis del historial ------------------------- *
+ *
+ * La fila es `<li>` y lo pulsable es un `<button>` dentro. El `<li>` se queda
+ * como contenedor de layout y el botón lleva todo lo que hay que ver.
+ *
+ * `text-align: left` porque un `<button>` centra su texto por defecto, y aquí el
+ * material y el nivel de riesgo van alineados a la izquierda con el nombre, no en
+ * una línea centrada.
+ */
+.recientes-boton,
+.historial-abrir {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/*
+ * El foco visible va en `:focus-visible`, no en `:focus`, para que no aparezca un
+ * recuadro al pulsar con el ratón y sí al llegar con el teclado —que es quien lo
+ * necesita—. Y es `outline`, no `border`, porque el botón no tiene borde y
+ * dibujarlo sería un salto del layout.
+ */
+.recientes-boton:focus-visible,
+.historial-abrir:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/*
+ * `align-items: flex-start` en la fila, que ya lo tenía, y aquí el botón con
+ * `flex: 1`: hace falta para que el botón ocupe el hueco que deja el de borrar, y
+ * `min-width: 0` para que un nombre largo no empuje ese botón fuera. Sin los dos,
+ * el nombre manda y el de borrar se sale.
+ */

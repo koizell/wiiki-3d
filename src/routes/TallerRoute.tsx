@@ -30,6 +30,21 @@ function TallerRoute() {
   const precioLeido = validarPrecio(precio);
   const gramos = metadata?.filamentUsed;
 
+  /*
+   * `esGcode` y no `file && fileType === 'gcode'`.
+   *
+   * Los estados se decidían por el archivo, y un análisis restaurado del
+   * historial no tiene archivo —P2 no lo guarda—, así que caía en el estado 1
+   * («Sube un G-code para calcular cuánto te cuesta») **aunque tuviera los
+   * gramos y se pudiera costear la pieza**. El estado que decide es si hay un
+   * análisis de G-code, no si hay un fichero en la memoria.
+   *
+   * Lo que sí se mantiene en `file` es el estado 2 —«el visor 3D no lleva datos
+   * de impresión»—, porque ese caso es justamente un archivo presente que no
+   * sirve. Sin archivo no hay estado 2 que pintar.
+   */
+  const esGcode = fileType === 'gcode' && metadata !== null;
+
   return (
     <div className="taller">
       <h1 className="taller-titulo">Taller</h1>
@@ -40,8 +55,9 @@ function TallerRoute() {
         hay que mantener sincronizados con la condición de debajo.
       */}
 
-      {/* 1 · Sin archivo. */}
-      {!file && (
+      {/* 1 · Sin archivo. Sin archivo *ni* análisis: restaurarlo da un estado
+           *distinto*, y en el que se puede calcular. */}
+      {!file && !esGcode && (
         <p className="taller-aviso">
           Sube un G-code para calcular cuánto te cuesta.
         </p>
@@ -56,7 +72,7 @@ function TallerRoute() {
       )}
 
       {/* 3 · Es G-code pero no escribió los gramos. El motivo, no «datos insuficientes». */}
-      {file && fileType === 'gcode' && gramos === undefined && (
+      {esGcode && gramos === undefined && (
         <p className="taller-aviso">
           Tu slicer no escribió los gramos consumidos. Sin ese dato no se puede
           calcular el coste.
@@ -64,7 +80,7 @@ function TallerRoute() {
       )}
 
       {/* 4 y 5 · Hay gramos. El precio se pide sólo aquí, cuando hay algo que multiplicar. */}
-      {file && fileType === 'gcode' && gramos !== undefined && (
+      {esGcode && gramos !== undefined && (
         <div className="taller-caja">
           <p className="taller-gramos">
             Filamento consumido: <strong>{conComa(gramos)} g</strong>

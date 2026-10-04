@@ -4,7 +4,8 @@ import { parseGcode } from '../services/ParserService';
 import { classifyWithJev } from '../services/JevService';
 import type { JevClassification, ProjectMetadata } from '../services/types';
 import { detectFileType, toErrorMessage, type FileType } from '../lib/files';
-import { ActionsContext, StateContext } from './contexts';
+import { guardarAnalisis } from '../lib/storage';
+import { ActionsContext, StateContext, type EntradaRestaurable } from './contexts';
 
 /**
  * Estado del archivo cargado y de su análisis.
@@ -13,10 +14,14 @@ import { ActionsContext, StateContext } from './contexts';
  * proveedor envuelve al `BrowserRouter`, así que cambiar de ruta no desmonta el
  * estado. Un G-code de 200 MB no puede perderse por haber tocado un enlace.
  *
- * Lo que **no** cubre: recargar la página. El estado sigue en memoria, sin
- * persistencia, así que un F5 devuelve la app al estado de primera vez. Eso está
- * sin resolver a propósito — depende de la arquitectura de backend, que aún no
- * está decidida.
+ * Lo que **no** cubre: recargar la página devuelve la app al estado de primera
+ * vez. El panel no se restaura, y no se va a restaurar: un G-code de 200 MB no
+ * vuelve a leerse al arrancar.
+ *
+ * Lo que **sí** sobrevive al F5 es el análisis, como entrada del historial. Eso lo
+ * guarda `src/lib/storage.ts` en cuanto `status` pasa a `done`, y es la diferencia
+ * entre perder el trabajo y perder el visor: la fila sigue ahí con su nombre, su
+ * fecha, su material y su nivel de riesgo, aunque el panel vuelva a estar vacío.
  */
 export function AnalysisProvider({ children }: { children: ReactNode }) {
   /*
@@ -66,6 +71,27 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     setAnalysisStatus('idle');
   };
 
+  /*
+   * Devolver un análisis del historial al estado.
+   *
+   * **`setFile(null)` es lo que define este estado.** No es que se olvide el
+   * archivo: es que no está. P2 decidió guardar el análisis y no el archivo, así
+   * que restaurarlo devuelve todo menos lo que el visor necesita, y el panel tiene
+   * que ser honesto sobre eso en vez de fingir que tiene un archivo entre manos.
+   *
+   * El estado es `'done'` y no `'idle'` porque no hay nada que analizar: el
+   * análisis ya está hecho, y volver a ponerlo en cola haría que la pantalla
+   * parpadeara como si estuviera trabajando.
+   */
+  const restaurarAnalisis = ({ fileType: tipo, metadata: meta, classification: clasif }: EntradaRestaurable) => {
+    setFile(null);
+    setFileType(tipo);
+    setMetadata(meta);
+    setClassification(clasif);
+    setAnalysisError(null);
+    setAnalysisStatus('done');
+  };
+
   // Solo el G-code tiene metadatos de impresión que analizar; el resto de
   // formatos ya quedó en `unsupported` al subir el archivo.
   useEffect(() => {
@@ -104,6 +130,51 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   }, [file, fileType]);
 
   /*
+   * El guardado al historial, en cuanto el análisis termina.
+   *
+   * Es un `useEffect` aparte y no el último paso de `runAnalysis`, por una razón
+   * concreta: **el estado del análisis y la persistencia son cosas distintas.** Si
+   * el guardado viviera dentro de `runAnalysis`, un fallo de IndexedDB —o el navegador
+   * en modo privado— podrían convertir un análisis correcto en un error en pantalla, y
+   * eso sería justo lo contrario de lo que quiere el diseño: la persistencia es un
+   * extra, y un extra que falla no puede romper lo que funciona.
+   *
+   * Depende de `status === 'done'` y no de `metadata`, porque `metadata` cambia a
+   * `parsing` y a `classifying` antes de tener la clasificación completa, y una
+   * entrada sin `classification` no se puede enseñar en ninguna vista.
+   *
+   * El `fileType` está en la guarda y no se fuerza a `gcode`. A `done` sólo se
+   * llega con un G-code —los demás formatos se quedan en `unsupported`—, pero eso
+   * es una propiedad del flujo y no del tipo, y escribir `gcode` a mano sería
+   * poner en el historial un tipo que nadie ha comprobado. Los ficheros guardados
+   * llevan lo que el análisis vio.
+   *
+   * Sin botón y sin preguntar: H-3.1 habla de «análisis guardados», y un G-code que
+   * alguien ha subido y ha esperado a que se analice ya es un análisis que ha
+   * hecho. Preguntar sería un paso más para conseguir lo mismo.
+   */
+  useEffect(() => {
+    if (analysisStatus !== 'done') return;
+    if (!metadata || !classification || !fileType) return;
+    /*
+     * **Y sólo si hay archivo.** Es lo que impide que restaurar una entrada del
+     * historial la vuelva a guardar: `restaurarAnalisis` deja `status` en
+     * `'done'`, así que sin esta guarda cada vez que se pulsara una fila de la
+     * lista se creaba una entrada duplicada. Y el motivo de fondo es que lo que
+     * se guarda es un análisis *hecho*, no un análisis mostrado: uno restaurado
+     * ya está en la base desde que se hizo.
+     */
+    if (!file) return;
+
+    void guardarAnalisis({
+      filename: metadata.filename,
+      fileType,
+      metadata,
+      classification,
+    });
+  }, [analysisStatus, metadata, classification, fileType, file]);
+
+  /*
    * El objeto de valores va memoizado, y no por rutina. `useMemo` no evita
    * repintar a los consumidores por sí solo —eso lo decide el contexto en el que
    * viven— pero sí evita que el objeto del contexto sea una referencia nueva en
@@ -134,7 +205,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
    * repintaría en cada tick del análisis aunque no use ninguna acción.
    */
   const actions = useMemo(
-    () => ({ loadFile, clearFile, openFilePicker, fileInputRef }),
+    () => ({ loadFile, clearFile, restaurarAnalisis, openFilePicker, fileInputRef }),
     []
   );
 

@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { useAnalysis, useAnalysisActions } from '../state/useAnalysis';
-import { isViewerFormat, unsupportedFileMessage } from '../lib/files';
+import { lazy, Suspense } from "react";
+import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
+import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
+import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
 
 /**
  * El visor 3D se carga bajo demanda, y desde aquí.
@@ -17,7 +18,7 @@ import { isViewerFormat, unsupportedFileMessage } from '../lib/files';
  * tres rutas no hay nada que lazy-cargar, y con el `lazy` en el shell se pediría
  * el chunk de three.js para pintar «Sin implementar».
  */
-const LazyViewer3D = lazy(() => import('../components/Viewer3D'));
+const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
 
 /**
  * La pantalla de subida, que es la ruta `/`.
@@ -37,36 +38,92 @@ const LazyViewer3D = lazy(() => import('../components/Viewer3D'));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
-  const { file, fileType } = useAnalysis();
+  const { file, fileType, metadata } = useAnalysis();
   const { clearFile, openFilePicker } = useAnalysisActions();
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
-  const showGcodeNotice = fileType === 'gcode';
-  const showUnsupported = fileType === 'obj' || fileType === 'unknown';
+  const showGcodeNotice = fileType === "gcode";
+  const showUnsupported = fileType === "obj" || fileType === "unknown";
+
+  /*
+   * `Recientes` va debajo de la zona de subida en el estado sin archivo, y
+   * debajo de la barra del visor en el otro. No es un detalle de maquetación: es
+   * que quien acaba de analizar algo lo sigue teniendo delante al buscar otra
+   * cosa, y esconderlo detrás de la navegación sería esconder lo único que la
+   * app sabe hacer con un G-code.
+   *
+   * Se pinta en los dos estados y no en un sitio común porque el return de cada
+   * rama es distinto, y un envoltorio alrededor de los dos acabaría pidiendo un
+   * `flex` con dos hijos que sólo existe para esto.
+   */
+  /*
+   * Tres estados, no dos.
+   *
+   * Antes eran «no hay archivo» y «hay archivo». Ahora está el tercero, que es el
+   * que acaba de aparecer: **hay un análisis pero no hay archivo**. P2 decidió
+   * guardar el análisis y no el archivo, así que al abrir una entrada del
+   * historial esto es lo que hay: metadatos y diagnóstico, y nada que mirar en el
+   * visor.
+   *
+   * Se pinta la barra de arriba con el nombre del análisis —que es el título real
+   * de lo que se está viendo— y un aviso que dice lo que no se puede hacer. La
+   * alternativa, fingir que no hay nada o no explicar el visor, es peor: quien
+   * pulse una entrada esperando el visor se encontraría una pantalla vacía.
+   */
+  if (!file && metadata) {
+    return (
+      <>
+        <div className="file-info">
+          <h1 className="file-name">Análisis: {metadata.filename}</h1>
+          <button className="btn-danger" onClick={clearFile}>
+            X
+          </button>
+        </div>
+        <div className="canvas-placeholder">
+          <p className="canvas-error">
+            Este análisis viene del historial y no se guarda el archivo, así que
+            el visor 3D no se puede abrir. Los metadatos y el diagnóstico están
+            en el panel de la derecha.
+          </p>
+        </div>
+        <AvisoAlmacenamiento />
+        <Recientes />
+      </>
+    );
+  }
 
   if (!file) {
     return (
-      <div className="upload-zone">
-        <div className="upload-icon">⬆</div>
-        {/*
+      <>
+        <div className="upload-zone">
+          <div className="upload-icon">⬆</div>
+          {/*
           El `<h1>` de la vista cuando no hay archivo. El otro estado de esta
           misma ruta lo tiene en `.file-info`, así que los dos estados de `/`
           tienen título, y es el único de los dos que puede tener: esta pantalla
           no tiene otro contenido donde poner uno.
         */}
-        <h1>Arrastra tu archivo aquí</h1>
-        <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
-        <button type="button" className="btn-primary" onClick={openFilePicker}>
-          Seleccionar Archivo
-        </button>
-      </div>
+          <h1>Arrastra tu archivo aquí</h1>
+          <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={openFilePicker}
+          >
+            Seleccionar Archivo
+          </button>
+        </div>
+        <AvisoAlmacenamiento />
+        <Recientes />
+      </>
     );
   }
 
   return (
-    <div className="viewer-container">
-      <div className="file-info">
-        {/*
+    <>
+      <div className="viewer-container">
+        <div className="file-info">
+          {/*
           El nombre del archivo es el <h1> de esta vista, y no un `h2` con otro
           nombre al lado.
 
@@ -80,13 +137,13 @@ function UploadRoute() {
           valor deja de ser decorativo: sin él, el `<h1>` mide 2em, que en esta
           base son 32 px en vez de 14,4, y la fila de `.file-info` crece.
         */}
-        <h1 className="file-name">Archivo: {file.name}</h1>
-        <button className="btn-danger" onClick={clearFile}>
-          X
-        </button>
-      </div>
+          <h1 className="file-name">Archivo: {file.name}</h1>
+          <button className="btn-danger" onClick={clearFile}>
+            X
+          </button>
+        </div>
 
-      {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
+        {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
           pintan de inmediato mientras llega el chunk.
 
           El fallback es un `.viewer-3d-container` con su overlay dentro, y no un
@@ -105,33 +162,36 @@ function UploadRoute() {
           Los dos mensajes son distintos a propósito: éste es la descarga del chunk
           (590 KB) y el del visor montado, la lectura del archivo. Son dos fases,
           no ruido. */}
-      <Suspense
-        fallback={
-          <div className="viewer-3d-container">
-            <div className="viewer-overlay">Cargando visor 3D...</div>
+        <Suspense
+          fallback={
+            <div className="viewer-3d-container">
+              <div className="viewer-overlay">Cargando visor 3D...</div>
+            </div>
+          }
+        >
+          {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} />}
+        </Suspense>
+
+        {showGcodeNotice && (
+          <div className="canvas-placeholder">
+            <p>
+              Los archivos G-code no se renderizan en 3D todavía. Puedes ver su
+              análisis técnico en el panel de Jev.
+            </p>
           </div>
-        }
-      >
-        {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} />}
-      </Suspense>
+        )}
 
-      {showGcodeNotice && (
-        <div className="canvas-placeholder">
-          <p>
-            Los archivos G-code no se renderizan en 3D todavía. Puedes ver su
-            análisis técnico en el panel de Jev.
-          </p>
-        </div>
-      )}
-
-      {showUnsupported && (
-        <div className="canvas-placeholder">
-          <p className="canvas-error">
-            {unsupportedFileMessage(fileType, file.name)}
-          </p>
-        </div>
-      )}
-    </div>
+        {showUnsupported && (
+          <div className="canvas-placeholder">
+            <p className="canvas-error">
+              {unsupportedFileMessage(fileType, file.name)}
+            </p>
+          </div>
+        )}
+      </div>
+      <AvisoAlmacenamiento />
+      <Recientes />
+    </>
   );
 }
 

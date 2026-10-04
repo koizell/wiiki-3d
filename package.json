@@ -14,7 +14,8 @@
     "verify:shots": "node scripts/verify/shots.mjs",
     "verify:rutas": "node scripts/verify/rutas.mjs",
     "verify:wiki": "node scripts/verify/wiki.mjs",
-    "verify:taller": "node scripts/verify/taller.mjs"
+    "verify:taller": "node scripts/verify/taller.mjs",
+    "verify:historial": "node scripts/verify/historial.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",

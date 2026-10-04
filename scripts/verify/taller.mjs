@@ -81,6 +81,22 @@ const ESTADOS = [
       'Tu slicer no escribió los gramos consumidos. Sin ese dato no se puede calcular el coste.',
   },
   { numero: 4, etiqueta: 'con gramos, sin precio', texto: 'Falta el precio por kilogramo.' },
+  /*
+   * El sexto estado, y el que no existía: un análisis **restaurado del
+   * historial**, que no tiene archivo.
+   *
+   * P2 decidió guardar el análisis y no el archivo, así que al abrir una entrada
+   * de la lista no hay `File`. Los estados de esta vista se decidían por el
+   * archivo, así que un análisis restaurado caía en el estado 1 —«Sube un G-code
+   * para calcular cuánto te cuesta»— aunque tuviera los gramos y se pudiera
+   * costear la pieza. Éste es el estado que demuestra que H-3.1 y Taller se
+   * cumplen los dos.
+   */
+  {
+    numero: 6,
+    etiqueta: 'análisis restaurado del historial, sin archivo',
+    texto: null,
+  },
 ];
 
 /** Los ficheros que hay que subir para llegar a cada estado. */
@@ -90,6 +106,7 @@ const COMO_LLEGAR = {
   3: GCODE_SIN_GRAMOS,
   4: GCODE_FIXTURE,
   5: GCODE_FIXTURE,
+  6: GCODE_FIXTURE, // primero se sube; el estado 6 lo hace pulsando la entrada
 };
 
 const fallos = [];
@@ -168,7 +185,10 @@ try {
         continue;
       }
 
-      const fichero = COMO_LLEGAR[estado.numero];
+      // El 6 no usa el camino genérico: necesita estar en `/` para pulsar la
+      // entrada, y `/taller` no tiene los recientes. Por eso lo salta y lo trata
+      // después, con su propio bloque.
+      const fichero = estado.numero === 6 ? null : COMO_LLEGAR[estado.numero];
       if (fichero) {
         await page.setInputFiles('input[type="file"]', fichero);
         // El análisis es asíncrono: el mensaje de «sube un G-code» no se quita
@@ -206,6 +226,72 @@ try {
       }
 
       const texto = await textoTaller(page);
+
+      // El 6 tiene su propio camino: primero hay que tener una entrada en el
+      // historial y luego hay que pulsarla. Sin eso se llegaría al estado 5, que
+      // tiene archivo, y la comprobación pasaría por el motivo equivocado.
+      if (estado.numero === 6) {
+        // Los recientes viven en `/`, no en `/taller`, así que el camino es en
+        // dos pasos: arriba, pulsar la entrada; luego ya en `/taller`. La primera
+        // versión buscaba el botón sin cambiar de ruta y no lo encontraba nunca.
+        // Desde `/`, y subiendo **desde `/`**: la primera versión subía el
+        // archivo estando en `/taller` y luego navegaba a `/`. El guardado ocurre
+        // en un efecto que necesita medio segundo, y la navegación lo mataba:
+        // la entrada no llegaba a existir.
+        await page.goto('http://127.0.0.1:4173/');
+        await page.setInputFiles('input[type="file"]', GCODE_FIXTURE);
+        const hayBoton = await esperarOMarcar(
+          page,
+          '.recientes-boton',
+          `${tramo.nombre} · estado 6: / no ofrece la entrada que hay que abrir`,
+          { timeout: 25000 }
+        );
+        if (hayBoton) {
+          const abierta = await page.$('.recientes-boton');
+          // El handle se coje **después** de esperar: antes devuelve `null`, que
+          // es cuando todavía no se ha guardado nada, y tumba el script entero.
+          await abierta?.click();
+          await page.waitForTimeout(500);
+        }
+        // Y ahora sí, a `/taller`, con el análisis restaurado y sin archivo.
+        //
+        // **Por el enlace de la barra, no con `page.goto`.** Un `goto` es una
+        // navegación completa: descarga la página otra vez, destruye el contexto
+        // de React y con él el análisis que se acaba de restaurar. Hay que ir
+        // por el enrutador, que es lo que hace una persona, y además es la única
+        // forma de que D8 —el análisis sobrevive a la navegación— se cumpla.
+        await page.click('.nav-item[href="/taller"]');
+        await esperarOMarcar(page, '.taller',
+          `${tramo.nombre} · estado 6: /taller no pinta la vista`);
+        const textoRestaurado = await textoTaller(page);
+
+        comprobar(
+          !textoRestaurado.includes('Sube un G-code para calcular'),
+          `${tramo.nombre} · estado 6: NO cae en el estado 1 aunque no haya archivo`
+        );
+        comprobar(
+          textoRestaurado.includes('Filamento consumido'),
+          `${tramo.nombre} · estado 6: se ven los gramos del análisis restaurado`
+        );
+
+        // Y lo que de verdad prueba: el coste sale sin archivo.
+        const input = await page.$('.taller-input');
+        comprobar(!!input, `${tramo.nombre} · estado 6: aparece el campo del precio`);
+        if (input) {
+          await page.fill('.taller-input', '25');
+          const resultado = await textoResultado(page);
+          comprobar(
+            resultado === LINEA_ESPERADA,
+            `${tramo.nombre} · estado 6: calcula sin archivo → ${LINEA_ESPERADA} (sale: ${resultado})`
+          );
+        }
+        comprobar(
+          (await seSale(page)) <= 0,
+          `${tramo.nombre} · estado 6: la caja no recorta`
+        );
+        await page.close();
+        continue;
+      }
 
       comprobar(
         texto.includes(estado.texto),

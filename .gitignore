@@ -86,3 +86,16 @@ scripts/verify/out/
 # en cada commit sin aportar nada. La configuración que sí importa —AGENTS.md— sí
 # está versionada.
 graphify-out/
+
+# Notas de trabajo locales: planes de desarrollo, borradores y estado de esta
+# máquina. No se suben a propósito.
+#
+# No van en `docs/` porque `docs/` sí se versiona y contiene documentación del
+# proyecto —historias de usuario, estado, diseño de Taller— que otra persona
+# necesita para trabajar en esto. Un plan de la fase siguiente, con las tareas a
+# medio hacer y los commits sin subir, es otra cosa: vale para la sesión que lo
+# escribió y estorba en cuanto deja de ser cierto.
+#
+# Lo que sí sea decisión de producto va a `docs/` y se versiona, como ya pasó con
+# `docs/taller.md`.
+.local/

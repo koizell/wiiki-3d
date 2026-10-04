@@ -34,6 +34,20 @@ export interface AnalysisActions {
   /** Descarta el archivo y vuelve al estado de primera vez. */
   clearFile: () => void;
   /**
+   * Vuelve a poner en el estado un análisis que estaba guardado en el historial.
+   *
+   * **`file` queda a `null`, y eso es lo importante.** P2 decidió que no se
+   * guarda el archivo, sólo el análisis, así que no hay `File` que reconstruir.
+   * Fabricar uno de cero bytes para que las vistas no se enteren sería una
+   * mentira en el modelo de datos: el visor 3D lo abriría y fallaría, y alguien
+   * acabaría intentando leerlo.
+   *
+   * Por eso `file: null` con `metadata` y `classification` puestos es un estado
+   * de verdad —«hay un análisis pero no hay archivo»— y lo que tiene que hacer
+   * cada vista con él es su trabajo, no un parche.
+   */
+  restaurarAnalisis: (entrada: EntradaRestaurable) => void;
+  /**
    * Abre el diálogo del sistema para elegir fichero.
    *
    * Vive aquí porque hay dos botones que abren **el mismo** input —el de la barra
@@ -50,6 +64,20 @@ export interface AnalysisActions {
    */
   fileInputRef: RefObject<HTMLInputElement | null>;
 }
+
+/**
+ * Lo mínimo que hace falta para devolver un análisis a la pantalla.
+ *
+ * Es un tipo propio, y no `EntradaHistorial`, porque **lo que se restaura no es
+ * la entrada del historial sino su contenido**: el `id` y la `fecha` no tienen
+ * dónde pintarse —el fichero se sabe por su nombre—, y atar la acción a la
+ * forma del almacén haría que cambiar `EntradaHistorial` tocara la lógica.
+ */
+export type EntradaRestaurable = {
+  fileType: FileType;
+  metadata: ProjectMetadata;
+  classification: JevClassification;
+};
 
 /**
  * Estado del archivo y su análisis. `null` fuera del proveedor, para que el hook

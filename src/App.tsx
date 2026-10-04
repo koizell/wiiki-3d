@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import UploadRoute from './routes/UploadRoute';
 import TallerRoute from './routes/TallerRoute';
+import HistorialRoute from './routes/HistorialRoute';
 import PlaceholderRoute from './routes/PlaceholderRoute';
 import AnalysisPanel from './components/AnalysisPanel';
 import SiteFooter from './components/SiteFooter';
@@ -105,6 +106,20 @@ function AppShell() {
               style={{ display: 'none' }}
               onChange={(event) => {
                 const selected = event.target.files?.[0];
+                /*
+                 * Se vacía el valor **antes** de devolver el control.
+                 *
+                 * Sin esto, elegir dos veces el mismo archivo no hace nada: el
+                 * input ya tiene ese valor, el navegador no dispara `change`, y
+                 * quien lo ha elegido dos veces se queda sin ver ningún aviso de
+                 * que la segunda no ha contado. Medido: subir el mismo G-code
+                 * tres veces guardaba una entrada y no daba ningún error.
+                 *
+                 * Vaciarlo no borra el archivo elegido —eso ya está en el
+                 * estado—, sólo hace que el siguiente `change` sea un `change`
+                 * de verdad.
+                 */
+                event.target.value = '';
                 if (selected) loadFile(selected);
               }}
             />
@@ -269,10 +284,18 @@ function App() {
               element={
                 <PlaceholderRoute
                   title="Proyectos"
-                  purpose="Va a guardar los análisis que hagas, para volver a consultarlos sin volver a subir el archivo."
+                  purpose="Aquí vivirán los proyectos con nombre. El historial ya guarda los análisis; un proyecto es un análisis con un nombre y una decisión alrededor, y eso todavía no se ha decidido qué es."
                 />
               }
             />
+            {/*
+              `/historial` **no está en la barra inferior**, y es deliberado: la
+              barra tiene cuatro destinos decididos y siguen siendo los mismos.
+              El historial se llega desde `/`, debajo de la zona de subida, con un
+              enlace. Añadirlo a la barra sería un quinto destino por una lista
+              que sólo se mira cuando ya se sabe que existen análisis.
+            */}
+            <Route path="/historial" element={<HistorialRoute />} />
             <Route path="/acerca-de" element={<InfoRoute pagina="acerca-de" />} />
             <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
             <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
