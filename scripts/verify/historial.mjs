@@ -831,6 +831,33 @@ try {
     await page.reload();
     await page.waitForSelector('.recientes-boton', { timeout: 10000 });
 
+    /*
+     * El enlace al historial tiene objetivo táctil.
+     *
+     * Se mide **sin** `@media (pointer: coarse)` de por medio a propósito: la
+     * primera versión de la regla lo metía dentro, y como Chromium headless no
+     * cumple ese `media`, la regla no llegaba a aplicarse y `min-height: 0px`
+     * pasaba por comprobar el objetivo táctil sin comprobarlo. Un requisito que
+     * sólo se cumple en un dispositivo concreto es un requisito que no se
+     * comprueba.
+     */
+    const enlace = await page.$('.recientes-enlace');
+    if (enlace) {
+      const caja = await enlace.boundingBox();
+      const alto = caja ? Math.round(caja.height) : 0;
+      const ancho = caja ? Math.round(caja.width) : 0;
+      comprobar(
+        alto >= 44,
+        `el enlace al historial tiene objetivo táctil de 44px de alto (mide ${alto}px)`
+      );
+      comprobar(
+        ancho >= 44,
+        `y ancho suficiente para acertarlo (mide ${ancho}px)`
+      );
+    } else {
+      comprobar(false, 'no hay enlace al historial que medir');
+    }
+
     const mesure = await page.$eval('.recientes-nombre', (el) => {
       const estilos = getComputedStyle(el);
       return {

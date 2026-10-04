@@ -158,10 +158,20 @@ body {
   gap: 0.5rem;
   /*
    * El header se lleva sus acciones a una fila propia por debajo del logotipo.
-   * Motivo medido: logo (≈128px) + "Subir Archivo" (≈116px) + "Iniciar Sesión"
-   * (≈132px) + gaps (8px) + padding horizontal (24px) ≈ 424px, y el viewport de
-   * referencia es de 375px. Sin esto los botones se parten en dos líneas y la
-   * barra queda descuadrada, en lugar de ceder con dignidad.
+   *
+   * **La causa no es que no quepan: es que `.top-nav` es `width: 100%`.** Un item
+   * flex del ancho de la línea entera no puede compartirla con el logotipo, así
+   * que se parten en dos siempre, mida lo que mida el contenido. Medido con los
+   * dos elementos que hay hoy —logotipo de 115 px y un botón de 128 px, más 8 px
+   * de hueco y 40 px de padding horizontal, 291 px en total—: la barra se parte
+   * igual a 360, a 432 y a 520 px.
+   *
+   * El comentario anterior lo justificaba con un presupuesto de 424 px que
+   * incluía un botón de "Iniciar Sesión" que ya no existe, porque P7 lo retiró.
+   * El número era cierto cuando se escribió y dejó de serlo sin que nadie lo
+   * notara: la conclusión —«que se partan en dos»— seguía siendo cierta, pero por
+   * otro motivo, y con el botón de vuelta el corte de 640 habría parecido
+   * justificado por el ancho cuando en realidad es el `width: auto` de más abajo.
    */
   flex-wrap: wrap;
   padding: 0.6rem 0.75rem;
@@ -801,10 +811,15 @@ body {
  * Es el punto donde el contenido de la barra superior deja de necesitar recortes
  * y donde la zona de subida deja de estar apretada.
  *
- * La barra: con el logotipo, los dos botones y los gaps, el presupuesto medido a
- * 16px de base es 128px (logotipo) + 116px ("Subir Archivo") + 132px ("Iniciar
- * Sesión") + 8px de hueco + 48px de padding horizontal ≈ 432px. Por debajo de
- * 432px los tres elementos no caben en una fila y la barra se parte en dos.
+ * La barra: aquí lo que cambia es que `.top-nav` pasa de `width: 100%` a
+ * `width: auto`, y **con eso vuelve a poder compartir la línea con el logotipo**.
+ * Antes no cabían por el ancho, sino porque el item medía la línea entera; ahora
+ * el presupuesto de contenido son 291px medidos (logotipo 115px + botón 128px +
+ * 8px de hueco + 40px de padding horizontal), así que a 640px sobra de largo.
+ *
+ * El `432px` que estaba aquí era un presupuesto con tres elementos —incluía el
+ * botón de "Iniciar Sesión", retirado por P7— y ya no mide nada. El corte se
+ * sostiene por lo de `width: auto`, que es lo que se ha medido.
  *
  * La zona de subida: con 2rem de padding en `.canvas-area` y 4rem en
  * `.upload-zone`, a 375px quedaban 311px de recuadro y solo 183px de contenido
@@ -2327,9 +2342,29 @@ body {
   min-width: 0;
 }
 
+/*
+ * El enlace al historial mide 44px de alto, **siempre y no sólo con dedo**.
+ *
+ * Un enlace de texto de 0,85rem mide 16px —medido— y 44 es el objetivo táctil
+ * mínimo (WCAG 2.2, 2.5.8). Es el único camino a los análisis guardados, así que
+ * dejarlo como texto de 0,85 rem lo convierte en el control más pequeño de la
+ * pantalla y en el más difícil de acertar.
+ *
+ * La primera versión lo metió en `@media (pointer: coarse)`, con la idea de que en
+ * escritorio se quedara pequeño. Eso, además de ser una diferencia sin motivo —un
+ * enlace no cambia de tamaño según quién lo pulse—, hace **imposible de
+ * comprobar**: Chromium headless no cumple `pointer: coarse`, así que la regla no
+ * llegaba a aplicarse nunca en las verificaciones y `min-height: 0px` pasaba por
+ * comprobar el objetivo táctil sin comprobarlo.
+ *
+ * `inline-flex` con `align-items: center` reparte el alto y deja el texto
+ * centrado; sin `align-items` el texto se pegaría al borde de arriba.
+ */
 .recientes-enlace {
-  display: inline-block;
-  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.3rem;
   color: var(--accent-text);
   font-size: 0.85rem;
 }
