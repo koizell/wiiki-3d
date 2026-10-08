@@ -46,7 +46,8 @@ export const voladizosSoportes: Guia = {
    * separa la cara apoyada rugosa de los otros dos.
    */
   diferencial: {
-    contra: 'voladizo que cuelga, soportes que fallan y cara apoyada rugosa',
+    contra: 'el warping, que se ve parecido y no se arregla igual',
+    contraCorto: 'warping',
     comprobaciones: [
       {
         id: 'que-falla',

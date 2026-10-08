@@ -9,7 +9,8 @@ export const enclosureYWarping: Guia = {
   minutos: 4,
   leeDelAnalisis: ['material', 'bedTemp'],
   diferencial: {
-    contra: 'Warping por frío o corrientes de aire frente a heat creep por cámara caliente: la misma puerta resuelve uno y provoca el otro.',
+    contra: 'el heat creep de una cámara caliente',
+    contraCorto: 'heat creep',
     comprobaciones: [
       {
         id: 'sintoma-principal',

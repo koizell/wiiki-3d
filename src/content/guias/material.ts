@@ -11,7 +11,8 @@ export const material: Guia = {
   leeDelAnalisis: ['material'],
 
   diferencial: {
-    contra: 'Un problema del material (humedad, contracción) se parece a un problema de ajuste (cama, temperatura, warping).',
+    contra: 'un problema de ajuste: cama, temperatura o warping',
+    contraCorto: 'el ajuste',
     comprobaciones: [
       {
         id: 'humedad',

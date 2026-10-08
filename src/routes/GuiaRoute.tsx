@@ -238,7 +238,7 @@ function EtapaDiferencial({ guia }: { guia: Guia }) {
       */}
       <h2 className="etapa-titulo">
         <span className="etapa-num">1</span> Antes de tocar nada: descártalo como{' '}
-        {guia.diferencial.contra}
+        {guia.diferencial.contraCorto ?? guia.diferencial.contra}
       </h2>
       <p className="etapa-intro">
         Lo que más se confunde con esto es {guia.diferencial.contra}. Estas son las

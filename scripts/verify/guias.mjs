@@ -219,6 +219,27 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
     assert.ok(GUIAS.some((g) => g.slug === guia.diferencial.siNo.guia));
   });
 
+  /*
+   * El título de la etapa 1 no puede ser un trabalenguas.
+   *
+   * Es «Antes de tocar nada: descártalo como …», y `contra` puede ser una
+   * enumeración entera: en `voladizos-y-soportes` salía «descártalo como voladizo
+   * que cuelga, soportes que fallan y cara apoyada rugosa», que en el `h2` ocupa
+   * dos líneas y no se lee. `contraCorto` es la versión corta para el título; esta
+   * comprobación impide que vuelva a colarse una enumeración.
+   *
+   * El umbral es 40 caracteres. Los títulos de hoy van de 7 a 25 —«separación
+   * entre capas» es el más largo—, así que 40 deja sitio sin permitir una frase
+   * entera. Medido sobre las siete, no puesto a ojo.
+   */
+  comprobar(`${guia.slug}: el título de la etapa 1 es corto`, () => {
+    const titulo = guia.diferencial.contraCorto ?? guia.diferencial.contra;
+    assert.ok(
+      titulo.length <= 40,
+      `«${guia.slug}»: el título mide ${titulo.length} caracteres —"${titulo}"—; una enumeración ahí se lee como un trabalenguas. Va en contraCorto.`
+    );
+  });
+
   comprobar(`${guia.slug}: las variables necesarias van primero`, () => {
     const orden = variablesEnOrden(guia);
     const necesarias = guia.variables.filter((v) => v.necesaria).map((v) => v.id);

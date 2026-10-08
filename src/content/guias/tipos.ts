@@ -109,6 +109,15 @@ export interface Comprobacion {
 export interface Diferencial {
   /** Una frase: qué dos problemas se están confundiendo aquí. */
   contra: string;
+  /**
+   * La versión corta de `contra`, para el título de la etapa.
+   *
+   * El título es «Antes de tocar nada: descártalo como …» y `contra` puede ser una
+   * enumeración entera —«voladizo que cuelga, soportes que fallan y cara apoyada
+   * rugosa»—, que ahí se lee como un trabalenguas. La enumeración se queda en la
+   * introducción; el título usa esto. Si no se pone, el título usa `contra`.
+   */
+  contraCorto?: string;
   comprobaciones: Comprobacion[];
   /**
    * A dónde ir si el resultado es «no».
