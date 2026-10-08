@@ -137,7 +137,7 @@ prioridad la marca lo que desbloquea la wiki interactiva, no lo que se lee bien 
 | 1 | `adhesion-primera-capa` | ✅ Article escrito y revisado; 8 fuentes |
 | 2 | `enclosure-y-warping` | ✅ Guía escrita y aprobada (`enclosure-y-warping-revision-2`); 4 fuentes nuevas + 1 reutilizada de `warping-pla`; dibujo `camara` |
 | 3 | `material` | ✅ Guía escrita y aprobada (`material-revision-2`); 4 fuentes nuevas; campo `material` del panel; dibujo `rugosidad` |
-| 4 | `altura-capa` | Pendiente — `layerHeight` ya tiene artículo reservado |
+| 4 | `altura-capa` | ✅ Guía escrita y aprobada (`altura-capa-revision-2`); 4 fuentes nuevas; campo `layerHeight`; dibujo `capas` |
 | 5 | `temperatura-hotend` | Pendiente — `hotendTemp` reservado |
 | 6 | `capas-desplazadas` | Pendiente |
 | 7 | `flow-rate` | Pendiente |

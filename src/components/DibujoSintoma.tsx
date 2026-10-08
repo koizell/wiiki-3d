@@ -63,6 +63,8 @@ const DESCRIPCION: Record<Dibujo, string> = {
     'Esquema de una impresora cerrada con su puerta, una corriente de aire frío que empuja desde fuera y calor que sube dentro de la cámara.',
   voladizo:
     'Esquema de una pieza con un saliente sin apoyo debajo que se descuelga hacia abajo.',
+  capas:
+    'Esquema de una pieza en corte con sus capas horizontales y una acotación de la altura de una capa.',
 };
 
 /**
@@ -231,6 +233,34 @@ const CUERPO: Record<Dibujo, ReactElement> = {
 
       {/* El saliente, que se descuelga hacia abajo. */}
       <path className="dibujo-voladizo" d="M52 20 L84 20 Q97 23 93 42" fill="none" />
+    </>
+  ),
+
+  /*
+   * Una pieza en corte, con sus capas y una acotación.
+   *
+   * No es un defecto: es la unidad de medida del tema. Las líneas horizontales
+   * son las capas —el mismo trazo que usa la grieta para las suyas— y la doble
+   * flecha de la derecha acota lo que la guía llama altura de capa, que es la
+   * distancia entre dos de esas líneas.
+   */
+  capas: (
+    <>
+      {/* La cama. */}
+      <rect className="dibujo-chapa" x="14" y="62" width="92" height="6" rx="2" />
+
+      {/* La pieza en corte, con sus capas. */}
+      <path className="dibujo-pieza" d="M30 62 L30 14 L78 14 L78 62" fill="none" />
+      <path className="dibujo-capa" d="M30 54 L78 54" />
+      <path className="dibujo-capa" d="M30 46 L78 46" />
+      <path className="dibujo-capa" d="M30 38 L78 38" />
+      <path className="dibujo-capa" d="M30 30 L78 30" />
+      <path className="dibujo-capa" d="M30 22 L78 22" />
+
+      {/* La altura de una capa, acotada entre dos de esas líneas. */}
+      <path className="dibujo-flecha" d="M90 46 L90 54" />
+      <path className="dibujo-punta" d="M90 46 L87 41 L93 41 Z" />
+      <path className="dibujo-punta" d="M90 54 L87 59 L93 59 Z" />
     </>
   ),
 };

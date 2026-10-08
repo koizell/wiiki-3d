@@ -267,4 +267,5 @@ export type Dibujo =
   | 'colapso'
   | 'cama'
   | 'camara'
-  | 'voladizo';
+  | 'voladizo'
+  | 'capas';
