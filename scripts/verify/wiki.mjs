@@ -282,10 +282,21 @@ try {
       citas: document.querySelectorAll('.tarjeta-cita a').length,
       riel: !!document.querySelector('.riel'),
       textoInyectado: document.querySelectorAll('.guia script').length,
+      numerosEtapa: [...document.querySelectorAll('.etapa-num')].map((e) => e.textContent.trim()),
     }));
 
     comprobar('un solo <h1>', estructura.h1 === 1);
     comprobar('las cuatro etapas están', estructura.etapas >= 4, `${estructura.etapas} etapas`);
+    /*
+     * El círculo de la etapa lleva un número. Las secciones que no son un paso
+     * —«Esto no lo resuelve» y «De dónde sale esto»— no llevan círculo: llevaban un
+     * «·» que se leía como un número vacío.
+     */
+    comprobar(
+      'el número de etapa es un número, no un círculo vacío',
+      estructura.numerosEtapa.length >= 4 && estructura.numerosEtapa.every((n) => /^\d+$/.test(n)),
+      estructura.numerosEtapa.join(' · ')
+    );
     comprobar(
       'cada comprobación del diferencial tiene sus dos caras',
       estructura.comprobaciones === guia.diferencial.comprobaciones.length &&

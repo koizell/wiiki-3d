@@ -2869,7 +2869,7 @@ body {
 }
 
 .chip-detalle {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   line-height: 1.2;
 }
@@ -2977,7 +2977,7 @@ body {
 }
 
 .tarjeta-cifra em {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-style: normal;
   color: var(--text-secondary);
   line-height: 1.2;
@@ -3188,7 +3188,7 @@ body {
 
 .accion-fuente {
   margin-top: 0.5rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
@@ -3442,7 +3442,7 @@ body {
 }
 
 .riel-enlace-titulo {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 

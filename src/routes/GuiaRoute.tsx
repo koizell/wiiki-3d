@@ -166,9 +166,7 @@ export default function GuiaRoute() {
       <FueraDeAlcance guia={guia} />
 
       <section className="guia-fuentes">
-        <h2 className="etapa-titulo">
-          <span className="etapa-num">·</span> De dónde sale esto
-        </h2>
+        <h2 className="etapa-titulo">De dónde sale esto</h2>
         <p className="guia-fuentes-nota">
           Las {guia.fuentes.length} fuentes que respaldan esta guía. Cada cifra y
           cada acción de arriba lleva la suya.
@@ -607,9 +605,7 @@ function FueraDeAlcance({ guia }: { guia: Guia }) {
   if (guia.fueraDeAlcance.length === 0) return null;
   return (
     <section className="etapa etapa--fuera">
-      <h2 className="etapa-titulo">
-        <span className="etapa-num">·</span> Esto no lo resuelve
-      </h2>
+      <h2 className="etapa-titulo">Esto no lo resuelve</h2>
       <p className="etapa-intro">
         Los tres motivos por los que esta guía puede no servirte, y qué hacer en cada
         caso. Decirlo es lo que hace que las de arriba sean creíbles.
