@@ -16,7 +16,7 @@ import { enclosureYWarping } from '../content/guias/enclosure-y-warping.ts';
 import { separaciones } from '../content/guias/separaciones.ts';
 import { temperaturaCama } from '../content/guias/temperatura-cama.ts';
 import { warping } from '../content/guias/warping.ts';
-import type { Condicion, Guia, Regla, Variable } from '../content/guias/tipos.ts';
+import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/guias/tipos.ts';
 
 /**
  * El registro de guías y el motor que las hace funcionar.
@@ -218,4 +218,29 @@ export function precontestar(
   }
 
   return elegidas;
+}
+
+/** Dónde cae el valor del archivo respecto al intervalo de la fuente. */
+export type PosicionValor = 'dentro' | 'por-encima' | 'por-debajo';
+
+/**
+ * Compara el valor de un campo del archivo con el intervalo que da la fuente.
+ *
+ * Es lógica pura y sin React a propósito: la comparación de un número con un
+ * intervalo es justo lo que se puede probar en Node, y lo que no conviene dejar
+ * escrito a mano en el JSX, donde un `<` cambiado por un `<=` no lo vería nadie.
+ *
+ * Devuelve `null` cuando el archivo no trae el campo. No es un cero ni un «dentro»:
+ * es que no hay nada que comparar, y la página no pinta la comparación. La
+ * diferencia es la que separa «tu cama está bien» de «tu slicer no escribió la
+ * cama», que son dos cosas distintas.
+ */
+export function compararValor(
+  rango: RangoFuente,
+  valor: number | undefined
+): { posicion: PosicionValor; diferencia: number } | null {
+  if (valor === undefined) return null;
+  if (valor < rango.min) return { posicion: 'por-debajo', diferencia: rango.min - valor };
+  if (valor > rango.max) return { posicion: 'por-encima', diferencia: valor - rango.max };
+  return { posicion: 'dentro', diferencia: 0 };
 }

@@ -3804,6 +3804,43 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Tu valor, al lado del objetivo de la fuente.
+ *
+ * Va justo debajo del valor y en tres piezas —lo tuyo, el intervalo, y dónde cae—
+ * para que se lean de un golpe. El color del filete izquierdo dice la posición sin
+ * tener que leerla: acento cuando cae dentro, aviso cuando se sale por arriba o por
+ * abajo. Sólo se pinta si el archivo trae el campo.
+ */
+.accion-comparacion {
+  margin-top: 0.55rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  border-left: 3px solid var(--border);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.accion-comparacion strong {
+  color: var(--accent-text);
+}
+
+.accion-comparacion-fuente,
+.accion-comparacion-donde {
+  color: var(--text-secondary);
+}
+
+.accion-comparacion--dentro {
+  border-left-color: var(--accent);
+}
+
+.accion-comparacion--por-encima,
+.accion-comparacion--por-debajo {
+  border-left-color: var(--warning);
+}
+
 .accion-porque {
   margin-top: 0.55rem;
   font-size: 0.88rem;

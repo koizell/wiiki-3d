@@ -253,6 +253,7 @@ export const warping: Guia = {
       accion: 'Sube la temperatura de cama',
       cuando: { chapa: 'cool', material: ['pla', 'pla-cf'] },
       valor: '35–45 °C',
+      rango: { campo: 'bedTemp', min: 35, max: 45, unidad: '°C' },
       porque:
         'La dirección no tiene discusión: hay que subir, y Bambu lo cuantifica en +5 a +10 °C. En Cool Plate el rango de la tabla es 35–45 °C, así que 65 °C queda fuera de él.',
       fuente: 'Bambu Lab',
@@ -263,6 +264,7 @@ export const warping: Guia = {
       accion: 'Sube la temperatura de cama',
       cuando: { chapa: ['textured', 'smooth', 'engineering'], material: ['pla', 'pla-cf'] },
       valor: '45–65 °C, objetivo 55–65 °C',
+      rango: { campo: 'bedTemp', min: 45, max: 65, unidad: '°C' },
       porque:
         'Los 55–65 °C son el objetivo de diagnóstico de la página de warping y el 45–65 °C el intervalo de la tabla por chapa. No son lo mismo: el objetivo es una ventana más estrecha dentro del intervalo.',
       fuente: 'Bambu Lab',
@@ -272,6 +274,7 @@ export const warping: Guia = {
       accion: 'Sube la temperatura de cama',
       cuando: { material: 'petg' },
       valor: '60–80 °C',
+      rango: { campo: 'bedTemp', min: 60, max: 80, unidad: '°C' },
       porque:
         'Es el único rango del material que da Bambu en su tabla por filamento. Los 50–60 °C que se ven para el PETG no salen de esa tabla.',
       fuente: 'Bambu Lab',
@@ -281,6 +284,7 @@ export const warping: Guia = {
       accion: 'Sube la temperatura de cama',
       cuando: { material: 'abs' },
       valor: '90–100 °C',
+      rango: { campo: 'bedTemp', min: 90, max: 100, unidad: '°C' },
       porque:
         'Rango de Bambu para ABS y ASA en su tabla por filamento. La opción «ABS o ASA» de arriba cubre los dos porque comparten fila en esa tabla.',
       fuente: 'Bambu Lab',

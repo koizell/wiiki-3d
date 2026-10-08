@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GUIAS, guiaPorSlug, conocimientoVisible, reglasQueSalen, seCumple, variablesEnOrden, precontestar } from '../../src/lib/guias.ts';
+import { GUIAS, guiaPorSlug, compararValor, conocimientoVisible, reglasQueSalen, seCumple, variablesEnOrden, precontestar } from '../../src/lib/guias.ts';
 import {
   anclasDeCampos,
   camposDeLaGuia,
@@ -825,6 +825,42 @@ comprobar('la barra distingue lo que viene del archivo de lo que viene del diagn
     ['material', 'bedTemp']
   );
   assert.equal(lectura.conValor, 4, 'con el G-code completo no falta ninguno de los cuatro');
+});
+
+console.log('');
+console.log('=== El intervalo de la fuente, para comparar con tu archivo ===');
+console.log('');
+
+for (const guia of GUIAS) {
+  comprobar(`${guia.slug}: cada rango es un campo real y dice lo mismo que su valor`, () => {
+    for (const r of guia.reglas) {
+      if (!r.rango) continue;
+      assert.ok(
+        camposDeLosTipos.has(r.rango.campo),
+        `la regla «${r.id}» compara «${r.rango.campo}», que no es un campo de ProjectMetadata ni de JevClassification`
+      );
+      assert.ok(r.rango.min < r.rango.max, `el rango de «${r.id}» no tiene min < max`);
+      assert.ok(r.valor, `la regla «${r.id}» tiene rango y no tiene valor, y son el mismo dato`);
+      assert.ok(
+        r.valor.includes(String(r.rango.min)) && r.valor.includes(String(r.rango.max)),
+        `el valor «${r.valor}» y el rango ${r.rango.min}–${r.rango.max} de «${r.id}» dicen cosas distintas`
+      );
+    }
+  });
+}
+
+comprobar('al menos una regla trae el intervalo, o la comparación sería código muerto', () =>
+  assert.ok(GUIAS.some((g) => g.reglas.some((r) => r.rango)), 'ninguna regla declara rango')
+);
+
+comprobar('la comparación marca dentro, por encima y por debajo', () => {
+  const rango = { campo: 'bedTemp', min: 45, max: 65, unidad: '°C' };
+  assert.deepEqual(compararValor(rango, 50), { posicion: 'dentro', diferencia: 0 });
+  assert.deepEqual(compararValor(rango, 45), { posicion: 'dentro', diferencia: 0 }, 'el extremo bajo es dentro');
+  assert.deepEqual(compararValor(rango, 65), { posicion: 'dentro', diferencia: 0 }, 'el extremo alto es dentro');
+  assert.deepEqual(compararValor(rango, 40), { posicion: 'por-debajo', diferencia: 5 });
+  assert.deepEqual(compararValor(rango, 70), { posicion: 'por-encima', diferencia: 5 });
+  assert.equal(compararValor(rango, undefined), null, 'sin dato no hay comparación, no un «dentro»');
 });
 
 console.log(`\nMotor de guías: ${pruebas}/${pruebas} comprobaciones aprobadas.`);

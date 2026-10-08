@@ -151,6 +151,23 @@ export interface Conocimiento {
   campos?: string[];
 }
 
+/**
+ * El intervalo de la fuente, en números, para compararlo con el valor del archivo.
+ *
+ * `valor` dice el rango en texto —«45–65 °C»— y sirve para leerlo; esto es el mismo
+ * intervalo en números, y sirve para **calcular**. Es lo que permite que la guía,
+ * con un G-code cargado, diga si tu cama cae dentro, por encima o por debajo, y de
+ * cuánto. Sin él habría que interpretar el texto, que es donde un guion de rango se
+ * confunde con un signo menos.
+ */
+export interface RangoFuente {
+  /** El campo de `ProjectMetadata` que se compara. */
+  campo: string;
+  min: number;
+  max: number;
+  unidad: string;
+}
+
 /** Una acción recomendada. Se calcula, no se escribe por caso. */
 export interface Regla {
   id: string;
@@ -181,6 +198,15 @@ export interface Regla {
   fuente: string;
   /** Qué hace la fuente exactamente aquí. */
   alcance?: string;
+  /**
+   * El mismo intervalo de `valor`, en números, si se puede comparar con el archivo.
+   *
+   * Opcional, y sólo en las reglas cuyo objetivo es un intervalo de un campo del
+   * panel —hoy, la temperatura de cama—. Una regla con `rango` tiene que llevar
+   * `valor`, y el `valor` tiene que contener los dos extremos: son el mismo dato en
+   * texto y en número, y `verify:guias` avisa si se separan.
+   */
+  rango?: RangoFuente;
 }
 
 /** Lo que esta guía no resuelve. */

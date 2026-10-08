@@ -51,7 +51,9 @@ Markdown y la guía nueva no aparecería: un fallo silencioso.
    es «no», el enlace lleva a la otra guía y **limpia las respuestas** de la anterior.
 2. **La recomendación se calcula.** Sin marcar nada no sale ninguna acción, y la lista
    se llena a medida que se declara el montaje. Cambiar la chapa de la Textured PEI a
-   la Cool Plate cambia la cifra de 45–65 °C a 35–45 °C.
+   la Cool Plate cambia la cifra de 45–65 °C a 35–45 °C. Y con un G-code cargado, la
+   acción que da un intervalo dice **dónde cae tu valor**: «Tu cama: 50 °C · objetivo
+   35–45 °C · 5 °C por encima».
 3. **El panel enlaza a la sección, no a la cabecera, y el analizador precontesta la
    guía.** «Riesgo de warping, 35 %» lleva a `#c-riesgo`, la tarjeta que explica ese
    número, y `bedTemp` a `#v-material`. Con un G-code cargado, `material` y `bedTemp`

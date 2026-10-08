@@ -100,7 +100,7 @@ resultado de la prueba.
 |---|---|---|---|
 | 2.1 | Clasificación real en producción | ⏳ | Hoy `VITE_JEV_USE_MOCK=true` en local y el flujo de GitHub Pages no lleva esa variable: **lo que se ve en desarrollo no es lo que se verá publicado**. Decidir y configurar. |
 | 2.2 | El veredicto lleva a la sección, no al artículo | ✅ | El panel enlaza a `/wiki/<slug>#<ancla>`, no a la cabecera: `warpingRisk` y `riskLevel` caen en `#c-riesgo`, y `bedTemp` en `#v-material`. La ancla vive en `CAMPOS_WIKI` y `verify:wiki` la compara con la que declara la guía (`126/126`), así que renombrar la tarjeta sin tocar el panel falla. |
-| 2.3 | Comparar tu valor con el de la fuente | ⏳ | Tu cama a 60 °C, al lado la tabla de Bamb (35–65) y la de Prusa (50–60), con la diferencia marcada. Datos del artículo, calculados en el cliente. |
+| 2.3 | Comparar tu valor con el de la fuente | ✅ | Con un G-code cargado, la acción que da un intervalo de cama dice dónde cae tu valor: «Tu cama: 50 °C · objetivo 35–45 °C · 5 °C por encima». El intervalo va en `rango` (números) junto al `valor` (texto); `verify:guias` avisa si los dos se separan (`146/146`) y `verify:wiki` comprueba que la posición marcada es la que calcula el motor (`130/130`). |
 | 2.4 | Taller recibe los gramos del G-code | ✅ Ya ocurre. Falta QA: hoy no se puede pasar de la barra al artículo que explica ese campo. | Ya ocurre: `/taller/` abre con los gramos extraídos. FaltaQA: hoy no se puede pasar de la barra al artículo que explica ese campo. |
 
 ---

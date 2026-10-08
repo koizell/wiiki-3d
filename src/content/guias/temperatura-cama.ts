@@ -214,6 +214,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama en el rango de tu chapa',
       cuando: { material: ['pla', 'pla-cf'], chapa: 'cool' },
       valor: '35–45 °C',
+      rango: { campo: 'bedTemp', min: 35, max: 45, unidad: '°C' },
       porque:
         'Es la fila por chapa de Bambu leída por su columna de la Cool Plate. Los 65 °C que circulan como cifra del PLA quedan fuera de este rango.',
       fuente: 'Bambu Lab',
@@ -225,6 +226,7 @@ export const temperaturaCama: Guia = {
       accion: 'Sube la cama',
       cuando: { material: ['pla', 'pla-cf'], chapa: ['textured', 'smooth', 'engineering'] },
       valor: '45–65 °C',
+      rango: { campo: 'bedTemp', min: 45, max: 65, unidad: '°C' },
       porque:
         'Las tres chapas comparten el mismo rango para el PLA, y es el otro extremo de la misma fila. Los 50–60 °C de Prusa y del slicer están dentro de él: no contradicen, son el mismo rango con distinta anchura.',
       fuente: 'Bambu Lab',
@@ -234,6 +236,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama a temperatura',
       cuando: { material: 'petg' },
       valor: '60–80 °C',
+      rango: { campo: 'bedTemp', min: 60, max: 80, unidad: '°C' },
       porque:
         'Bambu da ese rango por filamento. La tabla del slicer no tiene fila de PETG, así que no cuenta como una tercera voz a favor ni en contra.',
       fuente: 'Bambu Lab',
@@ -245,6 +248,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama a temperatura',
       cuando: { material: 'abs' },
       valor: '90–110 °C',
+      rango: { campo: 'bedTemp', min: 90, max: 110, unidad: '°C' },
       porque:
         'ABS y ASA son los dos materiales donde los tres fabricantes más se parecen: Bambu da 90–100 °C y Prusa 90–110 para ASA y 95–110 para ABS. La diferencia es de margen.',
       fuente: 'Bambu Lab, Prusa Research',
@@ -254,6 +258,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama a temperatura',
       cuando: { material: 'pc' },
       valor: '80–120 °C',
+      rango: { campo: 'bedTemp', min: 80, max: 120, unidad: '°C' },
       porque:
         'PC y PET-CF son las filas más altas de las dos tablas: Bambu da 100–120 °C para el PC y 80–100 para el PET-CF, y Prusa 100–115 para el PC. Es el rango más ancho del lote y el que menos margen deja para equivocarse.',
       fuente: 'Bambu Lab, Prusa Research',
@@ -263,6 +268,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama en el rango bajo',
       cuando: { material: 'tpu' },
       valor: '30–60 °C',
+      rango: { campo: 'bedTemp', min: 30, max: 60, unidad: '°C' },
       porque:
         'El TPU es el extremo opuesto al PC en la misma tabla. Bambu da 30–45 °C por filamento y 30–35 en Engineering Plate; el slicer da 40–60 °C.',
       fuente: 'Bambu Lab, OrcaSlicer',
@@ -272,6 +278,7 @@ export const temperaturaCama: Guia = {
       accion: 'Pon la cama a temperatura',
       cuando: { material: 'pa' },
       valor: '70–115 °C',
+      rango: { campo: 'bedTemp', min: 70, max: 115, unidad: '°C' },
       porque:
         'PA y nylon tienen la fila más ancha entre los materiales comunes: Prusa da 70–115 °C y el slicer 90–110 °C para nylon 6 y 12.',
       fuente: 'Prusa Research, OrcaSlicer',

@@ -73,7 +73,7 @@ const BASE = process.env.BASE_URL ?? preview ?? 'http://127.0.0.1:4173';
  * comprobar es que **la web** está bien: leerlo de otro sitio comprobaría una lista
  * paralela, que es justo el segundo sitio que puede desfasarse.
  */
-const { GUIAS } = await import('../../src/lib/guias.ts');
+const { GUIAS, compararValor } = await import('../../src/lib/guias.ts');
 const SLUGS = GUIAS.map((g) => g.slug);
 
 if (SLUGS.length === 0) {
@@ -422,6 +422,79 @@ try {
     }
 
     comprobar('sin errores tras interactuar', errores.length === 0, errores[0] ?? '');
+    await ctx.close();
+  }
+
+  /* ---------------------------------------------------------------- 3b */
+  console.log('');
+  console.log('=== Tu valor, al lado del intervalo de la fuente ===');
+  console.log('');
+  {
+    /*
+     * Con un G-code cargado y el montaje declarado, la acción que da un intervalo de
+     * cama tiene que decir dónde cae el valor del archivo. Es la diferencia entre leer
+     * «45–65 °C» y saber si tu 50 está dentro, y sólo tiene sentido cuando el archivo
+     * trae el dato: sin él, no se pinta nada —que no es lo mismo que pintar «dentro»—.
+     */
+    const guia = GUIAS.find((g) => g.reglas.some((r) => r.rango)) ?? GUIAS[0];
+    const regla = guia.reglas.find((r) => r.rango && r.cuando);
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, '/');
+    await page.setInputFiles('#file-upload', GCODE_FIXTURE);
+    await page.waitForTimeout(2500);
+
+    /*
+     * El archivo se carga **antes** de entrar a la guía, y la navegación es del
+     * router, no una carga nueva. Es lo que hace que la guía preconteste el material:
+     * subir el archivo estando ya dentro no lo marca, a propósito —quien no lo marcó
+     * no debería verlo aparecer solo—.
+     */
+    await page.evaluate((ruta) => {
+      history.pushState(null, '', ruta);
+      dispatchEvent(new PopStateEvent('popstate'));
+    }, `/wiki/${guia.slug}`);
+    await page.waitForTimeout(500);
+
+    // El G-code precontesta `material`; el resto de la condición se marca a mano.
+    const activas = await page.evaluate(() =>
+      [...document.querySelectorAll('.chip--activo .chip-texto')].map((e) => e.textContent)
+    );
+    for (const [variableId, esperado] of Object.entries(regla.cuando)) {
+      const variable = guia.variables.find((v) => v.id === variableId);
+      const opcionId = Array.isArray(esperado) ? esperado[0] : esperado;
+      const opcion = variable.opciones.find((o) => o.id === opcionId);
+      if (activas.includes(opcion.etiqueta)) continue;
+      await page.locator('.chip').filter({ hasText: opcion.etiqueta }).first().click();
+      await page.waitForTimeout(220);
+    }
+
+    const comparacion = await page.evaluate(() => {
+      const el = document.querySelector('.accion-comparacion');
+      return el ? { texto: el.textContent ?? '', clase: el.className } : null;
+    });
+
+    comprobar(
+      'con archivo y montaje declarado, la acción compara tu valor con la fuente',
+      comparacion !== null,
+      comparacion ? comparacion.texto : 'no se pintó la comparación'
+    );
+
+    if (comparacion) {
+      comprobar(
+        'la comparación enseña el intervalo de la fuente',
+        comparacion.texto.includes(String(regla.rango.min)) && comparacion.texto.includes(String(regla.rango.max)),
+        comparacion.texto
+      );
+      // La posición que marca la página tiene que ser la que calcula el motor.
+      const valor = Number((comparacion.texto.match(/-?\d+(?:[.,]\d+)?/)?.[0] ?? 'NaN').replace(',', '.'));
+      const esperado = compararValor(regla.rango, valor);
+      comprobar(
+        'y marca la posición que dice el motor',
+        comparacion.clase.includes(`--${esperado?.posicion}`),
+        `${comparacion.clase} · esperado --${esperado?.posicion} para ${valor} en ${regla.rango.min}–${regla.rango.max}`
+      );
+    }
+
+    comprobar('sin errores al comparar', errores.length === 0, errores[0] ?? '');
     await ctx.close();
   }
 

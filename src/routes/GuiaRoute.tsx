@@ -3,9 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import DibujoSintoma from '../components/DibujoSintoma';
 import { Negrita } from '../components/Negrita';
 import TuArchivo from '../components/TuArchivo';
-import { idConocimiento, idVariable } from '../lib/tu-archivo';
+import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
 import { actualizarSeo, seoGuia } from '../lib/seo';
 import {
+  compararValor,
   conocimientoVisible,
   guiaPorSlug,
   precontestar,
@@ -14,7 +15,8 @@ import {
 } from '../lib/guias';
 import { useAnalysis } from '../state/useAnalysis';
 import { useGuiaEstado } from '../state/useGuia';
-import type { Guia, Opcion, Variable } from '../content/guias/tipos';
+import type { Guia, Opcion, Regla, Variable } from '../content/guias/tipos';
+import type { ProjectMetadata } from '../services/types';
 
 /**
  * Una guía: las tres etapas, en orden.
@@ -158,7 +160,7 @@ export default function GuiaRoute() {
 
       <EtapaConocimiento guia={guia} tarjetas={tarjetas} elegidas={elegidas} alternar={alternar} />
 
-      <EtapaRecomendacion reglas={reglas} />
+      <EtapaRecomendacion reglas={reglas} metadata={metadata} />
 
       <FueraDeAlcance guia={guia} />
 
@@ -466,7 +468,13 @@ function EtapaConocimiento({
  * fuente acota lo que recomienda. Ese bloque es lo que separa una recomendación
  * de un consejo.
  */
-function EtapaRecomendacion({ reglas }: { reglas: Guia['reglas'] }) {
+function EtapaRecomendacion({
+  reglas,
+  metadata,
+}: {
+  reglas: Guia['reglas'];
+  metadata: ProjectMetadata | null;
+}) {
   return (
     <section className="etapa etapa--recomendacion">
       <h2 className="etapa-titulo">
@@ -497,6 +505,7 @@ function EtapaRecomendacion({ reglas }: { reglas: Guia['reglas'] }) {
                     {r.valor && <p className="accion-valor">{r.valor}</p>}
                   </div>
                 </div>
+                <Comparacion regla={r} metadata={metadata} />
                 <p className="accion-porque">
                   <Negrita>{r.porque}</Negrita>
                 </p>
@@ -515,6 +524,56 @@ function EtapaRecomendacion({ reglas }: { reglas: Guia['reglas'] }) {
       )}
     </section>
   );
+}
+
+/**
+ * Tu valor, al lado del intervalo de la fuente.
+ *
+ * La guía dice «45–65 °C» y quien lee tiene la cama a 60: el dato útil no es el
+ * intervalo, es **dónde cae el suyo**. Esta línea lo dice, y sólo aparece cuando el
+ * archivo trae el campo. Si el slicer no escribió la cama no hay nada que comparar,
+ * y no se pinta nada —que es distinto de pintar «dentro», y la diferencia es la que
+ * separa «tu cama está bien» de «tu slicer no dijo la cama»—.
+ *
+ * El intervalo sale de `rango`, que es el mismo que el `valor` de la regla en
+ * números. `verify:guias` comprueba que los dos digan lo mismo.
+ */
+function Comparacion({ regla, metadata }: { regla: Regla; metadata: ProjectMetadata | null }) {
+  const rango = regla.rango;
+  if (!rango) return null;
+
+  const valor = valorDeCampo(metadata, rango.campo);
+  const comparacion = compararValor(rango, valor);
+  if (comparacion === null || valor === undefined) return null;
+
+  const etiqueta = (etiquetaCampo(rango.campo) ?? rango.campo).toLowerCase();
+  const donde =
+    comparacion.posicion === 'dentro'
+      ? 'dentro del intervalo'
+      : `${comparacion.diferencia} ${rango.unidad} ${comparacion.posicion === 'por-encima' ? 'por encima' : 'por debajo'}`;
+
+  return (
+    <p className={`accion-comparacion accion-comparacion--${comparacion.posicion}`}>
+      <span className="accion-comparacion-tu">
+        Tu {etiqueta}:{' '}
+        <strong>
+          {String(valor).replace('.', ',')} {rango.unidad}
+        </strong>
+      </span>
+      {' · '}
+      <span className="accion-comparacion-fuente">
+        objetivo {rango.min}–{rango.max} {rango.unidad}
+      </span>
+      {' · '}
+      <span className="accion-comparacion-donde">{donde}</span>
+    </p>
+  );
+}
+
+/** El valor numérico de un campo del archivo, si lo trae. */
+function valorDeCampo(metadata: ProjectMetadata | null, campo: string): number | undefined {
+  const valor = (metadata as unknown as Record<string, unknown> | null)?.[campo];
+  return typeof valor === 'number' ? valor : undefined;
 }
 
 /** Lo que esta guía no resuelve, y a dónde llevar el caso. */
