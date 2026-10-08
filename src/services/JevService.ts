@@ -33,7 +33,35 @@ const CLASSIFY_PATH = '/classify';
  * `VITE_JEV_USE_MOCK=false` acabaría activando el mock justo cuando se cree que
  * está desactivado.
  */
-const USE_MOCK = import.meta.env.VITE_JEV_USE_MOCK === 'true';
+const MODO_EXPLICITO = import.meta.env.VITE_JEV_USE_MOCK;
+
+/** `true` = demostración local. `false` = pedir al proxy, si lo hay. */
+const QUIERE_RED = MODO_EXPLICITO === 'false';
+
+/**
+ * Modo con el que funciona de verdad, ya resuelto.
+ *
+ * **Si no está definido, gana el mock.** Antes era al revés —lo no definido
+ * activaba la ruta real— y eso era un fallo real: el flujo de publicación de
+ * GitHub Pages no define ninguna de las dos variables, así que el sitio ya
+ * publicado iba por `POST /classify` contra su propio dominio, que no existe.
+ * Subir un archivo en producción fallaba siempre. Medido el 2026-10-04.
+ *
+ * La regla ahora no tiene forma de romperse en silencio: **para hablar con la red
+ * hay que pedirlo explícitamente y tener a dónde**. Si se pide la ruta real sin
+ * proxy, se avisa en consola y se cae a la demostración, que es aproximada pero no
+ * falla. Un resultado aproximado es menos malo que una excepción.
+ */
+export const MODO_CLASIFICACION: 'demo' | 'real' = QUIERE_RED && JEV_PROXY_URL ? 'real' : 'demo';
+
+const USE_MOCK = MODO_CLASIFICACION === 'demo';
+
+if (QUIERE_RED && !JEV_PROXY_URL) {
+  console.warn(
+    '[Jev] Se pidió la ruta real (VITE_JEV_USE_MOCK=false) pero no hay VITE_JEV_PROXY_URL. ' +
+      'Se usa la clasificación de demostración: es aproximada, pero no falla.'
+  );
+}
 
 /** Latencia simulada, acorde a una llamada de red real. */
 const MOCK_LATENCY_MS = 600;
