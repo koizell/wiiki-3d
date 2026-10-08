@@ -26,8 +26,9 @@
  *   una variable sin contestar.
  * - **El carril**: que en las rutas de la wiki sustituya al panel de análisis, que
  *   pinte lo que se ha marcado, y que no vuelva a decir «sube un archivo».
- * - **El panel**: que siga enlazando a la guía desde el campo que explica, y que la
- *   tabla campo→guía sea coherente con las guías de verdad.
+ * - **El panel**: que siga enlazando a la guía desde el campo que explica, que el
+ *   enlace caiga en la **sección** concreta y no en la cabecera, y que la tabla
+ *   campo→guía sea coherente con las guías de verdad.
  * - **La animación**: que exista sin `prefers-reduced-motion` y que no exista con él.
  *
  * ## Qué NO se comprueba aquí
@@ -140,6 +141,14 @@ function leerCamposOpcionales() {
 
 /** La tabla campo→guía del panel, escrita a mano en la aplicación. */
 const { CAMPOS_WIKI } = await import('../../src/lib/wiki-campos.ts');
+/**
+ * Dónde declara cada guía que se explica un campo.
+ *
+ * Es la fuente de verdad del ancla, y el panel la **duplica** en `CAMPOS_WIKI`
+ * porque no puede importar las guías —las metería en el chunk inicial—. Esa
+ * duplicación es justo lo que hay que vigilar, y se hace abajo.
+ */
+const { anclasDeCampos } = await import('../../src/lib/tu-archivo.ts');
 
 const resultados = [];
 let fallos = 0;
@@ -761,9 +770,30 @@ try {
     comprobar('cada enlace tiene texto, no sólo un icono', panel.enlaces.every((e) => (e.texto ?? '').trim().length > 3), panel.enlaces.map((e) => `"${e.texto}"`).join(' '));
     comprobar('y es alcanzable con teclado', panel.atingible);
 
-    // Y el enlace lleva a una guía que existe.
-    const destino = panel.enlaces[0]?.href?.replace('/wiki/', '');
-    comprobar('el enlace del panel lleva a una guía escrita', SLUGS.includes(destino), `${destino}`);
+    /*
+     * El enlace no va a la cabecera de la guía, va a la sección que explica ese dato.
+     *
+     * «Riesgo de warping, 35 %» con un enlace que deja a quien lee al principio de
+     * una guía de tres etapas es medio enlace: tiene que buscar a mano la tarjeta
+     * que habla de ese 35 %. El ancla sale de `CAMPOS_WIKI`, y la coherencia con la
+     * guía se comprueba en la sección de la tabla, más abajo.
+     */
+    const destinos = panel.enlaces.map((e) => {
+      const [slug, ancla] = (e.href ?? '').replace('/wiki/', '').split('#');
+      return { slug, ancla, href: e.href };
+    });
+    comprobar('el enlace del panel lleva a una guía escrita', destinos.every((d) => SLUGS.includes(d.slug)), destinos.map((d) => d.slug).join(' '));
+    comprobar('y apunta a la sección, no a la cabecera', destinos.every((d) => !!d.ancla), destinos.map((d) => d.href).join(' '));
+
+    // Y el ancla existe de verdad en la guía a la que lleva: pulsarlo tiene que dejar
+    // la URL con el `#` y el destino en el DOM, que es lo que no se ve en una captura.
+    const primero = destinos[0];
+    const anclaLlega = await (async () => {
+      await page.locator('.panel-explicar').first().click();
+      await page.waitForTimeout(200);
+      return page.url().includes(`#${primero.ancla}`) && (await page.locator(`#${primero.ancla}`).count()) === 1;
+    })();
+    comprobar('y al pulsarlo el ancla existe en la página', anclaLlega, `${primero.href} -> ${page.url()}`);
 
     await ctx.close();
   }
@@ -978,6 +1008,20 @@ try {
           `«${campo}» está declarado en esa guía`,
           (guia.campos ?? []).includes(campo),
           `${JSON.stringify(guia.campos)}`
+        );
+        /*
+         * El ancla del panel tiene que ser la que la guía declara para ese campo.
+         *
+         * Es el segundo sitio que puede desfasarse, y el más silencioso: un `#c-riesgo`
+         * escrito a mano en el panel con la tarjeta renombrada en la guía no da ningún
+         * error, y el enlace deja de saltar sin que nada lo diga. La guía manda; el
+         * panel copia.
+         */
+        const anclaGuia = (anclasDeCampos(guia)[campo] ?? '').replace('#', '');
+        comprobar(
+          `«${campo}» apunta a la sección que la guía declara`,
+          entrada.ancla === anclaGuia,
+          `panel: ${entrada.ancla ?? '(sin ancla)'} · guía: ${anclaGuia || '(sin ancla)'}`
         );
       }
     }

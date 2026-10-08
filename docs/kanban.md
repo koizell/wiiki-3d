@@ -99,7 +99,7 @@ resultado de la prueba.
 | # | Tarjeta | Estado | Detalle |
 |---|---|---|---|
 | 2.1 | Clasificación real en producción | ⏳ | Hoy `VITE_JEV_USE_MOCK=true` en local y el flujo de GitHub Pages no lleva esa variable: **lo que se ve en desarrollo no es lo que se verá publicado**. Decidir y configurar. |
-| 2.2 | El veredicto lleva a la sección, no al artículo | ⏳ | Si el análisis dice «riesgo de warping alto», el enlace debe caer en la sección que explica ese riesgo en concreto. |
+| 2.2 | El veredicto lleva a la sección, no al artículo | ✅ | El panel enlaza a `/wiki/<slug>#<ancla>`, no a la cabecera: `warpingRisk` y `riskLevel` caen en `#c-riesgo`, y `bedTemp` en `#v-material`. La ancla vive en `CAMPOS_WIKI` y `verify:wiki` la compara con la que declara la guía (`126/126`), así que renombrar la tarjeta sin tocar el panel falla. |
 | 2.3 | Comparar tu valor con el de la fuente | ⏳ | Tu cama a 60 °C, al lado la tabla de Bamb (35–65) y la de Prusa (50–60), con la diferencia marcada. Datos del artículo, calculados en el cliente. |
 | 2.4 | Taller recibe los gramos del G-code | ✅ Ya ocurre. Falta QA: hoy no se puede pasar de la barra al artículo que explica ese campo. | Ya ocurre: `/taller/` abre con los gramos extraídos. FaltaQA: hoy no se puede pasar de la barra al artículo que explica ese campo. |
 

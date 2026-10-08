@@ -52,8 +52,10 @@ Markdown y la guía nueva no aparecería: un fallo silencioso.
 2. **La recomendación se calcula.** Sin marcar nada no sale ninguna acción, y la lista
    se llena a medida que se declara el montaje. Cambiar la chapa de la Textured PEI a
    la Cool Plate cambia la cifra de 45–65 °C a 35–45 °C.
-3. **El panel enlaza a la guía y el analizador la precontesta.** Con un G-code
-   cargado, `material` y `bedTemp` ya salen marcados, sin que nadie los escriba.
+3. **El panel enlaza a la sección, no a la cabecera, y el analizador precontesta la
+   guía.** «Riesgo de warping, 35 %» lleva a `#c-riesgo`, la tarjeta que explica ese
+   número, y `bedTemp` a `#v-material`. Con un G-code cargado, `material` y `bedTemp`
+   ya salen marcados, sin que nadie los escriba.
 4. **El carril derecho sustituye al panel de análisis** en las rutas de la wiki. Antes
    eran 320 px de «Sube un archivo para ver el análisis técnico automático» junto a
    contenido que no tiene nada que ver con un archivo. Ahora es el estado del

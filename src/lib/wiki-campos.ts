@@ -34,7 +34,30 @@
  */
 
 /**
- * Campo del panel -> guía que lo explica.
+ * Lo que el panel necesita para enlazar a la explicación de un campo.
+ *
+ * No es sólo a qué guía: es **a qué sección** de esa guía. «Riesgo de warping,
+ * 35 %» con un enlace que deja al principio de una guía de tres etapas obliga a
+ * buscar a mano la tarjeta que habla de ese 35 %, que es medio enlace.
+ */
+export interface ArticuloDeCampo {
+  slug: string;
+  etiqueta: string;
+  /**
+   * El `id` del elemento que explica el campo dentro de la guía, sin `#`.
+   *
+   * Es el mismo `id` que `anclasDeCampos` de `lib/tu-archivo.ts` calcula desde la
+   * guía, y aquí está **duplicado** por el mismo motivo que el slug: el panel no
+   * puede importar las guías sin meterlas en el chunk inicial. La duplicación no
+   * se queda suelta: `verify:wiki` compara esta ancla con la que declara la guía,
+   * así que renombrar la tarjeta sin tocar el panel falla en vez de dejar un
+   * enlace que no salta.
+   */
+  ancla: string;
+}
+
+/**
+ * Campo del panel -> guía que lo explica, y sección concreta dentro de ella.
  *
  * Los nombres de la izquierda son los de `ProjectMetadata` y `JevClassification`
  * en `src/services/types.ts`, tal cual. La lista completa está en cada guía, y en
@@ -43,10 +66,10 @@
  * Sólo hay entradas cuya guía **ya está escrita**. Anotar aquí un slug que todavía no
  * existe no reserva nada: rompe el enlace y hace fallar la verificación.
  */
-export const CAMPOS_WIKI: Record<string, { slug: string; etiqueta: string }> = {
-  warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA' },
-  riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA' },
-  bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama' },
+export const CAMPOS_WIKI: Record<string, ArticuloDeCampo> = {
+  warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
+  riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
+  bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama', ancla: 'v-material' },
 };
 
 /**
@@ -60,6 +83,6 @@ export const CAMPOS_WIKI: Record<string, { slug: string; etiqueta: string }> = {
  * cifra: la guía explica el concepto, no esta instancia. Que el slicer de este G-code
  * concreto no escribiera el campo es **una razón más para leerla**.
  */
-export function articuloParaCampo(campo: string): { slug: string; etiqueta: string } | null {
+export function articuloParaCampo(campo: string): ArticuloDeCampo | null {
   return CAMPOS_WIKI[campo] ?? null;
 }

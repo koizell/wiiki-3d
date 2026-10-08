@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import type { ArticuloDeCampo } from '../lib/wiki-campos';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
 
 /**
@@ -58,7 +59,7 @@ interface AnalysisPanelProps {
    * `src/lib/wiki-campos.ts`. Con una tabla importada, el panel arrastraría la
    * correspondencia entre campos y artículos sin poder probarlos por separado.
    */
-  explicar?: (campo: string) => { slug: string; etiqueta: string } | null;
+  explicar?: (campo: string) => ArticuloDeCampo | null;
 }
 
 /**
@@ -217,16 +218,21 @@ const NO_DATA = '—';
  * El enlace de «este dato tiene una explicación larga».
  *
  * Es lo que separa esta wiki de una genérica: el panel acaba de decir «35 %» y a
- * un clic está el artículo que explica de dónde sale ese 35 %, con sus fuentes al
- * pie. Sin este enlace, el artículo más completo del sitio es un documento
- * suelto al que se llega por búsqueda.
+ * un clic está la tarjeta que explica de dónde sale ese 35 %, con sus fuentes al
+ * pie. Sin este enlace, la guía más completa del sitio es un documento suelto al
+ * que se llega por búsqueda.
  *
- * El texto del enlace es el nombre del artículo, no «más info»: «más info» no dice
+ * Y el enlace lleva al **ancla**, no a la cabecera: quien pulsa «Warping en PLA»
+ * desde «Riesgo de warping, 35 %» cae en la tarjeta del riesgo, no al principio de
+ * la guía a buscarla. La ancla la declara la guía y el panel la copia en
+ * `CAMPOS_WIKI`; `verify:wiki` vigila que las dos coincidan.
+ *
+ * El texto del enlace es el nombre de la guía, no «más info»: «más info» no dice
  * de qué, y aquí lo interesante es justamente qué.
  */
-function Explicar({ articulo }: { articulo: { slug: string; etiqueta: string } }) {
+function Explicar({ articulo }: { articulo: ArticuloDeCampo }) {
   return (
-    <Link className="panel-explicar" to={`/wiki/${articulo.slug}`}>
+    <Link className="panel-explicar" to={`/wiki/${articulo.slug}#${articulo.ancla}`}>
       {articulo.etiqueta}
     </Link>
   );
