@@ -31,7 +31,8 @@ error volvería en el siguiente artículo.
 
 **Rutas de ficheros, nunca el historial de la conversación.** Concretamente:
 
-- La ruta de la guía en `src/content/guias/<slug>.ts`.
+- La ruta de la guía en `src/content/guias/<nombre>.ts`. **El nombre del fichero no es
+  el slug**: la guía de warping vive en `warping.ts` y su slug es `warping-pla`.
 - La ruta del fichero cocinado en `wiki/cooked/` que corresponde.
 
 No necesitas nada más, y no debes buscar nada por tu cuenta: si no está en esos
@@ -136,6 +137,11 @@ La regla es más simple y más estricta:
 
 - **Un `guia` o un `siNo.guia` tiene que existir.** Si no existe, no se pone el enlace:
   la mención va en `fueraDeAlcance` **como texto**. `npm run verify:guias` lo comprueba.
+- **Para saber si existe, mira los `slug` de `src/lib/guias.ts`, nunca los nombres de
+  fichero.** No coinciden: `warping.ts` es `warping-pla`, y `separaciones.ts` es
+  `separaciones-entre-capas`. Comprobar un enlace contra el nombre del fichero da un
+  **rechazo falso**, que es la forma más cara de equivocarse en este trabajo: cuesta una
+  vuelta entera por un enlace que sí existe.
 - **Nombrar una guía que va a existir sí es correcto**, pero en `fueraDeAlcance`, sin
   `guia`. Es donde va una mención honesta a un caso que todavía no tiene página.
 
