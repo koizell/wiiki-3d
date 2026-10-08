@@ -1,4 +1,4 @@
-# Diseño: identidad visual y sistema de movimiento de wiiki-3d
+# Diseño: identidad visual, UI/UX y movimiento de wiiki-3d
 
 Fecha: 2026-10-08
 Estado: propuesto, pendiente de revisión
@@ -8,16 +8,23 @@ Origen: sesión de brainstorming con el autor del proyecto
 
 ## 1 · Contexto y objetivo
 
-El sitio funciona y está verificado, pero su lenguaje visual es el de una
-plantilla: tipografía del sistema, sin motivo propio, y animaciones repartidas
-por el CSS sin una norma que las gobierne. El objetivo no es «añadir
-animaciones», es que el sitio **tenga una identidad reconocible y coherente en
-las cuatro rutas** (Inicio, Taller, Wiki 3D, Proyectos) sin que esa identidad
-compita con la lectura.
+El sitio funciona y está verificado, pero su presentación tiene dos problemas
+distintos que este trabajo ataca a la vez:
 
-Se descarta explícitamente el objetivo contrario: no se busca impresionar ni
-llenar la pantalla de movimiento. La regla que gobierna todo el diseño es que
-**el movimiento sólo confirma una acción del usuario**; nada se mueve solo.
+1. **No tiene identidad.** Tipografía del sistema, sin motivo propio, y
+   animaciones repartidas por el CSS sin una norma que las gobierne.
+2. **La UI/UX deja huecos.** El contenido flota en el centro de un lienzo que
+   centra verticalmente lo que no debería, hay bloques descolgados y los
+   resultados no se leen como resultados.
+
+El objetivo es que el sitio **tenga una identidad reconocible y coherente en las
+cuatro rutas** (Inicio, Taller, Wiki 3D, Proyectos) y que cada pantalla esté
+**anclada, jerarquizada y sin bloques sueltos**, sin que nada de eso compita con
+la lectura.
+
+Se descarta el objetivo contrario: no se busca impresionar ni llenar la pantalla
+de movimiento. La regla que gobierna el movimiento es que **sólo confirma una
+acción del usuario**; nada se mueve solo.
 
 ## 2 · Decisiones cerradas
 
@@ -28,11 +35,14 @@ llenar la pantalla de movimiento. La regla que gobierna todo el diseño es que
 | D3 | Movimiento de resultados | **Instrumento**: aparece en su sitio + trazo azul que se dibuja |
 | D4 | Movimiento de controles | **Preciso**: 140 ms, `ease-out`, 6 px |
 | D5 | Dependencias | Ninguna. CSS nativo + Web Animations API si hiciera falta |
-| D6 | Alcance | Identidad completa en **lenguaje** (color, tipo, espacio, movimiento); la **geometría del layout no se mueve** |
+| D6 | UI/UX | **Pasada sobre la estructura**: anclar, jerarquizar, convertir resultados en readouts y recolocar bloques sueltos. No cambian rutas ni lógica de dominio |
+| D7 | Moneda | **USD estándar**: `$0.02`, punto decimal, coma = millares. Sólo en Taller |
 
-D6 es una frontera deliberada: el layout está medido y verificado (`verify:layout`,
-29 viewports). La identidad se aplica como piel y movimiento, no como
-reestructuración. Tocar la geometría invalidaría esas mediciones.
+D6 sustituye a una versión anterior de esta spec que congelaba la geometría. Se
+cambió al ver las capturas del autor: el vacío de Taller y el bloque descolgado
+de «Últimos análisis» no son piel, son estructura, y arreglarlos es parte del
+encargo. Lo que **sí** se conserva de aquella decisión es la frontera: no se
+tocan las rutas ni la lógica de dominio (salvo el formato de coste de D7).
 
 ## 3 · Fundamentos (tokens)
 
@@ -43,20 +53,18 @@ contrastes WCAG razonados en los comentarios. **No se renombra ninguno**: eso
 sería churn sin valor. La identidad **extiende** ese `:root` con los tokens que
 faltan.
 
-Se añaden, en el mismo `:root`:
-
 ```css
 /* --- Tipografía --- */
 --fuente-texto: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
 --fuente-dato: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 
 /* --- Motivo de plano --- */
---plano-rejilla: #171c26;   /* rejilla de fondo, casi imperceptible */
---plano-paso: 18px;         /* separación de la rejilla */
+--plano-rejilla: #171c26;
+--plano-paso: 18px;
 --plano-linea: var(--border);
 --plano-esquina: var(--accent-text);
 
-/* --- Radios (hoy dispersos en el CSS) --- */
+/* --- Radios (hoy dispersos) --- */
 --radio-sm: 6px;
 --radio-md: 10px;
 
@@ -70,138 +78,174 @@ Se añaden, en el mismo `:root`:
 ```
 
 No se introduce una escala tipográfica nueva: los tamaños del CSS actual se
-conservan (ver §9, riesgos).
+conservan (ver §11, riesgos).
 
 ## 4 · Tipografía
 
 - **IBM Plex Sans** 400 y 600 para texto; **IBM Plex Mono** 400 y 500 para datos,
   etiquetas y cifras.
-- Autoalojadas en `public/fuentes/`, formato **woff2**, subset latin,
-  `font-display: swap`, con `<link rel="preload">` para los dos pesos que se usan
-  en la primera pantalla.
-- La mono lleva `font-variant-numeric: tabular-nums` en todo dato numérico, para
-  que las cifras no cambien de ancho al actualizarse.
-- `body` pasa de `'Inter', …` a `var(--fuente-texto)`. La familia `Inter` estaba
-  declarada pero **nunca se cargaba**, así que hoy se ve la del sistema: el
-  cambio es real, no cosmético.
+- Autoalojadas en `public/fuentes/`, **woff2**, subset latin, `font-display:
+  swap`, con `<link rel="preload">` para los pesos de la primera pantalla.
+- La mono lleva `font-variant-numeric: tabular-nums` en todo dato numérico.
+- `body` pasa de `'Inter', …` a `var(--fuente-texto)`. `Inter` estaba declarada
+  pero **nunca se cargaba**: hoy se ve la del sistema. El cambio es real.
 
 ## 5 · El motivo de plano, y su frontera
 
 **Aparece en:** el lienzo de trabajo (portada, visor, Taller, índice de la Wiki),
-las cabeceras de sección y las zonas de acción (subida, visor, resultados).
+las cabeceras de sección y las zonas de acción.
 
 **No aparece nunca en:** el cuerpo de lectura de las guías. La rejilla detrás de
-800 palabras es exactamente la saturación que este diseño existe para evitar. La
-frontera es la misma que ya separa `wiki/raw/` de `wiki/cooked/`: una cosa es la
-estructura y otra el contenido, y no se mezclan.
-
-Elementos del motivo:
+800 palabras es la saturación que este diseño existe para evitar. Es la misma
+frontera que separa `wiki/raw/` de `wiki/cooked/`: estructura y contenido no se
+mezclan.
 
 | Elemento | Dónde | Cómo |
 |---|---|---|
-| Rejilla | Lienzo de trabajo | `background-image` con dos `linear-gradient`, paso `--plano-paso` |
-| Marcas de esquina | Zonas de acción | Cuatro `div` con dos bordes, color `--plano-esquina` |
+| Rejilla | Lienzo de trabajo | Dos `linear-gradient`, paso `--plano-paso` |
+| Marcas de esquina | Zonas de acción | Cuatro `div` con dos bordes, `--plano-esquina` |
 | Numeración `01 ·` | Cabeceras de sección | Componente `<SeccionPlano numero="01">` |
-| Cota | Comparar valor con objetivo | Línea con extremos; se reutiliza en la guía y en Taller |
+| Cota | Comparar valor con objetivo | Línea con extremos; se reutiliza en guía y Taller |
 
 ## 6 · Sistema de movimiento
 
-Cuatro primitivas, y ninguna más. Cada una tiene un disparador explícito.
+Cuatro primitivas, y ninguna más.
 
 | Primitiva | Disparador | Implementación |
 |---|---|---|
 | `entrada-ruta` | Navegar a una ruta | Al montar: opacidad 0→1 y 4 px, `--dur-entrada`. Una vez |
-| `confirmar` | Subir archivo, calcular coste, marcar variable | El contenido aparece en su sitio (sin desplazamiento) + un trazo azul con `scaleX` que se dibuja. `--dur-resultado` + `--dur-trazo` |
-| `control` | `:hover`, `:focus-visible`, `:active` en controles | 140 ms, 6 px, `--curva-estandar` |
+| `confirmar` | Subir archivo, calcular, marcar variable | Aparece en su sitio (sin desplazamiento) + trazo azul con `scaleX`. `--dur-resultado` + `--dur-trazo` |
+| `control` | `:hover`, `:focus-visible`, `:active` | 140 ms, 6 px, `--curva-estandar` |
 | `progreso` | «Analizando…» | El **único** bucle permitido (`panel-pulse` ya existe) |
 
 **Reglas duras, comprobables:**
 
 1. Sin interacción, nada se anima (salvo `progreso`).
-2. Sólo se animan `opacity` y `transform`. Ninguna propiedad de layout
-   (`width`, `height`, `top`, `left`, `margin`) se anima → CLS 0 por diseño.
-3. Con `prefers-reduced-motion: reduce`, todas las primitivas se apagan y **no se
-   pierde información**: el contenido queda visible y en su sitio. Es la misma
-   regla que ya sigue `DibujoSintoma`, donde el dibujo es informativo y por eso
-   no se apaga del todo (§9).
+2. Sólo se animan `opacity` y `transform`. Ninguna propiedad de layout → CLS 0.
+3. Con `prefers-reduced-motion: reduce`, todo se apaga sin perder información.
 4. La animación nunca retrasa la lectura: el contenido es legible desde el primer
-   fotograma aunque la animación no haya terminado.
+   fotograma.
 
-## 7 · Arquitectura de ficheros
+## 7 · UI/UX: los arreglos concretos
+
+Cada regla sale de un fallo visto en las capturas del autor.
+
+1. **El lienzo deja de centrar.** `.canvas-area` hoy es `display:flex;
+   align-items:center; justify-content:center`, y eso es lo que hace flotar a
+   Taller en medio y lo que obligó a parchear el visor con `align-self: stretch`.
+   Pasa a **anclar arriba**. El parche deja de ser necesario.
+2. **Cada ruta abre con una cabecera de plano**: `01 · INICIO`, `02 · TALLER`, …
+   más el título y el **estado** a la derecha («Sin archivo», «Con análisis»).
+3. **Los resultados son readouts**, no párrafos: cifra grande en mono, la
+   aritmética debajo, y el trazo de `confirmar`.
+4. **Ningún bloque suelto.** «Últimos análisis» sale de `.viewer-container`
+   —donde hoy acaba descolgado— y pasa a **sección a ancho completo**, anclada.
+5. **El botón X deja de ser rojo saturado**: control fantasma. La acción
+   principal vuelve a mandar.
+6. **El carril de Taller deja de pintar las 8 guías.** Hoy pinta `RielWiki`
+   porque Taller no está en `RUTAS_ANALISIS`. Pasa a explicar cómo se calcula.
+   Es el cambio más discutible de la lista y el autor puede revertirlo.
+7. **El visor sin previsualización** deja de ser una caja vacía: es un panel de
+   estado con propósito, anclado arriba, no un vacío con dos líneas centradas.
+
+Regla transversal: **todo bloque pertenece a una columna** (nav, lienzo o
+carril). Un bloque que no pertenece a ninguna es el fallo de la captura 2.
+
+## 8 · Moneda: USD
+
+Taller pasa de `€/kg` a `$/kg` con formato **USD estándar**.
+
+- **Salida:** `0.93 g × $25.00/kg = $0.02`. Punto decimal, símbolo delante.
+- **Parseo:** `25` y `25.00` válidos; `1,234` = **mil doscientos treinta y
+  cuatro** (hoy es 1,234); `0`, negativos, `abc` y `1.2.3` inválidos.
+- **Afecta a:** `src/lib/coste.ts` (formato y parseo), `TallerRoute.tsx`
+  (etiqueta y placeholder), `scripts/verify/taller.mjs` (las 180
+  comprobaciones), `docs/taller.md` (diseño de Taller) y un comentario de
+  `App.css`.
+
+La razón por la que va aquí y no en un cambio aparte: se decide mientras se
+rediseña esa pantalla, y `verify:taller` **falla solo** si se cambia la moneda
+sin actualizarlo, así que no puede quedarse a medias en silencio.
+
+## 9 · Arquitectura de ficheros
 
 ```
-src/App.css                  # :root ampliado; el resto del CSS actual, intacto
+src/App.css                  # :root ampliado + UI/UX (§7); el resto, intacto
 src/estilos/fuentes.css      # @font-face de Plex Sans y Plex Mono
 src/estilos/plano.css        # rejilla, esquinas, numeración, cota
 src/estilos/movimiento.css   # keyframes, clases utilitarias, reduced-motion
 src/components/SeccionPlano.tsx   # cabecera numerada con marcas de esquina
+src/lib/coste.ts             # formato y parseo en USD
+src/routes/TallerRoute.tsx   # etiqueta, placeholder y readout
 public/fuentes/*.woff2       # las fuentes autoalojadas
 scripts/verify/animacion.mjs # la comprobación nueva
 ```
 
-Los tres ficheros de `src/estilos/` se importan desde `src/main.tsx`. El motivo de
-sacarlos de `App.css` (que ya tiene ~3.800 líneas) es el mismo que el proyecto ya
-aplica en el código: un fichero, una responsabilidad. No se mueve nada del CSS
-existente; sólo se añade.
+Los tres ficheros de `src/estilos/` se importan desde `src/main.tsx`. Sacarlos de
+`App.css` (~3.800 líneas) sigue la regla que el proyecto ya aplica: un fichero,
+una responsabilidad. No se mueve nada del CSS existente; sólo se añade.
 
 Los componentes se animan con clases utilitarias y `data-anima="confirmar"`, no
-con keyframes sueltos por componente. Así hay un único sitio donde vive cada
-primitiva.
+con keyframes sueltos por componente.
 
-## 8 · Verificación (`scripts/verify/animacion.mjs`)
+## 10 · Verificación
 
-Un script más de la familia `verify:*`, con Playwright, que sale con código 1 si
+**`scripts/verify/animacion.mjs`** (nuevo), con Playwright, sale con código 1 si
 algo falla. Comprueba:
 
-1. **`reduced-motion`**: con `emulateMedia({ reducedMotion: 'reduce' })`,
-   `document.getAnimations()` no devuelve ninguna animación en curso (salvo las
-   que ya estuvieran permitidas y documentadas).
-2. **Sin interacción no hay movimiento**: tras cargar y esperar, ninguna
-   animación activa salvo `progreso`.
-3. **CLS ≈ 0** al cargar y tras cada interacción clave, medido con
-   `PerformanceObserver` sobre `layout-shift`.
-4. **Contraste**: los tokens de texto (`--text-primary`, `--text-secondary`,
-   `--accent-text`, `--warning`, `--danger`) dan ≥ 4,5:1 sobre sus fondos.
-5. **`tabular-nums`** presente en los elementos marcados como dato.
-6. **Fuentes cargadas**: `document.fonts.check()` para los cuatro pesos, y que la
-   carga no cambia el ancho de una línea medida antes y después (sin salto).
+1. Con `emulateMedia({ reducedMotion: 'reduce' })`, `document.getAnimations()`
+   no devuelve ninguna animación en curso, **salvo la excepción documentada de
+   `DibujoSintoma`** (§11).
+2. Sin interacción, ninguna animación activa salvo `progreso`.
+3. **CLS ≈ 0** al cargar y tras cada interacción clave (`PerformanceObserver`
+   sobre `layout-shift`).
+4. Contraste ≥ 4,5:1 en los tokens de texto sobre sus fondos.
+5. `tabular-nums` presente en los elementos marcados como dato.
+6. `document.fonts.check()` para los cuatro pesos, y que la carga no cambia el
+   ancho de una línea medida antes y después.
 
-## 9 · Riesgos y comprobaciones que no se pueden saltar
+**`verify:taller`** se actualiza a USD, y **`verify:rutas`** gana la comprobación
+de que cada ruta abre con su cabecera de plano y su estado.
+
+## 11 · Riesgos y comprobaciones que no se pueden saltar
 
 - **La tipografía cambia las métricas.** El proyecto midió la línea de lectura
   carácter a carácter (9,47 px) y fijó un suelo de 35 caracteres a 375 px y un
   rango de 45–75 en los demás anchos. IBM Plex Sans **no tiene las mismas
-  métricas que la fuente del sistema**, así que esos números hay que
-  **volver a medirlos** con la fuente nueva. Si la línea se sale del rango, se
-  ajusta el tamaño o la columna; no se da por hecho que sigue igual. `verify:layout`
-  y la parte de lectura de `verify:wiki` son la red que lo detecta.
+  métricas**, así que hay que **volver a medirlos**. `verify:layout` y la parte
+  de lectura de `verify:wiki` son la red que lo detecta.
 - **FOUT y CLS.** `font-display: swap` puede provocar un salto al cargar. El
-  `preload` y la comprobación 6 de §8 existen para cazarlo.
+  `preload` y la comprobación 6 de §10 existen para cazarlo.
 - **El peso del subset.** Dos familias y cuatro pesos pueden pesar más que la
   fuente del sistema. Se subsetea a latin y se sirven sólo los pesos usados.
 - **`DibujoSintoma` es informativo.** Sus animaciones no son decoración: explican
   un síntoma. `prefers-reduced-motion` no las elimina, las modera. La
-  comprobación 1 de §8 debe respetar esa excepción en vez de exigir cero
-  animaciones absoluto.
+  comprobación 1 de §10 debe respetar esa excepción.
+- **La documentación de Taller miente si no se toca.** `docs/taller.md` dice
+  `€/kg` con su razonamiento. Cambiar a USD sin actualizarlo deja un documento
+  que contradice el código. Va en el mismo cambio.
 
-## 10 · Fuera de alcance
+## 12 · Fuera de alcance
 
-- Cambiar la geometría del layout o los puntos de ruptura.
-- Tocar la lógica (`JevService`, `coste.ts`, `ParserService`, `AnalysisContext`).
+- Cambiar las rutas o los puntos de ruptura.
+- Tocar la lógica de dominio, salvo el formato de coste de D7 (`coste.ts`).
 - Tocar el contenido de las guías (`src/content/guias/*.ts`).
 - Añadir dependencias de animación.
 - Rediseñar el visor 3D.
 
-## 11 · Criterios de aceptación
+## 13 · Criterios de aceptación
 
 1. `npm run verify:animacion` pasa, y **falla** si se quita el bloque
    `reduced-motion`, si se anima una propiedad de layout o si aparece un bucle no
    permitido (comprobado rompiéndolo a propósito, como ya se hizo con la barra
    «Tu archivo»).
 2. `npm run verify:layout`, `verify:wiki`, `verify:guias`, `verify:taller`,
-   `verify:rutas` y `verify:seo` siguen en verde.
-3. Las cuatro rutas se ven con la identidad nueva y ninguna guía tiene rejilla
-   detrás del texto de lectura.
-4. La línea de lectura sigue dentro de rango con IBM Plex Sans, medido, no
+   `verify:rutas` y `verify:seo` siguen en verde, con `verify:taller` ya en USD.
+3. Las cuatro rutas abren con cabecera de plano y estado, y ninguna guía tiene
+   rejilla detrás del texto de lectura.
+4. **Ninguna captura de las cuatro rutas muestra un bloque descolgado** ni el
+   contenido flotando en el centro del lienzo.
+5. La línea de lectura sigue dentro de rango con IBM Plex Sans, medido, no
    supuesto.
-5. Sin interacción, ninguna animación en curso salvo el indicador de progreso.
+6. Sin interacción, ninguna animación en curso salvo el indicador de progreso.
+7. `docs/taller.md` describe la moneda que el código usa.
