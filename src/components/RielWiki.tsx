@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
-import { GUIAS, reglasQueSalen, variablesEnOrden } from '../lib/guias';
-import { useAnalysis } from '../state/useAnalysis';
+import DiagnosticoGuia from './DiagnosticoGuia';
+import { GUIAS, variablesEnOrden } from '../lib/guias';
 import { useGuiaEstado } from '../state/useGuia';
 
 /**
@@ -36,50 +36,17 @@ export default function RielWiki() {
   const { slug } = useParams();
   const guia = GUIAS.find((g) => g.slug === slug) ?? null;
   const { elegidas } = useGuiaEstado();
-  const { metadata } = useAnalysis();
 
   const enGuia = guia !== null;
-  const contestadas = enGuia ? guia.variables.filter((v) => elegidas[v.id] !== undefined).length : 0;
-  const total = enGuia ? guia.variables.length : 0;
-  const acciones = enGuia ? reglasQueSalen(guia, elegidas).length : 0;
-
   const otras = GUIAS.filter((g) => g.slug !== slug);
 
   return (
     <div className="riel">
-      <section className="riel-bloque">
+      <section className={`riel-bloque${enGuia ? ' riel-bloque--diagnostico' : ''}`}>
         <h2 className="riel-titulo">{enGuia ? 'Tu diagnóstico' : 'La wiki'}</h2>
 
         {enGuia ? (
-          <>
-            <p className="riel-cifra">
-              <strong>{acciones}</strong>
-              <span>
-                {acciones === 1 ? 'acción' : 'acciones'} aplicables
-              </span>
-            </p>
-            <div
-              className="riel-progreso"
-              role="progressbar"
-              aria-valuenow={contestadas}
-              aria-valuemin={0}
-              aria-valuemax={total}
-              aria-label="Variables contestadas"
-            >
-              <span style={{ width: `${total ? (contestadas / total) * 100 : 0}%` }} />
-            </div>
-            <p className="riel-nota">
-              {contestadas === 0
-                ? 'Nada marcado todavía. Cada variable que contestes acorta la lista.'
-                : `${contestadas} de ${total} variables. ${acciones === 0 ? 'Aún no se puede aplicar nada.' : 'La lista se actualiza sola.'}`}
-            </p>
-
-            {metadata?.material && (
-              <p className="riel-fuente">
-                Material leído de tu archivo: <strong>{metadata.material}</strong>
-              </p>
-            )}
-          </>
+          <DiagnosticoGuia guia={guia} />
         ) : (
           <p className="riel-nota">
             Cada guía se abre por el síntoma que ves en la pieza y se cierra con las

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import DibujoSintoma from '../components/DibujoSintoma';
+import DiagnosticoGuia from '../components/DiagnosticoGuia';
 import { Negrita } from '../components/Negrita';
 import TuArchivo from '../components/TuArchivo';
 import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
@@ -313,6 +314,17 @@ function EtapaVariables({
           : `${contestadas} de ${guia.variables.length} contestadas · ${reglas} ${reglas === 1 ? 'acción' : 'acciones'} que se pueden aplicar ya.`}
       </p>
 
+      {/*
+        El diagnóstico en línea. En escritorio vive en el carril, a la derecha y a
+        la vista; por debajo de 1200 el carril cae al final de la página —el shell
+        lo apila debajo de la guía—, así que el contador se trae aquí, junto al
+        control que lo mueve. Los dos montan el mismo componente, así que no pueden
+        decir números distintos.
+      */}
+      <div className="guia-diagnostico">
+        <DiagnosticoGuia guia={guia} />
+      </div>
+
       <div className="variables">
         {orden.map((variable) => (
           <GrupoVariable
@@ -323,6 +335,20 @@ function EtapaVariables({
           />
         ))}
       </div>
+
+      {/*
+        El atajo a la recomendación. Con doce tarjetas de conocimiento entre las
+        variables y las acciones, quien ya sabe lo que hace tiene que poder saltar
+        sin atravesarlas. Sólo aparece cuando hay algo a lo que saltar.
+      */}
+      {reglas > 0 && (
+        <p className="guia-atajo">
+          <a className="enlace-guia" href="#recomendacion">
+            {reglas === 1 ? 'Ir a la acción' : `Ir a las ${reglas} acciones`}
+            <span aria-hidden="true"> ↓</span>
+          </a>
+        </p>
+      )}
     </section>
   );
 }
@@ -476,7 +502,7 @@ function EtapaRecomendacion({
   metadata: ProjectMetadata | null;
 }) {
   return (
-    <section className="etapa etapa--recomendacion">
+    <section className="etapa etapa--recomendacion" id="recomendacion">
       <h2 className="etapa-titulo">
         <span className="etapa-num">4</span> Qué cambiar
       </h2>

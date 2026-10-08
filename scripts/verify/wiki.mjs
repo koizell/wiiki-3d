@@ -350,6 +350,18 @@ try {
       `${marcada.acciones} acciones · ${marcada.tarjetas} tarjetas · riel "${marcada.rielCifra}"`
     );
     comprobar('el riel cuenta lo mismo que la página', String(marcada.acciones) === marcada.rielCifra, `${marcada.rielCifra} vs ${marcada.acciones}`);
+
+    /*
+     * El atajo a la recomendación. Con doce tarjetas de conocimiento entre las
+     * variables y las acciones, quien ya sabe lo que hace tiene que poder saltar.
+     * Sólo sale cuando hay acciones, y tiene que llevar a una sección que exista.
+     */
+    const atajo = await page.locator('.guia-atajo a').first().getAttribute('href');
+    comprobar(
+      'con acciones sale un atajo a la recomendación, y el destino existe',
+      atajo === '#recomendacion' && (await page.locator('#recomendacion').count()) === 1,
+      `${atajo ?? 'sin atajo'}`
+    );
     comprobar('el riel enseña lo que se ha marcado', marcada.rielVariables === necesarias.length, `${marcada.rielVariables} variables`);
     comprobar('la barra de progreso avanza', marcada.rielBarra !== '0%' && marcada.rielBarra !== '100%', marcada.rielBarra);
     comprobar('cada chip marcado dice su estado a los lectores de pantalla', marcada.botonesMarcados === marcada.activas.length, `${marcada.botonesMarcados} aria-pressed`);
@@ -613,6 +625,50 @@ try {
       );
       await ctx.close();
     }
+  }
+
+  /* ---------------------------------------------------------------- 5b */
+  console.log('');
+  console.log('=== El diagnóstico, junto al control que lo mueve ===');
+  console.log('');
+  {
+    /*
+     * En el tramo 768–1199 el shell apila el carril debajo de la guía, así que el
+     * contador quedaba al final de la página, a miles de píxeles de los chips que
+     * lo mueven. Por debajo de 1200 el diagnóstico vive dentro de la etapa de
+     * variables y el del carril se esconde; por encima, al revés. Los dos montan
+     * el mismo componente, y esta comprobación impide que se vean los dos a la vez
+     * o ninguno.
+     */
+    const leerDiagnostico = async (ancho) => {
+      const { ctx, page } = await abrir(navegador, ancho, 900, `/wiki/${SLUG}`);
+      const r = await page.evaluate(() => {
+        // Visibles, no presentes: `display: none` deja el nodo en el DOM, así que
+        // contar nodos no distingue el que se ve del que está escondido.
+        const visibles = (sel) =>
+          [...document.querySelectorAll(sel)].filter((el) => el.getBoundingClientRect().width > 0).length;
+        return {
+          enGuia: visibles('.guia-diagnostico .riel-cifra'),
+          enCarril: visibles('.riel-bloque--diagnostico .riel-cifra'),
+        };
+      });
+      await ctx.close();
+      return r;
+    };
+
+    const tablet = await leerDiagnostico(1024);
+    comprobar(
+      'a 1024 el diagnóstico está en la guía, no en el carril',
+      tablet.enGuia === 1 && tablet.enCarril === 0,
+      JSON.stringify(tablet)
+    );
+
+    const escritorio = await leerDiagnostico(1280);
+    comprobar(
+      'a 1280 está en el carril, no en la guía',
+      escritorio.enCarril === 1 && escritorio.enGuia === 0,
+      JSON.stringify(escritorio)
+    );
   }
 
   /* ---------------------------------------------------------------- 6 */
