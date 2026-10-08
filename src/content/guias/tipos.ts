@@ -268,4 +268,5 @@ export type Dibujo =
   | 'cama'
   | 'camara'
   | 'voladizo'
-  | 'capas';
+  | 'capas'
+  | 'hotend';

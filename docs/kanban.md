@@ -138,7 +138,7 @@ prioridad la marca lo que desbloquea la wiki interactiva, no lo que se lee bien 
 | 2 | `enclosure-y-warping` | ✅ Guía escrita y aprobada (`enclosure-y-warping-revision-2`); 4 fuentes nuevas + 1 reutilizada de `warping-pla`; dibujo `camara` |
 | 3 | `material` | ✅ Guía escrita y aprobada (`material-revision-2`); 4 fuentes nuevas; campo `material` del panel; dibujo `rugosidad` |
 | 4 | `altura-capa` | ✅ Guía escrita y aprobada (`altura-capa-revision-2`); 4 fuentes nuevas; campo `layerHeight`; dibujo `capas` |
-| 5 | `temperatura-hotend` | Pendiente — `hotendTemp` reservado |
+| 5 | `temperatura-hotend` | ✅ Guía escrita y aprobada (`temperatura-hotend-revision-2`); campo `hotendTemp`; dibujo `hotend` |
 | 6 | `capas-desplazadas` | Pendiente |
 | 7 | `flow-rate` | Pendiente |
 | 8 | `voladizos-y-soportes` | ✅ Guía escrita y aprobada (`voladizos-y-soportes-revision-2`); 3 fuentes nuevas; campos `hasOverhangs` y `overhangAngle`; dibujo `voladizo` |

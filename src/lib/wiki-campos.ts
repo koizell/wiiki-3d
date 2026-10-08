@@ -69,6 +69,7 @@ export interface ArticuloDeCampo {
 export const CAMPOS_WIKI: Record<string, ArticuloDeCampo> = {
   material: { slug: 'material', etiqueta: 'Material', ancla: 'v-material' },
   layerHeight: { slug: 'altura-capa', etiqueta: 'Altura de capa', ancla: 'v-altura' },
+  hotendTemp: { slug: 'temperatura-hotend', etiqueta: 'Temperatura de hotend', ancla: 'v-temperatura' },
   warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama', ancla: 'v-material' },

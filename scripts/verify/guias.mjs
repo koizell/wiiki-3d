@@ -343,7 +343,7 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
       if (!c.cifra) continue;
       const anteriores = porValor.get(c.cifra.valor) ?? [];
       for (const otro of anteriores) {
-        assert.notEqual(
+        assert.equal(
           otro.nota,
           c.cifra.nota,
           `«${otro.id}» y «${c.id}» muestran «${c.cifra.valor}» con alcances distintos: una de las dos está mal`

@@ -65,6 +65,8 @@ const DESCRIPCION: Record<Dibujo, string> = {
     'Esquema de una pieza con un saliente sin apoyo debajo que se descuelga hacia abajo.',
   capas:
     'Esquema de una pieza en corte con sus capas horizontales y una acotación de la altura de una capa.',
+  hotend:
+    'Esquema de una boquilla depositando filamento sobre la pieza, con ondas de calor a los lados.',
 };
 
 /**
@@ -261,6 +263,30 @@ const CUERPO: Record<Dibujo, ReactElement> = {
       <path className="dibujo-flecha" d="M90 46 L90 54" />
       <path className="dibujo-punta" d="M90 46 L87 41 L93 41 Z" />
       <path className="dibujo-punta" d="M90 54 L87 59 L93 59 Z" />
+    </>
+  ),
+
+  /*
+   * La boquilla con el calor alrededor.
+   *
+   * El tema no es un defecto sino un ajuste —la temperatura del hotend—, así que el
+   * dibujo enseña el calor y no un fallo: la boquilla, el filamento que sale y dos
+   * ondas a los lados, en el color de acento. Debajo, la pieza que se está
+   * formando.
+   */
+  hotend: (
+    <>
+      {/* La pieza, debajo. */}
+      <rect className="dibujo-chapa" x="14" y="62" width="92" height="6" rx="2" />
+      <path className="dibujo-pieza" d="M34 62 L34 54 L86 54 L86 62" fill="none" />
+
+      {/* La boquilla y el filamento que sale. */}
+      <path className="dibujo-nozzle" d="M50 14 L70 14 L66 34 L54 34 Z" />
+      <path className="dibujo-extrusion" d="M60 34 L60 50" />
+
+      {/* El calor, a los dos lados. */}
+      <path className="dibujo-acento" d="M38 34 q5 -6 0 -12 q-5 -6 0 -12" fill="none" />
+      <path className="dibujo-acento" d="M82 34 q5 -6 0 -12 q-5 -6 0 -12" fill="none" />
     </>
   ),
 };

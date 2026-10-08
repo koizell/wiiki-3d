@@ -16,19 +16,19 @@
 |---|---|---|---|
 | **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La pantalla de subida **está hecha** (`/`) y el historial también (`/historial`, con tres vistas). Falta el enlace a `/proyectos` desde el historial, y decidir si `/proyectos` deja de ser una pantalla vacía (P5). |
 | **Taller** | H-2.1, H-2.2 | Hecho | La calculadora está hecha y los cinco estados tienen comprobación propia (`verify:taller`, 180). |
-| **Wiki 3D** | H-1.1, H-1.2 | Hecho | Nada técnico. Rutas, buscador, riel, barra «Tu archivo» y **las ocho** guías están escritas y verificadas. El plan es [`plan-guias.md`](plan-guias.md) y el tablero [`kanban.md`](kanban.md). |
+| **Wiki 3D** | H-1.1, H-1.2 | Hecho | Nada técnico. Rutas, buscador, riel, barra «Tu archivo» y **las nueve** guías están escritas y verificadas. El plan es [`plan-guias.md`](plan-guias.md) y el tablero [`kanban.md`](kanban.md). |
 | **Proyectos** | H-4.1 | Bloqueado | **S1 + S3**: sin backend, los datos viven en la máquina de quien los guarda. Y con P2 resuelto, guardar el análisis no permite volver a abrir el archivo en el visor. |
 
 Las cuatro rutas existen y responden. Dos pintan una pantalla que dice qué
-módulo van a ser y que no está implementado; la wiki tiene ocho guías completas.
+módulo van a ser y que no está implementado; la wiki tiene nueve guías completas.
 
 ---
 
 ## Wiki 3D: el formato cambió y el módulo se rehízo
 
 **Los cuatro artículos de 5.600–7.900 palabras están borrados y las guías están
-escritas.** Son ocho: `warping-pla`, `separaciones-entre-capas`, `temperatura-cama`,
-`adhesion-primera-capa`, `enclosure-y-warping`, `material`, `voladizos-y-soportes` y `altura-capa`. El plan está en [`plan-guias.md`](plan-guias.md).
+escritas.** Son nueve: `warping-pla`, `separaciones-entre-capas`, `temperatura-cama`,
+`adhesion-primera-capa`, `enclosure-y-warping`, `material`, `voladizos-y-soportes`, `altura-capa` y `temperatura-hotend`. El plan está en [`plan-guias.md`](plan-guias.md).
 
 | Antes | Ahora |
 |---|---|
@@ -340,11 +340,11 @@ sea barato: a 375 px son 36 px de alto y hace que `.canvas-area` crezca 38 px.
 npm run lint
 npm run build
 npm run verify:layout     # 29 viewports x 3 estados. 7 de 7 aserciones pasan
-npm run verify:guias      # el motor, las ocho guías y la barra «Tu archivo». 226 de 226
+npm run verify:guias      # el motor, las nueve guías y la barra «Tu archivo». 251 de 251
 npm run verify:teclado    # orden de tabulación y foco visible
 npm run verify:rutas      # las cuatro rutas, la jerarquía de encabezados, el foco
-npm run verify:wiki       # las guías en navegador, con y sin archivo. 153 de 153
-npm run verify:seo        # HTML estático, canonical y lectura sin JavaScript. 99 de 99
+npm run verify:wiki       # las guías en navegador, con y sin archivo. 158 de 158
+npm run verify:seo        # HTML estático, canonical y lectura sin JavaScript. 108 de 108
 npm run verify:taller     # los cinco estados de la calculadora. 180
 npm run verify:historial  # el historial y sus tres vistas. 102
 npm run verify:overlay    # el overlay del visor

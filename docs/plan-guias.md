@@ -161,11 +161,13 @@ Las guías escritas cubren el material cocinado disponible:
 | `material` | 1.628 palabras | escrita (6.ª guía), con el campo `material` del panel y el dibujo `rugosidad` |
 | `voladizos-y-soportes` | 2.285 palabras | escrita (7.ª guía), con los campos `hasOverhangs` y `overhangAngle` y el dibujo `voladizo` |
 | `altura-capa` | 2.162 palabras | escrita (8.ª guía), con el campo `layerHeight` y el dibujo `capas` |
+| `temperatura-hotend` | 2.450 palabras | escrita (9.ª guía), con el campo `hotendTemp` y el dibujo `hotend` |
 
-**Los cuatro temas cocinados del plan inicial están escritos.** Después llegaron cuatro más,
-`enclosure-y-warping`, `material`, `voladizos-y-soportes` y `altura-capa`, ya cocinados y
-también escritos: la siguiente guía vuelve a necesitar material cocinado nuevo, así que el
-recolector tiene que traer fuentes antes de que el cocinero tenga algo que cocinar.
+**Los cuatro temas cocinados del plan inicial están escritos.** Después llegaron cinco más,
+`enclosure-y-warping`, `material`, `voladizos-y-soportes`, `altura-capa` y
+`temperatura-hotend`, ya cocinados y también escritos: la siguiente guía vuelve a necesitar
+material cocinado nuevo, así que el recolector tiene que traer fuentes antes de que el
+cocinero tenga algo que cocinar.
 
 ### Por qué `adhesion-primera-capa` es la mejor prueba del formato
 
