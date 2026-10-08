@@ -100,4 +100,7 @@ graphify-out/
 #
 # Lo que sí sea decisión de producto va a `docs/` y se versiona, como ya pasó con
 # `docs/taller.md`.
+
+# Maquetas del compañero visual de brainstorming (superpowers). No se versionan.
+.superpowers/
 .local/
