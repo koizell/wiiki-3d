@@ -9,11 +9,43 @@ fuentes:
   - wiki/raw/temperatura-cama-prusa-kb-pla.md
   - wiki/raw/warping-pla-prusa-forum-adjusting-settings-warping-pla.md
 cocinado: 2026-10-03
-revisado: 2026-10-03
+revisado: 2026-10-04
 ---
 
 # Temperatura de cama
 
+> **Nota de revisión (quinta vuelta del material cocinado, sobre el brief
+> `temperatura-cama-quirurgico`).** Corrige **cinco defectos** señalados por
+> `wiki/reviews/temperatura-cama-revision-8.md`, y **sólo cinco**: los doce defectos de la
+> séptima vuelta siguen resueltos y no se han tocado. Los dos de fondo **nacían en este
+> fichero**, así que también aquí: **el PETG tiene dos rangos y no tres fuentes** —la tabla de
+> OrcaSlicer no tiene fila de PETG, así que el «60, 70 y 90» no tenía de dónde salir—, y **la
+> banda de contradicción del umbral de cámara es de 60 a 70 °C**, no «por encima de 60»: por
+> encima de 70 las dos mitades de la página de Bambu recomiendan lo mismo. Los otros tres: la
+> afirmación de que `first-layer-issues` «no publica ninguna cifra de cama», que es **falsa**
+> contra el fichero crudo —su único número es el incremento de +5–10 °C sobre el perfil—, la
+> equiparación de la limpieza de Bambu con la inmersión que Prusa prohíbe —Prusa prohíbe
+> **sumergir**, Bambu manda **limpiar la superficie**, y son dos acciones que ninguna fuente
+> equipara—, y la cita de OrcaSlicer cerrada en «for each Bed type», justo donde empezaba la
+> condición que la limita. Cada corrección lleva el pasaje crudo al lado. Lo demás —las tablas
+> de los tres fabricantes, el recorrido de limpieza, el antes y después del hilo y el bloque
+> del campo opcional— queda como estaba.
+
+> **Nota de revisión (cuarta vuelta del material cocinado).** Esta vuelta no repite las
+> anteriores: corrige los doce defectos de
+> `wiki/reviews/temperatura-cama-revision-7.md`. **Todos nacían en este mismo fichero, y
+> ninguno en `wiki/raw/`.** Lo que cambia por fondo son cuatro cosas: **se retira la
+> exclusividad de la chapa de Prusa** —su 60 °C no está condicionado a PEI—, **el 0 de Bambu
+> deja de ser un dato del G-code** y pasa a ser lo que dice, un comportamiento del *preset* en
+> Bambu Studio, **la torre de purga deja de estar unida a la pieza**, y **la frase de
+> OrcaSlicer sobre la cámara deja de producir los umbrales de Bambu**. Los cambios de alcance
+> conservan el verbo de la fuente en cada caso: «no elimina **bien**» en vez de «no elimina»,
+> «**pueden** contener» en vez de «llevan», «su propia **temperatura** de boquilla» en vez de
+> «su propia boquilla». Se conservan sin tocar las tablas de los tres fabricantes, el
+> recorrido de limpieza, el bloque de variables de Orca y el antes y después del hilo, que las
+> revisiones anteriores aprobaron. Lo que se ha eliminado por completo está en `## Tirado`,
+> con su motivo.
+>
 > **Nota de revisión (tercera vuelta del material cocinado).** Esta vuelta no repite
 > el repaso anterior: la contradicción del PETG en la página de Bambu, la acetona
 > prohibida por uno y autorizada por el otro, y el dato de la cama sucia ya estaban
@@ -56,20 +88,30 @@ problema de las fuentes: es el contenido del artículo.
   — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
 - **OrcaSlicer**, en su tabla de rangos estándar —son once filas de material—: PLA
   **50 – 60 °C** de cama, cámara ambiente. ABS 90–100, ASA 90–100, PC 100–120, TPU 40–60.
+  **No tiene fila de PETG**: los once son PLA, ABS, ASA, Nylon 6, Nylon 12, TPU, PC, PC-ABS,
+  HIPS, PP y Acetal (POM), así que para el PETG esta tabla no aporta nada y **no cuenta como
+  una tercera voz** a favor ni en contra (ver la contradicción 5).
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
 - **Las filas menos conocidas de las dos tablas, que no se habían usado todavía y que
   sirven para los materiales que no son PLA, PETG ni ABS.** De Prusa: PETG HT **110 °C**,
   HIPS 100–110, PP 70–100, CPE 90–110, Glow in the dark 85, PVA / BVOH 60, Wood / metal
-  filled 60–100, y una fila agregada «Composite materials» de 40–120 °C. De OrcaSlicer:
-  Nylon 6 y Nylon 12 **90–110 °C**, PC-ABS 95–110, HIPS 90–110, PP 80–105, Acetal (POM)
-  **100–130 °C**, que es el techo de cama más alto de todo el lote.
+  filled 60–100, PA (Nylon) 70–115, y una fila agregada «Composite materials» de
+  40–120 °C. De OrcaSlicer: Nylon 6 y Nylon 12 **90–110 °C**, PC-ABS 95–110, HIPS 90–110,
+  PP 80–105, Acetal (POM) **100–130 °C**, que es **el valor de cama más alto entre las
+  filas que en este lote se han podido leer con confianza**. Ese superlativo va acotado así a
+  propósito: hay un 150 °C en la tabla de Prusa que no entra en la comparación porque su fila
+  viene desalignada (ver las advertencias siguientes).
   — [Prusa Research](https://help.prusa3d.com/filament-material-guide),
   [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
 
   **Dos advertencias al publicarlas.** «Composite materials, 40–120 °C» es una fila
   que **agrega** composites distintos, no un material: no se puede leer como «el
-  filamento con fibra va a 120 °C» sin más. Y la fila de **PEI (150 °C) queda fuera**,
-  porque viene desalignada en el original —ya está anotado en `## Tirado`—.
+  filamento con fibra va a 120 °C» sin más. Y la fila de **PEI (150 °C) queda fuera de la
+  comparación**, porque viene desalignada en el original. **Que quede fuera no significa que
+  no esté en la fuente:** el 150 °C es un dato que Prusa publica en esa tabla, y excluirlo por
+  poco fiable es una decisión editorial, no una ausencia. De ahí el acotado del superlativo, y
+  de ahí también que **el 150 °C no se publique como recomendación de cama** —sí se puede citar
+  marcado como dudoso (ver `## Tirado`).
 - **Las tablas son genéricas, y las dos lo dicen.** «Actual optimal temperatures may vary
   based on **specific filament brands and printer models**. Always refer to the filament
   manufacturer's recommendations and calibrations for best results.» Es la razón por la
@@ -91,6 +133,20 @@ problema de las fuentes: es el contenido del artículo.
   components, potentially causing mechanical damage.»
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
 
+  **El alcance de la cita, que hay que conservar al parafrasear.** La fuente **enumera
+  alternativas con «or»**, no etapas: warping **o** unión débil entre capas **o** despegue
+  completo. Y el desenlace grave va marcado como **potencial** —«potentially causing mechanical
+  damage»—, no como daño confirmado. La cita se puede dar entera; lo que no se puede escribir
+  es una secuencia ordenada que acabe en daño mecánico, porque esa secuencia no está en el
+  texto.
+
+  **Y una advertencia de alcance para el redactor.** «weak layer bonding» es exactamente lo
+  que trata `separaciones-entre-capas`, así que **esta página no puede renunciar a la cama en
+  ese caso**: la cita no dice que la temperatura de cama deje de intervenir en una separación
+  interna, y enumerar desenlaces posibles no excluye ninguno —el apartado de cama caliente de
+  esta misma página va en sentido contrario. Si el artículo manda al lector a la otra página,
+  es para el **diagnóstico**, nunca para excluir la cama.
+
 ### Qué pasa si está demasiado caliente
 
 - «If the bed temperature is too high, the lower layers can overheat and soften
@@ -101,31 +157,83 @@ problema de las fuentes: es el contenido del artículo.
   sheet**». La página **también propone el remedio**: «We recommend using a separating
   agent (e.g. a glue stick)», y manda a las guías de material.
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
+
+  **Dónde está ese párrafo y qué no dice.** Sale en la sección de limpieza con IPA, bajo el
+  epígrafe «Isopropyl alcohol - smooth, satin, textured sheets», y lo que advierte es que con
+  esos materiales la adhesión puede resultar **demasiado fuerte** sobre la PEI lisa. **La
+  página no lo presenta como un efecto de la cama demasiado caliente**, y en este párrafo no
+  menciona ninguna cifra.
+
+  **Lo que sí se puede decir de las cifras de esa página, con su alcance exacto.**
+  `first-layer-issues` **no publica ninguna temperatura de cama recomendada por material ni
+  por chapa**, y **su único número de cama es el incremento de +5–10 °C sobre el valor del
+  perfil** (`first-layer-issues:66`), que es otra cosa y no un valor recomendado para ningún
+  filamento. Ese incremento está cocinado en «Cómo se sube, y cuánto», más abajo, con su
+  cita. **Publicable:** las dos mitades, con su matiz. **No publicable: «no publica ninguna
+  cifra de cama en todo el lote»**, que es falso contra el fichero crudo, y además se
+  contradice con lo que este mismo apartado le atribuye a esa misma página más abajo: es la
+  clase de afirmación que este paso existe para cazar.
+
+  **Y que la nota del recolector de ese fichero no se cite como si cerrara el asunto.** Dice
+  «esta fuente no da ninguna cifra de temperatura de cama» (`first-layer-issues:86–87`), pero
+  dos párrafos más abajo admite que el +5–10 °C «es el único sitio de la página donde sale una
+  cifra» (`:95–97`): su primera frase es imprecisa y no puede usarse como respaldo de la
+  versión fuerte. Lo que la nota quiere decir es que **no hay cifra recomendada**, no que no
+  haya cifra.
+
+  Publicable además, y en el mismo párrafo: la adhesión excesiva es un riesgo con PETG,
+  ABS, ASA, XT y CPH sobre PEI lisa, y el separador es el remedio que da la misma frase.
+  **No publicable:** «subir la cama provoca adhesión excesiva», que encadenaría un párrafo de
+  limpieza con un efecto térmico que la fuente no enuncia.
 - **La primera capa tiene su propia temperatura, y es una decisión aparte.** En la
   sección Bed, después de la lista de variables: «Set the bed temperature for the selected
-  material for **First Layer and Other Layers** for each Bed type», y «Using a higher
-  temperature for **the first layer** can help improve adhesion to the build surface but
-  be cautious of potential deformations like elephant foot». Eso es lo que explican las
-  doce variables del apartado de abajo: **dos por chapa**, no una.
+  material for **First Layer and Other Layers** for each Bed type **if Support multi bed
+  types is enabled in printer settings**», y «Using a higher temperature for **the first
+  layer** can help improve adhesion to the build surface but be cautious of potential
+  deformations like elephant foot». Eso es lo que explican las doce variables del apartado de
+  abajo: **dos por chapa**, no una.
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
-- **El principio que hay detrás de los umbrales de Bambu, escrito por otra casa.** «It
-  is important to monitor the chamber temperature to ensure that it does not exceed **the
-  filament's deformation temperature**». Bambu publica el umbral ya calculado por
-  material —45 °C para el PLA, 60 o 70 para el PETG— y esta frase es la regla general que
-  los produce. **No hay que elegir entre las dos:** la una es el principio y la otra la
-  tabla.
+
+  **La primera cita va condicionada, y la condición es parte de la instrucción.** La frase
+  no termina en «for each Bed type»: sigue «**if Support multi bed types is enabled in
+  printer settings**» (`material-temperatures:53`). Lo que la limita es que esté activo el
+  soporte de varios tipos de cama en los ajustes de la impresora, así que **sin ese soporte
+  la instrucción no se aplica tal como está escrita**. Hay dos formas de publicarla y las dos
+  valen: **llevar la condición dentro de las comillas**, o **cortarla con puntos suspensivos**
+  justo donde empieza —«…for each Bed type»— y decir que va condicionada. Lo que **no** vale
+  es cerrar las comillas en «Bed type» y presentar el resto como lo que la página manda sin
+  la condición: el resto de las citas de este apartado se miden con tres reglas —modal,
+  alcance, condición— y ése era **el único sitio donde se saltaba una de las tres**.
+- **Una segunda regla, de otra casa, y complementaria de la de Bambu.** «It is important to
+  monitor the chamber temperature to ensure that it does not exceed **the filament's
+  deformation temperature**».
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+
+  **Las dos reglas van juntas y ninguna produce a la otra.** OrcaSlicer enuncia el criterio —
+  que la cámara no pase de la temperatura de deformación del filamento— **sin deducir ninguna
+  cifra**: de esa frase no salen los 45 °C del PLA ni los 60/70 del PETG. Bambu publica
+  umbrales ya calculados por material, con sus notas de ambiente al lado. Publicable como
+  **dos reglas de dos fuentes distintas que se refuerzan**: una dice qué vigilar, la otra da el
+  número. **No publicable:** «la regla de OrcaSlicer explica por qué Bambu pone 45 °C», que
+  es una derivación que ninguna de las dos fuentes enuncia y que por eso no puede escribirse
+  como si saliera de ellas.
 - **El motivo por el que la temperatura de cama no basta, en tres partes.** «In general,
   following the manufacturer's recommendations, **maintaining a clean bed (free from oils
   or fingerprints), ensuring a stable chamber temperature, and having a properly leveled
   bed** will produce reliable results». Ni una de las tres es la cifra.
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
-- **Y para los materiales que se contraen mucho, la cámara es el factor, no la cama.**
-  «For challenging prints involving materials with **high shrinkage (e.g., nylons or
+- **Y para los materiales que se contraen mucho, la cámara es un factor importante.** «For
+  challenging prints involving materials with **high shrinkage (e.g., nylons or
   polycarbonate)** or geometries prone to warping, dialed-in settings are critical. In
   these cases, **chamber temperature becomes a major factor in preventing detachment** and
   ensuring print success.»
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+
+  **«Un factor importante», y no «el factor».** Es lo que dice la frase, y el matiz importa:
+  un factor importante no desplaza a los demás, así que **esta cita no autoriza a excluir la
+  cama** de ningún diagnóstico. La fuente habla de que la cámara *previene* el despegue en
+  materiales que se contraen mucho; no dice que la temperatura de cama deje de intervenir, y
+  en ese párrafo no da ninguna cifra de cama.
 - **El coste de la cámara caliente, que es el otro lado de «súbela y abre la tapa».** «For
   high-temperature materials like ABS, ASA, PC, and PA, a higher chamber temperature can
   help suppress or reduce warping and potentially lead to higher interlayer bonding
@@ -140,18 +248,30 @@ problema de las fuentes: es el contenido del artículo.
   surface brittle». Y con una prohibición explícita: «For the textured and the satin
   steel sheets, do not use acetone at all!»
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
-- **La prohibición no acaba en la primera frase, y la segunda es la que cuesta dinero.**
-  Literal, en la línea siguiente: «Other chemical solvents, like **Nail polish remover
-  or brake-cleaner, can also contain acetone (acetates)**».
+- **La prohibición no acaba en la primera frase.** Literal, en la línea siguiente: «Other
+  chemical solvents, like **Nail polish remover or brake-cleaner, can also contain acetone
+  (acetates)**».
   — [Prusa Research](https://help.prusa3d.com/article/first-layer-issues_1804)
 
-  **Lo que esto cambia:** el problema no es el bote que pone «acetona» en la etiqueta,
-  es cualquier disolvente que **la lleve dentro sin decirlo**. Quien tenga un
-  quitaesmalte y una chapa texturizada no está usando acetona —está usando
-  quitaesmalte— y la prohibición no le llega, con el mismo daño. **Las dos frases van
-  juntas en la cita; citada sólo la primera, el aviso pierde su mitad útil.** Es el
-  mismo error de forma que el de la columna de chapa de Prusa: el dato no es falso,
-  está mal atribuido.
+  **Tres precisiones que la cita obliga a conservar. Es un aviso de seguridad, no un detalle
+  de estilo.**
+  1. El segundo producto es **brake-cleaner**, limpiador de frenos. No es un limpiaparabrisas
+     ni ningún producto de automoción ligero, y cambiarle el nombre cambia lo que el consejo
+     significa para quien lo busca en un cajón.
+  2. El verbo es **«can also contain»**: es una posibilidad sobre esos productos, no una
+     composición. La fuente **no afirma que todos los quitaesmaltes y limpiadores de frenos
+     lleven acetona**, ni que ninguno la lleve: dice que pueden.
+  3. **La fuente no dice nada de las etiquetas.** No afirma que el bote oculte la acetona, ni
+     que la composición no la declare, ni que el/envase tenga que decirlo. Lo único que da es
+     el nombre de dos productos que pueden contenerla.
+
+  **Lo que sí se puede concluir, y con qué alcance.** La prohibición de Prusa es sobre el
+  **acetona** en chapa texturizada y satinada. Para quien tenga uno de esos dos productos en la
+  estantería, **la fuente no le da ninguna forma de saber por el nombre si es seguro**, y eso
+  es lo que aporta la frase. **Lo que no se puede escribir** es que esos productos «llevan
+  acetona dentro sin decirlo en la etiqueta»: eso no está en ninguna parte del fichero, y una
+  vuelta anterior lo dio por hecho dos veces. **Las dos frases van juntas en la cita** —citada
+  sólo la primera, el aviso pierde su mitad útil—, y eso sí es cierto y sí se puede decir.
 - **Y que Prusa prohíba el acetona en la chapa no significa que no lo recomiende en
   ninguna parte.** La misma Knowledge Base, en la ficha del PLA, lo da como pegamento:
   «Some of the PLA filaments can be also partially dissolved and glued with **acetone**
@@ -225,13 +345,23 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   prints`, `remove finger oils well`, `Handle the bed only by the edges`.
   — [foro de Prusa, post del 28/06/2019](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/)
 
-  **Dos de estas tienen respaldo de fábrica, y una es la que explica el diagnóstico de
-  la cama sucia.** «It does not remove finger oils well» es exactamente lo que dice la
-  Knowledge Base al recomendar jabón para «some oils and sugars that gather over time
-  and **that IPA does not remove**». Y «no toques la superficie con las manos» es la
-  primera línea de esa misma página: «If you don't touch the print surface with your hands
-  or dirty tools, then you don't have to clean it before every print». **La frecuencia
-  —«every few prints»— es sólo del foro y no la corroboran.**
+  **Dos de estas tienen respaldo de fábrica, y una es la que explica el diagnóstico de la
+  cama sucia. Pero el respaldo es por el sentido, no palabra por palabra.**
+  - «It does not remove finger oils well» es **del foro**, y es la observación de un usuario
+    sobre su cama: **no las quita bien**, no dice que no quite ninguna.
+  - La Knowledge Base, en el apartado de jabón, dice que el agua con jabón «will dissolve
+    **some oils and sugars** that gather over time and **that IPA does not remove**». Son
+    **algunos** aceites y azúcares, y el sujeto es el IPA. **La ficha no dice que el aceite de
+    los dedos no se quita nunca**, ni identifica expresamente esos «oils» con las huellas.
+  - Y «no toques la superficie con las manos» es la primera línea de esa misma página: «If you
+    don't touch the print surface with your hands or dirty tools, then you don't have to clean
+    it before every print».
+
+  **Las dos frases se corroboran en el sentido —el IPA deja grasa que hay que atacar con
+  jabón— y no en el alcance.** Convertirlas en «el IPA no quita el aceite de los dedos» sube
+  el «algo» a «todo», y este mismo fichero lo dio antes por corroboración exacta. Se escribe
+  **«no los quita bien»** y **«algunos aceites y azúcares»**, con cada frase atribuida a su
+  fuente. **La frecuencia —«every few prints»— es sólo del foro y no la corroboran.**
 
 ### La chapa cambia la cifra, y no es un detalle
 
@@ -244,12 +374,27 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   «works better for printing parts that have a small contact area with the print
   surface».
   — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
-- **Y la lista de chapas es más larga que la tabla.** En la misma frase: «PLA is
-  printable **not only on PEI surface, but also on glass, Kapton tape, or using a glue
-  stick**». O sea, el 60 °C de la cabecera es el valor para PEI; fuera de ella la
-  cifra no se dice en ninguna parte de esa página, y quien la aplique a cristal o a
-  Kapton se la está inventando.
+- **Y la lista de chapas es más larga que la tabla — con el alcance que realmente tiene.**
+  En la misma frase: «PLA is printable **not only on PEI surface, but also on glass, Kapton
+  tape, or using a glue stick**».
   — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
+
+  **Lo que esa página dice del 60 °C, y lo que no.** En la cabecera, «Recommended bed
+  temperature: **60 °C**», **sin condicionarlo a ninguna superficie**; en la línea siguiente,
+  «Heatbed: Satin or Smooth PEI sheet will provide the best adhesion», que es una
+  recomendación de **adhesión**; y más abajo, que el PLA también se imprime sobre vidrio,
+  Kapton o pegamento. De ahí sale lo que sí se puede escribir: **el 60 °C es la
+  recomendación general de esa ficha**, las chapas PEI son las que mejor adhesión dan según
+  ella, y **la página no da ninguna cifra distinta por superficie**.
+
+  **Lo que no sale de ahí, y que una vuelta anterior le hizo decir:** que el 60 °C sea
+  **exclusivamente** el valor de PEI, o que aplicarlo a vidrio o a Kapton sea inventarlo. La
+  ficha **no restringe** el número a PEI ni declara falsa su aplicación a otra superficie. Del
+  mismo modo, tampoco es cierto que la ficha recomiende las chapas PEI «sin decir a qué
+  temperatura»: el 60 °C está en su cabecera, a tres líneas de la recomendación de chapa. Y
+  por el mismo motivo **el 60 °C de Prusa no puede usarse para explicar la diferencia entre
+  fabricantes**: la ficha no dice que su cifra sea «la de PEI» frente a otra superficie, así
+  que no hay ninguna exclusividad que atribuírsela.
 
 ### Subir la cama tiene un segundo efecto: la cámara
 
@@ -270,15 +415,35 @@ documenta es una secuencia, no una prueba. Es lo que cuenta, literal:
   (melting point is somewhere around 175 °C)». Los 60 °C de la misma página son una
   recomendación, no una exigencia del material.
   — [Prusa Research](https://help.prusa3d.com/article/pla_2062)
-- Bambu Studio avisa en el otro sentido: «if a heatbed temperature in the filament
-  preset is set to **0 ℃**, the software will report that the filament is incompatible
-  with slicing». O sea, un 0 en la cabecera es un valor puesto, no un campo ausente.
+- **El 0 de Bambu es un dato del preset, y nada más.** «In Bambu Studio, if a heatbed
+  temperature **in the filament preset** is set to **0 ℃**, the software will report that the
+  filament is incompatible with slicing. Manually change the bed temperature to a non-zero
+  value, and the prompt will disappear; slicing will then proceed according to your setting.»
   — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
+
+  **Qué admite esta frase y qué no.** Describe un comportamiento de **Bambu Studio sobre su
+  preset de filamento**: con 0 ahí, el laminado queda bloqueado hasta poner un valor no nulo. Es
+  un dato del programa de laminado, y ahí es donde se queda. Lo que **no** dice, y hay que
+  dejarlo escrito para que no vuelva a crecer hacia ningún lado: **que algún slicer escriba un
+  `0` en la cabecera del G-code para indicar que no usa cama**, ni que ese `0` sea «un valor
+  puesto» frente a «un campo ausente», ni qué hace el analizador de este proyecto al
+  encontrarlo. **Son tres cosas distintas** —un valor en un preset de un programa, un valor en
+  un archivo, y lo que pinta un panel— y la fuente sólo cubre la primera.
+
+  Lo que el artículo **sí** puede decir es lo verificado en `## Sin respaldo`: cómo pinta el
+  panel un `0` y cómo pinta un campo que no está. Y **no son lo mismo**, lo que además deja
+  sin base la frase «el panel los trata igual» y la que dice que «desde fuera son el mismo
+  hueco».
 - Los nombres literales de las variables que **sí** salen en la fuente de OrcaSlicer:
   `supertack_plate_temp`, `cool_plate_temp`, `textured_cool_plate_temp`,
   `eng_plate_temp`, `hot_plate_temp`, `textured_plate_temp`, y la gemela
   `_initial_layer` de cada una.
   — [OrcaSlicer](https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html)
+
+  **Con su alcance.** Lo que sale en la fuente es una **lista de variables de configuración de
+  la sección Bed**, con su tipo (`Integer list`) y su ejemplo de CLI. No explica cómo llegan
+  esos valores a una cabecera de G-code, ni cómo los interpreta ningún lector. Lo que
+  autoriza es **el nombre**, y nada más.
 
 ### Limpieza, porque es la otra mitad
 
@@ -319,14 +484,21 @@ adhesión: una cama bien puesta no sirve de nada si la pieza se arranca en calie
   cooled before removing the print. This makes removal easier and helps **avoid
   scratching the plate or damaging the bottom of the model**.»
   — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
-- **Cómo se suelta, una vez fría.** «remove the build plate and **gently flex it** to
-  release the model **and the purge tower (if any)**».
-  — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
-- **La torre de purga sale con la pieza**, no se separa antes. Detalle pequeño, y es el
-  que impide que quien busque su pieza corte la base al intentar separarla.
+- **Cómo se suelta, una vez fría: una acción, dos elementos.** «remove the build plate and
+  **gently flex it** to release the model **and the purge tower (if any)**».
   — [Bambu Lab](https://wiki.bambulab.com/en/general/filament-guide-material-table)
 
-**Lo que dice la fuente y lo que no.** La fuente dice las tres cosas, y el motivo de la
+  La acción cubre **los dos elementos a la vez**: quitar la chapa y flexionarla con cuidado
+  libera el modelo y la torre de purga. **Y hasta ahí llega la fuente.** De la conjunción «the
+  model **and** the purge tower» salen **dos cosas que liberar**, y no salen dos cosas unidas
+  entre sí: la página **no dice** que la torre vaya pegada a la pieza, ni que haya que
+  separarlas en algún orden, ni que cortar una base sirva para separarlas —de hecho, **no
+  menciona cortar nada en ningún punto de esa sección**. Publicable: esperar a que enfríe,
+  quitar la chapa, flexionar con cuidado, y sueltan modelo y torre. **No publicable:** «la
+  torre va unida a la pieza», y todo lo que se derivaba de ahí, incluido el aviso de que quien
+  busque su pieza puede acabar cortándola: son instrucciones que esta frase no contiene.
+
+**Lo que dice la fuente y lo que no.** La fuente dice las dos cosas, y da el motivo de la
 primera: rayar la chapa o **dañar la base de la pieza**. Lo que **no** dice —y por eso
 no puede publicarse como si lo dijera— es que quitar en caliente deforma la base y que
 ese resultado se confunde después con warping. Es una inferencia física razonable, pero
@@ -354,21 +526,42 @@ vez de elegir un número.
 - Prusa (ficha del PLA): **60 °C**.
 - OrcaSlicer: **50 – 60 °C**.
 
-**El matiz.** No es que un fabricante se equivoque y los otros dos no. Los cuatro
-números encajan con la tabla de Bambu por chapa: 50–60 está **dentro** de 45–65,
-que es lo que pide la Textured PEI, y el 35 del Cool Plate está en el otro extremo de
-la fila. Lo que cambia entre las cifras es **la chapa**, y Bambu es el único de los tres
-que lo dice con una tabla.
+**El matiz, y el límite que no se puede cruzar.** Las cuatro cifras **no se explican por la
+chapa**, y aquí está el error que este mismo fichero cometió: **que un rango esté contenido
+en otro no demuestra que la chapa sea la causa de la diferencia.** 50–60 cae dentro de 45–65,
+sí; pero eso también valdría para cualquier otro par de números, y **ninguna de las tres
+fuentes dice que su cifra sea «la de PEI» frente a otra superficie**. Lo que las tres publican
+difiere en **alcance**, y eso sí es lo que hay que escribir:
+
+- **Bambu** da un rango general por filamento (35–65) **y** una tabla que lo parte por chapa
+  (35–45 en Cool Plate, 45–65 en las otras tres). Es **la única de las tres que dice, con
+  valores, que la chapa cambia la cifra**: lo dice con una tabla, no con una frase. Prusa
+  tiene columnas de chapa en la página, pero su contenido no se puede publicar (ver abajo).
+- **Prusa** da un rango general en su tabla de materiales (50–60) y un 60 °C suelto en la
+  ficha del PLA, **sin condicionar ninguno de los dos a una superficie**. Su columna de chapas
+  existe en la página pero **está desaliñada y no se publica** (ver `## Tirado`), así que de
+  Prusa no se puede decir nada por chapa.
+- **OrcaSlicer** da un rango general (50–60) más el margen típico de ±5 °C, sin desglose por
+  superficie.
 
 Y hay un segundo matiz, que es el de las tolerancias: Bambu da un rango de 30 grados
 para el PLA; Prusa da uno de 10. OrcaSlicer explica por qué existen los rangos —±5 °C
 de margen típico alrededor del óptimo— pero eso justifica un intervalo pequeño, no
 uno de treinta grados. **Nadie explica de dónde sale un rango tan ancho**, así que la
-tabla de Bambu hay que presentarla como lo que es: el rango más fiel que ha
-publicado un fabricante, y el único que separa por chapa.
+tabla de Bambu hay que presentarla como lo que es: el rango más ancho que ha publicado
+un fabricante, y la única que publica los valores de su separación por chapa. La tabla de
+Prusa también tiene un grupo de seis columnas de chapa; lo que no se puede publicar es su
+contenido, desalineado respecto a su cabecera.
 
-La conclusión que el artículo tiene que escribir es que **«60 °C está bien» es una
-respuesta correcta y también incompleta**: depende de qué chapa tengas encima.
+La conclusión que el artículo puede escribir es **de alcance, no de chapa**: las tres casas
+dan tres cifras para el mismo PLA porque cada una publica con un alcance distinto —una
+publica sus valores por chapa, otra da una recomendación general, otra da un intervalo con
+margen— y sólo
+una te dice además qué le pasa a la cifra si cambias de superficie. **«60 °C está bien» es una
+respuesta correcta —es lo que recomienda Prusa— y también incompleta**, porque no dice contra
+qué cifra de fabricante se compara. Lo que el artículo **no** puede escribir es que el 60 °C
+de Prusa sea el valor de PEI y no el de otras superficies: la ficha no lo dice, y sin esa
+atribución la chapa deja de explicar por sí sola la diferencia entre los tres.
 
 ### 2. El 65 °C del hilo: la cifra ya no es sólo de un foro, la palabra «techo» sí
 
@@ -428,13 +621,37 @@ decisión:
 **El matiz.** Para el PLA la página es coherente: 45 °C en la prosa y 45 °C en la
 tabla. Para el PETG no. **No se puede decir «el umbral sube a 60 y luego a 70 °C»**,
 porque no hay un «luego»: son dos mitigaciones de la misma decisión en dos formatos de
-la misma página, y la fuente no explica por qué difieren. Lo prudente es dar **la más
-conservadora de las dos para PETG —70 °C—** y decir de dónde sale, o bien publicar las
-dos dejando claro que la página se contradice consigo misma. Lo que no vale es
-encadenarlas como si fuera una progresión: es el tipo de frase que se fabrica sin
-querer al resumir, y que nadie comprueba después porque suena a verdad.
+la misma página, y la fuente no explica por qué difieren. **La contradicción se publica y
+no se resuelve**: ninguna fuente de este lote decide cuál de las dos mitades manda, así que el
+artículo da las dos y dice de dónde sale cada una.
 
-### 5. El PETG tiene tres cifras de cama, y una de ellas es de otro material
+**Dónde está exactamente el desacuerdo, que es la mitad técnica de la frase.** La prosa
+activa la mitigación **por encima de 60 °C**; la tabla la marca **por encima de 70 °C**. De
+ahí sale la banda, y sólo la banda:
+
+- **A 60 °C o menos**, ninguna de las dos mitades recomienda nada: las dos son coherentes, y
+  tampoco se contradicen.
+- **Entre 60 y 70 °C**, la prosa ya pide abrir la puerta o quitar la tapa y la tabla todavía
+  no lo marca: **ahí está el desacuerdo**, y es el único sitio donde está.
+- **Por encima de 70 °C**, las dos mitades recomiendan lo mismo, y la página vuelve a ser
+  coherente.
+
+**El desacuerdo no se extiende a «todo lo que pase de 60».** Escribir «hasta 60 °C no hay
+desacuerdo y por encima de 60 la página se contradice consigo misma» extiende el conflicto a
+una zona —de 70 °C para arriba— donde la página es **coherente**, y es el error que el informe
+8 rechaza: la contradicción se publicaba bien, ubicada mal.
+
+**Y ninguna de las dos es «la más prudente».** Llamar conservador a un umbral es una decisión
+editorial, no un dato, y aquí además apunta en dirección contraria a la prudencia: **entre 60
+y 70 °C, la mitigación de la prosa todavía no está aplicada y la de la tabla ya lo está.** Si el
+redactor prefiere recomendar un número en vez de publicar las dos mitades, **tiene que decirlo
+como criterio propio y con su alcance** —«la página se contradice entre 60 y 70 °C de cama y
+coincide en el resto»—, y nunca como recomendación del fabricante. Lo que no vale en ningún
+caso es encadenar las dos como si fuera una progresión, ni presentar la activación tardía como
+más preventiva: es el tipo de frase que se fabrica sin querer al resumir, y que nadie comprueba
+después porque suena a verdad.
+
+### 5. El PETG tiene dos rangos de cama, y una tercera cifra que es de otro material
 
 Ésta tampoco la había señalado nadie, y sale de las tablas, no de la página de Bambu.
 
@@ -444,25 +661,47 @@ querer al resumir, y que nadie comprueba después porque suena a verdad.
 - **Prusa**, tabla de materiales, fila PETG: **70 – 90 °C**.
   — [Prusa Research](https://help.prusa3d.com/filament-material-guide)
 - **Prusa**, misma tabla, **fila distinta**: «PETG HT | No, No, No | 270 °C, **110 °C**».
-  No es el PETG de la fila de arriba: es una variante aparte, con su propio nombre y su
-  propia boquilla.
+  No es el PETG de la fila de arriba: es una variante aparte, con su propio nombre y **su propia
+  temperatura recomendada de boquilla** —270 °C frente a los 215–270 °C del PETG—, y su propia
+  cifra de cama, 110 °C frente a 70–90 °C. Lo que cambia en la columna HARDWARE es **cero**: las
+  dos filas dicen «No, No, No», es decir, ni cámara cerrada, ni secador, ni boquilla endurecida
+  para ninguno de los dos. **La fuente no establece ninguna boquilla de hardware distinta para
+  el HT**, y una vuelta anterior escribió justo eso.
   — [Prusa Research](https://help.prusa3d.com/filament-material-guide)
 
-**El matiz, en dos partes.**
+**El matiz, en tres partes.**
 
-1. **60–80 y 70–90 no son el mismo rango**, aunque se solapen entre 70 y 80: una chapa de
+1. **Para el PETG hay dos rangos, no tres.** Los dan Bambu y Prusa, y son **los dos únicos del
+   lote que lo listan**. **La tabla de OrcaSlicer no tiene fila de PETG**: sus once materiales
+   son PLA, ABS, ASA, Nylon 6, Nylon 12, TPU, PC, PC-ABS, HIPS, PP y Acetal (POM)
+   (`material-temperatures:24–35`), y el PETG no está entre ellos. Para este material **no hay
+   una tercera voz**, ni a favor ni en contra, así que cualquier frase que compare el PETG con
+   «las tres» o con «las otras dos» no tiene a qué referirse. Y la cifra que se suele contar como
+   tercera —**110**— es del PETG HT, que es el punto 3.
+2. **60–80 y 70–90 no son el mismo rango**, aunque se solapen entre 70 y 80: una chapa de
    65 °C está dentro del de Bambu y **fuera** del de Prusa, y una de 85 °C al revés. Es el
    mismo caso que el del PLA en la contradicción 1 —fabricantes distintos, materiales de
    familia parecidos— y se escribe como contraste, no promediando.
-2. **El 110 °C es el PETG HT, y por eso no se puede subir al PETG.** Es el error que esta
+3. **El 110 °C es el PETG HT, y por eso no se puede subir al PETG.** Es el error que esta
    entrada existe para impedir: una tabla con «PETG 70–90» y «PETG HT 110» al lado
    invita a escribir «Prusa lleva el PETG hasta 110 °C». **No lo dice nadie en este
    lote**, y quien lo escriba se está saltando el nombre de la fila.
 
-Lo que sí se puede escribir es lo contrario y es más útil: **el PETG es el material donde
-las tres fuentes se separan más**, 60, 70 y 90, y donde la variante HT se sale del rango
-de las otras dos por 20 grados. Si el PETG es tu material, la fuente que manda es la del
-fabricante de tu bobina, no la tabla de otro.
+Lo que sí se puede escribir es lo contrario y es más útil: **en las filas de la tabla de
+contraste —PLA, PETG, ABS, ASA y PC— el PETG es la única en la que Prusa mueve los dos
+extremos a la vez**, 70–90 contra los 60–80 de Bambu, diez grados por arriba y diez por abajo.
+En el resto, Prusa se aparta **por un solo extremo**: ABS 95–110 contra 90–100, ASA 90–110
+contra 90–100, PC 100–115 contra 100–120, y con el PLA se queda dentro del rango de Bambu. Lo
+que separa a las dos casas con el PETG es **el resto de la ventana**, no un techo suelto, y las
+ventanas sólo se tocan en 70–80.
+
+**Ojo con el alcance de esa frase:** el PA también se aparta por los dos lados —Bambu da
+90–110 °C por pegamento y 100–120 °C por chapa, Prusa 70–115 °C—, así que «el PETG es el
+material donde las fuentes se separan más» vale **para las filas de la tabla de contraste**, no
+para toda la tabla de Prusa. Si se escribe, se escribe con ese alcance.
+
+El HT se sale de las dos ventanas por veinte grados, y es otro material. Si el PETG es tu
+material, la fuente que manda es la del fabricante de tu bobina, no la tabla de otro.
 
 ### 6. Para limpiar la chapa, un fabricante dice agua caliente y el otro dice que no
 
@@ -487,8 +726,28 @@ recomienda.
 citas y decir que los dos fabricantes se contradicen en un punto pequeño, y puede
 recomendar «agua tibia y jabón» como la lectura que no se equivoca ninguna de las dos,
 porque Prusa lo dice y Bambu no lo prohíbe para su chapa. Lo que no vale es **elegir una y
-borrar la otra**: quien limpie una chapa Textured PEI con agua hirviendo porque Bambu lo
-dijo habrá hecho exactamente lo que Prusa prohíbe por escrito.
+borrar la otra**.
+
+**Y lo que tampoco vale es equiparar las dos acciones, que son distintas.** Lo que Prusa
+prohíbe por escrito es **sumerger la chapa**: «**do not submerge the sheet completely in hot
+water**» (`first-layer-issues:31`), y lo pone en la misma frase de la operación de agua y
+jabón. Lo que Bambu manda es **limpiar la superficie de la placa** con jabón y agua
+caliente: «Regularly clean the **plate surface** with dish soap and hot water»
+(`filament-guide-material-table:120`). **Seguir a Bambu no lleva a sumergir la chapa**,
+porque su instrucción habla de la superficie y no de la chapa entera, y **ninguna de las dos
+fuentes equipara una cosa con la otra**: la frase «meter la chapa en agua caliente por seguir
+a Bambu es exactamente lo que Prusa prohíbe por escrito» **no tiene respaldo en este lote**,
+y además empuja el alcance de las dos justo en el punto que se está defendiendo. Lo que sí
+se puede escribir es lo acotado: **Prusa prohíbe por escrito sumergir la chapa en agua
+caliente; Bambu manda limpiar la superficie con agua caliente; son dos acciones distintas y
+ninguna fuente las equipara.**
+
+**Y «hot water» es agua caliente, no agua hirviendo.** La palabra «hirviendo» no sale de
+ninguna de las dos páginas y no debe aparecer al hablar de esta cita.
+
+**Tampoco vale la inferencia inversa, la de que Bambu no lo prohíba para su chapa
+signifique que lo recomiende.** Su página remite a la guía de limpieza de la Textured PEI, que
+no está en `wiki/raw/` y cuyo contenido nadie ha visto aquí.
 
 ## Sin respaldo
 
@@ -520,6 +779,52 @@ Una sola fuente, o ninguna. El redactor puede usarlas marcadas como lo que son.
   El nombre aparece citado en las notas de `temperatura-cama-orcaslicer-wiki-material-temperatures.md`
   como lo que las notas dan por visto en la página de Machine G-code, **que no está en
   `wiki/raw/`**. No es un nombre que se pueda dar por verificado aquí.
+- **Que el panel pinte un `0` y un campo ausente de la misma manera.** **[RETAIRADA — es
+  FALSA contra el código, comprobada sin modificarlo]** `AnalysisPanel.tsx` devuelve guion
+  **sólo cuando el valor es `undefined`**, así que un `0` se pinta como `0 °C`, y
+  `ParserService.ts` gana el primer valor presente entre cinco alias, el `0` incluido.
+  Consecuencia doble, y las dos hay que respetarlas: «el panel trata 0 y ausencia igual» y
+  «desde fuera son el mismo hueco» **se borran**. Lo que el artículo **sí** puede decir, y
+  sólo como **dato interno de la aplicación** —nunca atribuido a documentación de
+  impresora— es exactamente esto: *la clave se busca entre cinco alias y gana el primer valor
+  presente; si no hay ninguno, el campo queda vacío y se pinta con un guion, y un `0` se pinta
+  como `0 °C`*. **Sin causas, sin avisos y sin advertencias**: el panel no emite ninguna, así
+  que nada sobre voladizos, soportes ni por qué el slicer dejó el campo así.
+- **Que un `0` en la cabecera signifique que el slicer no usa cama.** **[NINGUNA FUENTE LO
+  DICE — retirado]** Lo que dice la fuente de Bambu es que un 0 **en el preset de filamento
+  de Bambu Studio** impide laminar hasta poner un valor no nulo. Eso es un comportamiento del
+  programa de laminado sobre su propia configuración, y no describe ni escritura de G-code ni
+  intención de ningún otro slicer.
+- **Que la torre de purga salga unida a la pieza.** **[NINGUNA FUENTE LO DICE — retirado]**
+  La sección «Removing Prints» dice flexionar la chapa para soltar «the model **and** the purge
+  tower (if any)». De ahí sale que hay dos elementos que liberar, y **no** sale unión entre
+  ellos, ni un orden de separación, ni ninguna instrucción de corte. **La consecuencia
+  práctica sí se mantiene y se escribe por lo que la fuente dice:** quien intente separar la
+  torre cortando la base está haciendo algo que la página no pide, porque la página pide
+  flexionar.
+- **Que 130 °C sea el techo de cama más alto de las tres fuentes.**
+  **[SUPERLATIVO ACOTADO A LAS FILAS LEGIBLES]** El **150 °C del PEI está en la tabla de
+  Prusa** (`filament-material-guide`, fila 31). Queda fuera de la comparación porque su fila
+  viene desaliñada, pero excluir una fila por poco fiable **no la saca de la fuente**. Lo que se
+  publica es «el valor más alto **entre las filas que se han podido leer con confianza**»; el
+  150 °C se puede citar **marcado como dudoso** y **no como recomendación de cama**.
+- **Que la temperatura de cama no cueste dinero, y que lo que cuesta sea el filamento.**
+  **[DECISIÓN EDITORIAL, NO UN DATO]** Ninguna de las seis fuentes habla de costes y este
+  fichero tampoco. Decir que este artículo **no publica precios** es una decisión de alcance y
+  puede decirse; **afirmar qué no cuesta es una afirmación distinta y no tiene respaldo aquí.**
+  Si el artículo hace esa cuenta, hay que limitarla a su alcance o quitarla, y no sustituirla
+  por cifras económicas sin pasar por el pipeline entero.
+- **Que el IPA no quite el aceite de los dedos.** **[ALCANCE MAYOR QUE EL DE SUS DOS
+  FUENTES]** El foro dice «It does not remove finger oils **well**», y es la observación de un
+  usuario sobre su cama. La ficha de Prusa dice que el agua con jabón disuelve «**some** oils
+  and sugars that gather over time and **that IPA does not remove**», y **no identifica esos
+  «oils» con las huellas**. Se escribe «no los quita bien» y «algunos aceites y azúcares», y
+  se para ahí. La grasa no se queda «exactamente donde estaba» porque eso no lo dice nadie.
+- **Que el quitaesmalte y el limpiador de frenos lleven acetona.** **[POSIBILIDAD, NO
+  COMPOSICIÓN — y es un aviso de seguridad, no un matiz de redacción]** La fuente dice «can
+  **also** contain acetone (acetates)». Se publica con el modal, con el nombre correcto del
+  producto —**brake-cleaner**, limpiador de frenos— y **sin ninguna afirmación sobre
+  etiquetas**, que la fuente no hace en ningún punto.
 - **Que Bambu exija pegamento para el PLA en Engineering Plate.** La tabla lo dice con
   dos palabras en la celda —«45 - 65 ℃ Glue Required»— pero **no explica por qué**, y no
   hay ninguna frase de la página que lo desarrolle. La página añade un matiz que sí
@@ -602,21 +907,87 @@ Qué se ha eliminado y por qué. El redactor no usa nada de esto.
 - **Las erratas del original.** Se conservan en `first-layer-issues`. Corregirlas sería
   reescribir la fuente.
 
+### Retirado en esta cuarta vuelta, con su motivo
+
+Ocho afirmaciones que **nacieron en este fichero** y que
+`wiki/reviews/temperatura-cama-revision-7.md` signals. **Ninguna se retira porque la fuente la
+desmienta**: se retiran por ser más fuertes, más causales o más exclusivas que lo que la
+fuente dice. Se anotan para que no vuelvan por la misma puerta.
+
+| Afirmación retirada | Por qué | Qué queda en su lugar |
+|---|---|---|
+| El 60 °C de Prusa es **el valor de PEI**, y aplicarlo a vidrio o Kapton es inventarlo | `pla.md` da el 60 °C sin condicionar superficie y admite vidrio, Kapton y pegamento | el 60 °C es la recomendación general de la ficha; la ficha no da cifra por superficie |
+| «It does not remove finger oils well» es **exactamente** lo que dice la Knowledge Base | el foro dice «**well**» y la ficha dice «**some** oils and sugars» | dos frases que se corroboran en el sentido, no en el alcance |
+| El disolvente **lleva acetona dentro y no lo pone en la etiqueta** | la fuente no habla de etiquetas ni de composición, sólo de una posibilidad | «**pueden** contener», con el nombre correcto del producto |
+| La torre de purga **sale con la pieza**, no se separa antes | de una conjunción («the model **and** the purge tower») salen dos elementos que liberar, no dos unidos | una acción: flexionar la chapa, y sueltan ambos |
+| **70 °C es la lectura más conservadora** para PETG | ninguna fuente decide, y entre 60 y 70 la mitigación de la prosa aún no está aplicada | la contradicción, sin resolver; criterio propio si se recomienda |
+| Un `0` en la cabecera es **un valor puesto, no un campo ausente** | la fuente habla del **preset** en Bambu Studio, no de un G-code | el comportamiento del preset, y el dato interno del panel en `## Sin respaldo` |
+| La regla de OrcaSlicer es **el principio que produce** los umbrales de Bambu | de esa frase no sale ninguna cifra | dos reglas complementarias de dos fuentes |
+| Para los materiales que se contraen mucho la cámara es **el factor, no la cama** | la fuente dice «a major factor», y un factor no desplaza a los demás | la cámara es un factor importante, y la cama sigue dentro |
+
+Y cuatro cosas más que estaban en el artículo sin origen posible en este fichero:
+
+- **El corte de la base para separar la torre de purga.** Salió de la afirmación sobre la
+  unión, que ya no está. La instrucción no existe en ninguna fuente.
+- **Los dos anuncios de relleno** «El PETG es el material donde el error más caro está en una
+  fila que se lee por encima» y «Aquí los efectos van en dos direcciones, y la segunda se
+  olvida». No hay ninguna afirmación detrás: las tablas y los párrafos que siguen ya llevan el
+  contenido. El segundo además insinúa una progresión que la fuente de cama fría no enuncia.
+- **La cuenta de coste del apartado «Lo que este artículo no te va a resolver».** Sin fuente y
+  sin respaldo en este fichero; ver `## Sin respaldo`.
+- **El aviso sobre soportes y voladizos.** El panel no lo emite, y ninguna fuente de este lote
+  lo dice.
+
+### Retirado en esta quinta vuelta, con su motivo
+
+Cinco frases que **nacieron en este fichero** y que señala
+`wiki/reviews/temperatura-cama-revision-8.md`. Cuatro se retiran por ser **falsas contra el
+fichero crudo** o por tener el alcance equivocado; la quinta, por cortar una cita donde
+empezaba su condición. Se anotan para que no vuelvan por la misma puerta.
+
+| Afirmación retirada | Por qué | Qué queda en su lugar |
+|---|---|---|
+| `first-layer-issues` **no publica ninguna cifra de cama en todo el lote** | `:66` da «increase the heatbed temperature by **5-10 °C**», y la página es citada por esa frase más abajo | no publica temperatura **recomendada** por material ni por chapa; su único número es el incremento de +5–10 °C **sobre el perfil** |
+| Para el PETG, **las tres fuentes** se separan más —60, 70 y 90— | la tabla de OrcaSlicer **no tiene fila de PETG**, y el 110 es del **PETG HT**, otra variante | dos rangos —Bambu 60–80 y Prusa 70–90, solapados sólo en 70–80— y el 110 pertenece a la fila del PETG HT |
+| «Hasta 60 °C no hay desacuerdo y **por encima de 60** la página se contradice» | la tabla recomienda **por encima de 70**, así que por encima de 70 **las dos mitades coinciden** | el desacuerdo está **entre 60 y 70 °C**; a 60 o menos no recomienda ninguna, y por encima de 70 coinciden |
+| Limpiar como Bambu es **exactamente lo que Prusa prohíbe**: «agua hirviendo» | Prusa prohíbe **sumerger** (`:31`); Bambu manda **limpiar la superficie** (`:120`). Son dos acciones, y «hot water» no es agua hirviendo | dos acciones distintas, sin equiparar, y «agua caliente» en las dos citas |
+| La instrucción de OrcaSlicer cierra en «**for each Bed type**» | la frase sigue «**if Support multi bed types is enabled in printer settings**» (`material-temperatures:53`) | la condición dentro de la cita, o la cita cortada con puntos suspensivos y dicha condicionada |
+
 ## Relaciones
 
 | Concepto | Se relaciona con | Cómo |
 |---|---|---|
-| temperatura de cama | [[warping-pla\|Warping en PLA]] | El warping es la consecuencia de una cama fría; y la contradicción 1 de aquel artículo se explica con la tabla de Bambu por chapa |
+| temperatura de cama | [[warping-pla\|Warping en PLA]] | El warping es una consecuencia posible de la cama fría, y es la más citada: OrcaSlicer la enumera con «warping **or** weak layer bonding **or** complete detachment», así que no es la única ni la palabra final. La contradicción 1 de aquel artículo la explica la tabla de Bambu por chapa |
 | temperatura de cama | [[adhesion-primera-capa\|Adhesión en la primera capa]] | La otra mitad del problema: la limpieza pesa tanto como la cifra, y el hilo del foro diagnostica una cama sucia antes que una cama fría |
 | temperatura de cama | [[material\|Qué cambia entre materiales]] | Las cifras de esta página son por material; comparar PLA con PC es otro artículo |
-| temperatura de cama | [[enclosure-y-warping\|Enclosure y warping]] | Subir la cama por encima de 45 °C con PLA obliga a abrir la tapa |
-| temperatura de cama | [[slicer\|Qué slicer escribió esto]] | El perfil pone la temperatura solo, y el nombre de la clave decide si el dato llega |
+| temperatura de cama | [[enclosure-y-warping\|Enclosure y warping]] | Bambu recomienda **abrir la puerta y/o quitar la tapa de cristal** por encima de 45 °C de cama con PLA. Con PETG, la página se contradice: 60 °C en la prosa y 70 °C en la tabla, sin decidir, y **el desacuerdo sólo está entre 60 y 70 °C** — por encima de 70 las dos mitades dicen lo mismo |
 | temperatura de cama | acetona frente a IPA | Dos recomendaciones opuestas de dos fabricantes sobre el mismo disolvente: Prusa lo concede en la PEI lisa, Bambu lo prohíbe |
-| temperatura de cama | acetona que no dice que es acetona | La prohibición de Prusa no llega a quien usa quitaesmalte: el disolvente lleva acetona dentro y no lo pone en la etiqueta |
-| temperatura de cama | esperar a que enfríe antes de soltar la pieza | Una base deformada al arrancar en caliente acaba diagnosticada como warping, y el warping se busca en la cama |
+| temperatura de cama | disolventes que pueden contener acetona | La prohibición de Prusa es sobre el acetona, y quitaesmalte y **brake-cleaner** pueden contenerla: la fuente no da ninguna forma de saberlo por el nombre del producto, así que el aviso no llega |
+| temperatura de cama | esperar a que enfríe antes de soltar la pieza | Dos fabricantes coinciden en el gesto —flexionar con cuidado, sin rayar la chapa— y sólo Bambu dice esperar a que enfríe. **[La segunda mitad de la relación no es publicable:]** que una base deformada en caliente acabe diagnosticada como warping es una inferencia que **ninguna de las seis fuentes enuncia**, y este fichero lo dice más abajo |
 | temperatura de cama | temperatura de primera capa | OrcaSlicer da dos por chapa, `_initial_layer` y normal; subir sólo la primera es un ajuste distinto de subir la cama entera |
-| temperatura de cama | PETG HT | Es la fila que hace que «Prusa lleva el PETG a 110 °C» sea falso: es otro material con otro nombre |
+| temperatura de cama | PETG HT | Es la fila que hace que «Prusa lleva el PETG a 110 °C» sea falso: es otro material con otro nombre. Lo que cambia es la **cifra de cama y la de boquilla**, no el requisito de boquilla endurecida, que es «No» en las dos filas |
 | temperatura de cama | limpieza con agua y jabón | Un fabricante dice caliente y el otro «not hot!», y el segundo además prohíbe sumergir la chapa |
 | temperatura de cama | alisado químico | El mismo disolvente que daña la chapa sirve, en la página del PLA, para pegar la pieza: son objetos distintos y dos frases del mismo fabricante |
-| bedTemp | limpieza de la chapa | El aceite de la piel es la causa número uno de fallo de adhesión, y no se arregla con grados |
+| bedTemp | limpieza de la chapa | El IPA deja **algunos** aceites y azúcares acumulados que no quita —y no los quita bien—, así que la limpieza es parte del problema de adhesión y no se arregla con grados |
 | bedTemp | live-Z | Cambiar de chapa cambia también la altura de la boquilla, no sólo la temperatura |
+
+**Relación descartada en esta vuelta: `[[slicer|Qué slicer escribió esto]]`.** Se quita de
+la lista y se deja constancia del motivo, para que no vuelva a colarse en la siguiente vuelta.
+
+- **La página no está comprometida a existir.** No existe en `src/content/wiki/`, no aparece en
+  la lista de páginas pendientes que da esta revisión (`adhesion-primera-capa`,
+  `enclosure-y-warping`, `material`) y ningún brief la encarga. Nombrarla aquí dejaría una
+  referencia editorial colgada, que es justo lo que la séptima vuelta marca como cobertura de
+  relaciones incompleta.
+- **El contenido que la justificaba era en parte el que este fichero retira.** «El perfil pone
+  la temperatura solo, y el nombre de la clave decide si el dato llega» se apoyaba en una
+  inferencia sobre el analizador —qué clave busca y cómo la interpreta—, que ya no es
+  publicable como afirmación de fuente.
+- **Lo que queda con fuente es una frase, y es del propio artículo:** que PrusaSlicer configura
+  las temperaturas a partir del material seleccionado
+  (`first-layer-issues`, «PrusaSlicer will configure them correctly based on the selected
+  material»), más los nombres literales de las variables de la sección Bed de OrcaSlicer. Eso
+  va en el cuerpo del artículo, y no necesita página aparte.
+
+**Se vuelve a añadir cuando exista la página `slicer`**, y entonces la relación se nombra con
+sintaxis wiki en la lista del artículo, no aquí.

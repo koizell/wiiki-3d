@@ -9,7 +9,7 @@ base de datos vectorial, sin claves de API: Markdown y un LLM.
 |---|---|---|---|
 | Fuentes crudas | `wiki/raw/` | `recolector` | **Inmutable.** Un fichero escrito ahí no se toca jamás. |
 | Material cocinado | `wiki/cooked/` | `cocinero` | Las afirmaciones extraídas, cada una con su fuente. |
-| La wiki | `src/content/wiki/` | `redactor` | Los artículos, con frontmatter. |
+| Las guías | `src/content/guias/<slug>.ts` | `redactor` | Un módulo tipado por tema. No es un artículo. |
 | Los informes | `wiki/reviews/` | `revisor` | `APROBADO` o `RECHAZADO` con notas. |
 
 **La frontera que importa:** el redactor no lee `wiki/raw/`, lee `wiki/cooked/`. No
@@ -25,7 +25,7 @@ En `.opencode/agents/`, y versionados.
 |---|---|---|
 | `recolector` | `wiki/raw/` | Rutas, y una línea por fuente |
 | `cocinero` | `wiki/cooked/` | Rutas |
-| `redactor` | `src/content/wiki/` | La ruta y el contador de palabras |
+| `redactor` | `src/content/guias/<slug>.ts` | La ruta y el número de reglas, tarjetas y variables |
 | `revisor` | `wiki/reviews/` | Veredicto con notas |
 
 Cada uno recibe **rutas de ficheros, nunca el historial de conversación**, y
@@ -55,7 +55,7 @@ escribe otro desde cero.
 **Ingest.** El ciclo completo de arriba.
 
 **Query.** Para una pregunta sobre impresión 3D: primero `wiki/cooked/`, después
-`src/content/wiki/`, y sólo si no hay nada, `wiki/raw/`. Al revés que con
+`src/content/guias/`, y sólo si no hay nada, `wiki/raw/`. Al revés que con
 `graphify`.
 
 **Lint.** El mismo `revisor`, pero sobre la wiki entera, buscando afirmaciones sin
@@ -109,15 +109,31 @@ enlace roto en el panel.
 sale el texto con una marca punteada. Los artículos se escriben en cualquier orden
 y el enlace se enciende solo cuando la otra página aparece.
 
-## Contar palabras
+## Medir una guía
+
+Ya no se cuentan palabras, porque una guía no tiene extensión: tiene **cuántas reglas,
+cuántas tarjetas y cuántas variables**, y si cada una de ellas hace algo.
 
 ```bash
-python3 scripts/wiki/contar-palabras.py src/content/wiki/<slug>.md
+npm run verify:guias
 ```
 
-El frontmatter no cuenta, porque es configuración. Las URLs de los enlaces tampoco,
-porque un enlace no se lee y contarlas inflaría el número en decenas. El método
-está escrito en el propio script para que el número que cita el revisor sea
+Son 49 comprobaciones sobre el motor y las guías, sin navegador. Devuelven en el
+mensaje el número que hay que mirar, que es la forma de detectar lo que una revisión
+manual no ve: una condición que apunta a una variable inexistente, un valor de
+condición imposible, una regla sin fuente, una acción con cifras y sin `valor`, un
+enlace a una guía que no existe, y **una variable decorativa** —se pregunta algo que no
+cambia nada en ninguna combinación—.
+
+Las dos últimas se anotan aparte, porque son las que más veces han saltsado:
+
+- **Una variable decorativa** hace que quien marca la casilla vea que la lista no se
+  mueve, y piense que la guía no reacciona. Ha encontrado variables muertas en dos
+  borradores.
+- **Un enlace a una guía inexistente** es un 404 en una página que ha pasado revisión.
+  Antes el formato viejo lo resolvía con un subrayado discontinuo y texto sin enlace;
+  ahora, si la otra guía no está escrita, el enlace **no se pone** y la mención va en
+  `fueraDeAlcance` como texto. La justificación del método está en el propio script
 reproducible.
 
 ## Comprobar lo que se ha escrito

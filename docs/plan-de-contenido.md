@@ -1,11 +1,11 @@
 # El plan de contenido de la wiki
 
-Diez artículos: uno escrito, nueve por escribir. Cada uno va atado a un campo del
-panel de análisis, y esa es la razón por la que esta wiki existe y no es una
-enciclopedia de impresión 3D.
+Diez artículos planificados. Ya están escritos `warping-pla`, `temperatura-cama`
+y `separaciones-entre-capas`; quedan siete. Los artículos dan contexto a los
+campos del panel o a diagnósticos relacionados. Diez es una meta editorial,
+no un requisito numérico ni una garantía de aprobación de AdSense.
 
-**Nada de este documento está generado.** Es la preparación para después del
-reinicio de sesión, cuando los cuatro subagentes estén registrados.
+El contenido se crea con los cuatro agentes del pipeline y revisión de fuentes.
 
 ## Las tres reglas que decidieron el contenido
 
@@ -134,7 +134,10 @@ aparecieron buscando: salieron de los sitemaps de Prusa y de Bambu. Verificadas 
 - `https://help.prusa3d.com/article/bad-looking-surface-above-supports_1803` — **200**
 - `https://help.prusa3d.com/article/skirt-and-brim_133969` — **200**
 
-### 5 · `adhesion-primera-capa` — campo `bedTemp`
+### 5 · `adhesion-primera-capa` — sin campo (enlaza a `temperatura-cama`)
+
+`bedTemp` pertenece exclusivamente a `temperatura-cama`; no se asignará por
+segunda vez. Este artículo será un diagnóstico complementario.
 
 - `https://wiki.bambulab.com/en/knowledge-sharing/first-layer-not-sticking` — **200**, «First Layer Not Sticking: Causes and Solutions»
 - `https://help.prusa3d.com/article/first-layer-issues_1804` — **200**

@@ -31,7 +31,7 @@ error volvería en el siguiente artículo.
 
 **Rutas de ficheros, nunca el historial de la conversación.** Concretamente:
 
-- La ruta del artículo en `src/content/wiki/`.
+- La ruta de la guía en `src/content/guias/<slug>.ts`.
 - La ruta del fichero cocinado en `wiki/cooked/` que corresponde.
 
 No necesitas nada más, y no debes buscar nada por tu cuenta: si no está en esos
@@ -83,15 +83,36 @@ concreto** es relleno, aunque esté bien escrito. Un párrafo que no lleva
 temperatura, ni cantidad, ni velocidad, ni un antes y un después, no está
 justificando su existencia.
 
-### 4 · Longitud y estructura
+### 4 · Las cuatro etapas, y que hagan algo
 
-- **Mínimo 800 palabras.** Se cuenta, y se dice el número.
-- Un solo `<h1>`, y es el título.
-- Están las secciones en el orden del esquema: problema, por qué ocurre, cómo se
-  resuelve, qué probar.
-- Existe `## Qué puede salir mal`, con contenido real.
-- El frontmatter tiene `title`, `slug`, `date`, `sources` y `tags`, y el `slug`
-  coincide con el nombre del fichero.
+**Ya no hay mínimo de palabras.** Una guía no tiene extensión: tiene reglas, tarjetas
+y variables, y lo que se comprueba es que cada una cumpla su función. El contenido de
+una guía es corto a propósito, y su longitud no es calidad.
+
+Comprueba, en este orden:
+
+- **El diferencial abre la guía** y tiene al menos dos comprobaciones. Cada una declara
+  sus dos caras: `si` y `no`. Una comprobación con una sola cara es media
+  comprobación.
+- **Las variables están todas justificadas**: cada una dice para qué se pregunta, en el
+  campo `para`. Y **ninguna es decorativa**: si marcar algo no cambia la pantalla, sobra.
+  Es el fallo más caro de este formato, porque quien marca la casilla ve que nada se
+  mueve y concluye que la guía no reacciona.
+- **Las reglas están ordenadas y todas se pueden llegar.** Una regla cuya condición
+  pide una variable que ningún camino rellena es una regla muerta.
+- **El conocimiento está filtrado por variables cuando toca.** Las cifras que dependen
+  de una chapa llevan su `cuando`.
+- **`fuaraDeAlcance` no está vacío** y dice algo concreto: qué caso no entra, por qué, y
+  a dónde llevarlo si hay otra guía.
+
+Y dos cosas que la propia página impone:
+
+- **Toda acción con una cifra la lleva en `valor`,** no enterrada en el `porque`.
+  `verify:guias` lo comprueba, y la razón es de lectura: el valor va en color de
+  acento, arriba, y el porqué es el texto de debajo.
+- **Toda regla con un número tiene su `alcance`** cuando la fuente acota. Sin alcance,
+  una fuente acotada se convierte en una recomendación general, que es el error más caro
+  de esta wiki.
 
 ### 5 · Las citas son correctas y accesibles
 
@@ -105,16 +126,18 @@ justificando su existencia.
   costado, y va con los cuatro casos reales que la hicieron necesaria.
 - La primera cita está en la primera mitad del artículo, no al final.
 
-**Sobre los enlaces a páginas que todavía no existen: no son un fallo.** El artículo
-los escribe como `[[slug|texto]]`, y el renderizador pregunta por la página antes de
-pintar: si existe, sale un enlace; si no, sale **el texto tal cual con una marca
-punteada y sin enlace**. Nombrar una página que va a existir es correcto, y el enlace
-se enciende solo el día que la otra página esté escrita, sin tocar este fichero.
+**Sobre las guías que todavía no existen: no se enlazan.** El formato viejo usaba
+`[[slug|texto]]` y el renderizador preguntaba por la página: si existía, salía un
+enlace; si no, texto con marca punteada. Ese mecanismo **ya no existe**, porque el
+contenido es un módulo de TypeScript y no un texto que el renderizador pueda
+interpretar: `enlaza: { guia: 'x' }` es un enlace o no lo es.
 
-Lo que sí es un fallo es un enlace de Markdown normal —`[texto](/wiki/slug)`— a una
-página que no existe. Eso sí sale como enlace roto. `npm run verify:wiki` lo comprueba
-en el navegador, así que no hace falta que lo mires tú; lo que sí te toca es que la
-lista de `wiki/cooked/` no prometa páginas que el redactor no ha nombrado.
+La regla es más simple y más estricta:
+
+- **Un `guia` o un `siNo.guia` tiene que existir.** Si no existe, no se pone el enlace:
+  la mención va en `fueraDeAlcance` **como texto**. `npm run verify:guias` lo comprueba.
+- **Nombrar una guía que va a existir sí es correcto**, pero en `fueraDeAlcance`, sin
+  `guia`. Es donde va una mención honesta a un caso que todavía no tiene página.
 
 ## El formato del veredicto
 

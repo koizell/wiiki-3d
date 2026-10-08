@@ -14,20 +14,94 @@
 
 | Módulo | Historias | Estado | Qué lo bloquea |
 |---|---|---|---|
-| **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La pantalla de subida **está hecha** (`/`). Falta el historial, y dónde vive es P6. |
-| **Taller** | H-2.1, H-2.2 | No empezado | **Nada.** Es el único que no depende de ninguna decisión pendiente. |
-| **Wiki 3D** | H-1.1, H-1.2 | En curso | Nada técnico. Las rutas, el buscador y el primer artículo **están hechos**; falta contenido, que es trabajo de pipeline y no de código. El plan está en [`plan-de-contenido.md`](plan-de-contenido.md): nueve artículos por escribir. |
+| **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La pantalla de subida **está hecha** (`/`) y el historial también (`/historial`, con tres vistas). Falta el enlace a `/proyectos` desde el historial, y decidir si `/proyectos` deja de ser una pantalla vacía (P5). |
+| **Taller** | H-2.1, H-2.2 | Hecho | La calculadora está hecha y los cinco estados tienen comprobación propia (`verify:taller`, 180). |
+| **Wiki 3D** | H-1.1, H-1.2 | Hecho | Nada técnico. Rutas, buscador, riel, barra «Tu archivo» y **las cinco** guías están escritas y verificadas. El plan es [`plan-guias.md`](plan-guias.md) y el tablero [`kanban.md`](kanban.md). |
 | **Proyectos** | H-4.1 | Bloqueado | **S1 + S3**: sin backend, los datos viven en la máquina de quien los guarda. Y con P2 resuelto, guardar el análisis no permite volver a abrir el archivo en el visor. |
 
 Las cuatro rutas existen y responden. Dos pintan una pantalla que dice qué
-módulo van a ser y que no está implementado; la wiki ya tiene contenido.
+módulo van a ser y que no está implementado; la wiki tiene cinco guías completas.
 
 ---
 
-## Wiki 3D: fase 3 cerrada, contenido pendiente
+## Wiki 3D: el formato cambió y el módulo se rehízo
 
-**Ruta, buscador, tabla de contenidos y el panel atado a los artículos: hechos, en
-`d357ddf`.** Verificado con `scripts/verify/wiki.mjs`, nuevo, 84 de 84.
+**Los cuatro artículos de 5.600–7.900 palabras están borrados y las guías están
+escritas.** Son cinco: `warping-pla`, `separaciones-entre-capas`, `temperatura-cama`,
+`adhesion-primera-capa` y `enclosure-y-warping`. El plan está en [`plan-guias.md`](plan-guias.md).
+
+| Antes | Ahora |
+|---|---|
+| `src/content/wiki/*.md`, un artículo por tema | `src/content/guias/<slug>.ts`, una guía tipada por tema |
+| Un `h1` y nueve secciones, en orden de redacción | Cuatro etapas: diferencial, variables, conocimiento, reglas |
+| Las cifras dentro de frases | Cada cifra con su `valor` y su `nota` de alcance |
+| Enlaces cruzados como `[[slug]]`, que se encendían al existir la página | `enlaza: { guia }`, y `verify:guias` falla si la guía no existe |
+| 5.600–7.900 palabras por artículo | Reglas y tarjetas cortas, filtradas por lo que declara quien lee |
+
+Lo que no cambió: `wiki/raw/` sigue siendo inmutable, `wiki/cooked/` sigue siendo el
+filtro y las tres capas siguen teniendo la misma frontera. Lo que cambió es lo que
+produce el redactor, y `.opencode/agents/redactor.md` y `revisor.md` están escritos
+para el formato nuevo. Si no se hubieran cambiado, el redactor seguiría produciendo
+Markdown y la guía nueva no aparecería: un fallo silencioso.
+
+### Lo que hace que la página no sea un documento
+
+1. **El diferencial va primero y tiene salida.** Warping y separación entre capas se
+   parecen en la foto; las tres preguntas del principio los separan, y si la respuesta
+   es «no», el enlace lleva a la otra guía y **limpia las respuestas** de la anterior.
+2. **La recomendación se calcula.** Sin marcar nada no sale ninguna acción, y la lista
+   se llena a medida que se declara el montaje. Cambiar la chapa de la Textured PEI a
+   la Cool Plate cambia la cifra de 45–65 °C a 35–45 °C.
+3. **El panel enlaza a la guía y el analizador la precontesta.** Con un G-code
+   cargado, `material` y `bedTemp` ya salen marcados, sin que nadie los escriba.
+4. **El carril derecho sustituye al panel de análisis** en las rutas de la wiki. Antes
+   eran 320 px de «Sube un archivo para ver el análisis técnico automático» junto a
+   contenido que no tiene nada que ver con un archivo. Ahora es el estado del
+   diagnóstico: cuántas acciones se han desbloqueado y qué variables faltan.
+5. **La guía enseña los datos de tu archivo, y cada uno lleva a donde lo explica.**
+   Con un G-code cargado, una franja entre la cabecera y el diferencial enseña material,
+   cama y los dos veredictos, y cada dato enlaza a la variable o a la tarjeta que explica
+   ese dato. Sin archivo no hay franja, ni caja, ni espacio: es el caso de quien llega
+   por un buscador y el del HTML exportado para GitHub Pages.
+
+### La barra «Tu archivo», y por qué enseña tan poco
+
+Pinta **los campos que esa guía declara** (`leeDelAnalisis` y `campos`), y nada más:
+`warping-pla` enseña cuatro, `temperatura-cama` dos y las otras dos uno cada una. Un
+dato que la guía no explica sería una fila que no lleva a ninguna parte, y una fila que
+no lleva a ninguna parte es ruido con apariencia de información. Añadir un campo a la
+barra es, por tanto, escribir su nombre en la guía.
+
+El destino del enlace lo declara el elemento que lo explica, con `campos` en la
+variable o en la tarjeta, y no una convención sobre nombres: la variable `cama` de
+`warping-pla` recoge `bedTemp`, y en `temperatura-cama` la que lo recoge es `material`,
+porque en esa guía los rangos de cama están escritos en sus opciones. Inferirlo del
+nombre mandaría el dato a un sitio distinto en cada guía, y sólo una de las dos sería
+la correcta.
+
+Lo que no se puede es prometer un enlace que no lleva a nada. `verify:guias` exige
+que todo campo declarado tenga un sitio donde se explique y que una tarjeta con
+`campos` no esté filtrada por una condición —una tarjeta con `cuando` no existe hasta
+que se declara su variable, y su `id` tampoco—. Ese segundo caso salió al comprobar el
+HTML exportado, no al escribir la guía: `cama-bambu` no se pinta sin declarar nada, así
+que un enlace a ella no tenía destino.
+
+### La regla que más quebraderos ha causado
+
+**Ninguna variable puede ser decorativa.** Preguntar algo que no cambia el resultado
+hace que quien marca la casilla vea que la lista no se mueve, y concluya que la guía no
+reacciona. `npm run verify:guias` lo comprueba y encontró dos variables muertas en el
+primer borrador.
+
+Y la comprobación **invertida** —que una variable cambie el resultado por sí sola— salió
+mal dos veces, por la misma razón: PLA y PLA-CF dan exactamente lo mismo porque
+comparten fila en la tabla de Bambu, y `tamaño` no hace nada sin material. La versión
+correcta busca **alcanzabilidad**: que las opciones difieran en *alguna* combinación de
+las variables que conviven con ella.
+
+### Lo que había antes, y sigue en pie
+
+**Ruta, buscador y panel atado a las guías: hechos, en `d357ddf`.**
 
 Los tres fallos que sólo salieron al medir están en el historial del commit y
 vuelven a aparecer aquí porque son el tipo de cosa que no se ve en una captura:
@@ -210,7 +284,7 @@ consume un servicio externo es la clasificación de Jev, y está en modo simulad
 |---|---|---|
 | **`CAMPOS_WIKI` es una tabla escrita a mano** | Abierto, verificado | `src/lib/wiki-campos.ts` no puede derivarse del contenido sin meter los artículos en el chunk inicial. `scripts/verify/wiki.mjs` lo comprueba contra el frontmatter real, así que desfasarse rompe la verificación y no la aplicación. Con siete campos atados habrá que vigilar que no aparezcan dos enlaces al mismo artículo en la misma sección del panel. |
 |---|---|---|
-| **Visor por debajo de 150 px a 640×360** | Abierto, conocido | Es la única aserción que falla de `verify:layout`: el visor mide 144 px, y por debajo de 150 px el modelo en pantalla baja de 115 px. Los otros seis controles pasan, y los 29 números dan lo mismo que antes de este trabajo. |
+| **Visor por debajo de 150 px a 640×360** | **Cerrado** | El suelo del visor era `min-height: 40dvh` sin suelo propio, y 40% de 360 px son 144. Ahora es `max(40dvh, 150px)`, con el mismo número que el umbral del script. Medido que sólo cambia en **un** viewport de los 29: los otros 28 dan los mismos píxeles, porque donde `40dvh` ya supera 150 el `max()` devuelve el porcentaje, y a 768+ el suelo está anulado por el tramo de 1200px. `verify:layout` pasa las 7 de 7. |
 | **`modelPixels()` es una réplica manual** | Abierto, documentado | `scripts/verify/probe.mjs` replica la aritmética de `frameCamera()` de `Viewer3D.tsx`, y `scripts/verify/investigacion/frame.mjs` es una tercera copia. Si la función cambia, el barrido compararía números viejos **sin avisar**. Está escrito en ambos README, pero no hay ninguna comprobación automática que detecte la desincronización. |
 | **Comunidad del grafo sin nombre** | Abierto, cosmético | Sin clave de API, `graphify cluster-only .` deja las etiquetas como `Community N`. Los nodos y las aristas sirven; las etiquetas no describen nada. |
 | **Relaciones escritas en prosa** | Abierto, no automatizable | Hay 0 aristas entre `src/` y `scripts/verify/` porque la relación entre `Viewer3D.tsx` y `probe.mjs` es una duplicación documentada, no un import. Ningún extractor de AST puede verla; hay que seguir leyendo el README. |
@@ -259,12 +333,27 @@ sea barato: a 375 px son 36 px de alto y hace que `.canvas-area` crezca 38 px.
 ## Cómo comprobar el estado
 
 ```bash
+npm run lint
 npm run build
-npm run verify:layout     # 29 viewports x 3 estados. 6 de 7 aserciones pasan
+npm run verify:layout     # 29 viewports x 3 estados. 7 de 7 aserciones pasan
+npm run verify:guias      # el motor, las cinco guías y la barra «Tu archivo». 139 de 139
 npm run verify:teclado    # orden de tabulación y foco visible
 npm run verify:rutas      # las cuatro rutas, la jerarquía de encabezados, el foco
-npm run verify:wiki       # la wiki y las tres páginas de información. 77 de 77
+npm run verify:wiki       # las guías en navegador, con y sin archivo. 121 de 121
+npm run verify:seo        # HTML estático, canonical y lectura sin JavaScript. 72 de 72
+npm run verify:taller     # los cinco estados de la calculadora. 180
+npm run verify:historial  # el historial y sus tres vistas. 102
+npm run verify:overlay    # el overlay del visor
 ```
 
-Los cuatro salen con código 1 si algo falla. `verify:layout` falla a propósito en
-640×360: es la deuda abierta de la tabla de arriba.
+Los nueve salen con código 1 si algo falla. Los de navegador levantan su propio
+`vite preview` si no hay uno escuchando, así que no hace falta levantar el servidor
+antes: ejecutarlos contra un `dist` viejo mide el `dist` viejo. Ha pasado dos veces
+esta semana, y en las dos el `tsc` había parado el build sin que se viera en el
+resultado de la prueba.
+
+Y una comprobación que no se ha visto fallar no está comprobada: las de la barra
+«Tu archivo» se rompieron a propósito una vez cada una —borrando el `campos` de una
+variable, escribiendo mal un nombre de campo, cambiando un `id` para que dejara de
+coincidir con su `href`, y pintando la barra sin archivo— para ver cuál salía en rojo.
+La tabla está en [`kanban.md`](kanban.md).
