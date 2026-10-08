@@ -61,6 +61,8 @@ const DESCRIPCION: Record<Dibujo, string> = {
   cama: 'Esquema de una chapa con una pieza encima y un termómetro con dos flechas, una que sube y otra que baja.',
   camara:
     'Esquema de una impresora cerrada con su puerta, una corriente de aire frío que empuja desde fuera y calor que sube dentro de la cámara.',
+  voladizo:
+    'Esquema de una pieza con un saliente sin apoyo debajo que se descuelga hacia abajo.',
 };
 
 /**
@@ -205,6 +207,30 @@ const CUERPO: Record<Dibujo, ReactElement> = {
       {/* El calor, dentro, subiendo. */}
       <path className="dibujo-acento" d="M74 54 L74 42" />
       <path className="dibujo-punta" d="M74 38 L70 46 L78 46 Z" />
+    </>
+  ),
+
+  /*
+   * Una pieza con un saliente que se descuelga.
+   *
+   * El voladizo sale de una pared y no tiene nada debajo: la línea punteada es la
+   * cara donde debería quedar, y la curva roja es donde queda. Es el defecto del
+   * tema —el filamento que no se enfría a tiempo y cae por su peso— y por eso el
+   * saliente va en color de aviso, como la grieta y el colapso.
+   */
+  voladizo: (
+    <>
+      {/* La cama. */}
+      <rect className="dibujo-chapa" x="14" y="62" width="92" height="6" rx="2" />
+
+      {/* La pared, y el saliente que sale de ella. */}
+      <path className="dibujo-pieza" d="M30 62 L30 20 L52 20" fill="none" />
+
+      {/* Dónde debería quedar la cara inferior del saliente. */}
+      <path className="dibujo-continuo" d="M52 27 L96 27" />
+
+      {/* El saliente, que se descuelga hacia abajo. */}
+      <path className="dibujo-voladizo" d="M52 20 L84 20 Q97 23 93 42" fill="none" />
     </>
   ),
 };

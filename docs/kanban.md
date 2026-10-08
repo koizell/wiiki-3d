@@ -141,7 +141,7 @@ prioridad la marca lo que desbloquea la wiki interactiva, no lo que se lee bien 
 | 5 | `temperatura-hotend` | Pendiente — `hotendTemp` reservado |
 | 6 | `capas-desplazadas` | Pendiente |
 | 7 | `flow-rate` | Pendiente |
-| 8 | `voladizos-y-soportes` | Pendiente |
+| 8 | `voladizos-y-soportes` | ✅ Guía escrita y aprobada (`voladizos-y-soportes-revision-2`); 3 fuentes nuevas; campos `hasOverhangs` y `overhangAngle`; dibujo `voladizo` |
 
 Los artículos con `campo` reservado son los que hacen que la barra «Tu archivo» tenga
 enlaces. Sin ellos, el artículo se lee pero no conecta: por eso van primero los que

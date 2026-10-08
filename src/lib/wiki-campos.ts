@@ -71,6 +71,8 @@ export const CAMPOS_WIKI: Record<string, ArticuloDeCampo> = {
   warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama', ancla: 'v-material' },
+  hasOverhangs: { slug: 'voladizos-y-soportes', etiqueta: 'Voladizos y soportes', ancla: 'v-soporte' },
+  overhangAngle: { slug: 'voladizos-y-soportes', etiqueta: 'Voladizos y soportes', ancla: 'v-voladizo' },
 };
 
 /**

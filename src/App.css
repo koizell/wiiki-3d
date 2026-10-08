@@ -4303,6 +4303,15 @@ body {
   stroke-linecap: round;
 }
 
+/* El saliente que se descuelga, del dibujo de voladizos. Va en color de aviso, como
+   la grieta y el colapso: es un defecto, no una pieza sana. */
+.dibujo-voladizo {
+  stroke: var(--danger);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* --- Taller: por qué esta ruta parecía un hueco ----------------------------- *
  *
  * La caja de `.taller` es estrecha y centrada, como la zona de subida, porque es un

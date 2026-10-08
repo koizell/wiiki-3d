@@ -257,4 +257,5 @@ export type Dibujo =
   | 'rugosidad'
   | 'colapso'
   | 'cama'
-  | 'camara';
+  | 'camara'
+  | 'voladizo';

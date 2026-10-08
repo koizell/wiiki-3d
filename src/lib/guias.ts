@@ -16,6 +16,7 @@ import { enclosureYWarping } from '../content/guias/enclosure-y-warping.ts';
 import { material } from '../content/guias/material.ts';
 import { separaciones } from '../content/guias/separaciones.ts';
 import { temperaturaCama } from '../content/guias/temperatura-cama.ts';
+import { voladizosSoportes } from '../content/guias/voladizos-y-soportes.ts';
 import { warping } from '../content/guias/warping.ts';
 import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/guias/tipos.ts';
 
@@ -54,7 +55,7 @@ import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/g
  * El coste es que hay que añadir una línea al escribir una guía. Se acepta: es
  * una línea, y a cambio el orden dice algo.
  */
-export const GUIAS: Guia[] = [warping, enclosureYWarping, separaciones, temperaturaCama, adhesion, material];
+export const GUIAS: Guia[] = [warping, enclosureYWarping, separaciones, temperaturaCama, adhesion, material, voladizosSoportes];
 
 const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
 
