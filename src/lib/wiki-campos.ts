@@ -67,6 +67,7 @@ export interface ArticuloDeCampo {
  * existe no reserva nada: rompe el enlace y hace fallar la verificación.
  */
 export const CAMPOS_WIKI: Record<string, ArticuloDeCampo> = {
+  material: { slug: 'material', etiqueta: 'Material', ancla: 'v-material' },
   warpingRisk: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   riskLevel: { slug: 'warping-pla', etiqueta: 'Warping en PLA', ancla: 'c-riesgo' },
   bedTemp: { slug: 'temperatura-cama', etiqueta: 'Temperatura de cama', ancla: 'v-material' },

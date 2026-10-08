@@ -158,11 +158,12 @@ Las guías escritas cubren el material cocinado disponible:
 | `temperatura-cama` | 12.548 palabras | escrita, con las seis cifras del PLA |
 | `adhesion-primera-capa` | **19.929 palabras** | escrita, y es la que mejor justifica el formato |
 | `enclosure-y-warping` | 3.117 palabras | escrita (5.ª guía), con el dibujo nuevo `camara` y la matriz de cámara por filamento |
+| `material` | 1.628 palabras | escrita (6.ª guía), con el campo `material` del panel y el dibujo `rugosidad` |
 
-**Los cuatro temas cocinados del plan inicial están escritos.** Después llegó un quinto,
-`enclosure-y-warping`, ya cocinado y también escrito: la siguiente guía vuelve a necesitar
-material cocinado nuevo, así que el recolector tiene que traer fuentes antes de que el
-cocinero tenga algo que cocinar.
+**Los cuatro temas cocinados del plan inicial están escritos.** Después llegaron dos más,
+`enclosure-y-warping` y `material`, ya cocinados y también escritos: la siguiente guía vuelve
+a necesitar material cocinado nuevo, así que el recolector tiene que traer fuentes antes de
+que el cocinero tenga algo que cocinar.
 
 ### Por qué `adhesion-primera-capa` es la mejor prueba del formato
 

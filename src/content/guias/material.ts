@@ -1,0 +1,269 @@
+import type { Guia } from './tipos.ts';
+
+export const material: Guia = {
+  slug: 'material',
+  titulo: 'Material',
+  resumen: 'Qué cambia entre un filamento y otro —contracción, humedad, cámara— y cuándo el material es la causa del problema.',
+  sintoma: 'Mi filamento no se comporta como debería',
+  dibujo: 'rugosidad',
+  minutos: 3,
+  campos: ['material'],
+  leeDelAnalisis: ['material'],
+
+  diferencial: {
+    contra: 'Un problema del material (humedad, contracción) se parece a un problema de ajuste (cama, temperatura, warping).',
+    comprobaciones: [
+      {
+        id: 'humedad',
+        mira: '¿La impresión hace chasquidos, tiene burbujas, stringing o superficie rugosa?',
+        si: 'Es un síntoma de humedad: el filamento ha absorbido agua del aire.',
+        no: 'No es humedad. Puede ser contracción, warping o un ajuste de temperatura.',
+      },
+      {
+        id: 'contraccion',
+        mira: '¿La pieza sale más pequeña de lo diseñado, especialmente en X e Y?',
+        si: 'Es contracción: el material se encoge al enfriarse después de la extrusión.',
+        no: 'No es contracción. El tamaño es correcto pero hay otro defecto.',
+      },
+      {
+        id: 'warping',
+        mira: '¿Las esquinas de la pieza se levantan de la cama?',
+        si: 'Es warping: el material se enfría de forma desigual y se deforma.',
+        no: 'No es warping. La pieza está adherida pero tiene otro problema.',
+      },
+    ],
+    siNo: { guia: 'warping-pla', etiqueta: 'Guía de warping' },
+  },
+
+  variables: [
+    {
+      id: 'material',
+      etiqueta: '¿Qué filamento usas?',
+      para: 'Cada familia tiene distinta contracción, distinta absorción de humedad y distintos requisitos de cámara y boquilla.',
+      necesaria: true,
+      campos: ['material'],
+      opciones: [
+        { id: 'pla', etiqueta: 'PLA', detalle: 'Fácil de imprimir, poca contracción, baja absorción de humedad.' },
+        { id: 'petg', etiqueta: 'PETG', detalle: 'Resistente, algo higroscópico, no requiere cámara cerrada.' },
+        { id: 'abs', etiqueta: 'ABS / ASA', detalle: 'Requiere cámara cerrada, contracción considerable.' },
+        { id: 'pc', etiqueta: 'PC', detalle: 'Alta temperatura, requiere cámara cerrada.' },
+        { id: 'pa', etiqueta: 'PA (Nylon)', detalle: 'Muy higroscópico, requiere cámara cerrada.' },
+        { id: 'tpu', etiqueta: 'TPU', detalle: 'Flexible, no compatible con AMS.' },
+      ],
+    },
+    {
+      id: 'sintoma',
+      etiqueta: '¿Qué ves en la impresión?',
+      para: 'El síntoma decide si el problema es del material o de otra cosa.',
+      opciones: [
+        { id: 'humedad', etiqueta: 'Burbujas, chasquidos, stringing, rugosidad' },
+        { id: 'contraccion', etiqueta: 'La pieza sale más pequeña de lo diseñado' },
+        { id: 'warping', etiqueta: 'Las esquinas se levantan' },
+        { id: 'ninguno', etiqueta: 'Ninguno de estos' },
+      ],
+    },
+  ],
+
+  conocimiento: [
+    {
+      id: 'pla',
+      titulo: 'PLA',
+      cuerpo: 'El filamento más fácil de imprimir y el más predecible. Poca contracción y absorbe poca humedad. No es recomendable para entornos de unos 50 °C o superiores: se ablanda y deforma.',
+      cuando: { material: 'pla' },
+      cita: { texto: 'PLA: mejor elección para principiantes, resultados predecibles.', fuente: 'Bambu Lab, beginners' },
+    },
+    {
+      id: 'petg',
+      titulo: 'PETG',
+      cuerpo: 'Tan fácil de imprimir como PLA pero más resistente y duradero. Absorbe humedad del aire: conviene mantenerlo alejado de ambientes húmedos. No es propenso al warping, pero con temperaturas ambientales bajas puede perder resistencia entre capas.',
+      cuando: { material: 'petg' },
+      cita: { texto: 'PETG: importante mantener alejado de humedad, puede absorber humedad y dar menor calidad de impresión.', fuente: 'Bambu Lab, beginners' },
+    },
+    {
+      id: 'abs',
+      titulo: 'ABS / ASA',
+      cuerpo: 'Resistente y duradero, con buena resistencia al calor. Requiere cama caliente y cámara cerrada para evitar el warping. Se contrae considerablemente más que PLA o PETG. Emite humos potencialmente peligrosos: necesita ventilación.',
+      cuando: { material: 'abs' },
+      cita: { texto: 'ABS: propenso a warping sin cama caliente y adhesivo.', fuente: 'Bambu Lab, beginners' },
+    },
+    {
+      id: 'pc',
+      titulo: 'PC',
+      cuerpo: 'Alta resistencia mecánica y térmica. Requiere cámara cerrada y temperaturas de impresión elevadas. Puede volverse quebradizo después de ciclos repetidos de secado.',
+      cuando: { material: 'pc' },
+      cita: { texto: 'PC: puede volverse quebradizo después de ciclos repetidos de secado.', fuente: 'Bambu Lab, drying' },
+    },
+    {
+      id: 'pa',
+      titulo: 'PA (Nylon)',
+      cuerpo: 'Muy higroscópico: absorbe humedad rápidamente del aire. Requiere cámara cerrada. Después de unos tres meses expuesto al aire, es muy difícil de secar.',
+      cuando: { material: 'pa' },
+      cita: { texto: 'PA-based filamentos: después de ~3 meses expuestos al aire, son muy difíciles de secar.', fuente: 'Bambu Lab, drying' },
+    },
+    {
+      id: 'tpu',
+      titulo: 'TPU',
+      cuerpo: 'Flexible y resistente a impactos. No es compatible con AMS. No requiere cámara cerrada.',
+      cuando: { material: 'tpu' },
+      cita: { texto: 'TPU: no compatible con AMS.', fuente: 'Bambu Lab, material-table' },
+    },
+    {
+      id: 'humedad-general',
+      titulo: 'Todos los filamentos absorben humedad',
+      cuerpo: 'Todos los filamentos absorben humedad del aire en cierta medida. El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión, agujeros y superficies rugosas. Cuanto mayor la humedad y la exposición, más severos los defectos.',
+      cita: { texto: 'Todos los filamentos absorben humedad del aire en cierta medida.', fuente: 'Bambu Lab, material-table' },
+    },
+    {
+      id: 'humedad-pla',
+      titulo: 'PLA y humedad',
+      cuerpo: 'La mayoría de filamentos PLA no sufren absorción de humedad significativa, pero no están exentos. Mantenerlo alejado de ambientes húmedos es una prudencia de bajo coste.',
+      cuando: { material: 'pla' },
+      cita: { texto: 'La mayoría de filamentos PLA no sufren absorción de humedad, pero se recomienda mantener alejado de ambientes húmedos.', fuente: 'Bambu Lab, beginners' },
+    },
+    {
+      id: 'contraccion-ranking',
+      titulo: 'Contracción por material',
+      cuerpo: 'Cada filamento se contrae de forma distinta: PLA y PETG son de contracción mínima, ABS es de contracción considerable. Los materiales reforzados con fibra (CF/GF) reducen la contracción al limitar el encogimiento del material base.',
+      cita: { texto: 'Diferentes filamentos se contraen en diferentes cantidades.', fuente: 'Bambu Lab, shrinkage' },
+    },
+    {
+      id: 'contraccion-ejes',
+      titulo: 'La contracción es mayor en X e Y',
+      cuerpo: 'El efecto de la contracción es más notable en los ejes X e Y que en Z. Si una pieza debe encajar con otra, compensa en esos ejes.',
+      cita: { texto: 'El efecto es más notable en los ejes X e Y.', fuente: 'Bambu Lab, shrinkage' },
+    },
+    {
+      id: 'boquilla-cf',
+      titulo: 'Materiales CF/GF: boquilla de acero',
+      cuerpo: 'Los materiales reforzados con fibra de carbono o vidrio requieren boquilla de acero endurecido. No usar boquillas de acero inoxidable o latón: se desgastan rápido. Evitar boquillas de 0.2 mm: riesgo de obstrucción extremadamente alto.',
+      cita: { texto: 'Materiales CF/GF: requieren boquilla de acero endurecido.', fuente: 'Bambu Lab, material-table' },
+    },
+    {
+      id: 'almacenamiento',
+      titulo: 'Almacenamiento y humedad',
+      cuerpo: 'Por debajo de 20 % HR, los filamentos permanecen secos entre 2 y 7 días. A unos 55 % HR, un filamento recién secado absorberá suficiente humedad para afectar la calidad en 2–12 horas. Para almacenamiento diario, mantener siempre sellado y protegido contra humedad.',
+      cifra: { valor: '20 % HR', nota: 'Humedad de almacenamiento para mantener filamento seco 2–7 días' },
+      cita: { texto: 'Debajo de 20% RH, filamentos permanecen secos 2-7 días.', fuente: 'Bambu Lab, drying' },
+    },
+  ],
+
+  reglas: [
+    {
+      id: 'secar-antes',
+      accion: 'Seca el filamento antes de imprimir',
+      cuando: { sintoma: 'humedad' },
+      porque: 'El filamento húmedo causa burbujas, stringing y superficie rugosa. Si la condición de almacenamiento es incierta, secar es la primera acción.',
+      fuente: 'Bambu Lab, drying',
+      alcance: 'Recomendación general para cualquier filamento con síntoma de humedad.',
+    },
+    {
+      id: 'almacenar-sellado',
+      accion: 'Almacena el filamento sellado con desecante',
+      cuando: { material: ['petg', 'pa'] },
+      porque: 'PETG y PA absorben humedad rápidamente. El almacenamiento sellado previene la absorción entre impresiones.',
+      fuente: 'Bambu Lab, drying',
+      alcance: 'Materiales higroscópicos: PETG, PA y sus variantes CF/GF.',
+    },
+    {
+      id: 'camara-cerrada',
+      accion: 'Usa cámara cerrada',
+      cuando: { material: ['abs', 'pc', 'pa'] },
+      porque: 'ABS, ASA, PC y PA requieren cámara cerrada para suprimir el warping y asegurar resistencia entre capas.',
+      fuente: 'Bambu Lab, material-table',
+      alcance: 'Materiales propensos al warping: ABS, ASA, PC, PA y sus variantes CF/GF.',
+    },
+    {
+      id: 'no-ams-tpu',
+      accion: 'No uses AMS con TPU',
+      cuando: { material: 'tpu' },
+      porque: 'TPU es demasiado blando para el mecanismo de alimentación del AMS.',
+      fuente: 'Bambu Lab, material-table',
+      alcance: 'TPU y otros filamentos demasiado blandos.',
+    },
+    {
+      id: 'elegir-pieza-grande',
+      accion: 'Elige PLA o PETG para piezas grandes y planas',
+      cuando: { material: ['pla', 'petg'] },
+      porque: 'PLA y PETG tienen contracción mínima y no requieren cámara cerrada, lo que los hace más fáciles para piezas grandes.',
+      fuente: 'Bambu Lab, shrinkage',
+      alcance: 'Piezas grandes y planas donde la contracción y el warping son el riesgo principal.',
+    },
+    {
+      id: 'elegir-alta-temperatura',
+      accion: 'Elige ABS, PETG, ASA, PC o PA para piezas expuestas al calor',
+      cuando: { material: ['abs', 'petg', 'pc', 'pa'] },
+      porque: 'Estos materiales tienen mejor resistencia al calor que PLA. PLA se degrada a partir de unos 50 °C.',
+      fuente: 'Bambu Lab, material-table',
+      alcance: 'Piezas que van a estar en entornos de alta temperatura o al sol.',
+    },
+    {
+      id: 'compensar-contraccion',
+      accion: 'Compensa la contracción en el diseño o el slicer',
+      cuando: { material: 'abs', sintoma: 'contraccion' },
+      porque: 'ABS se contrae considerablemente. Bambu Studio tiene compensación de contracción por bobina.',
+      fuente: 'Bambu Lab, shrinkage',
+      alcance: 'Piezas que deben encajar con otras o con tolerancias ajustadas.',
+    },
+    {
+      id: 'secar-pa-largo',
+      accion: 'Seca el PA que lleva meses expuesto al aire',
+      cuando: { material: 'pa' },
+      porque: 'Después de unos tres meses expuesto al aire, el PA es muy difícil de secar: un horno de convección a 80–90 °C puede no bastar.',
+      fuente: 'Bambu Lab, drying',
+      alcance: 'Filamentos PA que llevan más de 3 meses expuestos al aire.',
+    },
+    {
+      id: 'evitar-secado-pc',
+      accion: 'No repitas ciclos de secado en PC innecesariamente',
+      cuando: { material: 'pc' },
+      porque: 'El PC puede volverse quebradizo después de ciclos repetidos de secado.',
+      fuente: 'Bambu Lab, drying',
+      alcance: 'Filamentos de PC.',
+    },
+  ],
+
+  fueraDeAlcance: [
+    {
+      sintoma: 'Temperatura de cama específica',
+      porQue: 'La cifra exacta de cama para cada material está en la guía de temperatura de cama.',
+      guia: 'temperatura-cama',
+    },
+    {
+      sintoma: 'Warping detallado',
+      porQue: 'El warping y sus soluciones están en la guía de warping.',
+      guia: 'warping-pla',
+    },
+    {
+      sintoma: 'Cámara cerrada y heat creep',
+      porQue: 'La cámara cerrada y el heat creep están en la guía de enclosure y warping.',
+      guia: 'enclosure-y-warping',
+    },
+    {
+      sintoma: 'Temperatura de boquilla específica',
+      porQue: 'La temperatura de boquilla concreta para cada material aún no tiene guía escrita.',
+    },
+  ],
+
+  fuentes: [
+    {
+      url: 'https://wiki.bambulab.com/en/general/filament-guide-material-table',
+      quien: 'Bambu Lab',
+      que: 'Tabla de materiales: cama, boquilla, cámara y secado por filamento.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/knowledge-sharing/filament-guide-beginners',
+      quien: 'Bambu Lab',
+      que: 'Guía de principiantes: qué es cada familia de filamentos y para qué sirve.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/knowledge-sharing/3d-prints-shrinkage',
+      quien: 'Bambu Lab',
+      que: 'Contracción: causas y qué materiales se contraen.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/filament-acc/filament/dry-filament',
+      quien: 'Bambu Lab',
+      que: 'Secado: qué materiales beben humedad y cómo secarlos.',
+    },
+  ],
+};
