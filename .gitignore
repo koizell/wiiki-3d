@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Borradores de imágenes; sólo las aceptadas pasan a public/wiki/.
+/output/
 *.local
 
 # Editor directories and files
