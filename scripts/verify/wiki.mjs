@@ -569,6 +569,50 @@ try {
       );
       await ctx.close();
     }
+    /*
+     * El carril no se sale de la ventana cuando hay muchas guías.
+     *
+     * Es lo que impide que la wiki deje de aguantar el crecimiento: a partir de
+     * 1200px el carril vive en una columna de altura fija, y si no scrollea,
+     * «Otras guías» crece con cada guía nueva y las últimas quedan por debajo de
+     * la ventana, sin barra y sin forma de llegar. Medido: con 15 guías, 1311px
+     * en una ventana de 900.
+     *
+     * Las guías que aún no existen se simulan duplicando los enlaces en el DOM,
+     * en vez de esperar a tenerlas: la comprobación tiene que existir hoy, no
+     * cuando el problema ya esté en producción.
+     */
+    {
+      const { ctx, page } = await abrir(navegador, 1440, 900, `/wiki/${SLUG}`);
+      const carril = await page.evaluate(() => {
+        const lista = document.querySelector('.riel-lista');
+        const riel = document.querySelector('.riel');
+        const plantilla = lista?.querySelector('li');
+        if (lista && plantilla) {
+          for (let i = 0; i < 18; i++) lista.appendChild(plantilla.cloneNode(true));
+        }
+        const caja = riel.getBoundingClientRect();
+        const estilo = getComputedStyle(riel);
+        return {
+          desborda: riel.scrollHeight > riel.clientHeight + 1,
+          scrollable: estilo.overflowY === 'auto' || estilo.overflowY === 'scroll',
+          dentro: caja.bottom <= innerHeight + 1,
+          alto: Math.round(caja.height),
+          ventana: innerHeight,
+        };
+      });
+      comprobar(
+        'con muchas guías, el carril no se sale de la ventana',
+        carril.dentro,
+        `carril ${carril.alto}px en ventana de ${carril.ventana}`
+      );
+      comprobar(
+        'y cuando desborda, scrollea en vez de recortar',
+        !carril.desborda || carril.scrollable,
+        `desborda=${carril.desborda} · overflow-y ${carril.scrollable ? 'auto' : 'visible'}`
+      );
+      await ctx.close();
+    }
   }
 
   /* ---------------------------------------------------------------- 6 */
