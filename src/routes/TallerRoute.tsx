@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAnalysis } from '../state/useAnalysis';
 import { conComa, lineaCalculo, validarPrecio } from '../lib/coste';
 
@@ -130,6 +131,54 @@ function TallerRoute() {
           )}
         </div>
       )}
+
+      {/*
+        Los tres estados sin cálculo van con una explicación, y es la mitad del
+        arreglo del hueco.
+
+        Antes, en `/taller` sin G-code, la columna central enseñaba un `h1` de 20 px y
+        una línea, dentro de una caja de 850 px de alto. Es el módulo que no estaba
+        bloqueado por nada y el que menos explicaba: se llegaba, se veía que no se
+        podía hacer nada, y no se sabía qué era lo que sí se podía hacer ni por qué
+        faltaba el dato.
+
+        **Va después del aviso, no antes.** La primera versión lo puso delante y el
+        orden quedó invertido: primero se leía un párrafo sobre qué hace el módulo y
+        después, en una línea suelta debajo de la caja, la instrucción que pedía el
+        archivo. Quien llega aquí para calcular algo necesita saber primero que tiene
+        que subir un G-code; el resto es contexto.
+
+        **Por qué sólo en estos tres estados.** Los otros tres ya muestran la
+        aritmética, y ahí el sitio está ocupado —y bien ocupado—. Añadirles texto
+        encima sería quitarle sitio al único número que importa. Además estos tres son
+        los únicos que miden casi nada, así que es donde cabe algo sin que
+        `.canvas-area`, que es `overflow: hidden`, recorte en silencio. La caja se
+        vuelve a medir después del cambio con `npm run verify:taller`, que es la
+        comprobación que vigila esto.
+
+        Y el enlace a la wiki no es decoración: es la interconexión de verdad, porque
+        quien llega a Taller sin G-code cargado ya no puede costear, pero sí puede
+        diagnosticar el problema que le trajo.
+      */}
+      {!file && !esGcode && (
+        <div className="taller-explica">
+          <p className="taller-explica-que">
+            Calcula lo que te cuesta una pieza en filamento, con los gramos que trae
+            tu G-code y el precio del kilo que tengas en casa.
+          </p>
+          <p className="taller-explica-como">
+            Son dos cosas y sólo una se teclea: el slicer escribe los gramos, tú
+            escribes el precio, y el cálculo sale con la aritmética a la vista para que
+            se pueda comprobar sin leer nada más.
+          </p>
+          <p className="taller-explica-fuera">
+            No incluye electricidad, máquina ni mano de obra: sólo el filamento que se
+            gasta la pieza. Y si tu problema no es el coste sino que la impresión sale
+            mal, <Link className="enlace-guia" to="/wiki">empieza por el síntoma</Link>.
+          </p>
+        </div>
+      )}
+
     </div>
   );
 }

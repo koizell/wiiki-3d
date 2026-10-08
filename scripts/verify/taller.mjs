@@ -138,7 +138,19 @@ async function seSale(page) {
   return page.$eval('.canvas-area', (el) => el.scrollHeight - el.clientHeight);
 }
 
+/*
+ * `startPreview()` devuelve `null` cuando ya hay algo escuchando en el puerto, y ese
+ * caso no estaba contemplado: al final se hacía `preview.kill()` sin mirar, y la
+ * segunda ejecución followed de la primera —o cualquiera contra un `vite preview` que
+ * alguien había dejado levantado— moría con `preview.kill is not a function` **después
+ * de imprimir todas las comprobaciones**. Parecía un fallo del taller y era del script.
+ *
+ * El patrón que usan el resto de scripts es el correcto y se aplica aquí también:
+ * `?? 'http://127.0.0.1:4173'` para tener siempre una base, y `?.kill()` para poder
+ * cerrar sólo lo que este proceso ha abierto.
+ */
 const preview = await startPreview();
+const BASE = process.env.BASE_URL ?? preview ?? 'http://127.0.0.1:4173';
 const browser = await chromium.launch({
   args: ['--no-sandbox'],
   executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -178,7 +190,7 @@ try {
       const page = await browser.newPage({
         viewport: { width: tramo.width, height: tramo.height },
       });
-      await page.goto('http://127.0.0.1:4173/taller');
+      await page.goto(`${BASE}/taller`);
       if (!(await esperarOMarcar(page, '.taller',
         `${tramo.nombre} · estado ${estado.numero} (${estado.etiqueta}): /taller no pinta la vista de Taller`))) {
         await page.close();
@@ -238,7 +250,7 @@ try {
         // archivo estando en `/taller` y luego navegaba a `/`. El guardado ocurre
         // en un efecto que necesita medio segundo, y la navegación lo mataba:
         // la entrada no llegaba a existir.
-        await page.goto('http://127.0.0.1:4173/');
+        await page.goto(`${BASE}/`);
         await page.setInputFiles('input[type="file"]', GCODE_FIXTURE);
         const hayBoton = await esperarOMarcar(
           page,
@@ -337,7 +349,7 @@ try {
 
     // --- Estado 5: la aritmética, los tres formatos y los tres precios malos ---
     const page = await browser.newPage({ viewport: { width: tramo.width, height: tramo.height } });
-    await page.goto('http://127.0.0.1:4173/taller');
+    await page.goto(`${BASE}/taller`);
     if (!(await esperarOMarcar(page, '.taller',
       `${tramo.nombre} · estado 5: /taller no pinta la vista de Taller`))) {
       await page.close();
@@ -432,7 +444,7 @@ try {
   }
 } finally {
   await browser.close();
-  if (preview) preview.kill();
+  preview?.kill();
 }
 
 for (const c of checks) console.log(c);
