@@ -1,171 +1,151 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { buscarWiki, articulosWiki } from '../lib/wiki';
+import DibujoSintoma from '../components/DibujoSintoma';
+import { GUIAS } from '../lib/guias';
+import { useAnalysis } from '../state/useAnalysis';
+import type { Guia } from '../content/guias/tipos';
 
 /**
- * El índice de la wiki, con búsqueda instantánea.
+ * El índice de la wiki, y ya no es un índice: es la pregunta de entrada.
  *
- * ## La búsqueda no recarga, pero sí va en la URL
+ * ## Por qué el índice son síntomas y no títulos
  *
- * El texto de búsqueda va en `?q=`. Con eso la búsqueda sigue siendo instantánea —
- * es un filtro sobre un array en memoria, no una petición — pero además se puede
- * compartir por enlace, y el botón "atrás" del navegador deshace una búsqueda
- * como deshace cualquier otra cosa. Sin eso, buscar algo y pulsar atrás dejaría al
- * usuario en un estado que no puede volver a encontrar.
+ * Antes aquí había cuatro tarjetas con el título del artículo y un párrafo de
+ * descripción, en orden alfabético. Eso obliga a quien llega con un problema en la
+ * pieza a leer cuatro párrafos densos para averiguar cuál de los cuatro es el suyo,
+ * y el orden alfabético no dice nada: «Adhesión», «Separaciones», «Temperatura»,
+ * «Warping» son las cuatro primeras letras del español, no un orden de frecuencia.
  *
- * ## Por qué la lista se pinta aquí y no desde `wiki.ts`
+ * La tarjeta es **lo que se ve**, escrito como quien lo describe, y el título del
+ * artículo se queda pequeño debajo. «Las esquinas se levantan de la cama» localiza
+ * en un segundo a quien tiene warping; «Warping en PLA: por qué se levantan las
+ * esquinas y qué cambiar» le pide que sepa lo que es el warping antes de empezar.
  *
- * Porque la capa de contenido no sabe nada de React. `buscarWiki` devuelve
- * artículos; quién los pinta y con qué criterio es de la vista. Si el filtro
- * estuviera en la librería habría que probarlo con un framework en memoria, que es
- * una forma de acoplar lo que no depende de nada.
+ * Y el dibujo no es adorno: es el mismo esquema que aparece dentro de la guía, así
+ * que quien reconoce su pieza en la tarjeta llega a la guía con el diagnóstico ya
+ * hecho. La imagen es parte del argumento.
+ *
+ * ## El buscador
+ *
+ * Sigue funcionando, pero sobre lo que la tarjeta muestra —el síntoma, el resumen,
+ * el material— y no sobre el texto de un artículo que ya no existe. Busca
+ * problemas, no páginas.
  */
 export default function WikiIndexRoute() {
   const [params, setParams] = useSearchParams();
   const consulta = params.get('q') ?? '';
-  const campo = params.get('campo') ?? '';
-
-  // `useMemo` sobre la cadena de consulta, no sobre el resultado: el filtro es de
-  // microsegundos y con diez artículos no lo necesita, pero si mañana hay cien
-  // este es el punto donde el coste se vuelve visible.
   const resultados = useMemo(() => {
-    const porTexto = buscarWiki(consulta);
-    return campo ? porTexto.filter((a) => a.campos.includes(campo)) : porTexto;
-  }, [consulta, campo]);
+    const limpio = consulta.trim().toLowerCase();
+    if (!limpio) return GUIAS;
+    const palabras = limpio.split(/\s+/).filter(Boolean);
+    return GUIAS.filter((g) => {
+      const heno = [g.sintoma, g.titulo, g.resumen, g.diferencial.contra, ...g.campos ?? []]
+        .join(' ')
+        .toLowerCase();
+      return palabras.every((p) => heno.includes(p));
+    });
+  }, [consulta]);
 
-  const total = articulosWiki().length;
-
-  /** Escribe un parámetro sin perder el otro, que es lo que rompe la mitad de las implementaciones. */
-  const cambiar = (clave: string, valor: string) => {
+  const cambiar = (valor: string) => {
     const siguiente = new URLSearchParams(params);
-    if (valor) {
-      siguiente.set(clave, valor);
-    } else {
-      siguiente.delete(clave);
-    }
-    // `replace` y no `push`: teclear en la caja de búsqueda no debería llenar el
-    // historial de una entrada por cada letra.
+    if (valor) siguiente.set('q', valor);
+    else siguiente.delete('q');
     setParams(siguiente, { replace: true });
   };
 
   return (
     <div className="wiki-index">
-      <h1>Wiki 3D</h1>
-
-      {/*
-        El `h1` es el de la vista. El título del módulo ya lo pone la barra
-        superior, y `verify:rutas` comprueba que haya exactamente uno visible.
-      */}
+      <h1>¿Qué le pasa a tu pieza?</h1>
       <p className="wiki-index-intro">
-        Guías de impresión 3D escritas a partir de fuentes reales, y cada artículo
-        explica un dato que el panel de análisis ya está mostrando.
+        Cada guía empieza por confirmar que el problema es el que crees, sigue con lo
+        que hace falta saber y termina con las acciones que se pueden aplicar a tu
+        montaje. Las cifras y cada acción llevan su fuente.
       </p>
 
       <div className="wiki-buscador">
         <label className="wiki-buscador-etiqueta" htmlFor="wiki-buscar">
-          Buscar en la wiki
+          Buscar un problema
         </label>
         <input
           id="wiki-buscar"
           type="search"
           className="wiki-buscador-campo"
           value={consulta}
-          placeholder="warping, cama, relleno…"
+          placeholder="esquinas, capas, cama, primera capa…"
           autoComplete="off"
-          onChange={(e) => cambiar('q', e.target.value)}
+          onChange={(e) => cambiar(e.target.value)}
         />
-        {/*
-          El contador va en una región `polite`, no en un `alert`: cada tecla
-          cambiaría el texto y con `alert` un lector de pantalla lo interrumpe. Con
-          `polite` espera a que quien está leyendo termine la frase.
-
-          Es también la única forma de que alguien que no ve la lista sepa que la
-          búsqueda ha hecho algo, y en una wiki de diez páginas eso pasa en el
-          artículo.
-        */}
         <p className="wiki-resultados" role="status" aria-live="polite">
-          {resultados.length === total
-            ? `${total} ${total === 1 ? 'artículo' : 'artículos'}`
-            : `${resultados.length} de ${total} artículos`}
+          {resultados.length === GUIAS.length
+            ? `${GUIAS.length} ${GUIAS.length === 1 ? 'problema cubierto' : 'problemas cubiertos'}`
+            : `${resultados.length} de ${GUIAS.length}`}
         </p>
       </div>
 
-      {/*
-        El filtro por campo del parser es lo que hace esta wiki distinta de una
-        genérica, y por eso está en la primera pantalla y no escondido en un
-        desplegable: es el argumento de por qué existe.
-
-        Sólo salen los campos que algún artículo declara, así que la lista no
-        promete páginas que no hay detrás.
-      */}
-      {camposDisponibles().length > 0 && (
-        <div className="wiki-campos">
-          <span className="wiki-campos-titulo">Explica un campo del análisis</span>
-          <ul>
-            {campo ? (
-              <li>
-                <button type="button" onClick={() => cambiar('campo', '')}>
-                  Quitar el filtro
-                </button>
-              </li>
-            ) : (
-              camposDisponibles().map((c) => (
-                <li key={c}>
-                  <button type="button" onClick={() => cambiar('campo', c)}>
-                    <code>{c}</code>
-                  </button>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-      )}
-
       {resultados.length === 0 ? (
         <p className="wiki-vacio">
-          Ningún artículo coincide con <strong>{consulta}</strong>. Prueba con una
-          palabra suelta: «warping», «cama», «relleno».
+          Ninguna guía coincide con <strong>{consulta}</strong>. Prueba con una palabra
+          suelta: «esquinas», «capas», «cama».
         </p>
       ) : (
-        <ul className="wiki-lista-articulos">
-          {resultados.map((a) => (
-            <li key={a.slug}>
-              <article className="wiki-tarjeta">
-                <h2>
-                  <Link to={`/wiki/${a.slug}`}>{a.title}</Link>
-                </h2>
-                {a.description && <p>{a.description}</p>}
-                <p className="wiki-tarjeta-pie">
-                  {a.campos.length > 0 && (
-                    <span className="wiki-tarjeta-campos">
-                      explica <code>{a.campos.join(', ')}</code>
-                    </span>
-                  )}
-                  <span className="wiki-tarjeta-fuentes">
-                    {a.sources.length} {a.sources.length === 1 ? 'fuente' : 'fuentes'}
-                  </span>
-                </p>
-              </article>
+        <ul className="wiki-sintomas">
+          {resultados.map((g, i) => (
+            <li key={g.slug} style={{ '--i': i } as React.CSSProperties}>
+              <TarjetaSintoma guia={g} />
             </li>
           ))}
         </ul>
+      )}
+
+      {resultados.length > 1 && (
+        <section className="wiki-encuentre">
+          <h2>¿No sabes cuál es?</h2>
+          <p>
+            El warping y la separación entre capas se parecen en la foto y no se
+            arreglan con lo mismo. Cada guía empieza por hacerte tres preguntas que
+            los distinguen, y si la respuesta es que no, te lleva a la otra.
+          </p>
+        </section>
       )}
     </div>
   );
 }
 
 /**
- * Los campos del parser que algún artículo declara, sin repetir y en orden.
+ * Una tarjeta de síntoma.
  *
- * Se calcula en cada render en lugar de memorizarse a nivel de módulo porque son
- * unos pocos artículos y una lista de cinco cadenas: el coste es despreciable y
- * una caché global se desincroniza en cuanto se escribe un artículo sin
- * reiniciar nada.
+ * El `Link` envuelve **todo**, y eso es lo que la hace una tarjeta y no tres
+ * textos juntos: el área pulsable es la entera, con el mismo motivo por el que la
+ * zona de subida es un `label` grande y no un botón con un icono al lado. Con
+ * `hover` y `focus-visible` sobre el mismo enlace, el foco visible del teclado y el
+ * ratón pasan por la misma forma.
  */
-function camposDisponibles(): string[] {
-  const vistos = new Set<string>();
-  for (const a of articulosWiki()) {
-    for (const c of a.campos) vistos.add(c);
-  }
-  return [...vistos].sort();
+function TarjetaSintoma({ guia }: { guia: Guia }) {
+  const { metadata } = useAnalysis();
+  /*
+   * El badge de material es la interconexión con el analizador: si hay un G-code
+   * cargado, la tarjeta dice «PLA» sin que nadie lo escriba, porque es el material
+   * que el panel acaba de leer del archivo.
+   */
+  const material = metadata?.material;
+
+  return (
+    <Link className="sintoma" to={`/wiki/${guia.slug}`}>
+      <div className="sintoma-dibujo">
+        <DibujoSintoma dibujo={guia.dibujo} grande />
+      </div>
+      <div className="sintoma-texto">
+        <h2 className="sintoma-titulo">{guia.sintoma}</h2>
+        <p className="sintoma-guia">{guia.titulo}</p>
+        <p className="sintoma-resumen">{guia.resumen}</p>
+        <p className="sintoma-pie">
+          <span className="insignia">{guia.minutos} min</span>
+          {material && <span className="insignia insignia--acento">{material}</span>}
+          <span className="sintoma-flecha" aria-hidden="true">
+            →
+          </span>
+        </p>
+      </div>
+    </Link>
+  );
 }

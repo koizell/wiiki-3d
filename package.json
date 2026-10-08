@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/export-static.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "verify:layout": "node scripts/verify/barrido.mjs",
@@ -14,8 +14,10 @@
     "verify:shots": "node scripts/verify/shots.mjs",
     "verify:rutas": "node scripts/verify/rutas.mjs",
     "verify:wiki": "node scripts/verify/wiki.mjs",
+    "verify:seo": "node scripts/verify/seo.mjs",
     "verify:taller": "node scripts/verify/taller.mjs",
-    "verify:historial": "node scripts/verify/historial.mjs"
+    "verify:historial": "node scripts/verify/historial.mjs",
+    "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",

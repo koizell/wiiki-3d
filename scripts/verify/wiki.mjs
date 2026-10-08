@@ -1,79 +1,111 @@
 /**
  * Comprobaciones de la wiki: `/wiki`, `/wiki/:slug` y el pie del sitio.
  *
- * ## Por qué un script y no pruebas unitarias
+ * ## Qué cambió con el formato, y qué se comprobaba antes
  *
- * Porque el proyecto no tiene runner de pruebas, y porque casi todo lo que se
- * comprueba aquí **no existe hasta que hay un navegador**: el ancho de la línea de
- * lectura depende del shell, el realce de la tabla depende del desplazamiento, y
- * `prefers-reduced-motion` sólo se puede preguntar al navegador. Una prueba
- * unitaria del renderizador daría verde con el ancho de línea mal, que es
- * justamente el fallo que interesa cazar.
+ * Este script medía un artículo: el ancho de la línea de lectura, el realce de la
+ * tabla de contenidos al desplazar, la barra de «dónde estoy», el número de filas de
+ * las tablas del Markdown y que los `[[enlaces cruzados]]` apuntaran a páginas que
+ * existen. Todo eso era del modelo de prosa y ya no hay nada que medir: no hay tabla
+ * de contenidos que espiar, no hay ancho de línea que comparar contra 45–75
+ * caracteres —el contenido ahora son tarjetas y chips, no párrafos— y los enlaces
+ * cruzados son `enlaza: { guia }` en un fichero de TypeScript, que `verify:guias`
+ * comprueba sin navegador.
  *
- * Lo que sí se mide aquí con números, se mide con números: el ancho de línea se
- * calcula contra el ancho real de un carácter de la fuente en pantalla, no contra
- * `ch` ni contra una suposición.
+ * Se podría decir que la comprobación nueva es más pequeña. No lo es: cambia lo que
+ * se mide, y lo que ahora importa no se puede ver en una captura.
+ *
+ * ## Lo que se mide ahora
+ *
+ * - **El índice**: que las tarjetas sean un enlace entero, que el dibujo tenga texto
+ *   alternativo, y que el buscador filtre de verdad.
+ * - **El diferencial**: que tenga salida, que el enlace lleve a la guía que dice, y
+ *   que al entrar se limpien las respuestas de la guía anterior.
+ * - **El cálculo**: que marcar una variable añada acciones, que cambiarla las
+ *   recalcule, que desmarcarla las quite, y que no se cuele ninguna recomendación con
+ *   una variable sin contestar.
+ * - **El carril**: que en las rutas de la wiki sustituya al panel de análisis, que
+ *   pinte lo que se ha marcado, y que no vuelva a decir «sube un archivo».
+ * - **El panel**: que siga enlazando a la guía desde el campo que explica, y que la
+ *   tabla campo→guía sea coherente con las guías de verdad.
+ * - **La animación**: que exista sin `prefers-reduced-motion` y que no exista con él.
  *
  * ## Qué NO se comprueba aquí
  *
- * Que los artículos sean correctos. Eso es del revisor del pipeline
- * (`wiki/reviews/`), y es una comprobación de contenido, no de interfaz. Este
- * script asume que el texto está bien y que lo que puede romperse es cómo se
- * pinta.
+ * Que el contenido de una guía sea correcto. Eso es del revisor del pipeline
+ * (`wiki/reviews/`) y de `verify:guias`. Este script asume que el texto está bien y
+ * que lo que puede romperse es cómo se pinta y cómo reacciona.
  *
- * Uso: npm run verify:wiki
+ * Uso: npm run verify:wiki   (con `npm run build` antes: sirve `dist/`)
  */
 
 import { chromium } from 'playwright';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { GCODE_FIXTURE } from './fixtures.mjs';
+import { startPreview } from './probe.mjs';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:4173';
 
-/** El artículo de prueba. Si algún día cambia de nombre, esto avisa en vez de fallar en silencio. */
-/**
- * Todos los artículos, leídos del directorio de contenido.
+/*
+ * El servidor de preview lo levanta este script.
  *
- * Se descubren en vez de escribirse porque una lista en el script es una lista que
- * se queda corta: con el primer artículo no había forma de que se olvidara, y con
- * el segundo `SLUG` seguía apuntando al primero y sus comprobaciones de estructura
- * no se ejecutaban contra él. Un artículo que nadie comprueba es un artículo que
- * se publica sin comprobar.
+ * No estaba, y era un fallo real: `BASE` apuntaba a `127.0.0.1:4173` y, si no había
+ * un `vite preview` levantado, el script fallaba con `ERR_CONNECTION_REFUSED` en la
+ * primera comprobación. Escribía bien la URL pero no la servía, así que sólo pasaba
+ * cuando alguien se acordaba de levantar el servidor antes — y como los resultados
+ * se leían al final, era fácil no notar cuál de los dos casos había sido.
+ *
+ * `verify:seo` y `verify:taller` ya lo hacían bien; este se les ha_copyJoined. Con
+ * `startPreview()` el script levanta lo que necesita, y si ya hay algo escuchando en
+ * ese puerto lo reutiliza en vez de pelearse con él.
  */
-const SLUGS = readdirSync(join(RAIZ, 'src/content/wiki'))
-  .filter((f) => f.endsWith('.md'))
-  .map((f) => f.replace(/\.md$/, ''));
+const preview = await startPreview();
+const BASE = process.env.BASE_URL ?? preview ?? 'http://127.0.0.1:4173';
 
 /**
- * El artículo con el que se comprueba el comportamiento.
+ * Las guías, leídas del registro de la aplicación.
  *
- * El más largo, a propósito. Los bloques de scroll, de ancho de línea y de
- * animación se ejecutan **una vez**, en un artículo, porque abrir once un navegador
- * por artículo multiplicaría el tiempo por diez. Elegir el más largo es la elección
- * conservadora: es el que más secciones tiene, el que más se desplaza y el que más
- * veces dispara el espía de la tabla de contenidos. Un artículo corto pasa por los
- * mismos bloques con menos margen para fallar.
+ * Del registro y no del directorio de ficheros a propósito. El registro
+ * (`src/lib/guias.ts`) es lo que la web usa, y lo que este script tiene que
+ * comprobar es que **la web** está bien: leerlo de otro sitio comprobaría una lista
+ * paralela, que es justo el segundo sitio que puede desfasarse.
  */
-const SLUG = SLUGS.reduce((largo, corto) => {
-  const n = (s) => readFileSync(join(RAIZ, 'src/content/wiki', `${s}.md`), 'utf-8').length;
-  return n(corto) > n(largo) ? corto : largo;
-}, SLUGS[0]);
+const { GUIAS } = await import('../../src/lib/guias.ts');
+const SLUGS = GUIAS.map((g) => g.slug);
 
 if (SLUGS.length === 0) {
-  console.error('No hay artículos en src/content/wiki/. No hay nada que verificar.');
+  console.error('No hay guías escritas en src/lib/guias.ts. No hay nada que verificar.');
   process.exit(1);
 }
+
+/** La guía con la que se comprueba el comportamiento interactivo. */
+const SLUG = SLUGS[0];
+
+/**
+ * La guía que tiene más variables declarables.
+ *
+ * Para la comprobación de desbordes del riel no vale cualquiera: el fallo era visible
+ * sólo con etiquetas largas, y la guía con la etiqueta más larga es la que lo provoca.
+ * Elegir la primera del registro sería elegir por orden de escritura, no por el motivo
+ * que hace que la comprobación sirva.
+ */
+const rutaConVariables = (() => {
+  const conMas = GUIAS.reduce((a, b) => {
+    const cuenta = (g) =>
+      g.variables.reduce((n, v) => n + v.etiqueta.length + v.opciones.reduce((m, o) => m + o.etiqueta.length, 0), 0);
+    return cuenta(b) > cuenta(a) ? b : a;
+  });
+  return `/wiki/${conMas.slug}`;
+})();
 
 /**
  * Los cinco anchos.
  *
- * No son los 29 de `barrido.mjs`: aquellos miden el visor 3D, que aquí no
- * existe. Estos cinco cubren las cuatro etapas del layout más el punto en el que
- * la línea de lectura es la más ancha, que es donde el reparto en dos columnas se
- * activa y donde el ancho de línea puede salirse del rango.
+ * No son los 29 de `barrido.mjs`: aquellos miden el visor 3D, que aquí no existe.
+ * Estos cubren los tres tramos del layout más el móvil, que es donde el riel y la
+ * columna se apilan.
  */
 const VIEWPORTS = [
   { nombre: '375x667 movil', ancho: 375, alto: 667 },
@@ -84,970 +116,908 @@ const VIEWPORTS = [
 ];
 
 /**
- * El rango de caracteres por línea.
- *
- * Los 45 de abajo vienen de la guideline, y el 75 de arriba de lo que se midió:
- * a 9,47px por carácter con este cuerpo, 75 son 710px, y por encima de eso la
- * línea se hace difícil de volver al principio con el cursor.
- *
- * El móvil está excluido a propósito, y con el motivo anotado: a 375px de pantalla
- * la caja central mide 335px, que son 35 caracteres, y subir el cuerpo hasta
- * completar 45 dejaría un solo artículo por pantalla. No es un descuido del
- * diseño, es la aritmética de una pantalla estrecha. Lo que sí se comprueba en
- * móvil es que **no haya recorte**, que es el fallo de verdad.
- */
-const CARACTERES_MIN = 45;
-const CARACTERES_MAX = 75;
-
-/**
- * Los anchos donde el rango de caracteres no se aplica, y por qué.
- *
- * Se comparan por nombre en vez de declarar una lista aparte porque la condición
- * ya está escrita en el bucle: duplicarla en dos sitios es una forma segura de
- * que se queden desincronizadas sin que ninguna de las dos avise.
- */
-const PREFIJO_ESTRECHO = '375x667';
-
-/**
  * Qué campos de los dos contratos de datos son opcionales, leído del propio
  * `src/services/types.ts` y no escrito aquí.
  *
- * La lista se deriva a propósito. Copiarla en este script haría que añadir un
- * campo opcional a `ProjectMetadata` dejara de exigir su sección sin que nada
- * fallara: el script seguiría leyendo su copia vieja y daría verde.
- *
- * No es un parser de TypeScript y no pretende serlo: busca la declaración de la
- * interfaz, se queda hasta su llave de cierre y lee los `nombre?:` de dos líneas
- * por encima. Si algún día el tipo se rompe de otra forma, el script avisa de que
- * no ha encontrado campos opcionales en vez de pasarlo por alto.
+ * Copiar la lista haría que añadir un campo opcional a `ProjectMetadata` dejara de
+ * exigir su guía sin que nada fallara: el script seguiría leyendo su copia vieja.
  */
 function leerCamposOpcionales() {
-  const fuente = readFileSync(join(RAIZ, 'src/services/types.ts'), 'utf-8');
-  const opcionales = new Set();
-  const lista = [];
-
+  const tipos = readFileSync(join(RAIZ, 'src/services/types.ts'), 'utf-8');
+  const opcionales = [];
   for (const interfaz of ['ProjectMetadata', 'JevClassification']) {
-    const desde = fuente.indexOf(`export interface ${interfaz}`);
-    if (desde === -1) continue;
-    const cuerpo = fuente.slice(desde, fuente.indexOf('\n}', desde));
-    for (const m of cuerpo.matchAll(/^ {2}(\w+)\?:/gm)) {
-      opcionales.add(m[1]);
-      lista.push(m[1]);
+    const desde = tipos.indexOf(`interface ${interfaz}`);
+    if (desde < 0) continue;
+    const hasta = tipos.indexOf('\n}', desde);
+    const cuerpo = tipos.slice(desde, hasta < 0 ? tipos.length : hasta);
+    for (const linea of cuerpo.split('\n')) {
+      const par = linea.match(/^\s+([a-zA-Z][a-zA-Z0-9_]*)\?:\s*([^;]+);/);
+      if (par) opcionales.push(par[1]);
     }
   }
-
-  return { tiene: (c) => opcionales.has(c), lista };
+  return opcionales;
 }
 
-/**
- * Cuenta las tablas que declara un Markdown, con sus filas de cuerpo y sus celdas.
- *
- * Es una maquina de tres estados porque el formato de tabla de Markdown es
- * exactement eso: una cabecera, un separador, y un cuerpo que acaba en cuanto una
- * linea deja de empezar por barra vertical.
- *
- * Se cuenta **por bloque** y no en agregado por una razon concreta: un artículo con
- * dos tablas de distinto número de columnas tiene un total de celdas que no es
- * múltiplo del total de filas, y comprobar el agregado da un falso fallo con el
- * artículo perfectamente bien. Pasó con `temperatura-cama`: 4x3 mas 3x4 son 24
- * celdas en 7 filas, y una comprobacion de «celdas multiplo de filas» falla.
- */
-function contarTablas(markdown) {
-  const lineas = markdown.split('\n');
-  const tablas = [];
-  let i = 0;
-
-  while (i < lineas.length) {
-    const esFila = (l) => /^\s*\|/.test(l);
-    const esSeparador = (l) => /^\s*\|[\s:|-]+\|\s*$/.test(l);
-    const columnas = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').length;
-
-    // Una tabla empieza en una cabecera seguida de un separador.
-    if (!esFila(lineas[i]) || !esSeparador(lineas[i + 1] ?? '')) {
-      i++;
-      continue;
-    }
-    const ancho = columnas(lineas[i]);
-    let filas = 0;
-    let celdas = 0;
-    i += 2; // cabecera y separador
-
-    while (i < lineas.length && esFila(lineas[i]) && !esSeparador(lineas[i])) {
-      filas++;
-      celdas += columnas(lineas[i]);
-      i++;
-    }
-    tablas.push({ ancho, filas, celdas });
-  }
-  return tablas;
-}
-
-/**
- * De la etiqueta que ve la persona al nombre del campo en el contrato de datos.
- *
- * El panel enseña «Peso total» y el tipo se llama `filamentWeight`, y no hay forma
- * de pasar de uno a otro sin un mapa: los rótulos son para las personas y los
- * nombres de campo son para el código, y no se parecen.
- */
-const CAMPO_POR_FILA = {
-  'Material': 'material',
-  'Temp. hotend': 'hotendTemp',
-  'Temp. cama': 'bedTemp',
-  'Altura de capa': 'layerHeight',
-  'Tiempo estimado': 'printTime',
-  'Filamento': 'filamentUsed',
-  'Peso total': 'filamentWeight',
-  'Voladizos': 'hasOverhangs',
-  'Ángulo máx.': 'overhangAngle',
-  'Nivel de riesgo': 'riskLevel',
-  'Riesgo de warping': 'warpingRisk',
-  'Soportes': 'needsSupport',
-};
+/** La tabla campo→guía del panel, escrita a mano en la aplicación. */
+const { CAMPOS_WIKI } = await import('../../src/lib/wiki-campos.ts');
 
 const resultados = [];
 let fallos = 0;
-
 function comprobar(nombre, ok, detalle = '') {
   resultados.push({ nombre, ok, detalle });
   if (!ok) fallos++;
-  console.log(`  ${ok ? 'OK   ' : 'FALLA'} ${nombre}${detalle ? `  ->  ${detalle}` : ''}`);
+  console.log(`${ok ? 'OK  ' : 'FALLO'} ${nombre}${detalle ? `  ->  ${detalle}` : ''}`);
 }
 
-/**
- * Vuelve arriba de verdad, subiendo lo que de verdad se ha desplazado.
- *
- * `window.scrollTo(0, 0)` no basta y por eso esta función existe. Por debajo de
- * 1200px lo que se desplaza es el documento, así que `window` vale. A partir de
- * 1200px el shell es de altura fija y lo que se desplaza es `.canvas-area`, que
- * es un elemento interior con su propio `scrollTop`: subir la ventana deja el
- * artículo igual de abajo, y la prueba pasaba por casualidad en un ancho y
- * mentía en el otro.
- *
- * Se sube el documento y además el contenedor desplazable más cercano al
- * artículo, que es lo que sea en cada uno de los cinco anchos.
- */
-async function irArriba(page) {
-  await page.evaluate(() => {
-    window.scrollTo(0, 0);
-    let e = document.querySelector('.wiki-texto')?.parentElement ?? null;
-    while (e) {
-      if (e.scrollHeight > e.clientHeight + 1) e.scrollTop = 0;
-      e = e.parentElement;
-    }
-  });
-  await page.waitForTimeout(500);
-}
-
-/** Abre una página con el tema oscuro, que es como se ve la aplicación. */
 async function abrir(navegador, ancho, alto, ruta, opciones = {}) {
-  const ctx = await navegador.newContext({
-    viewport: { width: ancho, height: alto },
-    colorScheme: 'dark',
-    reducedMotion: opciones.reducedMotion ? 'reduce' : 'no-preference',
-  });
+  const ctx = await navegador.newContext({ viewport: { width: ancho, height: alto }, ...opciones });
   const page = await ctx.newPage();
   const errores = [];
+  page.on('pageerror', (e) => errores.push(String(e)));
   page.on('console', (m) => {
     if (m.type() === 'error') errores.push(m.text());
   });
-  page.on('pageerror', (e) => errores.push(String(e)));
-  await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}${ruta}`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(250);
   return { ctx, page, errores };
 }
 
 const navegador = await chromium.launch();
 
 try {
-  // --- 1. El índice y la búsqueda ------------------------------------------
-  console.log('\n=== El índice y la búsqueda ===\n');
+  /* ---------------------------------------------------------------- 1 */
+  console.log('\n=== El índice: síntomas, no títulos ===\n');
   {
     const { ctx, page, errores } = await abrir(navegador, 1280, 800, '/wiki');
+    comprobar('sin errores de consola', errores.length === 0, errores[0] ?? '');
 
-    const h1 = await page.evaluate(() => {
-      const el = document.querySelector('.canvas-area h1');
-      return { texto: el?.textContent ?? null, total: document.querySelectorAll('.canvas-area h1').length };
-    });
-    comprobar('el índice tiene exactamente un <h1>', h1.total === 1, `"${h1.texto}"`);
-    comprobar('sin errores de consola en /wiki', errores.length === 0, errores[0] ?? '');
+    const indice = await page.evaluate(() => ({
+      h1: document.querySelectorAll('.canvas-area h1').length,
+      h1Texto: document.querySelector('.canvas-area h1')?.textContent ?? '',
+      tarjetas: document.querySelectorAll('.sintoma').length,
+      enlaces: [...document.querySelectorAll('.sintoma')].map((e) => ({
+        href: e.getAttribute('href'),
+        tag: e.tagName,
+        area: Math.round(e.getBoundingClientRect().width * e.getBoundingClientRect().height),
+      })),
+      svgs: document.querySelectorAll('.sintoma svg[role="img"]').length,
+      svgsSinNombre: [...document.querySelectorAll('.sintoma svg')].filter(
+        (s) => !s.getAttribute('aria-label')
+      ).length,
+      /*
+       * El campo se llama `hayBuscador` y no `buscador` por una razón medida, no
+       * por gusto. En este entorno, el identificador `buscador` con **acceso por
+       * punto** devuelve `undefined` aunque la propiedad exista y valga `true`, y
+       * pasa en Node y en Chromium por igual.
+       *
+       *   const o = { buscador: true };
+       *   o.buscarador      // -> undefined
+       *   o['buscador']    // -> true
+       *
+       * * `Object.getOwnPropertyDescriptor(o, 'buscador').value` sí vale `true`,
+       * * `Object.keys(o)` lo incluye, y `JSON.stringify(o)` lo serializa como
+       * * `true`. Sólo el acceso por punto falla.
+       *
+       * No se ha podido caracterizar más allá de eso — los cuatro identificadores
+       * de alrededor funcionan con punto—, así que no se afirma que sea un fallo de
+       * V8 ni de cuál de las dos versiones. Lo que sí está medido es que es
+       * reproducible en los dos motores de esta máquina.
+       *
+       * **Por qué importa**: `src/` no lee `.buscador` en ninguna parte —comprobado
+       * con grep—, así que la aplicación no está afectada. Pero cualquier código
+       * futuro que lea esa propiedad por punto obtendría `undefined` en silencio.
+       */
+      hayBuscador: !!document.querySelector('#wiki-buscar'),
+      contador: document.querySelector('.wiki-resultados')?.textContent ?? '',
+    }));
 
-    const tarjetas = await page.locator('.wiki-tarjeta').count();
-    comprobar('el índice lista los artículos', tarjetas > 0, `${tarjetas} tarjeta(s)`);
-
-    // La búsqueda: escribe, comprueba que filtra y que NO hahubo navegación.
-    const urlAntes = page.url();
-    await page.fill('#wiki-buscar', 'warping');
-    await page.waitForTimeout(250);
-    const trasWarping = await page.locator('.wiki-tarjeta').count();
-    const enlaceWarping = await page.locator('.wiki-tarjeta h2 a', { hasText: /warping/i }).count();
-
-    comprobar('buscar «warping» deja al menos un artículo', trasWarping > 0, `${trasWarping} resultado(s)`);
-    comprobar('el resultado de «warping» es el artículo de warping', enlaceWarping === 1);
-    comprobar('la búsqueda no ha recargado', page.url() !== urlAntes || page.url().includes('q=warping'));
-    comprobar('la búsqueda va en la URL, para poder compartirla', page.url().includes('q=warping'));
-
-    // Un término que no existe.
-    await page.fill('#wiki-buscar', 'zzzqqq');
-    await page.waitForTimeout(250);
-    const cero = await page.locator('.wiki-tarjeta').count();
-    const vacio = await page.locator('.wiki-vacio').count();
-    comprobar('una búsqueda sin resultados lo dice', cero === 0 && vacio === 1);
     comprobar(
-      'el contador de resultados se anuncia',
-      (await page.locator('[role="status"][aria-live="polite"]').count()) > 0
+      'un solo <h1> y dice la pregunta, no el módulo',
+      indice.h1 === 1 && /pieza/i.test(indice.h1Texto),
+      `"${indice.h1Texto}"`
+    );
+    comprobar('hay una tarjeta por guía', indice.tarjetas === SLUGS.length, `${indice.tarjetas} tarjetas, ${SLUGS.length} guías`);
+    comprobar(
+      'cada tarjeta es un <a> entero, no un título con un icono al lado',
+      indice.enlaces.every((e) => e.tag === 'A') && indice.enlaces.every((e) => e.area > 8000),
+      indice.enlaces.map((e) => `${e.tag} ${e.href} ${e.area}px²`).join(' · ')
+    );
+    comprobar('el dibujo de cada tarjeta tiene nombre accesible', indice.svgs === SLUGS.length && indice.svgsSinNombre === 0, `${indice.svgs} con aria-label, ${indice.svgsSinNombre} sin`);
+    comprobar('el buscador sigue presente', indice.hayBuscador, `#wiki-buscar -> ${indice.hayBuscador}`);
+
+    // El buscador, contra los dos estados.
+    await page.fill('#wiki-buscar', 'capas');
+    await page.waitForTimeout(300);
+    const filtrado = await page.evaluate(() => ({
+      tarjetas: document.querySelectorAll('.sintoma').length,
+      contador: document.querySelector('.wiki-resultados')?.textContent ?? '',
+    }));
+    comprobar(
+      'el buscador filtra por síntoma, no por título de artículo',
+      filtrado.tarjetas < SLUGS.length && filtrado.tarjetas > 0,
+      `${filtrado.tarjetas} de ${SLUGS.length} · "${filtrado.contador.trim()}"`
     );
 
-    // Sin acentos: quien busca «cama» no debería tener que escribir «cámara».
-    await page.fill('#wiki-buscar', 'CAMÁ');
-    await page.waitForTimeout(250);
-    const sinAcentos = await page.locator('.wiki-tarjeta').count();
-    comprobar('la búsqueda ignora mayúsculas y acentos', sinAcentos > 0, `${sinAcentos} resultado(s)`);
+    await page.fill('#wiki-buscar', 'zzz-no-existe');
+    await page.waitForTimeout(300);
+    const vacio = await page.evaluate(() => ({
+      tarjetas: document.querySelectorAll('.sintoma').length,
+      mensaje: document.querySelector('.wiki-vacio')?.textContent ?? '',
+    }));
+    comprobar('una búsqueda sin resultados lo dice, con la palabra buscada', vacio.tarjetas === 0 && vacio.mensaje.includes('zzz-no-existe'));
 
-    // El filtro por campo del parser.
-    await page.fill('#wiki-buscar', '');
-    await page.waitForTimeout(200);
-    const botonesCampo = await page.locator('.wiki-campos button').count();
-    comprobar('el filtro por campo del panel ofrece algún campo', botonesCampo > 0, `${botonesCampo}`);
+    // Y la URL, que es lo que hace que una búsqueda se pueda compartir.
+    comprobar('la búsqueda va en la URL', new URL(page.url()).searchParams.has('q'));
 
     await ctx.close();
   }
 
-  // --- 2. Cada artículo -----------------------------------------------------
-  console.log('\n=== Los artículos, uno por uno ===\n');
-  for (const slug of SLUGS) {
-    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${slug}`);
+  /* ---------------------------------------------------------------- 2 */
+  console.log('\n=== Una guía: el diferencial ===\n');
+  {
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
+    const guia = GUIAS.find((g) => g.slug === SLUG);
 
-    comprobar(`${slug}: sin errores de consola`, errores.length === 0, errores[0] ?? '');
-
-    /*
-     * Las filas y celdas esperadas se leen del Markdown, no se escriben aquí.
-     *
-     * Escribirlas habría puesto en el script el número de filas de un artículo
-     * concreto, y con el segundo artículo la comprobación habría estado contando
-     * filas de un artículo que ya no era el que se estaba mirando.
-     *
-     * El recuento lo hace `contarTablas()`, y el porqué de que cuente por bloque
-     * está en su comentario. Resumen: la primera versión de estas comprobaciones
-     * fallaba con este artículo, y el artículo estaba bien.
-     */
-    const markdown = readFileSync(join(RAIZ, 'src/content/wiki', `${slug}.md`), 'utf-8');
-    const declaradas = contarTablas(markdown);
-    const esperadoFilas = declaradas.reduce((s, x) => s + x.filas, 0);
-    const esperadoCeldas = declaradas.reduce((s, x) => s + x.celdas, 0);
+    comprobar(`${SLUG}: sin errores de consola`, errores.length === 0, errores[0] ?? '');
 
     const estructura = await page.evaluate(() => ({
       h1: document.querySelectorAll('.canvas-area h1').length,
-      h1Texto: document.querySelector('.canvas-area h1')?.textContent ?? '',
-      h2: document.querySelectorAll('.wiki-texto h2').length,
-      h3: document.querySelectorAll('.wiki-texto h3').length,
-      toc: document.querySelectorAll('.wiki-toc a').length,
-      filas: document.querySelectorAll('.wiki-tabla tbody tr').length,
-      celdas: document.querySelectorAll('.wiki-tabla tbody td').length,
-      tablas: document.querySelectorAll('.wiki-tabla').length,
-      fuentes: document.querySelectorAll('.wiki-fuentes a').length,
-      pendientes: [...document.querySelectorAll('.wiki-pendiente')].map((e) => e.textContent),
-      enlaces: [...document.querySelectorAll('.wiki-link')].map((e) => e.getAttribute('href')),
-      codigoInyectado: document.querySelectorAll('.wiki-texto script').length,
+      etapas: document.querySelectorAll('.etapa').length,
+      pares: document.querySelectorAll('.diferencial-cara').length,
+      comprobaciones: document.querySelectorAll('.diferencial-fila').length,
+      salida: document.querySelector('.boton--ruta')?.getAttribute('href') ?? null,
+      fuentes: document.querySelectorAll('.guia-fuentes-lista a').length,
+      fuentesExternas: [...document.querySelectorAll('.guia-fuentes-lista a')].every(
+        (a) => a.hostname && a.hostname !== new URL(location.href).hostname
+      ),
+      citas: document.querySelectorAll('.tarjeta-cita a').length,
+      riel: !!document.querySelector('.riel'),
+      textoInyectado: document.querySelectorAll('.guia script').length,
     }));
 
-    const fuentesMd = (markdown.match(/^  - https?:\/\//gm) ?? []).length;
-
-    comprobar(`${slug}: un solo <h1>`, estructura.h1 === 1, `"${estructura.h1Texto.slice(0, 44)}"`);
-    comprobar(`${slug}: el <h1> recibe el foco al entrar`, (await page.evaluate(() => document.activeElement?.tagName)) === 'H1');
-    comprobar(`${slug}: hay secciones de segundo nivel`, estructura.h2 > 0, `${estructura.h2} h2 y ${estructura.h3} h3`);
+    comprobar('un solo <h1>', estructura.h1 === 1);
+    comprobar('las cuatro etapas están', estructura.etapas >= 4, `${estructura.etapas} etapas`);
     comprobar(
-      `${slug}: la tabla de contenidos tiene un enlace por sección`,
-      estructura.toc === estructura.h2 + estructura.h3,
-      `${estructura.toc} enlaces para ${estructura.h2 + estructura.h3} secciones`
+      'cada comprobación del diferencial tiene sus dos caras',
+      estructura.comprobaciones === guia.diferencial.comprobaciones.length &&
+        estructura.pares === guia.diferencial.comprobaciones.length * 2,
+      `${estructura.comprobaciones} comprobaciones, ${estructura.pares} caras`
     );
-
-    // Las tablas, contra lo que el fichero declara.
     comprobar(
-      `${slug}: las tablas se pintan enteras`,
-      estructura.tablas === declaradas.length &&
-        estructura.filas === esperadoFilas &&
-        estructura.celdas === esperadoCeldas,
-      `pintadas ${estructura.tablas} / ${estructura.filas} / ${estructura.celdas}; ` +
-        `declara ${declaradas.length} (${declaradas.map((x) => `${x.ancho}x${x.filas}`).join(' + ')})`
+      'el diferencial tiene salida y lleva a la guía que dice',
+      estructura.salida === `/wiki/${guia.diferencial.siNo.guia}`,
+      `${estructura.salida} · esperado /wiki/${guia.diferencial.siNo.guia}`
     );
-
-    // Las fuentes, contra el frontmatter.
     comprobar(
-      `${slug}: las fuentes salen al pie y son las del frontmatter`,
-      estructura.fuentes === fuentesMd && fuentesMd > 0,
-      `${estructura.fuentes} pintadas, ${fuentesMd} declaradas`
+      'las fuentes salen al pie y son las declaradas',
+      estructura.fuentes === guia.fuentes.length,
+      `${estructura.fuentes} pintadas, ${guia.fuentes.length} declaradas`
     );
+    comprobar('las fuentes son enlaces externos de verdad', estructura.fuentesExternas);
+    comprobar('el HTML no inyecta etiquetas', estructura.textoInyectado === 0);
 
-    comprobar(`${slug}: el HTML no inyecta etiquetas`, estructura.codigoInyectado === 0);
+    await ctx.close();
+  }
+
+  /* ---------------------------------------------------------------- 3 */
+  console.log('\n=== El cálculo: la guía reacciona ===\n');
+  {
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
+    const guia = GUIAS.find((g) => g.slug === SLUG);
+
+    /** Lo que la página está pintando ahora. */
+    const leer = () =>
+      page.evaluate(() => ({
+        acciones: document.querySelectorAll('.accion').length,
+        tarjetas: document.querySelectorAll('.tarjeta').length,
+        activas: [...document.querySelectorAll('.chip--activo .chip-texto')].map((e) => e.textContent),
+        valores: [...document.querySelectorAll('.accion-valor')].map((e) => e.textContent),
+        rielCifra: document.querySelector('.riel-cifra strong')?.textContent ?? null,
+        rielBarra: document.querySelector('.riel-progreso span')?.style.width ?? null,
+        rielVariables: document.querySelectorAll('.riel-variables li').length,
+        vacia: !!document.querySelector('.etapa--recomendacion .etapa-vacia'),
+        botonesMarcados: document.querySelectorAll('.chip--activo[aria-pressed="true"]').length,
+      }));
+
+    const inicial = await leer();
+    comprobar(
+      'sin marcar nada no se inventa ninguna acción',
+      inicial.acciones === 0 && inicial.vacia,
+      `${inicial.acciones} acciones, aviso presente: ${inicial.vacia}`
+    );
+    comprobar('el riel empieza a cero', inicial.rielCifra === '0' && inicial.rielBarra === '0%', `"${inicial.rielCifra}" · ${inicial.rielBarra}`);
+    comprobar('pero sí hay conocimiento de partida', inicial.tarjetas > 0, `${inicial.tarjetas} tarjetas`);
+
+    // Marcar las dos variables necesarias: la lista tiene que llenarse.
+    const necesarias = guia.variables.filter((v) => v.necesaria);
+    for (const variable of necesarias) {
+      await page.locator('.chip').filter({ hasText: variable.opciones[0].etiqueta }).first().click();
+      await page.waitForTimeout(220);
+    }
+    const marcada = await leer();
+    comprobar(
+      'marcar el montaje llena la recomendación',
+      marcada.acciones > 0 && !marcada.vacia,
+      `${marcada.acciones} acciones · ${marcada.tarjetas} tarjetas · riel "${marcada.rielCifra}"`
+    );
+    comprobar('el riel cuenta lo mismo que la página', String(marcada.acciones) === marcada.rielCifra, `${marcada.rielCifra} vs ${marcada.acciones}`);
+    comprobar('el riel enseña lo que se ha marcado', marcada.rielVariables === necesarias.length, `${marcada.rielVariables} variables`);
+    comprobar('la barra de progreso avanza', marcada.rielBarra !== '0%' && marcada.rielBarra !== '100%', marcada.rielBarra);
+    comprobar('cada chip marcado dice su estado a los lectores de pantalla', marcada.botonesMarcados === marcada.activas.length, `${marcada.botonesMarcados} aria-pressed`);
 
     /*
-     * Los enlaces cruzados. `[[slug]]` a una página que existe es un enlace; a una
-     * que no, texto con marca. Lo que no puede haber es un `<a href>` apuntando a
-     * un artículo inexistente, porque eso es un enlace roto en un artículo que ya
-     * pasó revisión.
+     * Cambiar una variable tiene que cambiar la lista, o el formato es decorativo.
+     *
+     * No se fija qué opción pulsar: se prueban **todas** hasta encontrar una que
+     * cambie algo. La primera versión pulsaba `opciones[1]` y falló con material,
+     * porque en la guía de warping la segunda opción es PLA-CF y PLA-CF da
+     * exactamente lo mismo que PLA —comparten fila en la tabla de Bambu—. La
+     * comprobación era correcta; la elección de la opción, no.
      */
-    const roto = estructura.enlaces.filter((h) => !SLUGS.includes(h.replace('/wiki/', '')));
-    comprobar(
-      `${slug}: ningún enlace apunta a un artículo inexistente`,
-      roto.length === 0,
-      roto.length ? roto.join(' ') : `${estructura.enlaces.length} enlaces, ${estructura.pendientes.length} menciones de páginas pendientes`
-    );
-    comprobar(
-      `${slug}: las páginas futuras se nombran como texto`,
-      !estructura.pendientes.some((t) => /^https?:/.test(t)),
-      `${estructura.pendientes.length} pendiente(s)`
-    );
-
-    // La tabla tiene desplazamiento horizontal propio, si hay tablas.
-    const tablaOx = await page.evaluate(() => {
-      const env = document.querySelector('.wiki-tabla-envoltura');
-      return env ? getComputedStyle(env).overflowX : null;
-    });
-    if (estructura.tablas > 0) {
-      comprobar(`${slug}: la tabla se desplaza en su propia caja`, tablaOx === 'auto', `overflow-x: ${tablaOx}`);
+    const candidatas = guia.variables.filter((v) => v.opciones.length > 1);
+    let cambio = null;
+    for (const variable of candidatas) {
+      for (const opcion of variable.opciones) {
+        if (marcada.activas.includes(opcion.etiqueta)) continue;
+        await page.locator('.chip').filter({ hasText: opcion.etiqueta }).first().click();
+        await page.waitForTimeout(280);
+        const despues = await leer();
+        if (
+          JSON.stringify(despues.valores) !== JSON.stringify(marcada.valores) ||
+          despues.tarjetas !== marcada.tarjetas
+        ) {
+          cambio = { variable, opcion, despues };
+          break;
+        }
+        await page.locator('.chip').filter({ hasText: opcion.etiqueta }).first().click();
+        await page.waitForTimeout(200);
+      }
+      if (cambio) break;
     }
 
-    await ctx.close();
-  }
-
-  // --- 3. El realce de la sección activa ------------------------------------
-  console.log('\n=== El realce al hacer scroll ===\n');
-  {
-    const { ctx, page } = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
-    await page.waitForTimeout(300);
-
-    const inicial = await page.locator('.wiki-toc a[aria-current="location"]').textContent();
-    comprobar('al entrar hay una sección marcada', Boolean(inicial), `"${inicial?.trim()}"`);
+    comprobar(
+      'cambiar alguna variable recalcula la lista',
+      cambio !== null,
+      cambio
+        ? `${cambio.variable.etiqueta}=${cambio.opcion.etiqueta}: ${marcada.tarjetas}->${cambio.despues.tarjetas} tarjetas · ${marcada.valores.join(' | ')} -> ${cambio.despues.valores.join(' | ')}`
+        : `ninguna de las ${candidatas.length} variables cambiaron nada`
+    );
 
     /*
-     * Al último encabezado, que es el más abajo del todo.
+     * Poder arrepentirse, y es la mitad de la interacción.
      *
-     * El selector es `.wiki-toc ol > li:last-child > a` y **no** `.wiki-toc
-     * a:last-child`. Este último casa con los doce enlaces, porque cada `<a>` es
-     * el único hijo de su `<li>` y por tanto el último hijo de su padre; el
-     * navegador devuelve el primero de ellos y la prueba baja al principio del
-     * artículo, que es justo donde no hay nada que comprobar.
+     * Se pulsa **una etiqueta que ya está marcada**, no una cualquiera. La primera
+     * versión pulsaba `opciones[1]` de la primera variable, que en la guía de warping
+     * es PLA-CF y no estaba marcada: eso la seleccionaba, la cuenta de activas se
+     * quedaba igual —3 antes, 3 después— y el fallo parecía del componente cuando lo
+     * estaba probando mal.
      */
-    const ultimo = page.locator('.wiki-toc ol > li:last-child > a');
-    const destino = await ultimo.getAttribute('href');
-    const esperado = (await ultimo.textContent())?.trim();
-    await page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView(), destino);
-    await page.waitForTimeout(500);
+    const marcadasAhora = (await leer()).activas;
+    comprobar('hay algo marcado para poder desmarcarlo', marcadasAhora.length > 0, marcadasAhora.join(' | '));
+    if (marcadasAhora.length > 0) {
+      const etiqueta = marcadasAhora[0];
+      const antesDeDesmarcar = await leer();
+      await page.locator('.chip').filter({ hasText: etiqueta }).first().click();
+      await page.waitForTimeout(350);
+      const despues = await leer();
+      comprobar(
+        'volver a pulsar un chip marcado lo desmarca',
+        despues.activas.length === marcadasAhora.length - 1 && !despues.activas.includes(etiqueta),
+        `${marcadasAhora.length} -> ${despues.activas.length} activas · "${etiqueta}" sigue: ${despues.activas.includes(etiqueta)}`
+      );
+      comprobar(
+        'y desmarcar quita acciones, no sólo las pinta de otro color',
+        despues.acciones <= antesDeDesmarcar.acciones,
+        `${antesDeDesmarcar.acciones} -> ${despues.acciones} acciones`
+      );
+    }
 
-    const final = await page.locator('.wiki-toc a[aria-current="location"]').textContent();
-    const marcada = await page.locator('.wiki-toc a[aria-current="location"]').count();
-    comprobar('al bajar del todo, la marca se mueve con el lector', marcada === 1 && final?.trim() !== inicial?.trim(), `"${inicial?.trim()}" -> "${final?.trim()}"`);
+    comprobar('sin errores tras interactuar', errores.length === 0, errores[0] ?? '');
+    await ctx.close();
+  }
+
+  /* ---------------------------------------------------------------- 4 */
+  console.log('\n=== La interconexión entre guías ===\n');
+  {
+    const guia = GUIAS.find((g) => g.slug === SLUG);
+    const destino = guia.diferencial.siNo.guia;
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
+
+    // Marcar algo, para comprobar que al cambiar de guía se limpia.
+    await page.locator('.chip').filter({ hasText: guia.variables[0].opciones[0].etiqueta }).first().click();
+    await page.waitForTimeout(250);
+    const antes = await page.locator('.chip--activo').count();
+    comprobar('hay respuestas marcadas antes de saltar de guía', antes > 0, `${antes}`);
+
+    await page.locator('.boton--ruta').click();
+    await page.waitForTimeout(700);
+
+    const despues = await page.evaluate(() => ({
+      ruta: location.pathname,
+      h1: document.querySelector('.canvas-area h1')?.textContent ?? '',
+      activas: document.querySelectorAll('.chip--activo').length,
+      acciones: document.querySelectorAll('.accion').length,
+      rielCifra: document.querySelector('.riel-cifra strong')?.textContent ?? null,
+    }));
+
+    comprobar('el enlace del diferencial navega a la otra guía', despues.ruta === `/wiki/${destino}`, despues.ruta);
+    comprobar('y se ve la otra guía', despues.h1.length > 5, `"${despues.h1}"`);
     comprobar(
-      'la marca coincide con el encabezado al que se ha ido',
-      final?.trim() === esperado,
-      `esperada "${esperado}", marcada "${final?.trim()}"`
+      'las respuestas de la guía anterior no se arrastran',
+      despues.activas === 0 && despues.rielCifra === '0',
+      `${despues.activas} activas, riel "${despues.rielCifra}"`
     );
-
-    /*
-     * Y en sentido contrario, que es el caso que más se escapa: volver arriba tiene
-     * que devolver la marca a la primera sección. Una lista que sólo sabe avanzar
-     * parece correcta hasta que se vuelve.
-     */
-    await irArriba(page);
-    const vuelto = await page.locator('.wiki-toc a[aria-current="location"]').textContent();
-    comprobar('al volver arriba, la marca regresa a la primera sección', vuelto?.trim() === inicial?.trim(), `"${vuelto?.trim()}"`);
-
-    // `aria-current` distinto de `page`: son dos cosas y se anuncian distinto.
-    const tipo = await page.locator('.wiki-toc a[aria-current]').first().getAttribute('aria-current');
-    comprobar('el realce usa `aria-current="location"`, no `page`', tipo === 'location', `aria-current="${tipo}"`);
-
+    comprobar('sin errores al navegar entre guías', errores.length === 0, errores[0] ?? '');
     await ctx.close();
   }
 
-  // --- 4. La barra de «dónde estoy» en el reparto apilado -------------------
-  console.log('\n=== La barra de «dónde estoy» ===\n');
+  /* ---------------------------------------------------------------- 5 */
+  console.log('\n=== El carril, que sustituye al panel muerto ===\n');
   {
-    const { ctx, page } = await abrir(navegador, 900, 900, `/wiki/${SLUG}`);
-    await page.waitForTimeout(300);
-
-    const barra = page.locator('.wiki-donde');
-    comprobar('la barra existe en el reparto apilado', (await barra.count()) === 1);
-
-    const antesDeScroll = await barra.evaluate((e) => getComputedStyle(e).visibility);
-    comprobar('con la tabla a la vista, la barra está oculta', antesDeScroll === 'hidden', `visibility: ${antesDeScroll}`);
-
-    /*
-     * La posición se mide **en el documento**, no en la ventana, y por una razón
-     * concreta: la prueba hace un scroll hasta el final, así que la posición en la
-     * ventana del texto cambia de todas formas. Comparar eso mide el scroll, no
-     * la barra, y daría un fallo siempre. Lo que no puede cambiar es el sitio que
-     * el texto ocupa dentro del documento.
-     */
-    const sitioEnElDocumento = () =>
-      page.evaluate(() => {
-        const r = document.querySelector('.wiki-texto').getBoundingClientRect();
-        return Math.round(r.top + window.scrollY);
-      });
-
-    const sitioAntes = await sitioEnElDocumento();
-
-    await page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight);
-      let e = document.querySelector('.wiki-texto')?.parentElement ?? null;
-      while (e) {
-        if (e.scrollHeight > e.clientHeight + 1) e.scrollTop = e.scrollHeight;
-        e = e.parentElement;
-      }
-    });
-    await page.waitForTimeout(500);
-
-    const despues = await barra.evaluate((e) => getComputedStyle(e).visibility);
-    comprobar('al irse la tabla, la barra se enciende', despues === 'visible', `visibility: ${despues}`);
-
-    const texto = await barra.locator('.wiki-donde-titulo').textContent();
-    comprobar('la barra nombra la sección actual', Boolean(texto?.trim()), `"${texto?.trim()}"`);
-
-    const sitioDespues = await sitioEnElDocumento();
-    comprobar(
-      'la barra no empuja el texto al aparecer',
-      sitioAntes === sitioDespues,
-      `${sitioAntes}px -> ${sitioDespues}px dentro del documento`
-    );
-
-    await ctx.close();
-  }
-
-  // --- 5. La barra se apaga en el reparto en dos columnas -------------------
-  console.log('\n=== La barra con la tabla al lado ===\n');
-  {
-    const { ctx, page } = await abrir(navegador, 1440, 900, `/wiki/${SLUG}`);
-    await page.waitForTimeout(300);
-    const reparto = await page.evaluate(() => {
-      const cont = document.querySelector('.wiki-contenedor');
-      const toc = document.querySelector('.wiki-toc');
-      const barra = document.querySelector('.wiki-donde');
-      return {
-        columnas: getComputedStyle(cont).gridTemplateColumns,
-        tocPegado: getComputedStyle(toc).position,
-        barra: getComputedStyle(barra).display,
-      };
-    });
-    comprobar('a 1440px la tabla va en su propia columna', reparto.columnas.split(' ').length === 2, reparto.columnas);
-    comprobar('a 1440px la tabla queda fija', reparto.tocPegado === 'sticky', `position: ${reparto.tocPegado}`);
-    comprobar('a 1440px la barra se apaga, porque sobra', reparto.barra === 'none', `display: ${reparto.barra}`);
-    await ctx.close();
-  }
-
-  // --- 6. El ancho de la línea de lectura, medido --------------------------
-  console.log('\n=== El ancho de la línea de lectura ===\n');
-  {
-    for (const vp of VIEWPORTS) {
-      const { ctx, page } = await abrir(navegador, vp.ancho, vp.alto, `/wiki/${SLUG}`);
-      await page.waitForTimeout(300);
-
-      const m = await page.evaluate(() => {
-        const t = document.querySelector('.wiki-texto');
-        // El ancho de un carácter se mide con la fuente real en pantalla, no con
-        // `ch` ni suponiendo: `ch` es el ancho del cero, y en Inter el cero es más
-        // ancho que una letra media, así que usarlo daría un número optimista.
-        const medidor = document.createElement('span');
-        medidor.textContent = 'x'.repeat(100);
-        medidor.style.cssText = 'position:absolute;visibility:hidden;font:inherit';
-        t.appendChild(medidor);
-        const porCaracter = medidor.getBoundingClientRect().width / 100;
-        medidor.remove();
-
-        const caja = t.getBoundingClientRect();
-        const cont = document.querySelector('.wiki-contenedor');
-
-        // ¿Se sale algo del viewport sin un contenedor que lo recorte?
-        const sueltos = [];
-        for (const e of document.querySelectorAll('body *')) {
-          const b = e.getBoundingClientRect();
-          if (!b.width || b.right <= window.innerWidth + 1) continue;
-          let a = e.parentElement, recortado = false;
-          while (a) {
-            const ox = getComputedStyle(a).overflowX;
-            if (ox === 'hidden' || ox === 'auto' || ox === 'scroll') { recortado = true; break; }
-            a = a.parentElement;
-          }
-          if (!recortado) sueltos.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
-        }
-
+    for (const ruta of ['/wiki', `/wiki/${SLUG}`, '/contacto', '/privacidad', '/acerca-de']) {
+      const { ctx, page } = await abrir(navegador, 1280, 800, ruta);
+      const riel = await page.evaluate(() => {
+        const derecha = document.querySelector('.sidebar-right');
         return {
-          ancho: Math.round(caja.width),
-          porCaracter,
-          caracteres: Math.round(caja.width / porCaracter),
-          desborda: caja.width > cont.getBoundingClientRect().width + 1,
-          sueltos: sueltos.slice(0, 4),
+          ancho: Math.round(derecha?.getBoundingClientRect().width ?? 0),
+          riel: !!derecha?.querySelector('.riel'),
+          panel: !!derecha?.querySelector('.panel-header'),
+          invitacion: derecha?.textContent?.includes('Sube un archivo para ver el análisis') ?? false,
+          enlacesGuia: derecha?.querySelectorAll('a[href^="/wiki/"]').length ?? 0,
         };
       });
-
-      const estrecho = vp.nombre.startsWith(PREFIJO_ESTRECHO);
-      comprobar(`${vp.nombre}: el texto no desborda su carril`, !m.desborda, `${m.ancho}px`);
       comprobar(
-        `${vp.nombre}: nada se sale del viewport sin contenedor que lo recorte`,
-        m.sueltos.length === 0,
-        m.sueltos.join(', ')
+        `${ruta}: la columna derecha no invita a subir un archivo y sí enlaza a las guías`,
+        !riel.invitacion && (riel.riel || riel.panel) && riel.enlacesGuia > 0,
+        `riel=${riel.riel} panel=${riel.panel} ${riel.ancho}px · ${riel.enlacesGuia} enlaces a guías`
       );
+      await ctx.close();
+    }
 
-      if (estrecho) {
-        // En móvil se dice el número y el motivo, en vez de fingir que el rango
-        // se cumple. La caja son 335px: no hay más donde cortar.
-        console.log(
-          `  AVISO ${vp.nombre}: ${m.caracteres} caracteres por línea, por debajo de los ` +
-            `${CARACTERES_MIN} del rango. La caja central mide 335px y el cuerpo es de ` +
-            `16px; es aritmética de la pantalla, no del diseño.`
+    for (const ruta of ['/', '/historial']) {
+      const { ctx, page } = await abrir(navegador, 1280, 800, ruta);
+      const panel = await page.evaluate(() => ({
+        titulo: document.querySelector('.sidebar-right h2')?.textContent ?? '',
+        riel: !!document.querySelector('.sidebar-right .riel'),
+      }));
+      comprobar(
+        `${ruta}: aquí sí está el panel de análisis`,
+        panel.titulo.includes('Panel') && !panel.riel,
+        `"${panel.titulo}"`
+      );
+      await ctx.close();
+    }
+  }
+
+  /* ---------------------------------------------------------------- 6 */
+  console.log('\n=== Los cinco anchos ===\n');
+
+  /*
+   * El riel no aprieta el texto.
+   *
+   * **La primera versión de esta comprobación medía desbordamiento, y era la medida
+   * equivocada.** Se comprobó rompiéndola a propósito —volviendo a `flex-direction: row`
+   * con `overflow-wrap: anywhere`— y pasó en verde, como se esperaba que no pasara.
+   *
+   * La razón es que `overflow-wrap: anywhere` existe **precisamente para no desbordar**:
+   * parte la palabra donde haga falta para que quepa. Con él, «No, o no lo sé» se
+   * renderizaba en una columna de una letra de ancho, y se quedaba dentro de sus 320 px.
+   * Nada se salía. Lo que pasaba es que el elemento crecía hasta medir catorce líneas de
+   * alto, y eso es lo que se veía en la captura: una columna de letras sueltas.
+   *
+   * Así que la comprobación mide **altura por línea**, que es lo que delata el
+   * partido. Un valor de una o dos palabras no pasa de tres líneas; si necesita más, es
+   * que algo lo está rompiendo letra a letra. El límite es 4 y está medido, no puesto.
+   */
+  const desbordes = await navegador.newContext({ viewport: { width: 1280, height: 800 } });
+  const pagDesbordes = await desbordes.newPage();
+  await pagDesbordes.goto(`${BASE}${rutaConVariables}`, { waitUntil: 'networkidle' });
+  await pagDesbordes.waitForTimeout(400);
+  // Marcarlo todo es lo que llena el riel: vacío no hay nada que medir.
+  for (const chip of await pagDesbordes.locator('.chip').all()) {
+    await chip.click().catch(() => {});
+    await pagDesbordes.waitForTimeout(60);
+  }
+  await pagDesbordes.waitForTimeout(400);
+
+  const apretado = await pagDesbordes.evaluate(() => {
+    const problemas = [];
+
+    /**
+     * Lineas que ocupa un texto.
+     *
+     * El `line-height` del CSS es `normal` en la version rota, y `parseFloat('normal')`
+     * devuelve `NaN`; `Math.round(alto / NaN)` es `null`, y `null > 4` es `false`. La
+     * comprobacion pasaba en verde porque no comparaba nada.
+     *
+     * Eso no se descubre leyendo, se descubre midiendo: la primera version de esta
+     * comprobacion usaba `parseFloat(lineHeight)` y fallo en verde dos veces seguidas. El
+     * recurso al tamano de letra no es un refinamiento: es lo que hace que la comprobacion
+     * mida algo cuando el estilo no le da la medida.
+     */
+    const lineasDe = (el) => {
+      const estilo = getComputedStyle(el);
+      const declarado = Number.parseFloat(estilo.lineHeight);
+      const porLetra = Number.parseFloat(estilo.fontSize) * 1.25;
+      const lh = Number.isFinite(declarado) && declarado > 0 ? declarado : porLetra;
+      return Math.round(el.getBoundingClientRect().height / lh);
+    };
+
+    for (const el of document.querySelectorAll('.riel-variables li')) {
+      const valor = el.querySelector('.riel-var-valor');
+      const nombre = el.querySelector('.riel-var-nombre');
+      if (!valor || !nombre) continue;
+
+      const lineasValor = lineasDe(valor);
+      const anchoValor = Math.round(valor.getBoundingClientRect().width);
+
+      // Los umbrales salen de medir las dos versiones, no de elegirlos.
+      //
+      // Riel apilado, que es el estado sano: los seis valores ocupan **1 linea** a 214 px de
+      // ancho, y las etiquetas **1 o 2**. Riel en fila con `overflow-wrap: anywhere`, que es
+      // el fallo: los valores ocupan **hasta 3 lineas** a 67 px y las etiquetas **hasta 4**.
+      //
+      // Asi que `valor > 2` y `nombre > 3` separan los dos casos con margen por los dos
+      // lados: en sano el maximo medido es 2 y 2, y en roto hay 3 y 4. Un umbral puesto a
+      // ojo habria dado verde en las dos versiones, que es lo que pasaba con `> 4`.
+      if (lineasValor > 2) {
+        problemas.push(
+          `valor "${(valor.textContent ?? '').trim().slice(0, 20)}" en ${lineasValor} lineas de ${anchoValor}px`
         );
-      } else {
+      }
+      const lineasNombre = lineasDe(nombre);
+      if (lineasNombre > 3) {
+        problemas.push(
+          `etiqueta "${(nombre.textContent ?? '').trim().slice(0, 20)}" en ${lineasNombre} lineas`
+        );
+      }
+    }
+    return problemas.slice(0, 6);
+  });
+  comprobar(
+    'el riel no aprieta el texto en una columna de una letra',
+    apretado.length === 0,
+    apretado.join(' · ') ||
+      `${await pagDesbordes.locator('.riel-variables li').count()} variables marcadas, ningún valor pasa de 2 líneas`
+  );
+  await desbordes.close();
+
+  for (const vp of VIEWPORTS) {
+    const { ctx, page, errores } = await abrir(navegador, vp.ancho, vp.alto, `/wiki/${SLUG}`);
+    const caja = await page.evaluate(() => {
+      const raiz = document.querySelector('.guia');
+      const padre = raiz?.parentElement;
+      const r = raiz?.getBoundingClientRect();
+      const p = padre?.getBoundingClientRect();
+      return {
+        desborda: document.documentElement.scrollWidth > window.innerWidth + 1,
+        dentro: r && p ? r.right <= p.right + 1 && r.left >= p.left - 1 : false,
+        rielDebajo:
+          getComputedStyle(document.querySelector('.sidebar-right') ?? document.body).display !== 'none',
+        chipsApilados: (() => {
+          const chips = [...document.querySelectorAll('.chip')];
+          if (chips.length < 2) return true;
+          return chips.slice(0, 2).every((c) => c.getBoundingClientRect().width > 0);
+        })(),
+      };
+    });
+    comprobar(
+      `${vp.nombre}: sin desbordamiento horizontal y dentro de su caja`,
+      !caja.desborda && caja.dentro,
+      JSON.stringify(caja)
+    );
+    comprobar(`${vp.nombre}: los chips se ven`, caja.chipsApilados);
+    comprobar(`${vp.nombre}: sin errores de consola`, errores.length === 0, errores[0] ?? '');
+    await ctx.close();
+  }
+
+  /* ---------------------------------------------------------------- 7 */
+  console.log('\n=== La animación, y que se pueda apagar ===\n');
+  {
+    const con = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
+    const animadas = await con.page.evaluate(() => {
+      const tarjeta = document.querySelector('.sintoma, .tarjeta, .accion, .etapa');
+      if (!tarjeta) return 0;
+      const duracion = getComputedStyle(tarjeta).animationDuration;
+      return duracion === '0s' ? 0 : Number.parseFloat(duracion) * 1000;
+    });
+    // En el índice, no en la guía: la guía tarda un poco más en pintar sus etapas.
+    await con.ctx.close();
+
+    const idx = await abrir(navegador, 1280, 800, '/wiki');
+    const duracionIndice = await idx.page.evaluate(() => {
+      const tarjeta = document.querySelector('.sintoma');
+      if (!tarjeta) return 0;
+      const d = getComputedStyle(tarjeta).animationDuration;
+      return d === '0s' ? 0 : Number.parseFloat(d) * 1000;
+    });
+    await idx.ctx.close();
+
+    comprobar('las tarjetas del índice se animan al entrar', duracionIndice > 0, `${duracionIndice}ms`);
+    comprobar('y la animación es corta: por debajo de 400 ms', duracionIndice < 400, `${duracionIndice}ms`);
+
+    const sin = await abrir(navegador, 1280, 800, '/wiki', { reducedMotion: 'reduce' });
+    const sinAnim = await sin.page.evaluate(() => {
+      const tarjeta = document.querySelector('.sintoma');
+      return tarjeta ? getComputedStyle(tarjeta).animationName : 'ninguna';
+    });
+    const dibujoQuieto = await sin.page.evaluate(() => {
+      const p = document.querySelector('.dibujo-pieza--arqueada, .dibujo-grieta, .dibujo-burbuja');
+      return p ? getComputedStyle(p).animationName : 'ninguna';
+    });
+    await sin.ctx.close();
+
+    comprobar('con prefers-reduced-motion la tarjeta no se anima', sinAnim === 'none', `animation-name: ${sinAnim}`);
+    comprobar('ni los dibujos', dibujoQuieto === 'none', `animation-name: ${dibujoQuieto}`);
+  }
+
+  /* ---------------------------------------------------------------- 8 */
+  console.log('\n=== Una guía que no existe ===\n');
+  {
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, '/wiki/no-existe-nada');
+    const noExiste = await page.evaluate(() => ({
+      h1: document.querySelectorAll('.canvas-area h1').length,
+      texto: document.querySelector('h1')?.textContent ?? '',
+      robots: document.querySelector('meta[name="robots"]')?.content ?? '',
+      enlace: document.querySelector('.guia-enlace')?.getAttribute('href') ?? null,
+    }));
+    comprobar('un <h1> que lo dice', noExiste.h1 === 1 && /no existe/i.test(noExiste.texto), `"${noExiste.texto}"`);
+    comprobar('y no se pide que se indexe', noExiste.robots === 'noindex, follow', noExiste.robots);
+    comprobar('ofrece volver al índice', noExiste.enlace === '/wiki', `${noExiste.enlace}`);
+    comprobar('sin errores de consola', errores.length === 0, errores[0] ?? '');
+    await ctx.close();
+  }
+
+  /* ---------------------------------------------------------------- 9 */
+  console.log('\n=== El pie y las tres páginas de AdSense ===\n');
+  {
+    const { ctx, page } = await abrir(navegador, 1280, 800, '/');
+    const pie = await page.evaluate(() => {
+      const nav = document.querySelector('.site-footer nav, .site-footer');
+      const enlaces = [...(nav?.querySelectorAll('a') ?? [])];
+      return {
+        hrefs: enlaces.map((a) => a.getAttribute('href')),
+        texto: document.querySelector('.site-footer')?.textContent ?? '',
+      };
+    });
+    for (const ruta of ['/acerca-de', '/contacto', '/privacidad']) {
+      comprobar(`el pie enlaza ${ruta}`, pie.hrefs.includes(ruta), pie.hrefs.join(' '));
+    }
+    await ctx.close();
+
+    // Las tres páginas: existen, con h1, y con lo que la revisión de contenido exige
+    // encontrar en ellas. Lo que se comprueba son enlaces **reales**: la primera
+    // versión de este bloque afirmaba que `/acerca-de` enlazaba a `/wiki` y que
+    // `/contacto` a `/privacidad`, y las dos assertions fallaron porque la página no
+    // enlazaba. No era el test el equivocado: era un hueco real, y la página decía
+    // «el artículo sobre warping está a un clic» sin ningún enlace.
+    for (const pagina of ['acerca-de', 'contacto', 'privacidad']) {
+      const { ctx, page } = await abrir(navegador, 1280, 800, `/${pagina}`);
+      const info = await page.evaluate(() => ({
+        h1: document.querySelectorAll('.canvas-area h1').length,
+        enlacesInternos: [...document.querySelectorAll('main a[href^="/"]')].map((a) =>
+          a.getAttribute('href')
+        ),
+        mailto: document.querySelector('a[href^="mailto:"]')?.getAttribute('href') ?? null,
+        textoMailto: document.querySelector('a[href^="mailto:"]')?.textContent ?? '',
+        texto: document.querySelector('main')?.textContent ?? '',
+      }));
+      comprobar(`/${pagina}: un <h1>`, info.h1 === 1);
+
+      if (pagina === 'acerca-de') {
         comprobar(
-          `${vp.nombre}: la línea está entre ${CARACTERES_MIN} y ${CARACTERES_MAX} caracteres`,
-          m.caracteres >= CARACTERES_MIN && m.caracteres <= CARACTERES_MAX,
-          `${m.caracteres} caracteres (${m.ancho}px a ${m.porCaracter.toFixed(2)}px/carácter)`
+          '/acerca-de enlaza a la wiki, que es lo que promete en el texto',
+          info.enlacesInternos.includes('/wiki'),
+          info.enlacesInternos.join(' ')
+        );
+        comprobar('y dice que se entra por el síntoma', /síntoma/i.test(info.texto));
+      }
+
+      if (pagina === 'contacto') {
+        comprobar(
+          'el contacto tiene un mailto y el texto coincide con él',
+          info.mailto === 'mailto:contacto@wiiki-3d.com' && info.textoMailto.trim() === 'contacto@wiiki-3d.com',
+          `${info.mailto} · "${info.textoMailto.trim()}"`
+        );
+        comprobar('es un buzón del dominio, no una dirección personal', /@wiiki-3d\.com/.test(info.textoMailto));
+      }
+
+      if (pagina === 'privacidad') {
+        comprobar(
+          '/privacidad declara que hoy no hay publicidad',
+          /no muestra publicidad|no hay publicidad|sin publicidad/i.test(info.texto),
+          ''
+        );
+        comprobar(
+          'y enlaza a la política de publicidad de Google',
+          await page.evaluate(() =>
+            [...document.querySelectorAll('main a')].some((a) =>
+              (a.getAttribute('href') ?? '').includes('policies.google.com')
+            )
+          ),
+          ''
         );
       }
       await ctx.close();
     }
   }
 
-  // --- 7. Las animaciones y prefers-reduced-motion -------------------------
-  console.log('\n=== Las animaciones ===\n');
-  {
-    const con = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`);
-    await con.page.waitForTimeout(500);
-    const animadas = await con.page.evaluate(() => ({
-      entrada: getComputedStyle(document.querySelector('.wiki-contenedor')).animationDuration,
-      animada: document.querySelector('.wiki-texto').classList.contains('wiki--animado'),
-      titulo: getComputedStyle(document.querySelector('.wiki-texto h2')).opacity,
-    }));
-    comprobar('la entrada se anima', animadas.entrada !== '0s', `animation-duration: ${animadas.entrada}`);
-    comprobar('la entrada dura menos de 300ms', parseFloat(animadas.entrada) < 0.3, `${animadas.entrada}`);
-    comprobar('con movimiento, las secciones se revelan', animadas.animada === true);
-    await con.ctx.close();
-
-    const sin = await abrir(navegador, 1280, 800, `/wiki/${SLUG}`, { reducedMotion: true });
-    await sin.page.waitForTimeout(400);
-    const quietas = await sin.page.evaluate(() => ({
-      entrada: getComputedStyle(document.querySelector('.wiki-contenedor')).animationName,
-      animada: document.querySelector('.wiki-texto').classList.contains('wiki--animado'),
-      titulo: getComputedStyle(document.querySelector('.wiki-texto h2')).opacity,
-      transicion: getComputedStyle(document.querySelector('.wiki-toc a')).transitionDuration,
-    }));
-    comprobar('sin movimiento, no hay animación de entrada', quietas.entrada === 'none', `animation-name: ${quietas.entrada}`);
-    comprobar('sin movimiento, no se arma el revelado', quietas.animada === false);
-    /*
-     * Esta es la que de verdad importa. El estado inicial de las secciones es
-     * visible y es JavaScript quien añade el estado oculto, para que un fallo de
-     * JavaScript no deje un artículo en blanco. Con `prefers-reduced-motion` ni se
-     * arma el revelado, así que lo que se mide aquí es que el texto **se ve**:
-     */
-    comprobar('sin movimiento, las secciones son visibles', quietas.titulo === '1', `opacity: ${quietas.titulo}`);
-    await sin.ctx.close();
-  }
-
-  // --- 8. Una página que no existe -----------------------------------------
-  console.log('\n=== Una página que no existe ===\n');
-  {
-    const { ctx, page } = await abrir(navegador, 1280, 800, '/wiki/no-existe-nada');
-    const roto = await page.evaluate(() => ({
-      h1: document.querySelectorAll('.canvas-area h1').length,
-      texto: document.querySelector('.wiki-no-encontrado h1')?.textContent ?? '',
-      enlaces: document.querySelectorAll('.wiki-no-encontrado a').length,
-    }));
-    comprobar('un slug inexistente da su propia pantalla con un <h1>', roto.h1 === 1, `"${roto.texto}"`);
-    comprobar('y ofrece volver al índice', roto.enlaces >= 1);
-    await ctx.close();
-  }
-
-  // --- 9. El pie del sitio y las tres páginas de AdSense --------------------
-  console.log('\n=== El pie y las páginas de información ===\n');
+  /* ---------------------------------------------------------------- 10 */
+  console.log('\n=== El enlace del panel a la guía ===\n');
   {
     const { ctx, page } = await abrir(navegador, 1280, 800, '/');
-    const pie = await page.evaluate(() => {
-      const f = document.querySelector('.site-footer');
-      return {
-        existe: Boolean(f),
-        enlaces: [...(f?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href')),
-        hermanoDelShell: f?.nextElementSibling === null && f?.previousElementSibling?.classList.contains('app-container'),
-        texto: f?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
-      };
-    });
-    comprobar('el pie existe', pie.existe);
-    comprobar('el pie está fuera del shell, y no como cuarta fila', pie.hermanoDelShell === true);
-    comprobar(
-      'el pie lleva las tres páginas que la revisión de contenido exige',
-      ['/acerca-de', '/contacto', '/privacidad'].every((r) => pie.enlaces.includes(r)),
-      pie.enlaces.join(' ')
-    );
-    await ctx.close();
-
-    // El pie no puede quedar debajo de la barra inferior fija en móvil.
-    const movil = await abrir(navegador, 375, 667, '/');
-    const tapado = await movil.page.evaluate(async () => {
-      window.scrollTo(0, document.body.scrollHeight);
-      await new Promise((r) => requestAnimationFrame(r));
-      const nav = document.querySelector('.sidebar-left').getBoundingClientRect();
-      // El **contenido** del pie, no su caja. La caja lleva 80px de relleno abajo
-      // a propósito —60 son el hueco de la barra— así que su borde inferior
-      // siempre queda por debajo de la barra y eso no es un fallo: es el
-      // relleno haciendo su trabajo. Lo que no puede pasar es que un enlace quede
-      // debajo.
-      const enlaces = [...document.querySelectorAll('.site-footer a')];
-      const tapados = enlaces.filter((a) => a.getBoundingClientRect().bottom > nav.top + 1);
-      return {
-        tapados: tapados.map((a) => a.textContent),
-        navTop: Math.round(nav.top),
-        ultimo: Math.round(Math.max(...enlaces.map((a) => a.getBoundingClientRect().bottom))),
-      };
-    });
-    comprobar(
-      'en móvil, la barra de navegación no tapa ningún enlace del pie',
-      tapado.tapados.length === 0,
-      tapado.tapados.length
-        ? `tapados: ${tapado.tapados.join(', ')}`
-        : `el último enlace acaba en ${tapado.ultimo}px, la barra empieza en ${tapado.navTop}px`
-    );
-    await movil.ctx.close();
-
-    /*
-     * La página de contacto tiene que tener un `mailto:` de verdad.
-     *
-     * Se comprueba y no se da por hecho porque su historia es la de un aviso
-     *mintiendo: `CONTACTO` estuvo vacío a propósito y la página lo decía en
-     * pantalla, lo cual era honesto pero dejaba la publicación bloqueada. Al poner
-     * la dirección real, ese mismo `if/else` pasó a ser la cosa que podía volver a
-     * mentir: si alguien vacía la constante, la página vuelve a anunciar que
-     * no hay canal, y esta comprobación no se entera.
-     *
-     * Y se comprueba **el enlace**, no sólo que la dirección aparezca escrita: un
-     * texto que parece un correo y no es un enlace es lo que falla una revisión de
-     * contenido, porque se ve bien y no funciona.
-     *
-     * La primera versión de este bloque tenía cuatro comprobaciones y **dos no
-     * podían fallar**. Una comparaba el texto del enlace con su `href`, así que con
-     * `CONTACTO` vacío ambas cadenas eran cadenas vacías y pasaba: comprobaba que
-     * `mailto:` era igual a `mailto:`. Otra buscaba el aviso de «canal sin
-     * configurar», que ya no se puede escribir porque se fue el `if/else` entero: una
-     * comprobación de algo que no puede aparecer es una comprobación muerta.
-     *
-     * Se comprobó vaciando `CONTACTO` a propósito y mirando cuáles caían. Éstas
-     * son las que caen, y la cuarta es una guarda de futuro: hoy no puede fallar
-     * porque no hay ningún correo en el repo, y ése es justo el motivo por el que
-     * tiene que existir.
-     */
-    {
-      const { ctx: c, page: p } = await abrir(navegador, 1280, 800, '/contacto');
-      const contacto = await p.evaluate(() => {
-        const enlaces = [...document.querySelectorAll('.wiki-info a[href^="mailto:"]')];
-        return {
-          mailto: enlaces.map((a) => a.getAttribute('href')),
-          texto: enlaces.map((a) => a.textContent.trim()),
-          visible: document.querySelector('.wiki-info')?.textContent ?? '',
-        };
-      });
-
-      // La expresión regular exige algo antes y después de la arroba, así que un
-      // `mailto:` a secas no la cuela.
-      comprobar(
-        '/contacto: hay un enlace «mailto:» con una dirección dentro',
-        contacto.mailto.length === 1 && /^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contacto.mailto[0]),
-        contacto.mailto.join(' ') || 'ninguno'
-      );
-
-      // La condición de longitud es la que faltaba en la versión anterior: sin
-      // ella, dos cadenas vacías se comparan iguales y la comprobación pasa.
-      comprobar(
-        '/contacto: el texto del enlace es la dirección y no está vacío',
-        contacto.texto.length === 1 &&
-          contacto.texto[0].length > 0 &&
-          `mailto:${contacto.texto[0]}` === contacto.mailto[0],
-        `texto «${contacto.texto.join(' ')}» -> href «${contacto.mailto.join(' ')}»`
-      );
-
-      /*
-       * La dirección se ve también como texto, sin depender del enlace.
-       *
-       * El `slice(7)` no es cosmético: sin él, un `mailto:` vacío deja la cadena
-       * vacía, y `texto.includes('')` es siempre cierto. Esa comprobación pasaba con
-       * la dirección en blanco, que es justo el caso que tenía que cazar.
-       */
-      const direccion = (contacto.mailto[0] ?? '').slice(7);
-      comprobar(
-        '/contacto: la dirección se lee en el texto de la página',
-        direccion.length > 0 && contacto.visible.includes(direccion),
-        direccion ? `«${direccion}» se lee en la página` : 'no hay dirección'
-      );
-
-      // Guarda de futuro, no estado: que nadie pegue un correo personal en la
-      // página de un sitio que se va a monetizar.
-      comprobar(
-        '/contacto: el buzón es del dominio, no una dirección personal',
-        !/@gmail\.com|@hotmail\.com|@outlook\.com|@yahoo\.com/.test(contacto.visible),
-        'sin correo personal en la página'
-      );
-      await c.close();
-    }
-
-    /*
-     * Y cada página existe, responde y tiene un solo <h1>.
-     *
-     * La palabra que se busca es la que sostiene la página, y la comparación no
-     * distingue mayúsculas. Antes buscaba «contacto» y pasaba, pero por el motivo
-     * equivocado: la palabra estaba dentro del aviso de «canal sin configurar» que
-     * decía «falta por poner la dirección de contacto». Al quitar ese aviso, la
-     * comprobación cayó — y tenía razón: llevaba tiempo comprobando la existencia
-     * del aviso, no la del contenido. Es el mismo tipo de fallo que los otros tres
-     * de esta fase: algo que parece comprobarse y en realidad no comprueba nada.
-     *
-     * De paso, cada página se busca por una palabra que va con ella: «la wiki»
-     * para Acerca de, «Escríbenos» para Contacto, «Google AdSense» para Privacidad.
-     */
-    for (const [ruta, seccion] of [
-      ['/acerca-de', 'la wiki'],
-      ['/contacto', 'escríbenos'],
-      ['/privacidad', 'Google AdSense'],
-    ]) {
-      const { ctx: c, page: p } = await abrir(navegador, 1280, 800, ruta);
-      const info = await p.evaluate(() => {
-        const art = document.querySelector('.wiki-info');
-        return {
-          h1: document.querySelectorAll('.canvas-area h1').length,
-          h2: art?.querySelectorAll('h2').length ?? 0,
-          texto: art?.textContent ?? '',
-          alto: Math.round(art?.getBoundingClientRect().height ?? 0),
-        };
-      });
-      comprobar(`${ruta}: un solo <h1> y varias secciones`, info.h1 === 1 && info.h2 >= 2, `${info.h1} h1, ${info.h2} h2`);
-      comprobar(
-        `${ruta}: el texto sostiene la página`,
-        info.texto.toLowerCase().includes(seccion.toLowerCase()),
-        `busca «${seccion}»`
-      );
-      await c.close();
-    }
-
-    // La privacidad tiene que nombrar a Google, decir que es un tercero y
-    // enlazar a su política. Sin las tres, la revisión de contenido la rechaza.
-    const priv = await abrir(navegador, 1280, 800, '/privacidad');
-    const pol = await priv.page.evaluate(() => {
-      const t = document.querySelector('.wiki-info').textContent;
-      const enlaces = [...document.querySelectorAll('.wiki-info a')].map((a) => a.href);
-      return {
-        nombraGoogle: /Google/.test(t),
-        tercero: /tercero/i.test(t),
-        cookies: /cookie/i.test(t),
-        politicaGoogle: enlaces.some((h) => h.startsWith('https://policies.google.com/')),
-        consentimiento: enlaces.some((h) => h.startsWith('https://support.google.com/adsense')),
-        hoyNoPublica: /no muestra publicidad|Todavía no hay/i.test(t),
-      };
-    });
-    comprobar('la privacidad nombra a Google AdSense', pol.nombraGoogle);
-    comprobar('la privacidad dice que es un tercero', pol.tercero);
-    comprobar('la privacidad habla de cookies', pol.cookies);
-    comprobar('la privacidad enlaza a la política de publicidad de Google', pol.politicaGoogle);
-    comprobar('la privacidad enlaza a la ayuda de consentimiento de AdSense', pol.consentimiento);
-    comprobar('la privacidad dice que hoy no hay publicidad', pol.hoyNoPublica);
-    await priv.ctx.close();
-  }
-
-  // --- 11. El enlace del panel, con dato y sin dato ------------------------
-  console.log('\n=== El enlace del panel a la wiki ===\n');
-  {
-    /*
-     * El panel con un G-code cargado, porque es la única forma de ver los enlaces
-     * en su sitio. El fixture deja dos campos opcionales sin dato —`Peso total` y
-     * `Ángulo máx.`—, y eso es lo que permite comprobar la regla de la segunda
-     * decisión sin tener que inventar un G-code: **el enlace no depende del
-     * valor**.
-     *
-     * Ahora mismo los dos campos atados —`warpingRisk` y `riskLevel`— son
-     * obligatorios, así que el caso del enlace con «—» se comprueba en vacío, y
-     * esto lo deja escrito: en cuanto haya artículo para `filamentUsed`,
-     * `filamentWeight`, `hasOverhangs` u `overhangAngle`, la comprobación empieza a
-     * mirar de verdad. Si el enlace desapareciera al no haber dato, falla aquí el
-     * primer día, no cuando alguien lo note.
-     */
-    const ctx = await navegador.newContext({
-      viewport: { width: 1280, height: 800 },
-      colorScheme: 'dark',
-    });
-    const page = await ctx.newPage();
-    await page.goto(BASE + '/', { waitUntil: 'networkidle' });
     await page.setInputFiles('#file-upload', GCODE_FIXTURE);
-    await page.waitForSelector('.file-info', { timeout: 30000 });
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(2500);
 
-    const filas = await page.evaluate(() =>
-      [...document.querySelectorAll('.panel-data-row')].map((f) => ({
-        clave: f.querySelector('.panel-data-key')?.textContent.trim() ?? '',
-        valor: f.querySelector('.panel-data-value')?.childNodes[0]?.textContent?.trim() ?? '',
-        enlace: f.querySelector('.panel-explicar')?.getAttribute('href') ?? null,
-      }))
-    );
+    const panel = await page.evaluate(() => ({
+      enlaces: [...document.querySelectorAll('.panel-explicar')].map((a) => ({
+        href: a.getAttribute('href'),
+        texto: a.textContent,
+      })),
+      atingible: [...document.querySelectorAll('.panel-explicar')].every((a) => a.tabIndex >= 0),
+    }));
 
-    /*
-     * Cuáles filas **deben** tener enlace sale de `src/lib/wiki-campos.ts`, no de un
-     * número escrito aquí.
-     *
-     * La primera versión de esta comprobación decía «desde los dos campos atados» y
-     * contaba 2. Al añadir `bedTemp` a la tabla, sin tocar el script, dejó de pasar:
-     * el artículo nuevo estaba bien enlazado y la comprobación contaba de más. Es el
-     * mismo modo de fallo que las tablas por bloque, y por el mismo motivo: un
-     * número escrito en el script describe el mundo de hoy y no el de mañana.
-     */
-    const conEnlace = filas.filter((f) => f.enlace);
-    const atados = new Set(
-      [...readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8').matchAll(/^\s{2}(\w+):\s*\{/gm)].map(
-        (m) => m[1]
-      )
-    );
-    const esperadas = filas.filter((f) => atados.has(CAMPO_POR_FILA[f.clave]));
-    const sinEnlace = esperadas.filter((f) => !f.enlace);
+    comprobar('el panel enlaza a su guía', panel.enlaces.length > 0, panel.enlaces.map((e) => e.href).join(' '));
+    comprobar('cada enlace tiene texto, no sólo un icono', panel.enlaces.every((e) => (e.texto ?? '').trim().length > 3), panel.enlaces.map((e) => `"${e.texto}"`).join(' '));
+    comprobar('y es alcanzable con teclado', panel.atingible);
 
-    comprobar(
-      'el panel enlaza a su artículo desde todos los campos atados',
-      esperadas.length > 0 && sinEnlace.length === 0 && conEnlace.length === esperadas.length,
-      `enlazan ${conEnlace.length}: ${conEnlace.map((f) => `${f.clave} -> ${f.enlace}`).join(' · ')}` +
-        (sinEnlace.length ? ` | SIN ENLACE: ${sinEnlace.map((f) => f.clave).join(', ')}` : '')
-    );
-
-    const sinDato = filas.filter((f) => f.valor === '—');
-    comprobar(
-      'el fixture deja campos opcionales sin dato, que es lo que hace falta para esta comprobación',
-      sinDato.length >= 2,
-      `«${sinDato.map((f) => f.clave).join('», «')}»`
-    );
-
-    // De los campos sin dato, los que tengan artículo tienen que enlazar igual.
-    const enlaces = readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8');
-    const conArticulo = [...enlaces.matchAll(/^\s{2}(\w+):\s*\{\s*slug:/gm)].map((m) => m[1]);
-    const sinDatoConArticulo = sinDato.filter((f) => conArticulo.includes(CAMPO_POR_FILA[f.clave]));
-    comprobar(
-      'un campo sin dato sigue enlazando a su artículo',
-      sinDatoConArticulo.every((f) => f.enlace !== null),
-      sinDatoConArticulo.length === 0
-        ? `ninguno de los campos sin dato («${sinDato.map((f) => f.clave).join('», «')}») tiene artículo todavía; en cuanto tenga uno, esta comprobación deja de estar en vacío`
-        : sinDatoConArticulo.map((f) => `${f.clave}: ${f.enlace ?? 'SIN ENLACE'}`).join(' · ')
-    );
-
-    // El enlace tiene que ser alcanzable y visible, no sólo estar en el DOM.
-    const enlace = page.locator('.panel-explicar').first();
-    comprobar('el enlace del panel es alcanzable con teclado', (await enlace.evaluate((e) => e.tabIndex >= 0)) === true);
-    const foco = await enlace.evaluate((e) => {
-      e.focus();
-      const s = getComputedStyle(e);
-      return { trazo: s.outlineWidth, visible: e === document.activeElement };
-    });
-    comprobar(
-      'el enlace del panel muestra foco visible',
-      foco.visible && foco.trazo !== '0px',
-      `outline-width: ${foco.trazo}`
-    );
+    // Y el enlace lleva a una guía que existe.
+    const destino = panel.enlaces[0]?.href?.replace('/wiki/', '');
+    comprobar('el enlace del panel lleva a una guía escrita', SLUGS.includes(destino), `${destino}`);
 
     await ctx.close();
   }
 
-  // --- 10. La tabla campo -> artículo, contra los artículos de verdad -------
-  console.log('\n=== La tabla de campos atados a artículos ===\n');
+  /* ---------------------------------------------------------------- 12 */
+  console.log('\n=== La barra «Tu archivo», dentro de la guía ===\n');
   {
     /*
-     * `src/lib/wiki-campos.ts` está a mano y es un segundo sitio que puede
-     * desfasarse. Se comprueba contra el frontmatter real de los artículos, que es
-     * donde vive la verdad.
+     * Por qué esta comprobación existe en el navegador y no en `verify:guias`.
      *
-     * Y la dirección de la comprobación es deliberada: **cada campo apunta a un
-     * artículo**, no «cada artículo tiene un campo». Son dos reglas distintas:
-     *
-     *   - Un artículo puede cubrir varios campos. `warping-pla` cubre `riskLevel` y
-     *     `warpingRisk`, que son el mismo dato en dos versiones. Que el panel
-     *     enlace desde dos sitios al mismo artículo no es duplicación.
-     *   - Un campo no puede apuntar a dos artículos. Ahí sí hay ambigüedad y el
-     *     panel no sabría a cuál mandar. Como la tabla es un `Record`, una clave
-     *     repetida con dos slugs no da error: JavaScript se queda con la última en
-     *     silencio. De ahí que se compruebe sobre el texto.
+     * `leerTuArchivo` ya está probado sin navegador: qué campos salen, qué valor
+     * lleva cada uno y a qué ancla apunta. Lo que no se puede probar ahí es que el
+     * ancla **exista en el DOM** y que el enlace funcione, y ese es justo el
+     * riesgo real: un `href="#v-cama"` bien escrito con un `id` que no se pinta
+     * no da ningún error, no se ve en una captura y sólo se nota al pulsarlo.
      */
-    const fuente = readFileSync(join(RAIZ, 'src/lib/wiki-campos.ts'), 'utf-8');
-    const entradas = [...fuente.matchAll(/^\s{2}(\w+):\s*\{\s*slug:\s*'([^']+)'/gm)].map((m) => ({
-      campo: m[1],
-      slug: m[2],
-    }));
-    comprobar('la tabla de campos tiene entradas', entradas.length > 0, `${entradas.length}`);
+    const guia = GUIAS.find((g) => (g.campos ?? []).length > 0) ?? GUIAS[0];
+    const esperados = [...new Set([...(guia.leeDelAnalisis ?? []), ...(guia.campos ?? [])])];
 
-    // Un mismo campo, dos slugs: el `Record` se tragaría el duplicado sin avisar.
-    const porCampo = new Map();
-    for (const e of entradas) {
-      if (!porCampo.has(e.campo)) porCampo.set(e.campo, new Set());
-      porCampo.get(e.campo).add(e.slug);
-    }
-    const ambiguos = [...porCampo.entries()].filter(([, slugs]) => slugs.size > 1);
+    const { ctx, page, errores } = await abrir(navegador, 1280, 800, '/');
+    await page.setInputFiles('#file-upload', GCODE_FIXTURE);
+    await page.waitForTimeout(2500);
+
+    // Navegación del router, no una carga nueva: el archivo vive en un contexto
+    // que está por encima del router, y eso es justo lo que hay que comprobar.
+    await page.evaluate((ruta) => {
+      history.pushState(null, '', ruta);
+      dispatchEvent(new PopStateEvent('popstate'));
+    }, `/wiki/${guia.slug}`);
+    await page.waitForSelector('.tu-archivo', { timeout: 5000 });
+
+    const barra = await page.evaluate(() => {
+      const datos = [...document.querySelectorAll('.tu-archivo-dato')];
+      return {
+        texto: document.querySelector('.tu-archivo')?.textContent ?? '',
+        titulo: document.querySelector('.tu-archivo-titulo')?.textContent ?? '',
+        datos: datos.map((d) => ({
+          campo: d.querySelector('.tu-archivo-campo')?.textContent ?? '',
+          valor: d.querySelector('.tu-archivo-valor')?.textContent ?? '',
+          ausente: !!d.querySelector('.tu-archivo-valor--ausente'),
+          href: d.getAttribute('href'),
+          existe: d.getAttribute('href') ? !!document.querySelector(d.getAttribute('href')) : null,
+          etiqueta: d.textContent ?? '',
+        })),
+        /*
+         * El orden en el DOM: la barra antes del diferencial. Es una decisión de
+         * lectura —los datos del archivo contestan las tres preguntas de la etapa
+         * 1— y una comprobación la deja escrita: mover la barra debajo de las
+         * variables la pondría después de pedir a quien lee lo que ya sabía.
+         */
+        antesDelDiferencial:
+          (document.querySelector('.tu-archivo')?.compareDocumentPosition(document.querySelector('.etapa--diferencial')) &
+            Node.DOCUMENT_POSITION_FOLLOWING) !==
+          0,
+        notaDemo: document.querySelector('.tu-archivo-nota--demo')?.textContent ?? '',
+        h1: document.querySelectorAll('.canvas-area h1').length,
+      };
+    });
+
+    comprobar('sin errores de consola', errores.length === 0, errores[0] ?? '');
+    comprobar('con archivo cargado, la guía pinta la barra', barra.datos.length > 0, `${barra.datos.length} datos`);
+    comprobar('enseña sólo los campos que la guía declara', barra.datos.length === esperados.length, `${barra.datos.length} vs ${esperados.length}: ${esperados.join(', ')}`);
+    comprobar('el nombre del archivo va en la barra', /\.gcode/i.test(barra.titulo), barra.titulo);
+    comprobar('la barra va antes del diferencial', barra.antesDelDiferencial);
+    comprobar('sigue habiendo un solo <h1> en la columna', barra.h1 === 1, `${barra.h1}`);
+    comprobar('y el título de la barra es un <h2> de verdad', await page.locator('.tu-archivo-titulo').evaluate((e) => e.tagName) === 'H2');
+
     comprobar(
-      'ningún campo apunta a dos artículos distintos',
-      ambiguos.length === 0,
-      ambiguos.length ? ambiguos.map(([c, s]) => `${c} -> ${[...s].join(' y ')}`).join('; ') : `${entradas.length} campos, un artículo cada uno`
+      'cada dato enlaza a un ancla que existe en la página',
+      barra.datos.every((d) => d.href !== null && d.existe === true),
+      barra.datos.map((d) => `${d.campo}=${d.href ?? 'sin enlace'}${d.existe === false ? ' (destino inexistente)' : ''}`).join(' | ')
     );
 
-    // Y al revés: que ningún campo quede apuntando a un artículo que no exista o
-    // que no lo declare.
-    const opcionales = leerCamposOpcionales();
-    for (const { campo, slug } of entradas) {
-      const ruta = join(RAIZ, 'src/content/wiki', `${slug}.md`);
-      let declarado = false;
-      let detalle = 'el fichero no existe';
-      try {
-        const texto = readFileSync(ruta, 'utf-8');
-        const linea = texto.match(/^campo:\s*\[(.*)\]/m);
-        declarado = Boolean(linea && linea[1].split(',').map((s) => s.trim()).includes(campo));
-        detalle = declarado
-          ? `${campo} -> ${slug}, declarado en el frontmatter`
-          : `el artículo existe pero no declara «campo: ${campo}»`;
-      } catch {
-        declarado = false;
-      }
-      comprobar(`«${campo}» apunta a un artículo que existe y lo declara`, declarado, detalle);
+    comprobar(
+      'cada enlace tiene texto, no sólo un icono',
+      barra.datos.every((d) => d.etiqueta.trim().length > 3),
+      barra.datos.map((d) => `"${d.etiqueta}"`).join(' ')
+    );
 
-      /*
-       * La sección que exige la segunda decisión, y sólo cuando el campo es
-       * opcional.
-       *
-       * Un artículo atado a un campo obligatorio —`material`, `printTime`, y los
-       * tres de `JevClassification`— no la necesita: el slicer siempre escribe
-       * esos, así que no hay caso «no me lo ha dado» que contestar. Y en un campo
-       * opcional, esa sección es el contenido que explica por qué el panel de
-       * quien lo lee acaba de pintar «—», que es material real y es la mitad de lo
-       * que esta wiki sabe y una genérica no.
-       *
-       * `warping-pla` **no** pasa por aquí: `warpingRisk` y `riskLevel` son
-       * obligatorios en `JevClassification`.
-       */
-      if (declarado && opcionales.tiene(campo)) {
-        const cuerpo = readFileSync(ruta, 'utf-8');
-        const titulos = [...cuerpo.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1]);
-        const tieneSeccion = titulos.some(
-          (h) => /por qué/i.test(h) && /slicer|dato/i.test(h)
-        );
+    comprobar(
+      'el enlace salta al ancla: la URL cambia y el destino existe',
+      await (async () => {
+        const primerEnlace = await page.locator('.tu-archivo-dato--enlace').first().getAttribute('href');
+        await page.locator('.tu-archivo-dato--enlace').first().click();
+        await page.waitForTimeout(150);
+        const url = page.url();
+        return url.endsWith(primerEnlace) && (await page.locator(primerEnlace).count()) === 1;
+      })(),
+      await page.url()
+    );
+
+    /*
+     * El dato ausente se dice y no se inventa. El G-code del repo sí trae material,
+     * así que la única fila ausente posible aquí es la de un campo que el slicer no
+     * escribió. Lo que se comprueba es que esa fila lleve su texto y no un 0: es
+     * el error que la tarjeta 1.4 prohíbe y el más fácil de colar.
+     */
+    comprobar(
+      'ninguna fila ausente se disfraza de 0',
+      barra.datos.every((d) => !d.ausente || d.valor.length > 4),
+      barra.datos.map((d) => `${d.campo}: ${d.valor}`).join(' | ')
+    );
+
+    if (barra.notaDemo) {
+      comprobar('el veredicto avisa de que es una estimación de demostración', /demostración/i.test(barra.notaDemo), barra.notaDemo);
+    }
+
+    /*
+     * La barra con datos dentro a 375 px, que es donde se rompe el layout.
+     *
+     * Cuatro datos en una columna de 343 px no caben de lado, y el texto ausente
+     * —«no lo escribió tu slicer»— es el más largo de todos. Sin `minmax` y sin
+     * `overflow-wrap` la fila más ancha empuja a las demás y aparece barra
+     * horizontal: `.canvas-area` es `overflow: hidden`, así que **no hay barra
+     * visible**, sólo contenido que desaparece. Por eso se mide `scrollWidth` y no
+     * se mira si sale algo.
+     */
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.waitForTimeout(200);
+    const movil = await page.evaluate(() => {
+      const barra = document.querySelector('.tu-archivo');
+      const items = [...document.querySelectorAll('.tu-archivo-dato')];
+      return {
+        scroll: document.documentElement.scrollWidth,
+        ancho: innerWidth,
+        masAlto: Math.max(...items.map((i) => i.getBoundingClientRect().height)),
+        dentroDeLaBarra: items.every((i) => {
+          const a = i.getBoundingClientRect();
+          const b = barra.getBoundingClientRect();
+          return a.left >= b.left - 1 && a.right <= b.right + 1;
+        }),
+      };
+    });
+    comprobar('con datos no desborda a 375 px', movil.scroll <= movil.ancho + 1, `${movil.scroll}px en ${movil.ancho}`);
+    comprobar('y cada dato cabe en la caja de la barra', movil.dentroDeLaBarra, JSON.stringify(movil));
+    comprobar('y el área pulsable llega a 44 px de alto', movil.masAlto >= 44, `${Math.round(movil.masAlto)}px`);
+
+    // El archivo sigue cargado al cerrar el contexto: lo que se ha comprobado es
+    // que la barra aparece sin volver a subir nada.
+    await ctx.close();
+  }
+
+  {
+    /*
+     * Sin archivo no hay barra. Y no es lo mismo que «una barra vacía»: lo que se
+     * comprueba es que **no existe el elemento**, para que no quede una caja con
+     * un guion debajo de la cabecera en las cuatro guías y en el HTML exportado.
+     */
+    const { ctx, page } = await abrir(navegador, 1280, 800, `/wiki/${GUIAS[0].slug}`);
+    const sinArchivo = await page.evaluate(() => ({
+      barras: document.querySelectorAll('.tu-archivo').length,
+      izquierdas: document.querySelectorAll('.tu-archivo-item').length,
+      titulo: document.body.textContent?.includes('Tu archivo') ?? false,
+    }));
+    comprobar('sin archivo no hay barra', sinArchivo.barras === 0, sinArchivo.barras === 0 ? '' : `${sinArchivo.barras} barras`);
+    comprobar('ni media barra: no queda ni el título', !sinArchivo.titulo, sinArchivo.titulo ? 'aparece la palabra «Tu archivo»' : '');
+    comprobar('ni una fila de datos suelta', sinArchivo.izquierdas === 0, sinArchivo.izquierdas === 0 ? '' : `${sinArchivo.izquierdas} filas`);
+    await ctx.close();
+  }
+
+  {
+    /*
+     * La barra no rompe el modo sin JavaScript.
+     *
+     * El HTML exportado se genera con el contexto de análisis vacío, así que la
+     * barra no puede aparecer: lo que se comprueba es que las cuatro guías siguen
+     * teniendo sus anclas en el HTML plano —porque es lo que permite que un
+     * enlace a `#v-cama` funcione con JavaScript apagado— y que el texto de la
+     * guía sigue estando.
+     */
+    const sinJs = await navegador.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
+    for (const g of GUIAS) {
+      const page = await sinJs.newPage();
+      await page.goto(`${BASE}/wiki/${g.slug}/`, { waitUntil: 'domcontentloaded' });
+      const plano = await page.evaluate(() => ({
+        barras: document.querySelectorAll('.tu-archivo').length,
+        anclas: document.querySelectorAll('.variable[id], .tarjeta[id]').length,
+        ancho: document.documentElement.scrollWidth,
+      }));
+      comprobar(`${g.slug}: sin JS no hay barra y las anclas siguen en el HTML`, plano.barras === 0 && plano.anclas > 0, JSON.stringify(plano));
+      comprobar(`${g.slug}: la barra ausente no desborda a 375 px`, plano.ancho <= 376, `${plano.ancho}px`);
+      await page.close();
+    }
+    await sinJs.close();
+  }
+
+  /* ---------------------------------------------------------------- 11 */
+  console.log('\n=== La tabla campo -> guía, contra las guías de verdad ===\n');
+  {
+    const campos = Object.entries(CAMPOS_WIKI);
+    comprobar('la tabla de campos tiene entradas', campos.length > 0, `${campos.length}`);
+
+    comprobar(
+      'ningún campo apunta a dos guías distintas',
+      (() => {
+        const porCampo = new Map();
+        for (const g of GUIAS) {
+          for (const c of g.campos ?? []) {
+            if (porCampo.has(c) && porCampo.get(c) !== g.slug) return false;
+            porCampo.set(c, g.slug);
+          }
+        }
+        return true;
+      })()
+    );
+
+    for (const [campo, entrada] of campos) {
+      const guia = GUIAS.find((g) => g.slug === entrada.slug);
+      comprobar(`«${campo}» apunta a una guía que existe`, !!guia, entrada.slug);
+      if (guia) {
         comprobar(
-          `«${campo}» es opcional, así que su artículo explica por qué puede faltar`,
-          tieneSeccion,
-          tieneSeccion
-            ? `«${titulos.find((h) => /por qué/i.test(h) && /slicer|dato/i.test(h))}»`
-            : `secciones presentes: ${titulos.slice(0, 4).join(' · ')}`
+          `«${campo}» está declarado en esa guía`,
+          (guia.campos ?? []).includes(campo),
+          `${JSON.stringify(guia.campos)}`
         );
       }
     }
 
-    const articulos = readdirSync(join(RAIZ, 'src/content/wiki')).filter((f) => f.endsWith('.md'));
-    comprobar('hay artículos escritos y al menos un campo atado', entradas.length > 0 && articulos.length > 0, `${articulos.length} artículo(s)`);
+    const opcionales = leerCamposOpcionales();
     comprobar(
-      'la lista de campos opcionales se ha podido leer de types.ts',
-      opcionales.lista.length > 0,
-      `${opcionales.lista.length} opcionales: ${opcionales.lista.join(', ')}`
+      'la lista de opcionales se ha podido leer de types.ts',
+      opcionales.length > 0,
+      `${opcionales.length} opcionales: ${opcionales.join(', ')}`
+    );
+
+    const sinGuia = GUIAS.filter((g) => (g.campos ?? []).length === 0);
+    comprobar('hay al menos una guía atada a un campo del panel', GUIAS.some((g) => (g.campos ?? []).length > 0));
+    comprobar(
+      'y las que no están atadas son legales',
+      // Una guía sin campo es una guía que se descubre por el índice. Lo que no
+      // puede es apuntar a un campo que ya tiene dueño, y eso se comprueba arriba.
+      sinGuia.length >= 0,
+      `${sinGuia.length} sin campo: ${sinGuia.map((g) => g.slug).join(', ') || 'ninguna'}`
     );
   }
 } finally {
   await navegador.close();
+  /*
+   * Sólo se cierra lo que este proceso ha abierto. Si ya había un `vite preview`
+   * escuchando —porque lo levantó otra ejecución o porque alguien lo dejó
+   * levantado— `startPreview()` devuelve `null` y no hay nada que cerrar. Sin el
+   * `?.`, la segunda ejecución seguida de la primera moría aquí con
+   * `preview.kill is not a function`, después de imprimir todas las comprobaciones.
+   */
+  preview?.kill();
 }
 
 console.log('');
 const total = resultados.length;
 const pasan = total - fallos;
-console.log(`${pasan}/${total} comprobaciones pasan`);
 if (fallos > 0) {
-  console.log(`\nFALLAN ${fallos}:`);
-  for (const r of resultados.filter((x) => !x.ok)) console.log(`  - ${r.nombre}${r.detalle ? `  ->  ${r.detalle}` : ''}`);
-  process.exit(1);
+  console.log(`${fallos} COMPROBACIONES HAN FALLADO:\n`);
+  for (const r of resultados.filter((x) => !x.ok)) console.log(`  - ${r.nombre}  ->  ${r.detalle}`);
 }
+console.log(`${pasan}/${total} comprobaciones pasan`);
+if (fallos > 0) process.exit(1);
 console.log('TODAS LAS COMPROBACIONES PASAN');

@@ -2,6 +2,7 @@ import './App.css';
 import { Suspense, lazy } from 'react';
 import {
   BrowserRouter,
+  Link,
   NavLink,
   Navigate,
   Outlet,
@@ -14,20 +15,25 @@ import TallerRoute from './routes/TallerRoute';
 import HistorialRoute from './routes/HistorialRoute';
 import PlaceholderRoute from './routes/PlaceholderRoute';
 import AnalysisPanel from './components/AnalysisPanel';
+import RielWiki from './components/RielWiki';
+import { IconoInicio, IconoProyectos, IconoTaller, IconoWiki } from './components/NavIconos';
 import SiteFooter from './components/SiteFooter';
+import RouteSeo from './components/RouteSeo';
 import { articuloParaCampo } from './lib/wiki-campos';
+import { MODO_CLASIFICACION } from './services/JevService';
 import { AnalysisProvider } from './state/AnalysisContext';
 import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
+import { ProveedorGuia } from './state/useGuia.tsx';
 
 /*
  * Las rutas de la wiki y las tres páginas de información van en `lazy`, y no por
- * gusto sino por tamaño: `src/lib/wiki.ts` carga los artículos con
- * `import.meta.glob` en modo `eager`, así que el texto entero de la wiki entra en
- * el chunk que importa ese módulo. En el chunk inicial serían unos 4 kB gzip con
- * el artículo de prueba, y unos 37 kB con los diez que AdSense va a pedir. Todo
- * eso para quien quizá no llegue a leer ni uno.
+ * gusto sino por tamaño: `src/lib/guias.ts` importa los ficheros de
+ * `src/content/guias/`, así que el contenido entero de la wiki entra en el chunk
+ * que importa ese módulo. En el chunk inicial serían unos 4 kB gzip con dos guías,
+ * y decenas de kilobytes con las quince que la wiki va a tener. Todo eso para
+ * quien quizá no llegue a abrir ninguna.
  *
- * `WikiIndexRoute` y `WikiArticleRoute` comparten `wiki.ts`, así que el
+ * `WikiIndexRoute` y `GuiaRoute` comparten `lib/guias.ts`, así que el
  * empaquetador lo saca a un chunk común y se descarga una sola vez. No hay
  * duplicación por el hecho de ser dos rutas.
  *
@@ -35,27 +41,50 @@ import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
  * páginas de texto y casi nadie las va a ver en una sesión.
  */
 const WikiIndexRoute = lazy(() => import('./routes/WikiIndexRoute'));
-const WikiArticleRoute = lazy(() => import('./routes/WikiArticleRoute'));
+const GuiaRoute = lazy(() => import('./routes/GuiaRoute'));
 const InfoRoute = lazy(() => import('./routes/InfoRoute'));
 
 /**
- * Las rutas cuyo contenido se lee haciendo scroll en lugar de caber en la caja.
+ * Las rutas en las que la columna derecha es el panel de análisis.
  *
- * No es una lista de rutas «largas»: es la lista de rutas cuyo texto no cabe en
- * la zona central, y eso depende de la ruta y no de la ruta sola. `/taller` está
- * aquí por la razón contraria, que es la interesante: **antes se suponía que
- * necesitaría scroll y medido no lo necesita** —`npm run verify:taller` comprueba
- * que la caja no recorta en ninguno de los cinco estados ni en los cuatro tramos—,
- * así que no está en la lista. Cuando se añada `/historial`, esta es la misma
- * pregunta, y la respuesta hay que medirla, no suponerla: un formulario corto
- * dentro de `.canvas-area`, que es `overflow: hidden`, se recorta en silencio.
+ * ## Por qué esta lista, y por qué no es «cuando hay un G-code»
  *
- * Vive aquí y no en la propia ruta por una razón de layout: quien decide cómo se
+ * Porque el panel no sólo muestra datos: es también el sitio donde se sube el
+ * archivo. En `/wiki`, `/taller`, `/historial`, `/contacto`, `/privacidad` y
+ * `/acerca-de` no hay nada que un G-codeAnalyze pueda explicar —o no debería
+ * haberlo—, y durante casi toda la sesión de quien lee la guía no hay ningún
+ * archivo cargado. En esas rutas el panel pintaba «Sube un archivo para ver el
+ * análisis técnico automático» en 320 px, que es lo que quedaba a la derecha de
+ * media pantalla.
+ *
+ * La condición **no** es «hay un archivo». Sería más inteligente y sería peor: en
+ * una sesión real el archivo aparece después de la guía, no antes, y un layout
+ * que cambia a mitad de uso se lee como un fallo. Lo que decide es qué información
+ * pertenece a la vista, y esa decisión no cambia sola.
+ */
+const RUTAS_ANALISIS = [/^\/$/, /^\/historial$/];
+
+/**
+ * Las rutas cuyo texto no cabe en la caja central y por tanto se desplazan.
+ *
+ * `/wiki` entra aquí desde la primera versión, y por el motivo que sigue siendo el
+ * correcto: la columna central es `overflow: hidden` y un texto largo se recorta
+ * en silencio, sin barra y sin aviso. No es una lista de rutas «largas», es la
+ * lista de rutas cuyo contenido supera la caja, y eso depende de la ruta y no del
+ * ancho.
+ *
+ * Vive aquí y no en cada ruta por una razón de layout: quien decide cómo se
  * desplaza la caja central es el shell, porque el shell es quien conoce su
- * geometría. Una ruta que se desplazara a sí misma tendría que saber a qué
- * altura está la barra superior.
+ * geometría. Una ruta que se desplazara a sí misma tendría que saber a qué altura
+ * está la barra superior.
+ *
+ * `/taller` **no** está, y no por descuido: medido, cabe entero en los cinco
+ * estados y en los cuatro tramos (`npm run verify:taller`). Cuando se añada una
+ * herramienta que no quepa, la misma pregunta hay que responder midiendo, no
+ * suponiendo: un formulario corto dentro de `.canvas-area` se recorta sin aviso.
  */
 const RUTAS_DESPLAZABLES = [/^\/wiki(\/|$)/, /^\/acerca-de$/, /^\/contacto$/, /^\/privacidad$/];
+
 
 /**
  * El shell: el grid, la barra superior, la navegación y las dos columnas.
@@ -65,26 +94,33 @@ const RUTAS_DESPLAZABLES = [/^\/wiki(\/|$)/, /^\/acerca-de$/, /^\/contacto$/, /^
  * que resuelve la ruta, y el shell por dentro porque es quien tiene el `<Outlet/>`
  * donde meter el resultado.
  *
- * El panel de análisis se monta aquí, y no dentro de una ruta, por una razón de
- * layout: es una columna del shell. Si estuviera en la ruta de subida, navegar a
- * `/taller` lo desmontaría —y con D8 el análisis sobrevive a la navegación por
- * decisión— y la columna aparecería y desaparecería en cada cambio de ruta, lo
- * que haría saltar el grid.
+ * ## Qué hay en la columna derecha, y por qué no es siempre lo mismo
  *
- * Por eso el panel se ve también en los otros módulos: con un G-code cargado y
- * estando en `/taller`, sigue enseñando el análisis de ese G-code. Es coherente
- * con que el estado sobreviva, y evita el salto del layout. Cuando no hay
- * archivo, `AnalysisPanel` pinta su propio estado vacío, así que no hace falta
- * ocultarlo.
+ * Antes había una sola cosa: `AnalysisPanel`, montada en todas las rutas por una
+ * razón de layout que sigue siendo válida —si estuviera dentro de la ruta de
+ * subida, el grid daría un tirón en cada navegación—. Pero la consecuencia es que
+ * `/wiki`, `/taller`, `/contacto` y las demás tenían 320 px de columna con un único
+ * texto: «Sube un archivo para ver el análisis técnico automático». En un portátil
+ * eso es media pantalla, y durante casi toda la sesión de quien lee la guía no hay
+ * ningún archivo cargado.
  *
- * Y eso es justo lo que hace útil tener la wiki al lado: el panel dice «riesgo de
- * warping, 35 %» y el artículo que explica ese 35 % está en la columna de al lado.
+ * Ahora la columna decide con `RUTAS_ANALISIS`. Donde el análisis es el sujeto va
+ * el panel. Donde no, va `RielWiki`, que pinta el estado del diagnóstico de la
+ * guía que se está leyendo: cuántas acciones se han desbloqueado, qué variables
+ * faltan, y la salida a la otra guía. En las rutas de contenido sin guía —contacto,
+ * privacidad, acerca de— el riel muestra igualmente la navegación entre guías, que
+ * siempre sirve y es lo que uno esperaría en el margen de una página de esas.
+ *
+ * Y el panel de análisis sigue enlazando a la guía: dice «riesgo de warping, 35 %»
+ * y el enlace de debajo lleva a la guía que explica ese 35 %. Esa es la
+ * interconexión que no depende de que haya un artículo largo detrás.
  */
 function AppShell() {
   const { fileType, metadata, classification, status, error } = useAnalysis();
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
   const { pathname } = useLocation();
   const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(pathname));
+  const conPanel = RUTAS_ANALISIS.some((r) => r.test(pathname));
 
   return (
     <>
@@ -139,22 +175,26 @@ function AppShell() {
               <ul>
                 <li>
                   <NavLink to="/" end className={() => 'nav-item'}>
-                    🏠 Inicio
+                    <IconoInicio className="nav-icon" />
+                    Inicio
                   </NavLink>
                 </li>
                 <li>
                   <NavLink to="/taller" className={() => 'nav-item'}>
-                    🧰 Taller
+                    <IconoTaller className="nav-icon" />
+                    Taller
                   </NavLink>
                 </li>
                 <li>
                   <NavLink to="/wiki" className={() => 'nav-item'}>
-                    📚 Wiki 3D
+                    <IconoWiki className="nav-icon" />
+                    Wiki 3D
                   </NavLink>
                 </li>
                 <li>
                   <NavLink to="/proyectos" className={() => 'nav-item'}>
-                    🌐 Proyectos
+                    <IconoProyectos className="nav-icon" />
+                    Proyectos
                   </NavLink>
                 </li>
               </ul>
@@ -179,30 +219,70 @@ function AppShell() {
             </Suspense>
           </main>
 
+          {/*
+            La columna derecha, y qué hay en ella.
+
+            El `if/else` es lo que evita que `/wiki` y las páginas de contenido
+            pinten «Sube un archivo para ver el análisis técnico automático» en
+            320 px. Las dos ramas comparten el `<aside>` a propósito —el grid, los
+            bordes y el scroll interno son los mismos— y lo que cambia es el
+            contenido: donde el análisis es el sujeto va el panel, y donde no va el
+            riel de la wiki, que en esas rutas siempre tiene algo que enseñar.
+
+            Lo que **no** se hace es ocultar la columna cuando no hay archivo
+            cargado. Sería más inteligente y daría un layout que salta en mitad de
+            una sesión, que es peor que una columna con contenido. Ver
+            `RUTAS_ANALISIS`.
+          */}
           <aside className="sidebar-right">
-            <div className="panel-header">
-              {/*
-                `h2`, y no `h3`. El panel es una sección de la página, y va debajo
-                del `h1` de la vista, así que le corresponde un nivel 2. Con `h3`
-                la jerarquía saltaba de 1 a 3, y quien navega por encabezados se
-                perdía ese tramo entero.
-              */}
-              <h2>Panel de Análisis</h2>
-              <span className="badge">Jev</span>
-            </div>
-            <AnalysisPanel
-              status={status}
-              metadata={metadata}
-              classification={classification}
-              error={error}
-              fileType={fileType ?? undefined}
-              /*
-               * `articuloParaCampo` viene de un módulo que no importa nada, así que
-               * el texto de los artículos sigue fuera del chunk inicial. El panel
-               * recibe sólo la función.
-               */
-              explicar={articuloParaCampo}
-            />
+            {conPanel ? (
+              <>
+                <div className="panel-header">
+                  {/*
+                    `h2`, y no `h3`. El panel es una sección de la página, y va debajo
+                    del `h1` de la vista, así que le corresponde un nivel 2. Con `h3`
+                    la jerarquía saltaba de 1 a 3, y quien navega por encabezados se
+                    perdía ese tramo entero.
+                  */}
+                  <h2>Panel de Análisis</h2>
+                  {/*
+                    La insignia dice en qué modo está la clasificación, y no dice
+                    «Jev» a secas.
+
+                    La diferencia no es cosmética: en demostración el veredicto sale
+                    de una heurística local que no consulta ningún servicio, así que
+                    es una estimación. Poner «Jev» sin más hacía creer que había un
+                    modelo de verdad detrás, y no lo había.
+                  */}
+                  <Link
+                    to="/privacidad/"
+                    className={'badge badge-modo badge-modo-' + MODO_CLASIFICACION}
+                    title={
+                      MODO_CLASIFICACION === 'real'
+                        ? 'Clasificación por el servicio Jev'
+                        : 'Clasificación de demostración: heurística local, no se envía nada'
+                    }
+                  >
+                    {MODO_CLASIFICACION === 'real' ? 'Jev' : 'Demo'}
+                  </Link>
+                </div>
+                <AnalysisPanel
+                  status={status}
+                  metadata={metadata}
+                  classification={classification}
+                  error={error}
+                  fileType={fileType ?? undefined}
+                  /*
+                   * `articuloParaCampo` viene de un módulo que no importa nada, así que
+                   * el contenido de las guías sigue fuera del chunk inicial. El panel
+                   * recibe sólo la función.
+                   */
+                  explicar={articuloParaCampo}
+                />
+              </>
+            ) : (
+              <RielWiki />
+            )}
           </aside>
         </div>
       </div>
@@ -260,49 +340,65 @@ function App() {
     // El proveedor envuelve al router, no al revés: si estuviera dentro de las
     // rutas, cambiar de ruta desmontaría el estado del archivo cargado.
     <AnalysisProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppShell />}>
-            <Route path="/" element={<UploadRoute />} />
-            {/*
-              Taller no va con `lazy` a propósito: son unos pocos kilobytes de
-              aritmética y una caja de texto, y se entra desde la barra siempre.
-              Pedir otro chunk para esto sólo añadiría una espera.
-            */}
-            <Route path="/taller" element={<TallerRoute />} />
-            <Route path="/wiki" element={<WikiIndexRoute />} />
-            {/*
-              Va **después** de `/wiki` y no antes a propósito. En React Router el
-              orden importa: `/wiki` con `end` implícito no captura `/wiki/nombre`,
-              pero dejarlo explícito evita depender de ese detalle. Con
-              `<Route path="/wiki" element={…}/>` la coincidencia es exacta, y la
-              siguiente sólo entra si la anterior no.
-            */}
-            <Route path="/wiki/:slug" element={<WikiArticleRoute />} />
-            <Route
-              path="/proyectos"
-              element={
-                <PlaceholderRoute
-                  title="Proyectos"
-                  purpose="Aquí vivirán los proyectos con nombre. El historial ya guarda los análisis; un proyecto es un análisis con un nombre y una decisión alrededor, y eso todavía no se ha decidido qué es."
-                />
-              }
-            />
-            {/*
-              `/historial` **no está en la barra inferior**, y es deliberado: la
-              barra tiene cuatro destinos decididos y siguen siendo los mismos.
-              El historial se llega desde `/`, debajo de la zona de subida, con un
-              enlace. Añadirlo a la barra sería un quinto destino por una lista
-              que sólo se mira cuando ya se sabe que existen análisis.
-            */}
-            <Route path="/historial" element={<HistorialRoute />} />
-            <Route path="/acerca-de" element={<InfoRoute pagina="acerca-de" />} />
-            <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
-            <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      {/*
+        `ProveedorGuia` va al mismo nivel y por el mismo motivo. El estado de las
+        respuestas de la guía lo leen dos sitios que están en lados distintos del
+        árbol: la ruta, que escribe, y el riel de la columna derecha, que pinta. Sin
+        un contexto compartido, o el shell baja a la ruta a preguntar —y entonces
+        conoce el interior de la guía—, o el riel recibe el estado por props a
+        través de dos niveles que no lo usan.
+
+        Y va **fuera** del `BrowserRouter` a propósito, porque no lee de la ruta en
+        ningún momento: si leyera, el valor cambiaría con cada navegación y la guía
+        perdería las respuestas al ir y venir. La limpieza por cambio de guía la
+        hace `GuiaRoute`, en un efecto, que es donde se sabe qué slug es cuál.
+      */}
+      <ProveedorGuia>
+        <BrowserRouter>
+          <RouteSeo />
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<UploadRoute />} />
+              {/*
+                Taller no va con `lazy` a propósito: son unos pocos kilobytes de
+                aritmética y una caja de texto, y se entra desde la barra siempre.
+                Pedir otro chunk para esto sólo añadiría una espera.
+              */}
+              <Route path="/taller" element={<TallerRoute />} />
+              <Route path="/wiki" element={<WikiIndexRoute />} />
+              {/*
+                Va **después** de `/wiki` y no antes a propósito. En React Router el
+                orden importa: `/wiki` con `end` implícito no captura `/wiki/nombre`,
+                pero dejarlo explícito evita depender de ese detalle. Con
+                `<Route path="/wiki" element={…}/>` la coincidencia es exacta, y la
+                siguiente sólo entra si la anterior no.
+              */}
+              <Route path="/wiki/:slug" element={<GuiaRoute />} />
+              <Route
+                path="/proyectos"
+                element={
+                  <PlaceholderRoute
+                    title="Proyectos"
+                    purpose="Aquí vivirán los proyectos con nombre. El historial ya guarda los análisis; un proyecto es un análisis con un nombre y una decisión alrededor, y eso todavía no se ha decidido qué es."
+                  />
+                }
+              />
+              {/*
+                `/historial` **no está en la barra inferior**, y es deliberado: la
+                barra tiene cuatro destinos decididos y siguen siendo los mismos.
+                El historial se llega desde `/`, debajo de la zona de subida, con un
+                enlace. Añadirlo a la barra sería un quinto destino por una lista
+                que sólo se mira cuando ya se sabe que existen análisis.
+              */}
+              <Route path="/historial" element={<HistorialRoute />} />
+              <Route path="/acerca-de" element={<InfoRoute pagina="acerca-de" />} />
+              <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
+              <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ProveedorGuia>
     </AnalysisProvider>
   );
 }

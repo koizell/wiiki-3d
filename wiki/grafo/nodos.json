@@ -1,0 +1,224 @@
+{
+  "$schema": "./esquema.json",
+  "version": 1,
+  "descripcion": "Grafo de conocimiento de impresion 3D. Cada hecho vive aqui UNA vez, con su fuente. Los articulos son vistas sobre este grafo: no pueden repetir un hecho porque no lo tienen, lo referencian. Eso es lo que hace que dos articulos no se copien entre si, y lo que convierte una mencion en un enlace real.",
+  "tiposNodo": {
+    "parametro": "Un valor que se ajusta: temperatura, altura, velocidad, ventilador.",
+    "material": "Un filamento o material de impresion.",
+    "maquina": "Un modelo de impresora o sus piezas.",
+    "chapa": "Una superficie de construccion.",
+    "defecto": "Algo que sale mal en la pieza.",
+    "materialesDeImpresion": "No es un tipo; el patron de las piezas: PLA, PETG, ABS, ASA, TPU, PC, PA.",
+    "metodo": "Una forma de medir o corregir: calibracion, nivelacion, cold pull.",
+    "equipo": "Herramienta o ajuste del sliced.",
+    "sintoma": "Lo que el usuario ve, observable.",
+    "fuente": "Un documento concreto del que sale el dato."
+  },
+  "tiposRelacion": {
+    "explica": "un sintoma tiene una causa probable documentada",
+    "seResuelveCon": "un sintoma tiene un metodo documentado que lo comprueba",
+    "contramedida": "un parametro se ajusta para responder a un defecto",
+    "contraindicado": "una combinacion que una fuente advierte que no funciona",
+    "depende": "un metodo depende de una condicion previa",
+    "acota": "un parametro acota a otro: la chapa decide el rango de temperatura",
+    "contrasta": "dos fuentes dan valores distintos para lo mismo y ambas se publican",
+    "seExplicaEn": "un nodo tiene su explicacion larga en un articulo"
+  },
+  "nodos": [
+    {
+      "id": "param-bed-temp",
+      "tipo": "parametro",
+      "nombre": "Temperatura de cama",
+      "campo": "bedTemp",
+      "resumen": "La temperatura a la que se calienta la cama antes y durante la impresion.",
+      "seExplicaEn": "temperatura-cama"
+    },
+    {
+      "id": "param-nozzle-temp",
+      "tipo": "parametro",
+      "nombre": "Temperatura de boquilla",
+      "campo": "hotendTemp",
+      "resumen": "La temperatura del hotend. Distinta de la de cama y con otro motivo.",
+      "seExplicaEn": "temperatura-hotend"
+    },
+    {
+      "id": "param-layer-height",
+      "tipo": "parametro",
+      "nombre": "Altura de capa",
+      "campo": "layerHeight",
+      "resumen": "Grosor de cada capa. Condiciona adhesion, tiempo y resistencia.",
+      "seExplicaEn": "altura-capa"
+    },
+    {
+      "id": "material-pla",
+      "tipo": "material",
+      "nombre": "PLA",
+      "resumen": "El material mas usado de FDM: rigido, con poca contraccion y sin necesidad de cama caliente."
+    },
+    {
+      "id": "material-petg",
+      "tipo": "material",
+      "nombre": "PETG",
+      "resumen": "Mas tenaz que el PLA y mas propenso a adherence en la chapa. Tope conhecido: por encima de 60 °C se reblandece."
+    },
+    {
+      "id": "material-abs",
+      "tipo": "material",
+      "nombre": "ABS",
+      "resumen": "Se contrae mucho al enfriar y necesita camara cerrada para no abrir grietas."
+    },
+    {
+      "id": "defecto-warping",
+      "tipo": "defecto",
+      "nombre": "Warping",
+      "resumen": "Las esquinas de la pieza se levantan por la contraccion diferencial entre el material caliente y el frio.",
+      "seExplicaEn": "warping-pla"
+    },
+    {
+      "id": "defecto-capa-separada",
+      "tipo": "defecto",
+      "nombre": "Separacion entre capas",
+      "resumen": "Las capas se sueltan por dentro aunque la base este pegada. No es lo mismo que el warping.",
+      "seExplicaEn": "separaciones-entre-capas"
+    },
+    {
+      "id": "defecto-no-adhiere",
+      "tipo": "defecto",
+      "nombre": "La primera capa no se pega",
+      "resumen": "La base no se sostiene. La causa mas frecuente en un impressor nuevo no es el ajuste, es la limpieza.",
+      "seExplicaEn": "adhesion-primera-capa"
+    },
+    {
+      "id": "metodo-calibracion-capa",
+      "tipo": "metodo",
+      "nombre": "Calibracion de la primera capa",
+      "resumen": "Medir la altura a la que la primera capa sale pegada y sin surcos. En Prusa es el Live Z adjust; en el i3, la perilla del LCD.",
+      "seExplicaEn": "adhesion-primera-capa"
+    },
+    {
+      "id": "metodo-nivelacion",
+      "tipo": "metodo",
+      "nombre": "Nivelacion de la cama",
+      "resumen": "Medir la distancia entre boquilla y cama en varios puntos. La malla 3x3 es el estandar; 7x7 cuando la adhesion es irregular.",
+      "seExplicaEn": "adhesion-primera-capa"
+    },
+    {
+      "id": "sintoma-grieta-cama",
+      "tipo": "sintoma",
+      "nombre": "Grietas o huecos bajo la cama"
+    },
+    {
+      "id": "sintoma-linea-onda",
+      "tipo": "sintoma",
+      "nombre": "La primera capa sale ondulada"
+    }
+  ],
+  "relaciones": [
+    {
+      "desde": "sintoma-grieta-cama",
+      "tipo": "explica",
+      "hacia": "defecto-no-adhiere",
+      "nota": "El sintoma visible de que la primera capa no se pega.",
+      "fuentes": ["prusa:first-layer-issues"]
+    },
+    {
+      "desde": "sintoma-linea-onda",
+      "tipo": "explica",
+      "hacia": "defecto-no-adhiere",
+      "nota": "Ondular significa boquilla demasiado baja; separacion, demasiado alta. Es el mismo sintoma con dos causas opuestas.",
+      "fuentes": ["prusa:first-layer-calibration-i3"]
+    },
+    {
+      "desde": "defecto-no-adhiere",
+      "tipo": "seResuelveCon",
+      "hacia": "metodo-calibracion-capa",
+      "nota": "Primero se comprueba que la boquilla no esta ni alta ni baja. Una primera capa demasiado apretada NO se pega, y eso parece un fallo de adhesion sin serlo.",
+      "fuentes": ["prusa:under-extrusion", "prusa:first-layer-calibration-i3"]
+    },
+    {
+      "desde": "defecto-no-adhiere",
+      "tipo": "seResuelveCon",
+      "hacia": "metodo-nivelacion",
+      "nota": "La nivelacion va antes que cambiar el material: es una comprobacion, no un ajuste.",
+      "fuentes": ["prusa:mesh-bed-leveling", "bambu:first-layer-not-sticking"]
+    },
+    {
+      "desde": "defecto-warping",
+      "tipo": "contramedida",
+      "hacia": "param-bed-temp",
+      "nota": "Bambu indica +5 a +10 °C para las esquinas levantadas. Es una recomendacion con su alcance, no una causa.",
+      "fuentes": ["bambu:warping-falling-off-collapsing"]
+    },
+    {
+      "desde": "defecto-capa-separada",
+      "tipo": "contramedida",
+      "hacia": "param-nozzle-temp",
+      "nota": "Prusa prueba subir la boquilla 5 °C cuando falla la union, no antes bajar el ventilador.",
+      "fuentes": ["prusa:layer-separation-and-splitting-fdm"]
+    },
+    {
+      "desde": "material-petg",
+      "tipo": "contraindicado",
+      "hacia": "param-bed-temp",
+      "nota": "Por encima de 60 °C el PETG se reblandece: Bambu recomienda abrir la puerta o quitar la tapa. Es el aviso de seguridad mas concreto de la wiki.",
+      "fuentes": ["bambu:filament-guide-material-table"]
+    },
+    {
+      "desde": "metodo-calibracion-capa",
+      "tipo": "depende",
+      "hacia": "param-layer-height",
+      "nota": "La calibracion de la primera capa se hace con una altura de capa concreta; cambiarla despues la invalida.",
+      "fuentes": ["prusa:first-layer-calibration-i3"]
+    },
+    {
+      "desde": "defecto-no-adhiere",
+      "tipo": "contrasta",
+      "hacia": "defecto-warping",
+      "nota": "Se confunden a menudo, y el remedio es el contrario: si la pieza se levanta por las esquinas tras imprimir, la base si estaba pegada.",
+      "fuentes": ["prusa:layer-separation-and-splitting-fdm", "bambu:warping-falling-off-collapsing"]
+    }
+  ],
+  "fuentes": {
+    "prusa:first-layer-issues": {
+      "titulo": "First layer issues",
+      "url": "https://help.prusa3d.com/article/first-layer-issues_1804",
+      "raw": "wiki/raw/temperatura-cama-prusa-kb-first-layer-issues.md"
+    },
+    "prusa:first-layer-calibration-i3": {
+      "titulo": "First Layer Calibration (i3)",
+      "url": "https://help.prusa3d.com/article/first-layer-calibration-i3_112364",
+      "raw": "wiki/raw/adhesion-primera-capa-prusa-kb-first-layer-calibration-i3.md",
+      "alcance": "Solo i3, MINI, MK3 y MK3.5. No aplica a MK4, XL ni CORE One."
+    },
+    "prusa:mesh-bed-leveling": {
+      "titulo": "Mesh bed leveling",
+      "url": "https://help.prusa3d.com/article/mesh-bed-leveling_112163",
+      "raw": "wiki/raw/adhesion-primera-capa-prusa-kb-mesh-bed-leveling.md"
+    },
+    "prusa:under-extrusion": {
+      "titulo": "Under-extrusion",
+      "url": "https://help.prusa3d.com/article/under-extrusion_2007",
+      "raw": "wiki/raw/adhesion-primera-capa-prusa-kb-under-extrusion.md"
+    },
+    "prusa:layer-separation-and-splitting-fdm": {
+      "titulo": "Layer separation and splitting (FDM)",
+      "url": "https://help.prusa3d.com/article/layer-separation-and-splitting-fdm_1806",
+      "raw": "wiki/raw/separaciones-entre-capas-prusa-kb-layer-separation-and-splitting-fdm.md"
+    },
+    "bambu:first-layer-not-sticking": {
+      "titulo": "First Layer Not Sticking: Causes and Solutions",
+      "url": "https://wiki.bambulab.com/en/knowledge-sharing/first-layer-not-sticking",
+      "raw": "wiki/raw/adhesion-primera-capa-bambu-wiki-first-layer-not-sticking.md"
+    },
+    "bambu:warping-falling-off-collapsing": {
+      "titulo": "Model Warping, Falling Off, or Collapsing",
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/print-quality/warping-falling-off-collapsing",
+      "raw": "wiki/raw/warping-pla-bambu-wiki-warping-falling-off-collapsing.md"
+    },
+    "bambu:filament-guide-material-table": {
+      "titulo": "Filament Guide / Material Table",
+      "url": "https://wiki.bambulab.com/en/general/filament-guide-material-table",
+      "raw": "wiki/raw/temperatura-cama-bambu-wiki-filament-guide-material-table.md"
+    }
+  }
+}

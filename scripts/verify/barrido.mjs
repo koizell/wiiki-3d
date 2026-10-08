@@ -13,7 +13,7 @@
  */
 
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { STL_FIXTURE, GCODE_FIXTURE } from './fixtures.mjs';
 import { probePage, modelPixels, startPreview } from './probe.mjs';
 
@@ -32,6 +32,14 @@ const CASES = [
  * Altura mínima que se considera utilizable para orbitar con un dedo. No sale
  * de una fuente: es el umbral con el que el layout de 768–1199 se garantiza
  * 313px, y por debajo de 150px el modelo en pantalla baja de 115px.
+ *
+ * **Este mismo número está escrito en el CSS**, en el suelo de
+ * `.viewer-3d-container`: `min-height: max(40dvh, 150px)`. Es a propósito, y por
+ * eso las dos mitades de la decisión son el mismo número y no dos que coinciden.
+ * Si se cambia aquí y no allí, esta comprobación pasa a medir un fallo que la
+ * aplicación ya no tiene —que es como se cuelan las comprobaciones que prueban
+ * lo contrario de lo que dicen—; si se cambia allí y no aquí, el barrido avisa de
+ * un cambio de la altura mínima que alguien ha hecho sin querer.
  */
 const MIN_VIEWER = 150;
 
@@ -146,6 +154,44 @@ async function main() {
     bajos.length
       ? bajos.map((r) => `${r.w}x${r.h}=${r.stl.stage.h}px`).join(', ')
       : `mínimo ${Math.min(...rows.map((r) => r.stl.stage.h))}px`);
+
+  /*
+   * El umbral y el CSS son la misma decisión, y esto lo ata.
+   *
+   * Sin esta comprobación, el acoplamiento del que habla el comentario de
+   * `MIN_VIEWER` es sólo una intención escrita en dos sitios. Se rompe en las dos
+   * direcciones y ninguna se ve:
+   *
+   *   - Si se sube el CSS a 200 y el script sigue en 150, **todas las aserciones
+   *     siguen en verde** y el barrido certifica que 150 px es suficiente cuando la
+   *     aplicación ya garantiza 200. nobody lo ha mirando.
+   *   - Si se baja el CSS a 100 y el script sigue en 150, falla por la razón
+   *     correcta, pero el mensaje dice «el visor mide 110px» sin decir que el suelo
+   *     se cambió a mano.
+   *
+   * La comprobación lee el CSS y compara los dos números, así que el fallo dice
+   * **quién se desincronizó**: si la comprobación falla, el suelo y el umbral ya no
+   * son la misma decisión, y el arreglo es decidir cuál de los dos cambia.
+   *
+   * Se busca `max(40dvh, Npx)` y no `Npx` a secas porque el suelo tiene dos
+   * términos y sólo uno es el umbral; y se exige la forma con `max()` porque es la
+   * que distingue «hay suelo» de «no hay suelo». Con `40dvh` solo, esta comprobación
+   * falla, que es lo que tiene que pasar: es exactamente el estado en el que el
+   * visor bajaba a 144.
+   */
+  const css = readFileSync(
+    new URL('../../src/App.css', import.meta.url), 'utf8'
+  );
+  const suelo = css.match(/min-height:\s*max\(\s*\d+dvh\s*,\s*(\d+)px\s*\)/);
+  check(
+    `el suelo del visor en el CSS lleva el mismo mínimo que MIN_VIEWER (${MIN_VIEWER})`,
+    suelo !== null && Number(suelo[1]) === MIN_VIEWER,
+    suelo === null
+      ? 'no se encuentra `min-height: max(<X>dvh, <N>px)` en src/App.css'
+      : suelo[1] === String(MIN_VIEWER)
+        ? `src/App.css lo fija en ${suelo[1]}px, como aquí`
+        : `src/App.css fija el suelo en ${suelo[1]}px y aquí el umbral es ${MIN_VIEWER}px: o suben los dos o bajan los dos`
+  );
 
   check('los tres breakpoints siguen en 640 / 768 / 1200',
     byVp['639x667'].stl.topbar === 100 && byVp['640x667'].stl.topbar === 69 &&

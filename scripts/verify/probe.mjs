@@ -88,6 +88,17 @@ export async function captureOverlayDuringLoad(browser, base, { width, height })
     };
   });
 
+  // Retener la lectura del fichero: el overlay montado puede desaparecer entre
+  // dos evaluate() si FileReader termina muy rápido. Sólo se mide ese estado de
+  // carga, no la geometría; el contexto se cierra al terminar la medición.
+  await page.evaluate(() => {
+    const leer = FileReader.prototype.readAsArrayBuffer;
+    FileReader.prototype.readAsArrayBuffer = function (archivo) {
+      if (archivo instanceof File && archivo.name === 'prueba.stl') return;
+      leer.call(this, archivo);
+    };
+  });
+
   // Soltar el chunk y esperar a que el visor monte.
   release();
   for (let i = 0; i < 200; i++) {

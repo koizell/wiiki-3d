@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 
 /**
- * Las tres páginas que la revisión de contenido de Google AdSense exige: Acerca de,
- * Contacto y Privacidad.
+ * Páginas de información y transparencia: Acerca de, Contacto y Privacidad.
  *
  * ## Por qué el texto está dentro del código y no en ficheros sueltos
  *
@@ -10,7 +9,7 @@ import { Link } from 'react-router-dom';
  * secciones con encabezado—, así que separarlas en tres ficheros `md` sólo
  * multiplicaría por tres el código de carga, el esqueleto y las reglas de estilo,
  * a cambio de tres párrafos de contenido. Cuando una de las tres crezca de
- * verdade, ésa se extrae.
+ * verdad, ésa se extrae.
  *
  * ## Lo que estas páginas no pueden hacer
  *
@@ -76,8 +75,9 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
               visor 3D para los archivos que no tienen metadatos.
             </p>
             <p>
-              Todo ocurre en tu navegador. El archivo no se sube a ningún sitio
-              para guardarlo, y la aplicación no tiene cuentas ni registro.
+              La lectura del archivo ocurre en tu navegador. El archivo completo
+              no se envía para guardarlo. El historial conserva los resultados
+              localmente y la aplicación no tiene cuentas ni registro.
             </p>
           </>
         ),
@@ -100,16 +100,26 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
         cuerpo: (
           <>
             <p>
-              Los artículos de la wiki no son texto de relleno. Cada uno se escribe
-              a partir de fuentes reales, se comprueba contra ellas y se anota lo
-              que las fuentes se contradicen entre sí. Cuando dos fuentes
-              discrepan, el artículo explica la discrepancia en vez de elegir una y
-              callar la otra.
+              La wiki no son artículos largos. Cada guía se abre por{' '}
+              <strong>el síntoma que ves en la pieza</strong> —las esquinas se levantan,
+              las capas se sueltan por dentro— y lo primero que hace es comprobar que
+              es ese problema y no el de al lado, porque warping y separación entre
+              capas se parecen en la foto y no se arreglan con lo mismo.
             </p>
             <p>
-              Y cada artículo explica un dato que esta aplicación ya está
-              midiendo. Si el panel dice «Riesgo de warping», el artículo sobre
-              warping está a un clic.
+              Después tú declaras tu montaje: material, chapa, tamaño, dónde está la
+              impresora. Y la guía se estrecha con cada respuesta. Las cifras que no
+              apliquen a lo que has marcado desaparecen, y la lista de acciones sale
+              con el número concreto y la fuente de donde sale. Si el panel dice
+              «Riesgo de warping, 35 %», la guía que explica ese 35 % está a un clic.
+            </p>
+            <p>
+              Cada guía termina con lo que <strong>no</strong> resuelve, y con las
+              fuentes de las que sale todo. Cuando dos fabricantes se contradicen, la
+              guía enseña la contradicción en vez de elegir una y callar la otra.
+            </p>
+            <p>
+              <Link to="/wiki">Empieza por el síntoma que tienes</Link>.
             </p>
           </>
         ),
@@ -145,13 +155,15 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
         ),
       },
       {
-        titulo: 'Errores en un artículo',
+        titulo: 'Errores en una guía',
         cuerpo: (
           <p>
-            Si un artículo de la wiki dice algo que sabes que está mal, dilo. Cada
-            uno lleva sus fuentes al pie, así que se puede comprobar la afirmación
-            concreta. Una fuente que cambió, o un ajuste que dejó de ser
-            recomendado, es exactamente el tipo de cosa que hay que corregir.
+            Si una guía dice algo que sabes que está mal, dilo. Cada acción lleva la
+            fuente de la que sale y cada ficha lleva sus fuentes al pie, así que se
+            puede comprobar la afirmación concreta: una fuente que cambió, una cifra
+            que se movió, un ajuste que dejó de ser recomendado. Es exactamente el
+            tipo de cosa que hay que corregir, y con la URL del hilo o de la página
+            llega antes.
           </p>
         ),
       },
@@ -164,12 +176,22 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
       {
         titulo: 'Qué guardamos',
         cuerpo: (
-          <p>
-            Nada. wiiki-3d no usa <code>localStorage</code>, ni{' '}
-            <code>sessionStorage</code>, ni IndexedDB. No hay historial, ni
-            favoritos, ni cuentas de usuario. Si cierras la pestaña, se ha acabado
-            todo, y volver a abrir la aplicación es empezar de cero.
-          </p>
+          <>
+            <p>
+              wiiki-3d guarda un historial local de los análisis completados en
+              <strong> IndexedDB</strong>, una base de datos de tu navegador.
+              Conserva el nombre y tamaño del archivo, su tipo, la fecha, los
+              metadatos extraídos y el resultado de la clasificación. No guarda
+              el archivo completo ni su geometría y no lo sincroniza con otros dispositivos.
+            </p>
+            <p>
+              Cerrar la pestaña no borra ese historial. Puedes eliminar una entrada
+              o vaciarlo desde <Link to="/historial">Historial</Link>, o borrar los
+              datos del sitio en tu navegador. El navegador también puede eliminar
+              estos datos; si no permite el almacenamiento, el historial no funciona.
+              No hay cuentas de usuario.
+            </p>
+          </>
         ),
       },
       {
@@ -180,7 +202,8 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
               Al subir un archivo <strong>G-code</strong>, la aplicación envía sus
               metadatos de impresión —material, temperaturas, altura de capa, tiempo
               y filamento— a un clasificador para que te dé el diagnóstico de
-              riesgo.
+              riesgo cuando está configurado el servicio real. En modo de
+              demostración, la clasificación se calcula localmente y no se hace ese envío.
             </p>
             <p>
               Ese envío va primero a un proxy propio y de ahí al servicio de
@@ -196,8 +219,10 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
         titulo: 'Cookies y seguimiento',
         cuerpo: (
           <p>
-            wiiki-3d no pone ninguna cookie y no carga ningún script de terceros.
-            Tampoco hay analítica de ningún tipo.
+            El código actual no incorpora cookies publicitarias ni herramientas
+            de analítica. El historial usa IndexedDB, no cookies. El alojamiento
+            y los servicios de red pueden procesar datos de conexión, como tu
+            dirección IP, para servir la página y atender las peticiones.
           </p>
         ),
       },
@@ -206,16 +231,18 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
         cuerpo: (
           <>
             <p>
-              <strong>Hoy esta aplicación no muestra publicidad</strong>, y por eso
-              todavía no hay cookies de terceros en tu navegador.
+              <strong>Hoy esta aplicación no muestra publicidad</strong> ni carga
+              el script de AdSense.
             </p>
             <p>
               Está previsto publicitar mediante <strong>Google AdSense</strong>. Si
               se hace, Google actuará como tercero y podrá usar cookies para
               mostrarte anuncios según tus visitas anteriores a este y a otros
-              sitios. Ni el contenido que leas en la wiki ni el archivo que subas se
-              enviarían con esa llamada, pero su presencia en la página es lo que
-              activa las cookies descritas en las
+              sitios, según el consentimiento aplicable. Los anuncios pueden
+              procesar la URL de la página, la dirección IP e información del
+              navegador. No se enviará el archivo subido como dato publicitario.
+              Antes de activar anuncios se actualizará esta política y se
+              configurará la gestión del consentimiento que corresponda. Consulta las{' '}
               <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">
                 políticas de publicidad de Google
               </a>.

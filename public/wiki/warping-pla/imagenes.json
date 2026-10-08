@@ -1,0 +1,17 @@
+{
+  "method": "SVG escrito en código; sin modelo generativo ni consumo de API",
+  "style": "Ilustración técnica estilo flat design, paleta limitada a #0f1115, #161a20, #2563eb, #60a5fa, #e8ecf1. Líneas limpias, sin degradados, fondo oscuro. Estilo de manual técnico moderno, no realista. Sin texto en la imagen. High detail.",
+  "files": {
+    "portada.svg": {
+      "width": 960,
+      "height": 540,
+      "brief": "Pieza azul sobre una base isométrica; bordes curvados hacia arriba y flechas de elevación. Sin impresora, pantallas ni texto. Ilustración conceptual, no escala ni medida."
+    },
+    "diagrama.svg": {
+      "width": 960,
+      "height": 400,
+      "brief": "Tres paneles sin texto: enfriamiento, contracción, borde elevado sobre la base. Las etiquetas accesibles son el texto alternativo y el párrafo contiguo del artículo."
+    }
+  },
+  "technicalSource": false
+}
