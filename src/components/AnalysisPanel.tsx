@@ -149,28 +149,52 @@ function AnalysisPanel({
       <section>
         <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
-          <DataRow label="Material" value={metadata.material} />
-          <DataRow label="Temp. hotend" value={formatCelsius(metadata.hotendTemp)} />
           {/*
-            `campo="bedTemp"` es lo que hace que esta fila enlace al artículo que
-            explica la temperatura de cama. Se descubrió con una comprobación que
-            comparaba las filas del panel contra `src/lib/wiki-campos.ts`: el campo
-            estaba en la tabla y la fila no lo pedía, así que el enlace no salía
-            nunca y la tabla prometía una cosa que la vista no cumplía. Sin el
-            `campo`, esta fila es idéntica a la de al lado.
+            `campo` es lo que hace que una fila enlace a la guía que explica ese
+            dato. **Cada campo que esté en `src/lib/wiki-campos.ts` tiene que
+            pasarlo aquí**, o la tabla promete un enlace que la vista no pinta: es
+            un fallo silencioso, porque el enlace que no sale no da error.
+
+            Pasó con `bedTemp`, y volvió a pasar con `material`, `hotendTemp`,
+            `layerHeight`, `hasOverhangs` y `overhangAngle` al escribir sus guías:
+            las entradas estaban en la tabla y estas filas no pedían el campo.
+            `verify:wiki` lo comprueba ahora contra `CAMPOS_WIKI`, para que no haya
+            que acordarse.
           */}
+          <DataRow label="Material" value={metadata.material} campo="material" explicar={explicar} />
+          <DataRow
+            label="Temp. hotend"
+            value={formatCelsius(metadata.hotendTemp)}
+            campo="hotendTemp"
+            explicar={explicar}
+          />
           <DataRow
             label="Temp. cama"
             value={formatCelsius(metadata.bedTemp)}
             campo="bedTemp"
             explicar={explicar}
           />
-          <DataRow label="Altura de capa" value={formatMillimetres(metadata.layerHeight)} />
+          <DataRow
+            label="Altura de capa"
+            value={formatMillimetres(metadata.layerHeight)}
+            campo="layerHeight"
+            explicar={explicar}
+          />
           <DataRow label="Tiempo estimado" value={formatDuration(metadata.printTime)} />
           <DataRow label="Filamento" value={formatGrams(metadata.filamentUsed)} />
           <DataRow label="Peso total" value={formatGrams(metadata.filamentWeight)} />
-          <DataRow label="Voladizos" value={formatYesNo(metadata.hasOverhangs)} />
-          <DataRow label="Ángulo máx." value={formatDegrees(metadata.overhangAngle)} />
+          <DataRow
+            label="Voladizos"
+            value={formatYesNo(metadata.hasOverhangs)}
+            campo="hasOverhangs"
+            explicar={explicar}
+          />
+          <DataRow
+            label="Ángulo máx."
+            value={formatDegrees(metadata.overhangAngle)}
+            campo="overhangAngle"
+            explicar={explicar}
+          />
         </dl>
       </section>
 

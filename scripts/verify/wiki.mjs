@@ -969,6 +969,25 @@ try {
     comprobar('el enlace del panel lleva a una guía escrita', destinos.every((d) => SLUGS.includes(d.slug)), destinos.map((d) => d.slug).join(' '));
     comprobar('y apunta a la sección, no a la cabecera', destinos.every((d) => !!d.ancla), destinos.map((d) => d.href).join(' '));
 
+    /*
+     * Y **todos** los campos de la tabla salen como enlace.
+     *
+     * Es la comprobación que faltaba. La tabla campo→guía promete un enlace por
+     * campo, pero quien lo pinta es la fila del panel, y sólo si le pasa su
+     * `campo`. Al escribir las guías nuevas, cinco campos se quedaron en la tabla
+     * sin que ninguna fila los pidiera —`material`, `hotendTemp`, `layerHeight`,
+     * `hasOverhangs`, `overhangAngle`— y nada lo decía: un enlace que no sale no
+     * da error. Ahora la tabla se compara con los enlaces que el panel pinta.
+     */
+    const faltan = Object.entries(CAMPOS_WIKI)
+      .filter(([, e]) => !panel.enlaces.some((l) => l.href === `/wiki/${e.slug}#${e.ancla}`))
+      .map(([campo]) => campo);
+    comprobar(
+      'todos los campos de la tabla salen como enlace en el panel',
+      faltan.length === 0,
+      faltan.length ? `sin enlace: ${faltan.join(', ')}` : `${Object.keys(CAMPOS_WIKI).length} campos`
+    );
+
     // Y el ancla existe de verdad en la guía a la que lleva: pulsarlo tiene que dejar
     // la URL con el `#` y el destino en el DOM, que es lo que no se ve en una captura.
     const primero = destinos[0];
