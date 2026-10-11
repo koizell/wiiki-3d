@@ -9,6 +9,8 @@ export interface SeoPagina {
   path: string;
   noindex?: boolean;
   schema?: Record<string, unknown>;
+  /** Fecha de contenido real (ISO), sólo si se puede declarar sin inventarla. Para el `<lastmod>` del sitemap. */
+  lastmod?: string;
 }
 
 export const SEO_PAGINAS: Record<string, SeoPagina> = {
@@ -94,6 +96,7 @@ export function seoGuia(guia: {
     path,
     title: `${guia.sintoma} | ${guia.titulo} | wiiki-3d`,
     description: guia.resumen,
+    lastmod: guia.actualizado,
     schema: {
       '@context': 'https://schema.org',
       '@type': 'HowTo',

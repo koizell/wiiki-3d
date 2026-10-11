@@ -89,9 +89,16 @@ try {
    * Search Console acaba reportando como error.
    */
   const indexables = paginas.map((p) => p.seo).filter((p) => !p.noindex);
+  /*
+   * `<lastmod>` sólo donde hay una fecha de contenido real —hoy, las guías, con su
+   * `actualizado`—. Las demás URLs van sin él a propósito: inventar una fecha de
+   * frescura para la portada o las páginas fijas en cada build sería mentirle a
+   * Search Console, igual que inventar un `datePublished`. Un `<url>` sin lastmod
+   * es válido; uno con una fecha falsa, no.
+   */
   await writeFile(join(dist, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    indexables.map((p) => `<url><loc>${escapar(`${ORIGEN}${p.path}`)}</loc></url>`).join('\n') + '\n</urlset>\n');
+    indexables.map((p) => `<url><loc>${escapar(`${ORIGEN}${p.path}`)}</loc>${p.lastmod ? `<lastmod>${p.lastmod}</lastmod>` : ''}</url>`).join('\n') + '\n</urlset>\n');
   console.log(
     `Exportadas ${paginas.length} páginas por el renderizador; sitemap: ${indexables.length} URLs ` +
     `(${paginas.length - indexables.length} con noindex).`
