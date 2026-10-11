@@ -40,34 +40,62 @@ function documento(seo, html) {
 const servidor = await createServer({ root: raiz, server: { middlewareMode: true }, appType: 'custom' });
 let ORIGEN;
 try {
-  const { paginasEstaticas } = await servidor.ssrLoadModule('/src/lib/static-pages.tsx');
+  const { paginasEstaticas, paginasDeHerramienta } = await servidor.ssrLoadModule('/src/lib/static-pages.tsx');
   const seo = await servidor.ssrLoadModule('/src/lib/seo.ts');
   ORIGEN = seo.ORIGEN;
-  const paginas = paginasEstaticas();
+
+  /*
+   * Todas las páginas salen del mismo sitio: el renderizador.
+   *
+   * Antes había dos caminos. Las páginas de contenido se renderizaban —la wiki y
+   * las tres de información— y las cuatro de herramienta se escribían con un HTML
+   * a mano que decía «Esta herramienta necesita JavaScript». En la raíz eso era
+   * toda la portada: 44 palabras, sin contenido, en la página que ve quien llega
+   * desde un buscador.
+   *
+   * El problema no era el texto del aviso sino que hubiera dos formas de generar
+   * una página: la que se revisa y la que se escribe de memoria. Ahora hay una, y
+   * las de herramienta que no se pueden renderizar —porque dependen del
+   * almacenamiento del navegador— traen su texto de `paginasDeHerramienta()`, que
+   * también es código revisable y no una cadena suelta en este script.
+   */
+  const paginas = [...paginasEstaticas(), ...paginasDeHerramienta()];
   for (const { seo: pagina, html } of paginas) {
     const directorio = resolve(dist, `.${pagina.path}`);
-    if (!directorio.startsWith(`${dist}/`)) throw new Error(`Ruta inválida: ${pagina.path}`);
+    /*
+     * El guardia permite la raíz y rechaza cualquier cosa que se salga de `dist/`.
+     *
+     * Antes exigía `${dist}/` con barra, y la portada —cuyo `path` es `/`— resolvía
+     * a `dist` a secas: el propio guardia impedía exportar la página más
+     * importante. Se permiten las dos formas y se sigue rechazando el recorrido
+     * hacia arriba, que es lo único que el guardia tiene que impedir.
+     */
+    if (directorio !== dist && !directorio.startsWith(`${dist}/`)) {
+      throw new Error(`Ruta inválida: ${pagina.path}`);
+    }
     await mkdir(directorio, { recursive: true });
     await writeFile(join(directorio, 'index.html'), documento(pagina, html));
   }
-  // Rutas de herramientas: sólo metadatos y mensaje sin JS; no resultados personales.
-  const herramientas = ['/', '/taller', '/historial', '/proyectos'];
-  for (const path of herramientas) {
-    const pagina = seo.SEO_PAGINAS[path];
-    const html = `<main class="wiki-info"><h1>${escapar(pagina.title)}</h1><p>${escapar(pagina.description)}</p><p>Esta herramienta necesita JavaScript. Las <a href="/wiki">guías de la wiki</a> pueden leerse sin él.</p></main>`;
-    const directorio = path === '/' ? dist : join(dist, path.slice(1));
-    await mkdir(directorio, { recursive: true });
-    await writeFile(join(directorio, 'index.html'), documento(pagina, html));
-  }
+
   await writeFile(join(dist, '404.html'), documento({
     title: 'Página no encontrada | wiiki-3d', path: '/404', noindex: true,
     description: 'Esta página no existe. Consulta las guías disponibles en la wiki.',
   }, '<main class="wiki-info"><h1>Página no encontrada</h1><p><a href="/wiki">Consultar la wiki</a></p></main>'));
-  const indexables = [seo.SEO_PAGINAS['/'], seo.SEO_PAGINAS['/taller'], ...paginas.map((p) => p.seo)];
+
+  /*
+   * El sitemap lleva lo indexable, y sólo lo indexable: las páginas que declaran
+   * `noindex` —`/historial` y `/proyectos`— no entran. Declarar en el sitemap una
+   * URL que la propia página marca como no indexable es una contradicción que
+   * Search Console acaba reportando como error.
+   */
+  const indexables = paginas.map((p) => p.seo).filter((p) => !p.noindex);
   await writeFile(join(dist, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     indexables.map((p) => `<url><loc>${escapar(`${ORIGEN}${p.path}`)}</loc></url>`).join('\n') + '\n</urlset>\n');
-  console.log(`Exportadas ${paginas.length} páginas de contenido y 4 herramientas; sitemap: ${indexables.length} URLs.`);
+  console.log(
+    `Exportadas ${paginas.length} páginas por el renderizador; sitemap: ${indexables.length} URLs ` +
+    `(${paginas.length - indexables.length} con noindex).`
+  );
 } finally {
   await servidor.close();
 }

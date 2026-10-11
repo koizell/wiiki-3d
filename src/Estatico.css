@@ -1,0 +1,296 @@
+/*
+ * La portada exportada y las páginas de herramienta.
+ *
+ * ## Por qué es un fichero aparte y no una sección más de `App.css`
+ *
+ * Porque `App.css` tiene 4.000 líneas y estas reglas son de un árbol que **sólo
+ * existe en el HTML exportado**: `.inicio-estatico` no lo pinta la aplicación en
+ * ningún estado. Tenerlas juntas hace que quien lea `App.css` crea que ese árbol
+ * se monta en el navegador, y quien busque por qué la portada se ve así mire en
+ * el sitio equivocado.
+ *
+ * Vive en `src/` y no en `public/` porque tiene que entrar en el bundle con hash:
+ * es CSS de la página, no un fichero suelto. Y el import va en
+ * `src/lib/static-pages.tsx`, que es el único módulo que monta este árbol.
+ *
+ * ## La medida de lectura
+ *
+ * `.inicio-estatico` **no** lleva `.wiki-info`, y es a propósito: la portada tiene
+ * tabla, pasos y listas, y el `max-width: 68ch` de las páginas de información está
+ * pensado para prosa. Aquí la columna es más ancha porque la tabla necesita sitio,
+ * pero los párrafos llevan su propio tope (`--medida-parrafo`) para que la línea no
+ * pase de los 75 caracteres que el proyecto se exige. La tabla no lo necesita: una
+ * tabla se lee por filas, no por líneas de texto.
+ */
+
+.inicio-estatico {
+  --medida-parrafo: 66ch;
+  line-height: 1.68;
+}
+
+.inicio-estatico p,
+.inicio-estatico li {
+  color: var(--text-secondary);
+}
+
+.inicio-estatico h1 {
+  font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.1rem);
+  line-height: 1.22;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.inicio-estatico h2 {
+  font-size: 1.15rem;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.inicio-estatico h3 {
+  font-size: 1rem;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.inicio-estatico section + section {
+  margin-top: 2.25rem;
+}
+
+.inicio-estatico p,
+.inicio-estatico ul,
+.inicio-estatico ol,
+.inicio-estatico dl {
+  max-width: var(--medida-parrafo);
+}
+
+.inicio-estatico a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.inicio-estatico strong {
+  color: var(--text-primary);
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.inicio-hero p {
+  margin-top: 0.5rem;
+}
+
+/* El aviso de que hace falta JavaScript. Va **después** del contenido y con la
+   misma forma que el aviso de las guías: filete de acento, no un grito. */
+.inicio-estatico-aviso {
+  margin-top: 1rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* --- Tabla de referencia ------------------------------------------------- */
+
+.inicio-referencia-intro {
+  margin-bottom: 0.85rem;
+}
+
+/*
+ * La tabla puede ser más ancha que los párrafos, y en móvil tiene que poder
+ * desplazarse en horizontal sin arrastrar la página entera. El contenedor es el
+ * que scrollea; la tabla de dentro mantiene su ancho mínimo legible.
+ */
+.tabla-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
+
+.tabla-referencia {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.tabla-referencia caption {
+  caption-side: bottom;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+}
+
+.tabla-referencia th,
+.tabla-referencia td {
+  padding: 0.5rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla-referencia thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.tabla-referencia tbody th {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tabla-referencia tbody td {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla-referencia tbody tr:last-child th,
+.tabla-referencia tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-sin-dato {
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.tabla-fuente {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+}
+
+/* --- Los cuatro pasos ---------------------------------------------------- */
+
+.inicio-pasos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 760px) {
+  .inicio-pasos-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.inicio-pasos-lista li {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
+
+/* El número del paso, con contador y no a mano: si se reordena la lista, el
+   número se reordena con ella. */
+.inicio-pasos-lista {
+  counter-reset: paso;
+}
+
+.inicio-pasos-lista > li {
+  counter-increment: paso;
+}
+
+.inicio-pasos-lista > li > h3::before {
+  content: counter(paso) " · ";
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Los nueve problemas ------------------------------------------------- */
+
+.inicio-problemas-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+@media (min-width: 760px) {
+  .inicio-problemas-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.inicio-problemas-lista a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  text-decoration: none;
+  transition: border-color 0.18s;
+}
+
+.inicio-problemas-lista a:hover,
+.inicio-problemas-lista a:focus-visible {
+  border-color: var(--accent);
+}
+
+.inicio-problemas-lista strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.inicio-problemas-lista span {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* --- Preguntas frecuentes ------------------------------------------------ */
+
+.inicio-preguntas-lista {
+  margin: 0;
+}
+
+.inicio-pregunta + .inicio-pregunta {
+  margin-top: 1rem;
+}
+
+.inicio-pregunta dt {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.inicio-pregunta dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* --- El cierre ----------------------------------------------------------- */
+
+.inicio-cierre {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * El movimiento, con la misma regla que el resto del sitio: si el sistema pide
+ * menos animación, no hay transición. Aquí es una sola, pero la regla se escribe
+ * igual porque el día que se añada la segunda nadie se acordará de esta.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .inicio-problemas-lista a {
+    transition: none;
+  }
+}

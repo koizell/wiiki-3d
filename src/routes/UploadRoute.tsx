@@ -96,23 +96,15 @@ function UploadRoute() {
   if (!file) {
     return (
       <div className="inicio">
-        <section className="inicio-hero">
-          {/*
-          El `<h1>` de la vista cuando no hay archivo. Antes lo llevaba la zona de
-          subida; ahora lo lleva la cabecera, porque con el inicio lleno de
-          contenido el título de la página es qué es wiiki-3d y no el gesto de
-          arrastrar un archivo. La zona de subida baja a `h2` (ver `App.css`) para
-          que siga habiendo **un solo** `<h1>` visible, que es lo que exige
-          `verify:rutas`.
-        */}
-          <h1>¿Va a salir bien tu impresión?</h1>
-          <p>
-            Sube el archivo que exportó tu slicer y wiiki-3d lee lo que ya está
-            escrito dentro —material, temperaturas, gramos, tiempo— antes de que
-            gastes filamento. Y si la pieza sale mal, aquí está el porqué.
-          </p>
-        </section>
+        {/*
+          La cabecera la pone `Inicio`, no esta ruta.
 
+          Estaba aquí, y por eso el HTML exportado no tenía ningún `<h1>`: la ruta
+          del navegador no se renderiza en la exportación. Como la cabecera no
+          necesita estado —es un titular y tres párrafos—, se movió a la pieza que
+          los dos modos comparten. Lo que queda aquí es sólo lo que sí lo necesita:
+          la zona de subida.
+        */}
         <div className="upload-zone">
           <div className="upload-icon">⬆</div>
           <h2>Arrastra tu archivo aquí</h2>
