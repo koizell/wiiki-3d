@@ -32,6 +32,27 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
+
+  /*
+   * Ajustes de renderizado de texto que vienen del reset del navegador.
+   *
+   * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
+   * oscura siempre, no solo cuando el sistema operativo lo es. Sin él, las
+   * barras de desplazamiento —que en móvil están siempre a la vista— se pintan
+   * claras sobre un fondo oscuro, y los controles nativos hacen lo mismo. El
+   * boilerplate traía `light dark`, que delegaba en el SO y por eso fallaba en
+   * el móvil con tema claro.
+   *
+   * El suavizado importa más de lo que parece en esta paleta: texto casi blanco
+   * sobre un fondo muy oscuro produce bordes duros que se ven peor sin
+   * antialiasing. `font-synthesis` evita que el navegador invente un grosor de
+   * negrita falso cuando no hay una cara de la familia que lo traiga.
+   */
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -46,18 +67,114 @@ body {
   color: var(--text-primary);
 }
 
+/*
+ * Shell de la aplicación: mapa del layout.
+ *
+ * `.app-container` es el grid y lleva las cuatro zonas nombradas. La navegación
+ * se declara como zona aunque en móvil esté en `position: fixed` y fuera de
+ * flujo: al fixarla conserva su `grid-area`, así que cuando por debajo del
+ * breakpoint vuelve a la columna no hay que volver a colocarla.
+ *
+ * `grid-template-areas` en lugar de `grid-column` a mano: el layout entero se
+ * lee de un vistazo como un diagrama, y reordenar una zona es cambiar su
+ * nombre en una línea en lugar de reetiqueteando varios `grid-column` que se
+ * desincronizan en cuanto alguien toca uno solo.
+ */
 .app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  display: grid;
+  grid-template-areas:
+    "header"
+    "main"
+    "panel";
+  /*
+   * Filas de contenido, no `1fr`: en móvil el scroll es del documento, así que
+   * las filas se dimensionan por su contenido y lo que sobra de alto queda abajo,
+   * bajo la barra de navegación. Fijar la altura del shell obligaría a
+   * recortar el panel, que es lo más alto de los tres.
+   */
+  grid-template-rows: auto auto auto;
+  /*
+   * `align-content: start` es imprescindible aquí, y no es cosmético.
+   *
+   * Con filas `auto` y un contenedor más alto que su contenido, el
+   * `align-content` por defecto —que en grid se comporta como `stretch`— reparte
+   * el espacio sobrante entre todas las filas por igual. Y "repartir el sobrante"
+   * en filas `auto` quiere decir "inflarlas": a 375×667 la app ocupa 636px de
+   * 667, sobran 31px, cada fila crece ~10px y no se nota. A 375×900 sobran 264px
+   * y el header —cuyo contenido real mide 28 + 8 + 44 + 19 = 99px — se inflaba
+   * hasta 179px.
+   *
+   * `start` deja el sobrante al final, que es justo lo que promete el comentario
+   * de `grid-template-rows` de arriba.
+   *
+   * A partir de 768px las filas son `1fr` y llenan solas el contenedor, así que
+   * no hay sobrante que repartir y la declaración no cambia nada allí.
+   */
+  align-content: start;
+  min-height: 100dvh;
+  /*
+   * Hueco de la barra inferior fija. 44px del `min-height` de los items + el
+   * padding vertical de 0.6rem de la barra, redondeado a 60px. El
+   * `env(safe-area-inset-bottom)` evita que el indicador del iPhone quede
+   * debajo de la barra en vez de encima; en el resto de navegadores vale 0 y no
+   * cambia nada.
+   */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  /* Los bordes laterales del notch y el waterdrop en horizontal. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/*
+ * `display: contents` es lo que permite que las tres piezas del contenido sean
+ * zonas del grid del shell sin tocar el JSX.
+ *
+ * Sin esto habría dos opciones, y las dos son peores: mover `<header>` dentro de
+ * `.main-layout` en `App.tsx` (cambio de markup), o mantener dos contenedores
+ * distintos — `.app-container` flex vertical y `.main-layout` grid — y que el
+ * reparto de columnas tenga que coordinarse entre los dos. Con `contents`,
+ * `.main-layout` deja de generar caja y sus tres hijos pasan a ser grid items
+ * del shell, junto al header.
+ *
+ * Su `display: contents` también se traga el `flex: 1` y el `overflow: hidden`
+ * que tenía, que es exactamente lo que se quería quitar: el recorte lo hace el
+ * `overflow: hidden` de `.viewer-3d-container`, que es donde está el canvas
+ * WebGL y donde sí hace falta para respetar las esquinas redondeadas.
+ *
+ * El riesgo habitual de `display: contents` es que el elemento desaparezca del
+ * árbol de accesibilidad. Aquí no hay nada que perder: `.main-layout` es un
+ * `div` sin rol, sin nombre y sin contenido propio.
+ */
+.main-layout {
+  display: contents;
 }
 
 /* Barra superior */
 .top-bar {
+  grid-area: header;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.5rem;
+  gap: 0.5rem;
+  /*
+   * El header se lleva sus acciones a una fila propia por debajo del logotipo.
+   *
+   * **La causa no es que no quepan: es que `.top-nav` es `width: 100%`.** Un item
+   * flex del ancho de la línea entera no puede compartirla con el logotipo, así
+   * que se parten en dos siempre, mida lo que mida el contenido. Medido con los
+   * dos elementos que hay hoy —logotipo de 115 px y un botón de 128 px, más 8 px
+   * de hueco y 40 px de padding horizontal, 291 px en total—: la barra se parte
+   * igual a 360, a 432 y a 520 px.
+   *
+   * El comentario anterior lo justificaba con un presupuesto de 424 px que
+   * incluía un botón de "Iniciar Sesión" que ya no existe, porque P7 lo retiró.
+   * El número era cierto cuando se escribió y dejó de serlo sin que nadie lo
+   * notara: la conclusión —«que se partan en dos»— seguía siendo cierta, pero por
+   * otro motivo, y con el botón de vuelta el corte de 640 habría parecido
+   * justificado por el ancho cuando en realidad es el `width: auto` de más abajo.
+   */
+  flex-wrap: wrap;
+  padding: 0.6rem 0.75rem;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
 }
@@ -77,12 +194,41 @@ body {
 
 .top-nav {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/*
+ * Áreas táctiles.
+ *
+ * El mínimo de 44×44px es la recomendación de Apple HIG y el objetivo más
+ * exigente de WCAG 2.2 (2.5.5); el mínimo absoluto de la AA (2.5.8) son 24px.
+ * Se aplica a todo el ancho, no solo a móvil, por una razón práctica: CSS no
+ * puede distinguir un dedo de un ratón, y un móvil puede tener 1200px de ancho.
+ * El coste en escritorio son ~11px de alto en la barra superior.
+ *
+ * `inline-flex` + `align-items: center` van en los botones porque el "X" de
+ * `.btn-danger` es un carácter suelto: sin centrarlo, el área táctil crece hacia
+ * abajo y el texto se descuadra respecto al centro real del botón.
+ *
+ * `font-family: inherit` es obligatorio desde que los disparadores son
+ * `<button>` en vez de `<label>`. Un `button` no hereda la familia tipográfica
+ * del padre por especificación, así que sin esta línea los botones se pintarían
+ * con la fuente del sistema y no con la de la app.
+ */
+.btn-primary,
+.btn-ghost,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  font-family: inherit;
 }
 
 .btn-primary {
-  display: inline-block;
   background: var(--accent);
   color: white;
   border: none;
@@ -121,35 +267,74 @@ body {
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  min-width: 44px;
 }
 
 .btn-danger:hover {
   background: #dc2626;
 }
 
-/* Layout principal */
-.main-layout {
-  display: grid;
-  grid-template-columns: 220px 1fr 320px;
-  flex: 1;
-  overflow: hidden;
+/* Navegación */
+.sidebar-left {
+  /*
+   * Barra inferior fija en móvil.
+   *
+   * Es `position: fixed` y no un reordenamiento con grid porque el orden del DOM
+   * ya pone la navegación antes del área principal: el hueco de la barra se
+   * reserva en `.app-container` con el `padding-bottom`, así que ninguna
+   * fotografía del diseño depende de cuánto alto dé el texto.
+   *
+   * `border-top` en lugar de `border-right`: la barra toca el borde inferior de
+   * la pantalla, y un filete lateral ahí no separa nada de nada.
+   */
+  grid-area: nav;
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  padding: 0.3rem 0.35rem calc(0.3rem + env(safe-area-inset-bottom));
 }
 
-/* Sidebar izquierda */
-.sidebar-left {
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
-  padding: 1rem 0.5rem;
+.sidebar-left ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+  list-style: none;
 }
 
 .nav-item {
-  list-style: none;
-  padding: 0.65rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 44px;
+  padding: 0.4rem 0.2rem;
   border-radius: 6px;
   cursor: pointer;
   color: var(--text-secondary);
-  margin-bottom: 0.25rem;
   transition: all 0.15s;
+  /* Icono encima y texto debajo: en una barra de 375px, cuatro items en fila
+     salen a ~85px cada uno y "BambuStudio" no cabe de otra forma. */
+  font-size: 0.65rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/*
+ * Icono de navegación.
+ *
+ * Antes eran emoji (🏠 🧰 📚 🌐) y en el navegador de desarrollo salían cuatro
+ * cuadritos: el sistema no tiene fuente de emoji. Un SVG en línea no depende de
+ * ninguna fuente instalada, hereda `currentColor` —así que el icono se pone azul
+ * con la regla de `[aria-current="page"]` sin código nuevo— y no pesa una
+ * petición de red.
+ */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
 }
 
 .nav-item:hover {
@@ -157,25 +342,57 @@ body {
   color: var(--text-primary);
 }
 
-.nav-item.active {
+/*
+ * El estado activo se marca por `aria-current="page"`, y no por una clase.
+ *
+ * Es el atributo que `NavLink` pone solo en el enlace de la ruta activa, así que
+ * el estado visual y el que anuncia un lector de pantalla no pueden
+ * desincronizarse: sale del mismo sitio. Una clase `.active` aplicada a mano
+ * podría quedar puesta en el enlace equivocado, y entonces la app diría una cosa
+ * y mostraría otra.
+ */
+.nav-item[aria-current="page"] {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-left: 3px solid var(--accent);
+  /* El indicador de "aquí estás" apunta hacia arriba en una barra horizontal,
+     por eso el filete se mueve del lateral al superior. */
+  border-top: 3px solid var(--accent);
+}
+
+/*
+ * Foco visible en los enlaces de navegación.
+ *
+ * Se mide sobre el enlace **activo**, que es el caso difícil: con
+ * `background: var(--bg-hover)` puesto, el anillo dibujado hacia fuera cae en el
+ * fondo del enlace y se pierde. Por eso el `outline-offset` es negativo: mete el
+ * anillo hacia dentro, encima del fondo del propio enlace.
+ *
+ * El color es `--accent-text`, el mismo que el filete del estado activo, para que
+ * el anillo y el filete se lean como la misma señal y no como dos distintos.
+ *
+ * Medido con `npm run verify:rutas`: 2px, offset -2px, en los cuatro tramos de
+ * ancho, y con la transición terminada — `.nav-item` tiene `transition: all`, así
+ * que leer el estilo calculado sin esperar mide el valor interpolado.
+ */
+.nav-item:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
 }
 
 /* Área central */
 .canvas-area {
+  grid-area: main;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at center, #1a1f26 0%, #0f1115 100%);
-  padding: 2rem;
+  padding: 1rem;
   overflow: hidden;
 }
 
 .upload-zone {
   text-align: center;
-  padding: 3rem 4rem;
+  padding: 1.5rem 1rem;
   border: 2px dashed var(--border);
   border-radius: 12px;
   max-width: 500px;
@@ -187,6 +404,17 @@ body {
   margin-bottom: 1rem;
 }
 
+/*
+ * El `font-size` explícito es lo que mantiene el aspecto al cambiar este elemento
+ * de nivel. Cuando el inicio tenía la zona de subida como única cosa, su título
+ * era el `<h1>` de la ruta; ahora el `<h1>` es la cabecera del inicio y éste baja
+ * a `<h2>`, así que el selector cambia y el número no: si se quitara, el `<h2>`
+ * caería en su 1,5em por defecto (el `h1` caía en 2em) y el título mediría el
+ * doble. El `margin-bottom` sí hace falta, porque el reset `* { margin: 0 }` de
+ * arriba lo anula en los dos.
+ *
+ * `.file-name` hace lo mismo con su `h1`, a 0,9 rem.
+ */
 .upload-zone h2 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
@@ -197,19 +425,239 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* --- El inicio: la subida deja de ser toda la pantalla ----------------------- *
+ *
+ * La raíz `/` es la pantalla de subida, y lo sigue siendo: los scripts de
+ * `scripts/verify/` cargan el fichero sobre `/` en 29 viewports. Lo que cambia es
+ * que la subida deja de ocupar la pantalla entera: alrededor van la cabecera que
+ * dice qué es el sitio, tres síntomas frecuentes que llevan a la wiki y los
+ * destinos que no son la subida.
+ *
+ * `.inicio` es una columna, y no la fila que resultaba de los tres hijos sueltos
+ * de antes: con `Recientes` visible, la zona de subida, el aviso y la lista se
+ * ponían uno al lado del otro en vez de apilados, porque `.canvas-area` es
+ * `display: flex` en fila. Un solo hijo que es columna lo arregla de raíz.
+ */
+.inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  width: 100%;
+  max-width: 52rem;
+  padding: 1.5rem 0.25rem 3rem;
+}
+
+.inicio-hero {
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.inicio-hero h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+
+.inicio-hero p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* La zona de subida conserva su `max-width: 500px` y se centra en la columna. */
+.inicio .upload-zone {
+  align-self: center;
+  width: 100%;
+}
+
+.inicio-sintomas h2,
+.inicio-modulos h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
+}
+
+.inicio-sintomas-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 44rem;
+  margin-bottom: 1.1rem;
+}
+
+/*
+ * `auto-fit` con `minmax(11rem, 1fr)` y no un número fijo de columnas: la columna
+ * central mide distinto en cada tramo (335px en móvil, ~500 en tablet, hasta
+ * 832 en escritorio) y una rejilla fija de tres dejaría las tarjetas en 160px en
+ * el tramo estrecho, donde el síntoma se parte en cinco líneas. Con `auto-fit`
+ * caben dos cuando hay sitio para dos y tres cuando hay para tres, y las vacías
+ * se colapsan, así que las tres tarjetas se reparten el ancho entero.
+ */
+.inicio-sintomas-lista,
+.inicio-modulos-lista {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.inicio-sintomas-lista > li,
+.inicio-modulos-lista > li {
+  display: flex;
+}
+
+/*
+ * La tarjeta es el enlace entero, como en el índice de la wiki, y por el mismo
+ * motivo: el área pulsable es toda la tarjeta y el foco de teclado pasa por la
+ * misma forma que el ratón.
+ */
+.inicio-sintoma {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0.85rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.inicio-sintoma:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.inicio-sintoma:focus-visible,
+.inicio-modulo:focus-visible,
+.inicio-sintomas-enlace:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+.inicio-sintoma-dibujo {
+  width: 4.5rem;
+  flex: none;
+}
+
+.inicio-sintoma-texto {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.inicio-sintoma-sintoma {
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.inicio-sintoma-flecha {
+  color: var(--accent-text);
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.inicio-sintoma:hover .inicio-sintoma-flecha {
+  transform: translateX(3px);
+}
+
+/*
+ * El enlace al índice mide 44px de alto **siempre**, como el de `Recientes` y por
+ * el mismo motivo: es un control táctil y no un texto de 0,9rem.
+ */
+.inicio-sintomas-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.9rem;
+  color: var(--accent-text);
+  font-size: 0.9rem;
+}
+
+.inicio-modulo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 0.95rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.inicio-modulo:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.inicio-modulo-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.inicio-modulo-detalle {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inicio-sintoma,
+  .inicio-modulo,
+  .inicio-sintoma-flecha {
+    transition: none;
+  }
+
+  .inicio-sintoma:hover,
+  .inicio-modulo:hover,
+  .inicio-sintoma:hover .inicio-sintoma-flecha {
+    transform: none;
+  }
+}
+
 /* Contenedor del visor 3D */
 .viewer-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   gap: 1rem;
+  /*
+   * El estirado va aquí y no como `height: 100%`.
+   *
+   * Con el padre a altura automática —el caso móvil, donde el scroll es del
+   * documento— un `height: 100%` no tiene contra qué medirse, resuelve a
+   * `auto`, `.viewer-container` colapsa y `.viewer-3d-container` se queda a
+   * cero píxeles. El visor desaparecería sin un solo error en consola.
+   * `align-self: stretch` sí funciona contra un padre automático, porque lo
+   * estira en su eje transversal.
+   *
+   * Hace falta porque `.canvas-area { align-items: center }` centra a sus hijos,
+   * lo cual es justo lo que quiere la zona de subida —que es su otro hijo— pero
+   * no el visor, que necesita llenar el alto. Medido: a 1200×667, sin esta
+   * declaración, `.viewer-container` se queda en 88px y el canvas WebGL en
+   * **0px**.
+   *
+   * Sólo hace algo a partir de 1200px. Por debajo las filas del grid son
+   * `auto`, así que la fila del área central ya mide exactamente lo que mide su
+   * contenido y estirarse o centrarse da el mismo resultado.
+   */
+  align-self: stretch;
 }
 
 .file-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   background: var(--bg-panel);
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -218,8 +666,29 @@ body {
 
 .file-name {
   font-weight: 500;
+  /*
+   * Este `font-size` es lo que anula el `2em` por defecto del `<h1>` en el que
+   * ahora vive el nombre del archivo. No es decorativo: sin él el título mide 32
+   * px en vez de 14,4, y la fila de `.file-info` crece con un archivo cargado.
+   */
   font-size: 0.9rem;
   color: var(--accent-text);
+  /*
+   * `.file-name` es flex item de `.file-info` y ahí sí que manda `min-width:
+   * auto`. Un G-code de OrcaSlicer sale con nombres largos
+   * (`proyecto_4.2h_PLA_0.2mm.gcode`) y sin esto el nombre empuja la fila, y
+   * `overflow: hidden` de `.canvas-area` lo recorta en silencio: se ve el
+   * nombre a medias y parece que el archivo se ha subido mal.
+   *
+   * El arreglo va aquí y no en los grid items porque `.canvas-area` ya tiene
+   * `overflow` distinto de `visible`, lo que hace que su `min-width: auto`
+   * ya resuelva a 0: ponerlo ahí no cambiaría nada.
+   *
+   * `anywhere` y no `break-word` a propósito: el primero también reduce el
+   * ancho de contribución mínima, que es lo que deja que la fila encoja.
+   */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .viewer-3d-container {
@@ -229,6 +698,28 @@ body {
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-dark);
+  /*
+   * Suelo de altura del visor en móvil. Va en el hijo, no en `.canvas-area`:
+   * `.canvas-area` con `min-height` no impide que `.viewer-3d-container` colapse
+   * a cero, porque el colapso viene del eslabón intermedio. Es el mínimo para
+   * que orbitar una pieza con `OrbitControls` sea manejable con un dedo.
+   *
+   * El suelo es `max(40dvh, 150px)` y no sólo `40dvh` porque un porcentaje solo no
+   * tiene suelo: en una ventana de 360px de alto daba 144px, seis por debajo del
+   * mínimo que el propio barrido declara, y el modelo se encuadraba a 111px.
+   *
+   * La pregunta es si subir ese suelo rompe las ventanas en las que sí había sitio.
+   * No, y está medido: en 640–767 el visor **siempre** mide el suelo, nunca se
+   * estira, porque `.canvas-area` lleva `align-items: center` y con eso
+   * `.viewer-container` no se estira en su eje transversal; entonces `flex: 1` de
+   * `.viewer-3d-container` no tiene contra qué repartirse y manda el mínimo. Subirlo
+   * de 144 a 150 sólo se nota donde ya no cabía.
+   *
+   * El 150 sale del mismo sitio que el umbral del script (`MIN_VIEWER`): por debajo,
+   * el modelo en pantalla baja de 115px, y a 115px `OrbitControls` con un dedo deja de
+   * ser manejable. Los dos números son la misma decisión escrita en dos capas.
+   */
+  min-height: max(40dvh, 150px);
 }
 
 .viewer-overlay {
@@ -244,29 +735,54 @@ body {
   color: var(--text-secondary);
   font-size: 1rem;
   z-index: 10;
+  padding: 1rem;
+  text-align: center;
 }
 
 .viewer-overlay.error {
   color: var(--danger);
 }
 
-/* Sidebar derecha */
+/* Panel de análisis */
 .sidebar-right {
+  grid-area: panel;
   background: var(--bg-panel);
-  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   padding: 1rem;
 }
 
 .panel-header {
+  /*
+   * Sticky al scroll del documento, que en móvil es el único que hay: el panel
+   * crece con su contenido y no genera contexto de scroll propio. El objetivo es
+   * que "Panel de Análisis" siga a la vista mientras se baja a la recomendación
+   * del final, para que quede claro que el bloque largo de debajo pertenece al
+   * panel y no al visor.
+   *
+   * En tablet y escritorio el panel sí scrollea por su cuenta, y entonces la
+   * cabecera se fija a su propia columna en lugar de al documento.
+   */
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
+  /* El fondo es opaco a propósito: sin esto el texto de los datos se transparenta
+     por debajo al desplazarse por debajo del cabecera. */
+  background: var(--bg-panel);
 }
 
-.panel-header h3 {
+/*
+ * El `font-size` explícito es lo que mantiene el aspecto al subir este elemento de
+ * `h3` a `h2`. Sin él, el `h2` caería en su 1,5em por defecto y mediría el doble,
+ * haciendo crecer el panel entero y desplazando el resto de la columna. Lo mismo
+ * que en `.upload-zone h1` y en `.file-name`.
+ */
+.panel-header h2 {
   font-size: 0.95rem;
   font-weight: 600;
 }
@@ -295,12 +811,18 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
   border: 1px dashed var(--border);
   border-radius: 12px;
   background: var(--bg-panel);
+  /*
+   * El mismo suelo que el visor 3D, y por el mismo motivo: también es
+   * `flex: 1` dentro de `.viewer-container`. Sin esto el aviso se aplana en
+   * móvil —y es justo lo que se ve con un G-code, el caso más habitual de la app.
+   */
+  min-height: 40dvh;
 }
 
 .canvas-error {
@@ -308,6 +830,31 @@ body {
   font-size: 0.875rem;
   line-height: 1.45;
   max-width: 32rem;
+}
+
+/*
+ * La página de Proyectos y su lista.
+ *
+ * Aquí vivían los estilos de `PlaceholderRoute`, la pantalla vacía que pintaba
+ * `/proyectos`. Cuando esa ruta pasó a ser una página real (`ProyectosRoute.tsx`)
+ * el componente se fue, y con él estas reglas: dejarlas sería CSS que nadie usa.
+ *
+ * La página comparte el esqueleto de las de información (`.wiki-info`), así que lo
+ * único que hace falta añadir es el hueco del párrafo de entrada —las de
+ * información empiezan directamente en un `<section>`— y la lista de enlaces.
+ */
+.wiki-info > p {
+  margin-bottom: 1.5rem;
+}
+
+.proyectos-lista {
+  list-style: disc;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  line-height: 1.68;
+  color: var(--text-secondary);
 }
 
 /* Panel de análisis: estados de carga y error */
@@ -366,7 +913,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  overflow-y: auto;
+  /*
+   * Sin una altura acotada en un ancestro, `overflow-y: auto` no hace nada: el
+   * panel crece con su contenido y quien se desplaza es el documento. En móvil
+   * eso es justo lo que se quiere, y por eso no hay que darle la altura.
+   *
+   * En escritorio el shell pasa a `height: 100dvh` y el panel sí queda acotado;
+   * es el breakpoint de 768px el que le da la cadena de alturas. Este bloque es
+   * el que se encarga de que entonces sea el panel el que scrollea y no la
+   * página entera, con la cabecera del panel fija.
+   */
 }
 
 .panel-section-title {
@@ -452,4 +1008,3022 @@ body {
   letter-spacing: 0.06em;
   color: var(--accent-text);
   margin-bottom: 0.35rem;
+}
+
+/* ==========================================================================
+   Breakpoints
+   --------------------------------------------------------------------------
+   Mobile-first: lo que hay arriba, sin media query, es el layout de móvil. Los
+   tres cortes siguientes sólo van devolviendo densidad y, a partir de 768px,
+   estructura.
+
+   Los números salen de la aritmética del contenido, no de la convención de
+   768/1024 que trae la literatura. El cálculo que manda es siempre el mismo:
+   las columnas fijas suman 220px (navegación) + 320px (panel), y lo que sobra
+   es lo que se lleva el visor 3D.
+   ========================================================================== */
+
+/* --- 640px: solo densidad. NO cambia el número de columnas --------------------
+ * Es el punto donde el contenido de la barra superior deja de necesitar recortes
+ * y donde la zona de subida deja de estar apretada.
+ *
+ * La barra: aquí lo que cambia es que `.top-nav` pasa de `width: 100%` a
+ * `width: auto`, y **con eso vuelve a poder compartir la línea con el logotipo**.
+ * Antes no cabían por el ancho, sino porque el item medía la línea entera; ahora
+ * el presupuesto de contenido son 291px medidos (logotipo 115px + botón 128px +
+ * 8px de hueco + 40px de padding horizontal), así que a 640px sobra de largo.
+ *
+ * El `432px` que estaba aquí era un presupuesto con tres elementos —incluía el
+ * botón de "Iniciar Sesión", retirado por P7— y ya no mide nada. El corte se
+ * sostiene por lo de `width: auto`, que es lo que se ha medido.
+ *
+ * La zona de subida: con 2rem de padding en `.canvas-area` y 4rem en
+ * `.upload-zone`, a 375px quedaban 311px de recuadro y solo 183px de contenido
+ * útil dentro. Con 1rem y 1rem quedan 343px y 311px, que es lo que hace falta
+ * para que la frase de los formatos se lea sin partirse en tres líneas.
+ *
+ * Este corte no toca la estructura a propósito: entre 640 y 768 la app sigue
+ * con la barra inferior y el panel apilado, que es la disposición que mejor
+ * aprovecha una pantalla de móvil grande.
+ */
+@media (min-width: 640px) {
+  .top-bar {
+    flex-wrap: nowrap;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .top-nav {
+    width: auto;
+    gap: 0.75rem;
+  }
+
+  .canvas-area {
+    padding: 1.5rem;
+  }
+
+  .upload-zone {
+    padding: 2.5rem 2rem;
+  }
+
+  .sidebar-left {
+    padding: 0.45rem 0.75rem calc(0.45rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* --- 768px: la navegación vuelve a ser columna --------------------------------
+ * Es el primer corte que cambia la estructura, y el número sale de una resta:
+ * 768px menos los 220px fijos de la navegación son 548px para el visor, que es lo
+ * primero en lo que `OrbitControls` deja de ser un juego a ciegas con un dedo.
+ *
+ * Por debajo de este punto la barra inferior no es solo más cómoda: es la única
+ * disposición en la que el canvas llega a ocupar el ancho completo, porque la
+ * navegación no se lleva ninguna columna.
+ *
+ * El panel sigue apilado bajo el canvas. Con las dos sidebars en columna, 220 +
+ * 320 = 540px fijos, y el visor se quedaría con 228px: inusable. El panel no
+ * vuelve a su columna hasta 1200px.
+ */
+@media (min-width: 768px) {
+  .sidebar-left {
+    position: static;
+    inset: auto;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    padding: 1rem 0.5rem;
+  }
+
+  .sidebar-left ul {
+    display: block;
+  }
+
+  .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  /* En columna el indicador vuelve al lateral. El selector es el mismo
+     (`[aria-current="page"]`) que en la barra inferior: lo que cambia es la
+     orientación del filete, no la fuente del estado. */
+  .nav-item[aria-current="page"] {
+    border-top: none;
+    border-left: 3px solid var(--accent);
+  }
+
+  .app-container {
+    grid-template-areas:
+      "nav header"
+      "nav main"
+      "nav panel";
+    grid-template-columns: 220px 1fr;
+    /*
+     * Filas explícitas, y no las `auto` que trae la base.
+     *
+     * Es el paso que hace funcionar `height: 100dvh` de verdad. Con filas `auto`
+     * y una altura de contenedor definida, el `align-content` por defecto (que
+     * se comporta como `stretch` en grid) reparte el espacio sobrante entre
+     * ellas, así que el header —cuyo contenido mide ~50px — se inflaba hasta
+     * 219px a 768 y 192px a 1280. Declarando `1fr` en las filas de contenido, el
+     * sobrante va allí y solo allí.
+     *
+     * `minmax(0, 1fr)` y no `1fr` a secas: el mínimo `auto` dejaría que cada fila
+     * creciera hasta su contenido, que es justo lo que produce el recorte en
+     * lugar del scroll interno.
+     */
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    /*
+     * A partir de aquí el shell deja de crecer con el contenido y se fija a la
+     * ventana, para que el alto sobrante se lo repartan las filas `1fr` en lugar
+     * de quedarse en un hueco bajo el panel.
+     *
+     * `100dvh` y no `100vh`: en móvil la barra del navegador entra y sale, y
+     * `vh` es la altura de la ventana con la barra retraída. Con `100vh` la parte
+     * de abajo queda debajo de la barra y es inalcanzable al hacer scroll. `dvh`
+     * sí cambia con ella.
+     */
+    height: 100dvh;
+    min-height: 0;
+    /* La navegación ya no está fija: no hace falta reservar su hueco. */
+    padding-bottom: 0;
+  }
+
+  .canvas-area {
+    min-height: 0;
+  }
+
+  .viewer-3d-container,
+  .canvas-placeholder {
+    /*
+     * En tablet y escritorio el visor se estira a llenar la fila, así que el
+     * suelo de 40dvh sobra. Se quita para que en una ventana baja no llegue a
+     * forzar scroll vertical en una columna que debería caber entera.
+     */
+    min-height: 0;
+  }
+
+  /*
+   * El panel pasa a ser la columna que scrollea. La cadena de alturas que hace
+   * falta para que `overflow-y: auto` tenga contra qué medirse es:
+   *
+   *   .app-container   height: 100dvh   (justo arriba)
+   *   .sidebar-right   min-height: 0    (deja de ser automática)
+   *   .panel-body      flex: 1
+   *
+   * `min-height: 0` en el ancestro intermedio es el paso que no se puede saltar:
+   * un grid item tiene `min-height: auto` por defecto, así que sin él se niega a
+   * encogerse por debajo de su contenido, y el panel se queda con todo lo que
+   * mide en vez de con el hueco que hay.
+   *
+   * OJO: esto aplica sólo a partir de 1200px. Entre 768 y 1199 el bloque de
+   * más abajo deshace toda esta cadena, porque en una ventana baja el reparto
+   * `1fr 1fr` deja al visor en 165px y al panel en 160px visibles, y no hay
+   * forma de repartir 598px entre dos cosas que necesitan 434px y 508px. Ver
+   * ese bloque.
+   */
+  .sidebar-right {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    /* Hueco para que la barra de scroll no se solape el borde del panel. */
+    padding-right: 0.25rem;
+  }
+
+  /*
+   * El scroll interno del panel ya no compite con el del documento, así que la
+   * cabecera puede quedarse pegada a su propia columna en lugar de al scroll de
+   * la página. Al revés, la cabecera se iría por delante y el contenido se vería
+   * por detrás.
+   *
+   * Como antes: esto sólo es cierto a partir de 1200px. En el tramo 768–1199 el
+   * documento es el que scrollea, y entonces la cabecera vuelve a `sticky`.
+   */
+  .panel-header {
+    position: static;
+  }
+}
+
+/* --- 768–1199px: el visor manda en su alto y el documento scrollea -----------
+ * Este es el único tramo donde el layout NO reparte el alto de la ventana, y la
+ * razón es aritmética. A 768×667, tras el `.top-bar` de 69px quedan 598px:
+ *
+ *   visor cómodo      ~300px
+ *   + cromo del visor   134px   (.file-info 70 + gap 16 + padding 48)
+ *   ------------------ ------
+ *   fila del visor      434px
+ *   panel con datos     508px   (medido con el G-code de Creality del repo)
+ *   ------------------ ------
+ *   necesario           942px   contra 598px disponibles
+ *
+ * No existe reparto que deje a los dos cómodos: sobran 344px. La pregunta útil
+ * no es "cuánto le doy a cada uno" sino "qué saco de la caja de altura fija", y
+ * lo que sale es el panel. Es el patrón "supporting pane" apilado de Material 3,
+ * donde el detalle deja de tener scroll propio.
+ *
+ * Qué gana y qué pierde, medido con un STL real cargado:
+ *
+ *                     antes (1fr 1fr)   después (E)
+ *   visor 768×667          165px            313px   +90%
+ *   modelo en pantalla     127px            241px   +90%
+ *   proporción             3.03             1.60    siempre
+ *   panel 768×667          160px            508px   entero
+ *   scroll de              panel            documento
+ *
+ * Lo que se pierde, y es deliberado:
+ *
+ * 1. EL DOCUMENTO SCROLLEA en este tramo. A 768×667 la página mide 1103px. La
+ *    app queda con tres modelos de scroll: documento en móvil, documento en
+ *    tablet, panel en escritorio. El comentario del bloque de 768 que dice que
+ *    "el panel scrollea y no la página" aplica sólo a partir de 1200px.
+ *
+ * 2. EL ALTO DEL VISOR PASA A DEPENDER DEL ANCHO, no de la ventana. 313px a
+ *    667, a 900 y a 1024 de alto — que es la ganancia real frente al reparto
+ *    equitativo, donde el visor saltaba de 165 a 344 al rotar el tablet. El
+ *    precio son dos(viewports) donde el visor baja un poco porque el ancho ya
+ *    no da para más: 344 -> 313 a 768×1024 (−9%) y 515 -> 473 a 1024×1366
+ *    (−8%). En ventanas verticales y estrechas queda fondo vacío al final de la
+ *    página en lugar de un visor más alto.
+ *
+ * Por eso `aspect-ratio` y no un suelo en `dvh`: el alto sale del ancho
+ * disponible, que es el único eje que no cambia al rotar el dispositivo.
+ */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  /*
+   * `height: auto` deshace el shell de altura fija del bloque de 768, y las
+   * filas vuelven a dimensionarse por su contenido. Es lo que deja que el visor
+   * y el panel se apilen sin repartirse una altura que no les da la vida.
+   *
+   * `min-height: 100dvh` se conserva para que el fondo rellene la ventana
+   * cuando el contenido no la llena. Sin él, el sobrante de abajo mostraría el
+   * color del `body` y no el del shell, que es el mismo, pero el documento
+   * dejaría de medir lo que mide la ventana.
+   */
+  .app-container {
+    grid-template-rows: auto auto auto;
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  /*
+   * `aspect-ratio: 16/10` es lo que decide el alto del visor, y no un `1fr`.
+   * MDN avisa de que `aspect-ratio` se ignora si el alto y el ancho están
+   * ambos puestos de forma explícita, así que las dos declaraciones siguientes
+   * van juntas: `flex: 0 0 auto` le quita `flex: 1` para que la caja no se
+   * estire dentro de `.viewer-container`, y `min-height: 0` anula el suelo en
+   * `dvh` que trae la base móvil.
+   *
+   * El suelo en `dvh` era la primera opción y se descartó por dos motivos
+   * medidos: dentro de una fila `1fr` no llega a activarse nunca (la fila ya
+   * recibe más de lo que pide), y si se fuerza, el visor reclama más alto del
+   * que su fila tiene y `.canvas-area { overflow: hidden }` lo recorta en
+   * silencio —el WebGL se dimensiona con `clientHeight`, así que el modelo se
+   * encuadraría contra un alto que no se ve.
+   *
+   * `.canvas-placeholder` lleva lo mismo porque comparte eslabón: también es
+   * `flex: 1` dentro de `.viewer-container` y también se aplana, y es lo que se
+   * ve con un G-code.
+   */
+  .viewer-3d-container,
+  .canvas-placeholder {
+    aspect-ratio: 16 / 10;
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  /*
+   * Estas cuatro declaraciones desmontan la cadena de alturas del bloque de
+   * 768, que ya no hace falta aquí. Se anulan en vez de moverse al tramo de
+   * 1200px porque desde 1200px el layout es de una sola fila de contenido y el
+   * panel vuelve a ser columna, que es exactamente lo que el bloque de 1200px
+   * ya restaura por su cuenta con su propio `grid-template-rows`.
+   *
+   * `display: block` + `min-height: auto` deshacen la columna flex que hacía
+   * falta para que `overflow-y: auto` tuviera una altura que medir; sin altura
+   * que medir, `overflow-y` no tiene nada que hacer.
+   */
+  .sidebar-right {
+    display: block;
+    min-height: auto;
+  }
+
+  .panel-body {
+    flex: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  /*
+   * `position: sticky` recupera lo que el bloque de 768 hizo con `static`. Con
+   * el documento como scroll, la cabecera del panel vuelve a poder pegarse al
+   * scroll de la página, que es justo lo que se quiere: al bajar a la
+   * recomendación del final, "Panel de Análisis" sigue a la vista y se ve de
+   * quién es ese bloque largo.
+   */
+  .panel-header {
+    position: sticky;
+  }
+}
+
+/* --- 1200px: el panel vuelve a la derecha -------------------------------------
+ * 220px de navegación + 320px de panel = 540px fijos. A 1200px el visor se queda
+ * con 660px, y a partir de ahí es el elemento que domina el ancho de la pantalla
+ * en lugar de ser una columna más: por debajo, el `1fr` baja de 660px y el modelo
+ * queda con menos sitio que el panel que lo describe.
+ *
+ * Es el único corte que devuelve el layout original de tres columnas.
+ */
+@media (min-width: 1200px) {
+  .app-container {
+    grid-template-areas:
+      "nav header header"
+      "nav main   panel";
+    grid-template-columns: 220px 1fr 320px;
+    /* Dos filas: header al tamaño de su contenido y la única fila de contenido
+       estirándose. */
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .canvas-area {
+    padding: 2rem;
+  }
+}
+
+/* =============================================================================
+ * La wiki y el pie del sitio
+ *
+ * Todo lo que viene a continuación se apoya en los tokens de `:root` de arriba y
+ * no introduce ni un color literal. La razón es la misma que llevó el acento a
+ * `--accent-text`: si esta sección tuviera sus propios valores, cambiar el tema
+ * obligaría a recorrerla entera.
+ *
+ * No se tocan los cortes de 640px ni de 1200px. Todo lo responsive de aquí va con
+ * `clamp()`, con `%` o con consultas de contenedor, y por eso no necesita ninguno.
+ * Un solo tramo nuevo, al final, con `@media (min-width: 768px)` para el caso de
+ * la tabla de contenidos lateral.
+ * ========================================================================== */
+
+/* --- El pie del sitio -------------------------------------------------------
+ *
+ * Vive **fuera** de `.app-container`, como hermano suyo. La razón está medida y
+ * escrita en `src/components/SiteFooter.tsx`: como cuarta fila del grid le quita
+ * su alto a `.canvas-area`, al visor y al panel a partir de 1200px, donde las
+ * filas son `1fr` y el shell mide exactamente la ventana. Como hermano, no se
+ * mueve nada de lo que hay dentro.
+ */
+.site-footer {
+  /*
+   * El `padding-bottom` de 60px más el safe-area no es un detalle de espacio: la
+   * barra de navegación de móvil es `position: fixed; inset: auto 0 0 0`, así que
+   * se superpone al documento. El shell reserva ese hueco con su propio
+   * `padding-bottom`, y como el pie va **después** del shell se encontraría justo
+   * debajo de la barra al llegar al final: los tres enlaces quedarían debajo de
+   * ella y sin poder pulsarse.
+   *
+   * Por debajo de 768px, que es donde la barra está fija. A partir de ahí la
+   * navegación es una columna del grid y el hueco sobra, y sobra de verdad: son
+   * 60px de aire al final de cada una de las tres páginas.
+   */
+  padding: 1.25rem 1rem calc(1.25rem + 60px + env(safe-area-inset-bottom));
+  background: var(--bg-dark);
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    padding-bottom: 1.25rem;
+  }
+}
+
+.site-footer nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  justify-content: center;
+}
+
+.site-footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.25rem 0.1rem;
+}
+
+.site-footer a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/*
+ * El mismo indicador que usan `.nav-item` y `.btn-primary`, con el mismo
+ * `outline` de 2px y el mismo `offset` negativo, para que el foco tenga el mismo
+ * grosor en toda la aplicación en lugar de ser una línea de un píxel más gruesa
+ * en unos sitios y más fina en otros.
+ */
+.site-footer a:focus-visible,
+.wiki-buscador-campo:focus-visible,
+.wiki-info a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+/*
+ * Los enlaces de contenido de la guía no tenían indicador propio y quedaban con
+ * el del navegador, que sobre fondo oscuro se pierde. Van con `outline-offset`
+ * positivo porque son enlaces en línea: el negativo del bloque de arriba, que
+ * vale para controles con caja, pisaría el texto.
+ */
+.guia-cabecera-migas a:focus-visible,
+.guia-fuentes-lista a:focus-visible,
+.enlace-guia:focus-visible,
+.tarjeta-cita a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.site-footer-nota {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+/* --- El columna central, cuando la ruta la necesita -------------------------
+ *
+ * `.canvas-area` es `display: flex` con `align-items: center` y `overflow: hidden`.
+ * Eso está bien para el visor, que siempre cabe, y está mal para un artículo: un
+ * elemento centrado verticalmente que es más alto que su contenedor sobresale por
+ * arriba y por abajo, y con `overflow: hidden` la mitad de arriba se queda
+ * inalcanzable. No hay scroll que la rescate porque no hay nada que desplazarse.
+ *
+ * `align-items: flex-start` deshace el centrado, y `overflow-y: auto` convierte la
+ * columna en su propia zona desplazable por encima de 1200px, donde el shell es de
+ * altura fija. Por debajo el documento ya se desplazaba y no cambia nada.
+ *
+ * La clase la pone el shell según la ruta, no el artículo. Así el shell es el
+ * único que sabe qué forma tiene el scroll, y una ruta nueva no tiene que
+ * acordarse de más cosas que de devolver `true`.
+ */
+.app-container--columna .canvas-area {
+  align-items: flex-start;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* --- Cuando el artículo no existe ------------------------------------------ */
+.wiki-no-encontrado,
+.wiki-info {
+  max-width: 68ch;
+  line-height: 1.68;
+}
+
+.wiki-no-encontrado h1,
+.wiki-info h1 {
+  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+  line-height: 1.22;
+  margin-bottom: 0.75rem;
+}
+
+.wiki-no-encontrado p,
+.wiki-info p {
+  color: var(--text-secondary);
+}
+
+.wiki-no-encontrado p + p,
+.wiki-info section + section {
+  margin-top: 1.5rem;
+}
+
+.wiki-info section h2 {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.wiki-info a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wiki-info strong {
+  color: var(--text-primary);
+}
+
+/* El aviso de que el canal de contacto no está configurado. Comparte la
+   silueta de `.panel-unsupported` —filete de acento a la izquierda, fondo azul
+   suave— con el panel del shell, y el motivo es el mismo: en los dos casos el
+   archivo está bien y lo que falta es algo por parte de quien lo mantiene. */
+.wiki-aviso {
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: rgba(37, 99, 235, 0.1);
+  font-size: 0.9rem;
+}
+
+/* --- El enlace del panel a la wiki ------------------------------------------
+ *
+ * Va debajo del valor, en su propia línea, y no como icono junto a la etiqueta.
+ * Un icono al lado del dato se lee como parte del dato: quien no sepa lo que es
+ * lo pasa por alto, y el enlace es justo lo que hace distinta esta wiki.
+ */
+.panel-explicar {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--accent-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.panel-explicar:hover {
+  text-decoration: underline;
+}
+
+.panel-explicar:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- Taller: la calculadora de coste ---------------------------------------- *
+ *
+ * `.taller` va en una caja estrecha y centrada, como `.upload-zone`, porque es
+ * un formulario corto y no un documento. La diferencia es que no lleva borde
+ * punteado: aquí no se arrastra nada, se teclea un número, y un recuadro que
+ * parece zona de soltar insinuaría que sí.
+ *
+ * El ancho va en `max-width`, no en `width`: la caja se ajusta al texto y en
+ * 375px no queda un margen muerto a los lados.
+ */
+.taller {
+  width: 100%;
+  max-width: 22rem;
+  text-align: left;
+}
+
+/*
+ * El `h1` lleva su tamaño explícito porque el selector cambia respecto a
+ * `.upload-zone h1` y el reset `* { margin: 0 }` de arriba se comería el
+ * espacio inferior. Mismo motivo y mismo número que en el otro sitio.
+ */
+.taller-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/*
+ * Los avisos de los estados 1, 2, 3 y 4 comparten clase a propósito: son el
+ * mismo tipo de cosa —"aquí todavía no puede haber un número"— y si cada uno tuviera la
+ * suya habría cuatro reglas idénticas que se desincronizan.
+ */
+.taller-aviso {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.taller-caja {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taller-gramos {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.taller-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.taller-etiqueta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * El `inputMode="decimal"` del marcado ya pone el teclado correcto en móvil, y
+ * aquí sólo se le da la forma. Sin `width: 100%` el input mide su valor por
+ * defecto —unos veinte caracteres— y en una caja de 22rem deja un hueco
+ * irregular al lado.
+ */
+.taller-input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.taller-input:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/*
+ * El campo inválido se marca por el borde, no sólo por el texto de debajo: el
+ * color solo no es un indicador suficiente para quien no distingue el rojo, y
+ * el mensaje de error va con `aria-invalid` y `aria-describedby` para quien
+ * usa lector de pantalla.
+ */
+.taller-input-invalido {
+  border-color: var(--danger);
+}
+
+.taller-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+/*
+ * El resultado va en cuerpo grande y con `tabular-nums` porque es el número que
+ * se viene a mirar. Con cifras de ancho variable —`0,02 €` mide menos que
+ * `0,23 €`— el número bailaría de una teclea a otra y sería difícil de leer de
+ * un vistazo si ha cambiado.
+ */
+.taller-resultado {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- El historial: lista, recientes y confirmaciones ------------------------- *
+ *
+ * `.recientes` y `.historial` comparten la fila porque es la misma información
+ * en dos densidades: mismo nombre, mismo material, mismo nivel de riesgo. Lo que
+ * cambia es cuántas hay y si cabe la fecha, y eso lo resuelve el contenedor, no
+ * la fila.
+ */
+
+/*
+ * El aviso va en `role="status"` en el marcado, y no aquí, porque es una región
+ * viva: se pinta después de que React sepa si hay almacenamiento, y quien esté
+ * leyendo la página oiga el motivo en vez de encontrarse con un hueco.
+ *
+ * `--warning` en vez de `--danger`: no es un error, es una limitación del sitio
+ * donde se está, y el análisis funciona igual. Pintarlo de rojo haría pensar que
+ * algo va mal.
+ */
+.historial-aviso {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
+  border-radius: 8px;
+  max-width: 34rem;
+}
+
+/*
+ * `.historial` no lleva `max-width` propio porque su hijo sí, y un `max-width`
+ * en el padre que no se usa sólo hace que las cajas midan distinto a lo que
+ * parecen.
+ */
+.historial,
+.recientes {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.historial-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.9rem;
+}
+
+/*
+ * La lista es `flex` vertical con `gap`, y no `<ul>` con `margin` por lado: el
+ * reset `* { margin: 0 }` de arriba ya hace ese trabajo, y los `<li>` no traen
+ * viñeta con `list-style: none`.
+ */
+.historial-lista,
+.recientes-lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/*
+ * `.historial-fila` es `flex` con `space-between`, y no `grid` con dos columnas,
+ * porque el nombre puede ocupar tres líneas en móvil y el botón tiene que
+ * quedarse pegado arriba. Con `grid` el botón se iría al centro de la fila y
+ * quedaría a media altura de un nombre largo.
+ */
+.historial-fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.historial-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/*
+ * El nombre **se rompe en varias líneas**, y no se recorta.
+ *
+ * H-3.1 lo dice: «los nombres largos de archivo se rompen en varias líneas, no se
+ * recortan en silencio ni desbordan». La primera versión de esto traía
+ * `white-space: nowrap` y `text-overflow: ellipsis`, que es exactamente lo que el
+ * criterio prohíbe: un nombre de archivo es lo único que identifica el análisis,
+ * y si aparece «pieza-de-…」 no se puede saber cuál era.
+ *
+ * `overflow-wrap: anywhere` parte la palabra en cualquier punto, y es lo que hace
+ * falta con nombres de archivo: no tienen espacios, así que sin esto una sola
+ * palabra larga no se rompería por ningún sitio y desbordaría.
+ */
+.historial-nombre,
+.recientes-nombre {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.historial-meta,
+.recientes-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * Un color por nivel de riesgo, con cuatro clases y no cuatro valores sueltos.
+ * El `riskLevel` es texto en castellano y llega del clasificador; si el
+ * clasificador añadiera un nivel, esta regla no le daría color en vez de darle
+ * el de otro.
+ */
+.historial-riesgo--bajo {
+  color: var(--success);
+}
+
+.historial-riesgo--moderado {
+  color: var(--warning);
+}
+
+.historial-riesgo--alto,
+.historial-riesgo--critico {
+  color: var(--danger);
+}
+
+/*
+ * La fila de los recientes es sólo texto: sin caja, sin borde y sin botón. Es un
+ * resumen de lo que acabas de hacer, y una caja por fila haría que cinco
+ * entradas ocuparan más pantalla que la zona de subida.
+ */
+.recientes {
+  margin-top: 1.25rem;
+}
+
+.recientes-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.recientes-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.2rem 0;
+  min-width: 0;
+}
+
+/*
+ * El enlace al historial mide 44px de alto, **siempre y no sólo con dedo**.
+ *
+ * Un enlace de texto de 0,85rem mide 16px —medido— y 44 es el objetivo táctil
+ * mínimo (WCAG 2.2, 2.5.8). Es el único camino a los análisis guardados, así que
+ * dejarlo como texto de 0,85 rem lo convierte en el control más pequeño de la
+ * pantalla y en el más difícil de acertar.
+ *
+ * La primera versión lo metió en `@media (pointer: coarse)`, con la idea de que en
+ * escritorio se quedara pequeño. Eso, además de ser una diferencia sin motivo —un
+ * enlace no cambia de tamaño según quién lo pulse—, hace **imposible de
+ * comprobar**: Chromium headless no cumple `pointer: coarse`, así que la regla no
+ * llegaba a aplicarse nunca en las verificaciones y `min-height: 0px` pasaba por
+ * comprobar el objetivo táctil sin comprobarlo.
+ *
+ * `inline-flex` con `align-items: center` reparte el alto y deja el texto
+ * centrado; sin `align-items` el texto se pegaría al borde de arriba.
+ */
+.recientes-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.3rem;
+  color: var(--accent-text);
+  font-size: 0.85rem;
+}
+
+/*
+ * `min-height: 44px` en el enlace. Un enlace de texto de 0,85rem mide unos
+ * veinte píxeles de alto, y el objetivo táctil mínimo son 44. Sin esto, el
+ * enlace que lleva a la lista completa —el único camino a los análisis
+ * guardados— sería el control más pequeño de la pantalla.
+ */
+@media (pointer: coarse) {
+  .recientes-enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+.historial-vaciar {
+  margin-top: 0.5rem;
+}
+
+/* --- Proyectos: los análisis guardados con nombre propio -------------------- *
+ *
+ * Comparte con el historial las clases de la lista (`.historial-lista`,
+ * `.historial-fila`, `.historial-abrir`, `.historial-nombre`, `.historial-meta`),
+ * y a propósito: es la misma información con el mismo aspecto, y darle un segundo
+ * juego de estilos sería garantizar que un día uno de los dos cambie y el otro no.
+ * Lo que añade esta sección es la página —título, intro, bloques con subtítulo— y
+ * la fila de acciones, que en el historial es un solo botón y aquí son dos.
+ */
+.proyectos {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.proyectos-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.proyectos-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.proyectos-bloque {
+  margin-bottom: 1.75rem;
+}
+
+.proyectos-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.proyectos-cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.proyectos-nota {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 0.7rem;
+}
+
+/*
+ * La columna de acciones es `flex: none` y en vertical: el nombre de la entrada
+ * es lo que crece y los botones se quedan a la derecha en su ancho natural. En
+ * vertical porque «Renombrar» y «Borrar» son dos controles de 44px y en una fila
+ * se comerían media pantalla a 375px, dejando el nombre en una columna de letras.
+ */
+.proyectos-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: none;
+}
+
+.proyectos-uso {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* --- La confirmación de borrado ---------------------------------------------- *
+ *
+ * Capa fija a pantalla completa, porque «vaciar todo» no se puede deshacer y el
+ * fondo tiene que quedar fuera de alcance de un clic.
+ */
+.confirmacion-capa {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 200;
+}
+
+.confirmacion {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 26rem;
+  width: 100%;
+}
+
+.confirmacion-texto {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.1rem;
+}
+
+.confirmacion-botones {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/*
+ * El campo del diálogo de nombre. Comparte la caja de `.confirmacion` y sólo
+ * añade el control: una etiqueta en versalitas —el mismo tratamiento que el
+ * buscador de la wiki— y un campo oscuro con el borde de acento al enfocar.
+ *
+ * El `outline: none` del foco va acompañado del `box-shadow`, no solo: quitar el
+ * anillo sin poner otro indicador dejaría el campo sin señal visible para quien
+ * navega con teclado.
+ */
+.confirmacion-etiqueta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+
+.confirmacion-campo {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 1.1rem;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.confirmacion-campo:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.22);
+}
+
+.confirmacion-campo::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.65;
+}
+
+/* --- Los botones de abrir un análisis del historial ------------------------- *
+ *
+ * La fila es `<li>` y lo pulsable es un `<button>` dentro. El `<li>` se queda
+ * como contenedor de layout y el botón lleva todo lo que hay que ver.
+ *
+ * `text-align: left` porque un `<button>` centra su texto por defecto, y aquí el
+ * material y el nivel de riesgo van alineados a la izquierda con el nombre, no en
+ * una línea centrada.
+ */
+.recientes-boton,
+.historial-abrir {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/*
+ * El foco visible va en `:focus-visible`, no en `:focus`, para que no aparezca un
+ * recuadro al pulsar con el ratón y sí al llegar con el teclado —que es quien lo
+ * necesita—. Y es `outline`, no `border`, porque el botón no tiene borde y
+ * dibujarlo sería un salto del layout.
+ */
+.recientes-boton:focus-visible,
+.historial-abrir:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/*
+ * `align-items: flex-start` en la fila, que ya lo tenía, y aquí el botón con
+ * `flex: 1`: hace falta para que el botón ocupe el hueco que deja el de borrar, y
+ * `min-width: 0` para que un nombre largo no empuje ese botón fuera. Sin los dos,
+ * el nombre manda y el de borrar se sale.
+ */
+
+/* ==========================================================================
+   LA WIKI NUEVA: síntomas, diagnóstico y recommendation
+   ==========================================================================
+
+   Todo lo que viene a continuación sustituye a las reglas `.wiki-tarjeta`,
+   `.wiki-texto` y compañía que estaban antes. No se han borrado del fichero
+   porque varias siguen en uso —`.wiki-info` la comparten las tres páginas de
+   información y `.wiki-buscador*` el buscador del índice—, pero las de artículo
+   ya no las monta nadie.
+
+   Las tres ideas que ordenan esta sección:
+
+   1. **Una caja pulsable es un elemento, no tres.** La tarjeta del índice es un
+      `<Link>` entero, y el chip es un `<button>` entero con su etiqueta y su
+      detalle dentro. La zona activa es toda la caja, que es lo que hace falta en
+      un dedo y con un lector de pantalla.
+
+   2. **La animación dice qué ha cambiado.** Cada elemento que puede aparecer o
+      desaparecer lleva `--i`, su índice, y la duración sale de él: lo que se
+      acaba de marcar entra antes que lo que ya estaba. Sin eso, una lista que
+      cambia de longitud salta y no se sabe qué es nuevo.
+
+   3. **El movimiento es opcional y se apaga entero.** Un único bloque
+      `prefers-reduced-motion` al final desactiva las tres familias: entrada,
+      cambio de lista y dibujo. Nada depende de JavaScript para decidir.
+   */
+
+/* --- Los dibujos de los síntomas ------------------------------------------ *
+ *
+ * Un solo trazo para los cinco esquemas, y el que se mueve en el acento. Es la
+ * misma decisión que en el resto de la app: lo que explica usa color, lo que
+ * sólo dibuja no lo usa.
+ */
+.dibujo {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/*
+ * El tamaño del dibujo.
+ *
+ * `max-width: 150px` era el valor de la primera versión y se quedaba corto: en una
+ * caja de 8,5 rem con el relleno se quedaba en unos 100 px de ancho real, y a esa
+ * escala un trazo de 2 unidades del `viewBox` mide menos de dos píxeles. El esquema
+ * dejaba de leerse, y el esquema es lo que localiza el problema —es lo primero que
+ * hace que alguien diga «esa es la mía»—.
+ *
+ * La caja de la tarjeta es ahora de 9,5 rem y el dibujo llega a 200 px, con el
+ * `viewBox` a 120 de ancho: 1,67× por unidad de trazo.
+ */
+.dibujo--grande {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.dibujo-chapa {
+  fill: var(--bg-hover);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.dibujo-pieza {
+  stroke: var(--text-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.dibujo-capa {
+  stroke: var(--text-secondary);
+  stroke-width: 1.25;
+  opacity: 0.7;
+}
+
+.dibujo-nozzle {
+  fill: var(--bg-hover);
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+
+.dibujo-extrusion {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.dibujo-hueco,
+.dibujo-grieta {
+  stroke: var(--danger);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.dibujo-flecha {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.dibujo-continuo {
+  stroke: var(--text-secondary);
+  stroke-width: 1.1;
+  stroke-dasharray: 2 3;
+  opacity: 0.65;
+}
+
+.dibujo-grieta-linea {
+  stroke: var(--danger);
+  stroke-width: 2;
+}
+
+.dibujo-acento {
+  stroke: var(--accent-text);
+  stroke-width: 1.5;
+}
+
+.dibujo-cabeza {
+  fill: var(--bg-hover);
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+
+.dibujo-colapso {
+  stroke: var(--danger);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 5 3;
+}
+
+.dibujo-burbuja {
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 1.5;
+}
+
+.dibujo-hilo {
+  stroke: var(--warning);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/*
+ * La animación de los dibujos.
+ *
+ * Tres, y cada una teaches distinto: las esquinas suben de golpe y se quedan —
+ * es un defecto que ya ha pasado—, la boquilla deposita con un vaivén lento, y
+ * la grieta se abre y se cierra como una respiración, porque la separación entre
+ * capas es lo único de los cinco que se nota mientras imprime.
+ *
+ * El origen de la transformación es el borde inferior de la pieza, que es donde
+ * la pieza está pegada a la chapa: por eso `transform-box: fill-box` y
+ * `transform-origin: bottom`. Con el origen por defecto —el centro del `<svg>`—
+ * la pieza entera flotaría en lugar de dobrarse por la base.
+ */
+@keyframes dib-esquinas {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  12% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes dib-extrusion {
+  0%,
+  100% {
+    transform: translateY(-3px);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+
+@keyframes dib-grieta {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.02);
+  }
+}
+
+@keyframes dib-burbuja {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes dib-colapso {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(7px);
+  }
+}
+
+.dibujo-pieza--arqueada,
+.dibujo-nozzle,
+.dibujo-extrusion,
+.dibujo-grieta,
+.dibujo-burbuja,
+.dibujo-colapso,
+.dibujo-hilo {
+  transform-box: fill-box;
+}
+
+.dibujo-pieza--arqueada {
+  transform-origin: bottom center;
+  animation: dib-esquinas 5.5s ease-in-out infinite;
+}
+
+.dibujo-nozzle {
+  animation: dib-extrusion 2.6s ease-in-out infinite;
+}
+
+.dibujo-extrusion {
+  transform-origin: center top;
+  animation: dib-extrusion 2.6s ease-in-out infinite;
+}
+
+.dibujo-grieta {
+  transform-origin: left center;
+  animation: dib-grieta 3.4s ease-in-out infinite;
+}
+
+.dibujo-burbuja {
+  animation: dib-burbuja 2.2s ease-in-out infinite;
+}
+
+.dibujo-burbuja:nth-of-type(2) {
+  animation-delay: 0.35s;
+}
+
+.dibujo-burbuja:nth-of-type(3) {
+  animation-delay: 0.7s;
+}
+
+.dibujo-hilo {
+  animation: dib-burbuja 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.dibujo-colapso {
+  animation: dib-colapso 4.2s ease-in-out infinite;
+}
+
+/* --- El índice: la pregunta de entrada ------------------------------------ */
+
+.wiki-index {
+  width: 100%;
+  max-width: 52rem;
+  padding: 1.5rem 0.25rem 3rem;
+}
+
+.wiki-index h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.wiki-index-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+  max-width: 40rem;
+}
+
+.wiki-buscador {
+  margin-bottom: 1.5rem;
+}
+
+.wiki-buscador-etiqueta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.wiki-buscador-campo {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.wiki-buscador-campo::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.65;
+}
+
+.wiki-buscador-campo:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.22);
+}
+
+.wiki-resultados {
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.wiki-vacio {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 2rem 0;
+}
+
+.wiki-vacio strong {
+  color: var(--text-primary);
+}
+
+/* La rejilla de síntomas. Dos columnas a partir de 620 px de ancho, porque con
+   una sola la tarjeta queda tan ancha que el esquema —que es lo que localiza— se
+   pierde en el hueco. La tarjeta, además, es su propio contenedor: mira más abajo
+   por qué. */
+.wiki-sintomas {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+
+/*
+ * Cada tarjeta es un contenedor de consulta.
+ *
+ * Es lo que permite que la tarjeta decida su forma por SU ancho y no por el de la
+ * ventana: en el shell la columna central mide ~700 px, la rejilla pone dos
+ * tarjetas y cada una queda en ~340, donde el dibujo al lado del texto lo
+ * estrangula. La ventana mide 1240 y la tarjeta 340: una consulta de medio no
+ * puede distinguir las dos.
+ */
+.wiki-sintomas > li {
+  container-type: inline-size;
+}
+
+@media (min-width: 620px) {
+  .wiki-sintomas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * La tarjeta de síntoma.
+ *
+ * `display: grid` con dos columnas, no `flex`: el texto es lo que crece —el
+ * resumen tiene entre una y tres líneas según el ancho— y con flex el esquema
+ * se estiraría a la altura de la tarjeta, con la pieza estirada. Con `grid` y
+ * `align-items: center` el dibujo se queda en su caja y el texto crece, que es lo
+ * que queremos: el esquema es una referencia, no el protagonista.
+ *
+ * Y `min-width: 0` en el hijo de texto por el motivo de siempre: un grid item
+ * viene con `min-width: auto` y no puede encogerse, así que una palabra larga en
+ * el resumen se saldría de la caja y `.canvas-area` la recortaría en silencio.
+ */
+.sintoma {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
+    transform 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 0.7, 0.3, 1);
+  animation: entra-tarjeta 0.38s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+ * La tarjeta se parte en dos columnas sólo cuando **ella** mide al menos 24 rem.
+ *
+ * Aquí estaba el fallo del índice: la consulta era de medio (`min-width: 620px`),
+ * así que a 1240 px de ventana —y ~340 px de tarjeta— ponía el dibujo al lado del
+ * texto y el título salía en cinco líneas. Con la consulta de contenedor, la
+ * tarjeta se apila hasta que tiene ancho para el esquema al lado, que es lo que
+ * de verdad decide si cabe.
+ */
+@container (min-width: 24rem) {
+  .sintoma {
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
+.sintoma::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgb(37 99 235 / 0.06),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.sintoma:hover::before {
+  opacity: 1;
+}
+
+.sintoma:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(37 99 235 / 0.15);
+}
+
+.sintoma:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+.sintoma-dibujo {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.sintoma-texto {
+  min-width: 0;
+}
+
+.sintoma-titulo {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin-bottom: 0.15rem;
+  color: var(--text-primary);
+}
+
+.sintoma-guia {
+  font-size: 0.76rem;
+  color: var(--accent-text);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.sintoma-resumen {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.sintoma-pie {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.sintoma-flecha {
+  margin-left: auto;
+  color: var(--accent-text);
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.sintoma:hover .sintoma-flecha {
+  transform: translateX(3px);
+}
+
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.insignia--acento {
+  background: rgb(37 99 235 / 0.16);
+  border-color: rgb(96 165 250 / 0.4);
+  color: var(--accent-text);
+}
+
+/* El bloque final del índice: no es un artículo, es una advertencia sobre el
+   error más común. Va en su propia caja porque es lo único que hay que leer si
+   hay más de una guía. */
+.wiki-encuentre {
+  margin-top: 2rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
+  border-radius: 0 12px 12px 0;
+  background: rgb(245 158 11 / 0.07);
+}
+
+.wiki-encuentre h2 {
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.wiki-encuentre p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 46rem;
+}
+
+/* --- Una guía ------------------------------------------------------------- */
+
+.guia {
+  width: 100%;
+  max-width: 54rem;
+  padding: 1.5rem 0.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.guia--vacia .guia-caja {
+  max-width: 40rem;
+  line-height: 1.65;
+}
+
+.guia--vacia h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.guia--vacia p {
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.guia-enlace {
+  color: var(--accent-text);
+}
+
+/* --- La barra «Tu archivo» -------------------------------------------------- *
+ *
+ * Una franja de datos leídos del archivo que ha subido quien lee, y cada uno
+ * enlazado a la parte de la guía que lo explica.
+ *
+ * La caja es deliberadamente distinta de las de las etapas: aquí no se elige nada,
+ * todo lo que sale ya estaba escrito en otro sitio, y una caja igual que las de
+ * las etapas haría que esto pareciera una etapa más —una más, y además la única
+ * que no se puede filtrar—. Por eso es una franja plana, sin borde propio, con
+ * una línea arriba y otra abajo.
+ *
+ * `.tu-archivo-dato` son dos líneas —campo arriba, valor abajo— y no una línea
+ * «Material · PLA», porque el valor ausente necesita su propio ancho: «no lo
+ * escribió tu slicer» es el texto más largo de la barra y en una línea corta se
+ * partía en dos y descentraba la fila.
+ */
+.tu-archivo {
+  margin: 0.25rem 0 1.4rem;
+  padding: 0.7rem 0 0.8rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  animation: entra-fila 0.36s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+.tu-archivo-titulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.tu-archivo-nombre {
+  min-width: 0;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tu-archivo-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.tu-archivo-item {
+  min-width: 0;
+  list-style: none;
+}
+
+.tu-archivo-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tu-archivo-dato--enlace {
+  border-color: var(--border);
+  background: var(--bg-panel);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+/*
+ * Los anclas de la guía dejan sitio para la barra de arriba.
+ *
+ * Sin esto, al saltar a `#v-cama` la cabecera fija se queda encima de la variable
+ * y quien lee no ve dónde ha llegado, que es peor que no llevarle allí. Con
+ * `scroll-margin-top` el destino queda por debajo y se ve entero.
+ *
+ * Va sobre `.guia [id]` y no sobre un `[id]` global, para que el cambio afecte
+ * sólo a las anclas que introduce la barra y no a cualquier otro `id` que se
+ * añada mañana.
+ */
+.guia [id] {
+  scroll-margin-top: 5.5rem;
+}
+
+.tu-archivo-dato--enlace:hover {
+  border-color: var(--accent-text);
+  background: var(--bg-hover);
+}
+
+.tu-archivo-dato--enlace:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.tu-archivo-campo {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.tu-archivo-valor {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * El dato ausente va en secundario y en cursiva, no en gris claro ni con «—».
+ *
+ * Ya está dicho en el texto de la barra, así que aquí no hace falta repetir el
+ * símbolo: lo que tiene que verse es que **ese** dato no está, sin que el resto de
+ * la fila parezca haber salido mal.
+ */
+.tu-archivo-valor--ausente {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.tu-archivo-nota {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.tu-archivo-nota--demo {
+  color: var(--warning);
+}
+
+.tu-archivo-pista {
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+/* La cabecera: esquema a la izquierda, el síntoma escrito a la derecha. Es la
+   misma composición que la tarjeta del índice pero con más aire y sin caja,
+   porque aquí ya no hay que elegir entre varias. */
+.guia-cabecera {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  animation: entra-fila 0.36s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+@media (min-width: 620px) {
+  .guia-cabecera {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.guia-cabecera-dibujo {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+}
+
+.guia-cabecera-migas {
+  font-size: 0.78rem;
+  margin-bottom: 0.35rem;
+}
+
+.guia-cabecera-migas a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.guia-cabecera-migas a:hover {
+  color: var(--accent-text);
+}
+
+.guia-cabecera h1 {
+  font-size: clamp(1.5rem, 1.15rem + 1.7vw, 2.15rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.guia-cabecera-resumen {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 42rem;
+  font-size: 0.98rem;
+}
+
+/*
+ * El párrafo de entrada. Es `resumen` en su versión larga, y se pinta como tal:
+ * un poco mayor y con más aire, porque es lo primero que se lee al abrir la guía
+ * y contexto del problema antes de descartarlo. La medida es la de `.etapa-intro`
+ * (44rem) —el ancho cómodo de lectura del cuerpo—, no la del resumen, que es una
+ * frase suelta para la tarjeta.
+ */
+.guia-entrada {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 44rem;
+  font-size: 1.03rem;
+  margin: 0.7rem 0 0;
+}
+
+.guia-cabecera-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+/* Las etapas. */
+
+.etapa {
+  min-width: 0;
+  animation: entra-fila 0.4s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+.etapa-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.22rem;
+  line-height: 1.25;
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.01em;
+}
+
+.etapa-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgb(37 99 235 / 0.18);
+  border: 1px solid rgb(96 165 250 / 0.35);
+  color: var(--accent-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.etapa-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 44rem;
+  margin-bottom: 1rem;
+  font-size: 0.94rem;
+}
+
+.etapa-vacia {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: rgb(37 99 235 / 0.08);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+/* --- Etapa 1: el diferencial ---------------------------------------------- *
+ *
+ * Dos caras enfrentadas por comprobación. Es la decisión visual más importante
+ * de la guía, y sale de una razón de lectura: la pregunta que trae quien llega
+ * es «¿lo mío es esto?», y una respuesta de dos caras se lee sin leer. Una
+ * lista de «señales de que es warping» obligaría a leer y decidir después.
+ */
+
+.diferencial {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.diferencial-fila {
+  padding: 0.9rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  animation: entra-fila 0.34s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+.diferencial-mira {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.7rem;
+}
+
+.diferencial-pares {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 540px) {
+  .diferencial-pares {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.diferencial-cara {
+  position: relative;
+  padding: 0.7rem 0.75rem 0.7rem 0.85rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.diferencial-cara--si {
+  border-left: 3px solid var(--success);
+  background: rgb(34 197 94 / 0.08);
+}
+
+.diferencial-cara--no {
+  border-left: 3px solid var(--danger);
+  background: rgb(239 68 68 / 0.08);
+}
+
+.diferencial-veredicto {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.diferencial-cara--si .diferencial-veredicto {
+  color: var(--success);
+}
+
+.diferencial-cara--no .diferencial-veredicto {
+  color: var(--danger);
+}
+
+/* La salida del diferencial: el enlace a la otra guía. Es el momento de la
+   página con más probabilidad de ser pulsado, así que es un botón y no un enlace
+   de texto. */
+.diferencial-salida {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.16s, border-color 0.16s, transform 0.16s;
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.boton--ruta {
+  background: rgb(37 99 235 / 0.16);
+  border-color: rgb(96 165 250 / 0.4);
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.boton--ruta:hover {
+  background: rgb(37 99 235 / 0.28);
+  transform: translateX(2px);
+}
+
+.boton--sutil {
+  margin-top: 1rem;
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+
+.boton--sutil:hover {
+  border-color: var(--accent-text);
+  color: var(--text-primary);
+}
+
+/* --- Etapa 2: las variables ----------------------------------------------- *
+ *
+ * `fieldset` y no un `div` con un `p`: el navegador pone el borde y el `legend`
+ * por debajo de los controles, que es justo lo que quiere un grupo de botones
+ * excluyentes, y además el lector de pantalla anuncia el grupo al entrar. Es
+ * semántica que ya está hecha y que no había que escribir.
+ */
+
+.variables {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.variable {
+  min-width: 0;
+  padding: 0.9rem 1rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.variable-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0;
+  margin-bottom: 0.15rem;
+}
+
+.variable-requerida {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.35rem;
+  border-radius: 4px;
+  background: rgb(245 158 11 / 0.16);
+  border: 1px solid rgb(245 158 11 / 0.35);
+  color: var(--warning);
+  cursor: help;
+}
+
+.variable-para {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  max-width: 44rem;
+}
+
+.variable-opciones {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  /* Las opciones de una misma fila, a la misma altura. Antes la fila quedaba
+     escalonada cuando una opción llevaba detalle y otra no. */
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+.variable-opciones > li {
+  display: flex;
+}
+
+/*
+ * El chip.
+ *
+ * Dos piezas: la etiqueta y el detalle. El detalle —«PLA: 35–45 °C»— es lo que
+ * hace que el chip sea un dato y no una etiqueta, y por eso va dentro del botón
+ * y no debajo: un dato que está fuera del control no cambia visualmente con él,
+ * y aquí tiene que cambiar, porque al marcar la chapa se está eligiendo una cifra.
+ *
+ * `aria-pressed` en vez de `role="radio"` porque es multi-elección con
+ * desmarcado: un grupo de radios no puede deshacerse a sí mismo, y poder
+ * arrepentirse es la mitad de la interacción.
+ */
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-height: 44px;
+  /*
+   * Un detalle largo envuelve en vez de estirar el chip. Sin tope, «El peor caso
+   * documentado: capas más débiles» hacía ese chip cuatro veces más ancho que sus
+   * vecinos de la misma fila.
+   */
+  max-width: 15rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: inherit;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s cubic-bezier(0.22, 0.7, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.22, 0.7, 0.3, 1),
+    transform 0.2s cubic-bezier(0.22, 0.7, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 0.7, 0.3, 1);
+  animation: chip-entra 0.3s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 20ms);
+}
+
+.chip:hover {
+  border-color: var(--accent-text);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.chip--activo {
+  background: rgb(37 99 235 / 0.2);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.chip-texto {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.chip-detalle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.chip--activo .chip-detalle {
+  color: var(--accent-text);
+}
+
+/* --- El diagnóstico: en el carril o dentro de la guía ---------------------- *
+ *
+ * Es el mismo bloque —contador, progreso y nota— montado en dos sitios, y cuál
+ * de los dos se ve depende del ancho. En escritorio hay columna a la derecha y el
+ * carril queda a la vista; en el tramo 768–1199 el shell apila el carril debajo
+ * de la guía, así que el contador quedaba a miles de píxeles del control que lo
+ * provoca. Por debajo de 1200 vive en la etapa de variables y el del carril se
+ * esconde; por encima, al revés. Nunca se ven los dos, así que no se duplica.
+ */
+.guia-diagnostico {
+  margin: 1rem 0 1.25rem;
+  padding: 0.9rem 1rem;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+@media (min-width: 1200px) {
+  .guia-diagnostico {
+    display: none;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .riel-bloque--diagnostico {
+    display: none;
+  }
+}
+
+/* El atajo de las variables a las acciones, para no atravesar el conocimiento
+   cuando ya se sabe lo que se hace. Sólo aparece cuando hay acciones. */
+.guia-atajo {
+  margin-top: 1.1rem;
+}
+
+/* --- Etapa 3: las tarjetas ------------------------------------------------ */
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.tarjeta {
+  padding: 1rem 1.1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  animation: entra-fila 0.35s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  transition: border-color 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
+    transform 0.25s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.tarjeta:hover {
+  border-color: rgb(96 165 250 / 0.3);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  transform: translateY(-2px);
+}
+
+.tarjeta-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.3;
+  margin-bottom: 0.45rem;
+}
+
+/*
+ * La cifra de la tarjeta.
+ *
+ * Va en el título y no en el cuerpo porque es el dato por el que se entra en la
+ * tarjeta: quien busca «cuál es la temperatura del PLA» no lee un párrafo para
+ * encontrarla, la ve. Y la `nota` va debajo y en subdued porque es el alcance —
+ * sin ella, el 35–45 °C parece una recomendación general cuando es de una chapa
+ * concreta, que es exactamente el error que hace que la gente suba la cama de más.
+ */
+.tarjeta-cifra {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  margin-left: auto;
+  padding: 0.25rem 0.55rem;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: right;
+}
+
+.tarjeta-cifra strong {
+  font-size: 0.98rem;
+  color: var(--accent-text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tarjeta-cifra em {
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  max-width: 12ch;
+}
+
+.tarjeta-cuerpo {
+  font-size: 0.92rem;
+  line-height: 1.68;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  font-weight: 400;
+}
+
+.tarjeta-cita {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-left: 2px solid var(--border);
+  background: var(--bg-dark);
+  border-radius: 0 8px 8px 0;
+}
+
+.tarjeta-cita p {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-cita cite {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.tarjeta-cita a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-secondary);
+}
+
+.tarjeta-cita a:hover {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent-text);
+}
+
+.enlace-guia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.8rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.enlace-guia:hover {
+  text-decoration: underline;
+}
+
+.enlace-guia span {
+  transition: transform 0.16s;
+}
+
+.enlace-guia:hover span {
+  transform: translateX(3px);
+}
+
+/* --- Etapa 4: la recomendación -------------------------------------------- *
+ *
+ * Es la etapa que antes eran cinco párrafos con el orden dentro. Ahora el orden
+ * lo pone la guía y el número se pinta, que es lo que hace que una lista se lea
+ * como una secuencia y no como un conjunto.
+ *
+ * `--i` da el escalonado: cada acción entra con un retardo proporcional a su
+ * posición, así que al recalcular se ve la lista *cambiar* y no aparecer de golpe.
+ */
+
+.acciones {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  counter-reset: accion;
+}
+
+.accion {
+  padding: 0.9rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  animation: accion-entra 0.38s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+  transition: border-color 0.2s cubic-bezier(0.22, 0.7, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.accion:hover {
+  border-color: rgb(96 165 250 / 0.25);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+}
+
+.accion-cabeza {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.accion-orden {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.accion-titulo {
+  min-width: 0;
+}
+
+.accion-titulo h3 {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.accion-valor {
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Tu valor, al lado del objetivo de la fuente.
+ *
+ * Va justo debajo del valor y en tres piezas —lo tuyo, el intervalo, y dónde cae—
+ * para que se lean de un golpe. El color del filete izquierdo dice la posición sin
+ * tener que leerla: acento cuando cae dentro, aviso cuando se sale por arriba o por
+ * abajo. Sólo se pinta si el archivo trae el campo.
+ */
+.accion-comparacion {
+  margin-top: 0.55rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  border-left: 3px solid var(--border);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.accion-comparacion strong {
+  color: var(--accent-text);
+}
+
+.accion-comparacion-fuente,
+.accion-comparacion-donde {
+  color: var(--text-secondary);
+}
+
+.accion-comparacion--dentro {
+  border-left-color: var(--accent);
+}
+
+.accion-comparacion--por-encima,
+.accion-comparacion--por-debajo {
+  border-left-color: var(--warning);
+}
+
+.accion-porque {
+  margin-top: 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * El alcance.
+ *
+ * Va en un color distinto del porqué y con una marca de límite, porque es una
+ * categoría distinta: el porqué explica la acción y el alcance dice hasta dónde
+ * llega. Mezclarlos en un párrafo es lo que convierte una fuente acotada en una
+ * recomendación general, y es el error más caro de esta wiki.
+ */
+.accion-alcance {
+  margin-top: 0.5rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--warning);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.accion-fuente {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.accion-fuente span {
+  padding: 0.08rem 0.4rem;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+}
+
+/* --- Lo que la guía no resuelve ------------------------------------------- */
+
+.fuera {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .fuera {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.fuera-item {
+  padding: 0.85rem 0.95rem;
+  background: rgb(239 68 68 / 0.06);
+  border: 1px solid rgb(239 68 68 / 0.22);
+  border-radius: 12px;
+  animation: entra-fila 0.32s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+.fuera-sintoma {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+}
+
+.fuera-porque {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.fuera-item .enlace-guia {
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+/* --- Las fuentes ---------------------------------------------------------- */
+
+.guia-fuentes {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.guia-fuentes-nota {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 40rem;
+  margin-top: 0.4rem;
+}
+
+.guia-fuentes-lista {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.guia-fuentes-lista li {
+  min-width: 0;
+}
+
+.guia-fuentes-lista a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
+  animation: entra-fila 0.3s ease-out both;
+}
+
+.guia-fuentes-lista a:hover {
+  border-color: var(--accent-text);
+  transform: translateX(2px);
+}
+
+.guia-fuentes-lista strong {
+  font-size: 0.86rem;
+  color: var(--accent-text);
+}
+
+.guia-fuentes-lista span {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* --- El riel: la columna derecha que antes estaba muerta ------------------ */
+
+.riel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.85rem 0.75rem 1.5rem;
+}
+
+/*
+ * A partir de 1200 px el carril vive en una columna de altura fija, así que es él
+ * quien scrollea. Sin esto, «Otras guías» crece con cada guía nueva y las últimas
+ * quedan por debajo de la ventana, sin barra y sin forma de llegar: medido, con
+ * 15 guías el carril mide 1311 px en una ventana de 900 y desborda 496.
+ *
+ * La cadena de alturas es la misma que la del panel: `.sidebar-right` ya es
+ * `flex-direction: column` con `min-height: 0` a partir de 1200, y con
+ * `flex: 1; min-height: 0` aquí el `overflow-y` tiene contra qué medirse.
+ */
+@media (min-width: 1200px) {
+  .riel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* Hueco para que la barra de scroll no pise el borde de las tarjetas. */
+    padding-right: 0.5rem;
+  }
+}
+
+.riel-bloque {
+  padding: 0.85rem 0.9rem;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  animation: entra-fila 0.34s ease-out both;
+}
+
+.riel-titulo {
+  font-size: 0.95rem;
+  margin-bottom: 0.55rem;
+}
+
+.riel-subtitulo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* El contador grande. Es lo primero que se ve al entrar en una guía, y su
+   trabajo es que se entienda que la página **responde**: un número que sube al
+   marcar es la prueba más barata de que la interacción hace algo. */
+.riel-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+
+.riel-cifra strong {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.riel-cifra span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.riel-progreso {
+  height: 4px;
+  background: var(--bg-hover);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.riel-progreso span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.riel-nota,
+.riel-fuente {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.riel-fuente {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.riel-fuente strong {
+  color: var(--accent-text);
+}
+
+.riel-lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.riel-enlace {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.riel-enlace:hover {
+  border-color: var(--accent-text);
+  transform: translateX(2px);
+}
+
+.riel-enlace:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.riel-enlace-sintoma {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.riel-enlace-titulo {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/*
+ * Cada fila es un bloque de dos líneas, no una fila de dos columnas.
+ *
+ * Era una fila —`display: flex`, nombre a la izquierda, valor a la derecha— y se desbordaba
+ * de las 320 px del riel en cuanto una etiqueta era larga. «¿El perfil dice la chapa que
+ * tienes montada?» empujaba su valor contra el borde, y el valor «No, o no lo sé» se
+ * partía **letra a letra** por el `overflow-wrap: anywhere`, saliéndose por la derecha.
+ * En la captura se veía una columna de letras sueltas al borde de la columna.
+ *
+ * La causa es que en dos columnas los dos textos compiten por el mismo ancho, y con
+ * etiquetas de longitud muy distinta no hay reparto que funcione. Apilados no compiten: la
+ * etiqueta usa todo el ancho y el valor va debajo, que además se lee mejor porque es la
+ * respuesta a la pregunta de encima.
+ */
+.riel-variables {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.riel-variables li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  /* Sin `min-width: 0` un item de flex no puede encogerse por debajo de su contenido, y
+     con una etiqueta larga eso es exactamente el desbordamiento que esto arregla. */
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  animation: entra-fila 0.24s ease-out both;
+}
+
+.riel-var-nombre {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.riel-var-valor {
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--accent-text);
+  /* Se parte por palabras, no por letras. `anywhere` es lo que producía la columna de
+     letras sueltas, y aquí no hace falta: el valor cabe en dos líneas con `break-word`. */
+  overflow-wrap: break-word;
+}
+
+/* --- Las animaciones, en un solo sitio ------------------------------------ *
+ *
+ * Todas por debajo de 400 ms, todas con la misma curva, y todas anuladas por el
+ * bloque de `prefers-reduced-motion` del final de esta sección. La curva
+ * `cubic-bezier(0.22, 0.7, 0.3, 1)` sale de entrada: termina rápido y frena, que
+ * es lo que hace que algo parezca que *llega* en vez de que se deslice.
+ */
+
+@keyframes entra-fila {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entra-tarjeta {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes chip-entra {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes accion-entra {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Todo el movimiento apagado de una vez.
+ *
+ * Es un bloque nuevo y no se toca el que ya había para las animaciones del
+ * artículo anterior, porque aquel se aplica a selectores que ya no existen y
+ * tocarlo obligaría a mezclar reglas de dos sistemas que no comparten nada.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .sintoma,
+  .guia-cabecera,
+  .etapa,
+  .tarjeta,
+  .accion,
+  .diferencial-fila,
+  .fuera-item,
+  .riel-bloque,
+  .riel-variables li,
+  .guia-fuentes-lista a,
+  .chip {
+    animation: none;
+  }
+
+  .dibujo-pieza--arqueada,
+  .dibujo-nozzle,
+  .dibujo-extrusion,
+  .dibujo-grieta,
+  .dibujo-burbuja,
+  .dibujo-colapso,
+  .dibujo-hilo {
+    animation: none;
+  }
+
+  .sintoma:hover,
+  .sintoma-flecha,
+  .boton--ruta,
+  .sintoma-flecha,
+  .riel-enlace,
+  .guia-fuentes-lista a,
+  .enlace-guia span,
+  .chip {
+    transition: none;
+  }
+
+  .sintoma:hover,
+  .boton--ruta:hover,
+  .riel-enlace:hover,
+  .guia-fuentes-lista a:hover,
+  .chip:hover {
+    transform: none;
+  }
+
+  .riel-progreso span {
+    transition: none;
+  }
+}
+
+/* El termómetro del dibujo de la cama. Se añadió con la tercera guía, y por eso
+   va aquí y no en el bloque general: es el único dibujo que no enseña un defecto
+   sino dos direcciones posibles, y su silueta tiene que distinguirse de las otras
+   cinco a un vistazo. */
+.dibujo-termometro {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.dibujo-termometro-bola {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+
+.dibujo-punta {
+  fill: var(--accent-text);
+  stroke: none;
+}
+
+/* El recinto y la puerta del dibujo de enclosure. Se añadió con la quinta guía y
+   va aquí por el mismo motivo que el termómetro: es un dibujo que no enseña un
+   defecto sino una decisión, y su silueta —una caja con la puerta— tiene que
+   distinguirse de las otras seis a un vistazo. */
+.dibujo-camara {
+  stroke: var(--text-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.dibujo-puerta {
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* El saliente que se descuelga, del dibujo de voladizos. Va en color de aviso, como
+   la grieta y el colapso: es un defecto, no una pieza sana. */
+.dibujo-voladizo {
+  stroke: var(--danger);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- Taller: por qué esta ruta parecía un hueco ----------------------------- *
+ *
+ * La caja de `.taller` es estrecha y centrada, como la zona de subida, porque es un
+ * formulario corto y no un documento. Lo que no lo era era el alto: sin G-code, la
+ * columna central de un portátil de 1440 px enseña un título de 20 px y una línea
+ * dentro de 850. Este bloque es lo que llena ese hueco en los estados donde no hay
+ * cálculo, y lo hace con las tres cosas que el módulo hace, no con relleno.
+ *
+ * `max-width` y no `width` por el motivo de siempre: en 375 px no queda un margen
+ * muerto a los lados. Y el filete a la izquierda, no una caja más, para que se lea
+ * como parte del formulario y no como otro bloque suelto.
+ */
+.taller-explica {
+  max-width: 30rem;
+  margin-top: 0.5rem;
+  padding: 0.9rem 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+}
+
+.taller-explica p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.taller-explica p + p {
+  margin-top: 0.55rem;
+}
+
+.taller-explica-que {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.taller-explica-fuera {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+}
+
+.taller-explica .boton--ruta {
+  margin-top: 0.6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taller-explica .boton--ruta {
+    transition: none;
+  }
+
+  .taller-explica .boton--ruta:hover {
+    transform: none;
+  }
 }

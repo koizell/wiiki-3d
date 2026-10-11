@@ -7,9 +7,22 @@ import type { ProjectMetadata, SlicerKind } from './types';
  * los primeros kilobytes del archivo (Cura los emite justo después de la línea
  * de Genius), así que no hay motivo para traerse un G-code de 200 MB a memoria.
  *
- * TODO: el parseo sigue devolviendo datos simulados. Cuando implemente el
- * parseo real habrá que detectar el slicer (Cura, PrusaSlicer, BambuStudio...)
- * y mapear sus comentarios de cabecera a `ProjectMetadata`.
+ * El parseo es real y va en tres pasos: leer dos ventanas del archivo, detectar
+ * qué slicer lo escribió y aplicar sólo la tabla de ese slicer. Se detecta
+ * primero y la tabla se aplica después, en lugar de lanzar las tres a la vez,
+ * porque las tres familias de slicer usan convenciones distintas para el mismo
+ * concepto y una lectura a ciegas devolvería valores de la convención
+ * equivocada.
+ *
+ * Las tres familias son Cura, PrusaSlicer/SuperSlicer y Orca/Bambu/Creality.
+ * Los forks se separan por sus claves: Orca deriva de Prusa y escribe también
+ * claves de familia Prusa, así que su firma de versión y su `total filament
+ * weight [g]` son lo único inequívoco.
+ *
+ * Se leen dos ventanas (la cabeza y la cola) porque los slicers no ponen la
+ * cabecera en el mismo sitio: la familia Cura/Prusa la abre, y la familia
+ * Orca/Bambu la cierra. Leer sólo el principio perdería los datos justo en el
+ * caso más habitual.
  */
 
 /** Extensiones que este servicio sabe interpretar. */

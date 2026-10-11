@@ -8,8 +8,15 @@
  * la petición hacia Jev y nunca se la devuelve al cliente.
  *
  * El Worker no implementa lógica de clasificación. Solo añade credenciales y
- * CORS, y devuelve la respuesta de Jev tal cual: cualquier decisión sobre qué
- * constitutes una respuesta válida corresponde al backend, no a este proxy.
+ * CORS. La respuesta de Jev se reenvía tal cual —con su código de estado y su
+ * cuerpo— para que el frontend pueda leer el formato propio de Jev: cualquier
+ * decisión sobre qué constituye una respuesta válida corresponde al backend, no
+ * a este proxy.
+ *
+ * Única excepción: un 5xx de Jev se sustituye por un JSON propio. Cuando el
+ * backend de Jev (o su CDN) falla por dentro, lo que llega es la página de error
+ * de Cloudflare en `text/plain` — `error code: 502` — que no contiene nada que el
+ * frontend pueda usar. Ver el paso 7.
  */
 
 /** Variables de entorno disponibles en el Worker. */
@@ -62,6 +69,17 @@ function json(
       ...corsHeaders(origin),
     },
   });
+}
+
+/**
+ * Recorta un texto para el log, marcando cuándo se ha cortado.
+ *
+ * Los errores de upstream no siempre son el JSON de Jev: cuando falla por dentro
+ * puede llegar la página de error de Cloudflare, que es HTML. Sin recortar, un
+ * cuerpo grande inunda el tail y esconde el resto de eventos.
+ */
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max)}… (${text.length} bytes)`;
 }
 
 /**
@@ -124,10 +142,38 @@ export default {
       );
     }
 
-    // 5. Reenvío. El body se pasa tal cual sin parsear: este Worker no valida el
-    //    contrato de `ProjectMetadata` ni el de la respuesta de Jev. Esa
-    //    validación pertenece al servicio de Jev y al frontend, y duplicarla aquí
-    //    solo daría un segundo sitio donde quedar desincronizada.
+    // 5. Log de entrada y reenvío.
+    //
+    // TEMPORAL (diagnóstico del 502). Hasta ahora `wrangler tail` solo mostraba
+    // «Ok», que es el resultado de la invocación y no el estado HTTP: un Worker
+    // que devuelve una Response 502 también es «Ok». Sin un log explícito no
+    // había forma de distinguir un 502 del Worker de un 502 reenviado desde Jev.
+    //
+    // El body se lee una sola vez y se reutiliza: un `Request` solo puede leerse
+    // una vez, así que medirlo aquí y volver a leerlo en el `fetch` fallaría.
+    // Se mide en bytes de verdad y no en caracteres porque el payload lleva
+    // acentos y `String.length` los contaría como uno solo.
+    //
+    // Nunca se registra la API key ni el contenido de la petición: solo su
+    // tamaño, que basta para distinguir "no llegó nada" de "llegó algo ilegible".
+    let requestBody: string;
+    try {
+      requestBody = await request.text();
+    } catch (error) {
+      console.error('No se pudo leer el cuerpo de la petición:', error);
+      return json({ error: 'Petición no válida.' }, 400, env.ALLOWED_ORIGIN);
+    }
+
+    console.log(
+      `[jev] ${request.method} ${url.pathname} origin=${request.headers.get('Origin') ?? '(none)'} — ` +
+        `entrada: ${new TextEncoder().encode(requestBody).length} bytes`
+    );
+
+    // El body se pasa tal cual sin parsear: este Worker no valida el contrato de
+    // `ProjectMetadata` ni el de la respuesta de Jev. Esa validación pertenece
+    // al servicio de Jev y al frontend, y duplicarla aquí solo daría un segundo
+    // sitio donde quedar desincronizada.
+    const startedAt = Date.now();
     let upstream: Response;
     try {
       upstream = await fetch(JEV_API_URL, {
@@ -136,7 +182,7 @@ export default {
           Authorization: `Bearer ${env.JEV_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: await request.text(),
+        body: requestBody,
       });
     } catch (error) {
       console.error('Fallo de red al llamar a Jev:', error);
@@ -151,6 +197,53 @@ export default {
     //    como texto para no reinterpretar el JSON: si Jev devuelve un error con un
     //    formato propio, el frontend debe poder leerlo.
     const body = await upstream.text();
+    const elapsedMs = Date.now() - startedAt;
+
+    // TEMPORAL (diagnóstico del 502): log del reenvío. Nunca se registra la API
+    // key ni el cuerpo de entrada; del cuerpo de Jev solo el recorte de abajo.
+    console.log(
+      `[jev] ${upstream.status} ${upstream.statusText} en ${elapsedMs}ms — ` +
+        `content-type: ${upstream.headers.get('Content-Type') ?? '(none)'} — ` +
+        `body: ${new TextEncoder().encode(body).length} bytes`
+    );
+
+    if (!upstream.ok) {
+      // Un 5xx aquí significa que Jev (o su CDN) falló por dentro: el Worker no
+      // lanzó una excepción, solo reenvió lo que recibió. El cuerpo se recorta
+      // porque puede ser una página de error de Cloudflare, no el JSON de Jev.
+      console.error(
+        `[jev] Respuesta no-OK de Jev (${upstream.status}) tras ${elapsedMs}ms: ` +
+          truncate(body, 500)
+      );
+    }
+
+    // 7. Degradación de un 5xx de Jev.
+    //
+    // Solo para errores de upstream. El 500 propio de este Worker —key ausente,
+    // más arriba— ya se devuelve antes de llegar aquí y conserva su JSON y su
+    // status: es un fallo nuestro y no debe disfrazarse de fallo de Jev.
+    //
+    // Lo que llega de un 5xx de Jev no es su JSON de error sino la página de
+    // Cloudflare en `text/plain` (`error code: 502`), sin información utilizable.
+    // Se sustituye por un JSON propio para que el frontend pueda distinguir
+    // "Jev está caído" de "el payload es incorrecto".
+    //
+    // El status de la respuesta es siempre 502, no el de Jev: un proxy que sí
+    // habló con upstream pero recibió una respuesta inservible es un 502 por
+    // definición. El status original viaja en `upstream_status` para no perderlo.
+    if (upstream.status >= 500) {
+      return json(
+        {
+          error:
+            'El servicio de análisis de Jev no está disponible en este momento. ' +
+            'Inténtalo de nuevo más tarde.',
+          upstream_status: upstream.status,
+        },
+        502,
+        env.ALLOWED_ORIGIN
+      );
+    }
+
     return new Response(body, {
       status: upstream.status,
       statusText: upstream.statusText,

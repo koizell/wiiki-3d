@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import type { ArticuloDeCampo } from '../lib/wiki-campos';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
 
 /**
@@ -8,6 +10,13 @@ import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/
  * solo pinta el estado que le entrega `App`. Así el orquestado del análisis
  * (parseo -> clasificación) vive en un único sitio y el panel se puede probar
  * renderizando cada estado por separado.
+ *
+ * Con `explicar` ocurre lo mismo. El panel no sabe qué artículos hay ni cómo se
+ * llama ninguno: sólo recibe una función que, dado el nombre de un campo del
+ * análisis, dice si hay un artículo que lo explique. Quien decide eso es
+ * `src/lib/wiki-campos.ts`, y llegar hasta aquí con la tabla entera atada al
+ * panel convertiría un componente de presentación en el punto donde vive la
+ * wiki.
  */
 
 /**
@@ -43,6 +52,14 @@ interface AnalysisPanelProps {
    * resto de estados no lo necesitan.
    */
   fileType?: AnalysisFileType;
+  /**
+   * Qué artículo de la wiki explica cada campo del análisis.
+   *
+   * Se pasa como función y no como tabla para que el panel no dependa de
+   * `src/lib/wiki-campos.ts`. Con una tabla importada, el panel arrastraría la
+   * correspondencia entre campos y artículos sin poder probarlos por separado.
+   */
+  explicar?: (campo: string) => ArticuloDeCampo | null;
 }
 
 /**
@@ -82,7 +99,14 @@ const RISK_CLASS: Record<RiskLevel, string> = {
   'Crítico': 'risk-critico',
 };
 
-function AnalysisPanel({ status, metadata, classification, error, fileType }: AnalysisPanelProps) {
+function AnalysisPanel({
+  status,
+  metadata,
+  classification,
+  error,
+  fileType,
+  explicar,
+}: AnalysisPanelProps) {
   if (status === 'parsing' || status === 'classifying') {
     return (
       <p className="panel-loading" role="status" aria-live="polite">
@@ -123,22 +147,59 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
   return (
     <div className="panel-body">
       <section>
-        <h4 className="panel-section-title">Metadatos de impresión</h4>
+        <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
-          <DataRow label="Material" value={metadata.material} />
-          <DataRow label="Temp. hotend" value={formatCelsius(metadata.hotendTemp)} />
-          <DataRow label="Temp. cama" value={formatCelsius(metadata.bedTemp)} />
-          <DataRow label="Altura de capa" value={formatMillimetres(metadata.layerHeight)} />
+          {/*
+            `campo` es lo que hace que una fila enlace a la guía que explica ese
+            dato. **Cada campo que esté en `src/lib/wiki-campos.ts` tiene que
+            pasarlo aquí**, o la tabla promete un enlace que la vista no pinta: es
+            un fallo silencioso, porque el enlace que no sale no da error.
+
+            Pasó con `bedTemp`, y volvió a pasar con `material`, `hotendTemp`,
+            `layerHeight`, `hasOverhangs` y `overhangAngle` al escribir sus guías:
+            las entradas estaban en la tabla y estas filas no pedían el campo.
+            `verify:wiki` lo comprueba ahora contra `CAMPOS_WIKI`, para que no haya
+            que acordarse.
+          */}
+          <DataRow label="Material" value={metadata.material} campo="material" explicar={explicar} />
+          <DataRow
+            label="Temp. hotend"
+            value={formatCelsius(metadata.hotendTemp)}
+            campo="hotendTemp"
+            explicar={explicar}
+          />
+          <DataRow
+            label="Temp. cama"
+            value={formatCelsius(metadata.bedTemp)}
+            campo="bedTemp"
+            explicar={explicar}
+          />
+          <DataRow
+            label="Altura de capa"
+            value={formatMillimetres(metadata.layerHeight)}
+            campo="layerHeight"
+            explicar={explicar}
+          />
           <DataRow label="Tiempo estimado" value={formatDuration(metadata.printTime)} />
           <DataRow label="Filamento" value={formatGrams(metadata.filamentUsed)} />
           <DataRow label="Peso total" value={formatGrams(metadata.filamentWeight)} />
-          <DataRow label="Voladizos" value={formatYesNo(metadata.hasOverhangs)} />
-          <DataRow label="Ángulo máx." value={formatDegrees(metadata.overhangAngle)} />
+          <DataRow
+            label="Voladizos"
+            value={formatYesNo(metadata.hasOverhangs)}
+            campo="hasOverhangs"
+            explicar={explicar}
+          />
+          <DataRow
+            label="Ángulo máx."
+            value={formatDegrees(metadata.overhangAngle)}
+            campo="overhangAngle"
+            explicar={explicar}
+          />
         </dl>
       </section>
 
       <section>
-        <h4 className="panel-section-title">Diagnóstico de Jev</h4>
+        <h3 className="panel-section-title">Diagnóstico de Jev</h3>
         <dl className="panel-data">
           <div className="panel-data-row">
             <dt className="panel-data-key">Nivel de riesgo</dt>
@@ -146,9 +207,15 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
               <span className={`risk-badge ${RISK_CLASS[classification.riskLevel]}`}>
                 {classification.riskLevel}
               </span>
+              {explicar?.('riskLevel') && <Explicar articulo={explicar('riskLevel')!} />}
             </dd>
           </div>
-          <DataRow label="Riesgo de warping" value={formatPercent(classification.warpingRisk)} />
+          <DataRow
+            label="Riesgo de warping"
+            value={formatPercent(classification.warpingRisk)}
+            campo="warpingRisk"
+            explicar={explicar}
+          />
           <DataRow label="Soportes" value={classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
         </dl>
       </section>
@@ -172,6 +239,30 @@ function AnalysisPanel({ status, metadata, classification, error, fileType }: An
 const NO_DATA = '—';
 
 /**
+ * El enlace de «este dato tiene una explicación larga».
+ *
+ * Es lo que separa esta wiki de una genérica: el panel acaba de decir «35 %» y a
+ * un clic está la tarjeta que explica de dónde sale ese 35 %, con sus fuentes al
+ * pie. Sin este enlace, la guía más completa del sitio es un documento suelto al
+ * que se llega por búsqueda.
+ *
+ * Y el enlace lleva al **ancla**, no a la cabecera: quien pulsa «Warping en PLA»
+ * desde «Riesgo de warping, 35 %» cae en la tarjeta del riesgo, no al principio de
+ * la guía a buscarla. La ancla la declara la guía y el panel la copia en
+ * `CAMPOS_WIKI`; `verify:wiki` vigila que las dos coincidan.
+ *
+ * El texto del enlace es el nombre de la guía, no «más info»: «más info» no dice
+ * de qué, y aquí lo interesante es justamente qué.
+ */
+function Explicar({ articulo }: { articulo: ArticuloDeCampo }) {
+  return (
+    <Link className="panel-explicar" to={`/wiki/${articulo.slug}#${articulo.ancla}`}>
+      {articulo.etiqueta}
+    </Link>
+  );
+}
+
+/**
  * Una fila clave-valor del panel.
  *
  * Acepta `undefined` para que quien la llama pueda pasar un campo opcional tal
@@ -182,14 +273,43 @@ const NO_DATA = '—';
 function DataRow({
   label,
   value,
+  campo,
+  explicar,
 }: {
   label: string;
   value: string | number | undefined;
+  /**
+   * Nombre del campo en `ProjectMetadata`. Opcional porque no todos los campos
+   * tienen artículo que los explique —de `printTime` no hay ninguno, y no lo
+   * habrá— y no tiene sentido un enlace vacío donde no hay nada que enlazar.
+   */
+  campo?: string;
+  explicar?: AnalysisPanelProps['explicar'];
 }) {
+  /*
+   * El enlace se decide **fuera** de la comprobación del valor, y a propósito.
+   *
+   * Cuando el slicer no escribe un campo opcional, el panel pinta «—», y ahí el
+   * artículo sigue enlazando. El artículo explica el concepto, no esta instancia:
+   * que el G-code de este usuario no traiga el campo es **una razón más para
+   * leerlo**, porque la sección «Por qué tu slicer puede no escribir este dato» viene
+   * justo a contestar eso. Poner el enlace dentro de «si hay valor» dejaría sin
+   * salida a quien más lo necesita.
+   *
+   * Los dos únicos campos atados ahora mismo —`warpingRisk` y `riskLevel`— son
+   * obligatorios, así que este camino todavía no se ha visto en un G-code real.
+   * `scripts/verify/wiki.mjs` lo vigila con el fixture, que sí deja `Peso total` y
+   * `Ángulo máx.` sin dato, para que en cuanto haya artículo para uno de esos dos
+   * el enlace con «—» quede comprobado desde el primer día.
+   */
+  const articulo = campo && explicar ? explicar(campo) : null;
   return (
     <div className="panel-data-row">
       <dt className="panel-data-key">{label}</dt>
-      <dd className="panel-data-value">{value ?? NO_DATA}</dd>
+      <dd className="panel-data-value">
+        {value ?? NO_DATA}
+        {articulo && <Explicar articulo={articulo} />}
+      </dd>
     </div>
   );
 }

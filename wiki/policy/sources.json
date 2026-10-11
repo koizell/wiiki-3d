@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "descripcion": "Registro de fuentes autorizadas para el pipeline de la wiki. Un dominio no se descarga sin una entrada aqui con status distinto de 'pending'. Este fichero registra permisos y limites operativos del proyecto; no concede derechos de archivo ni de redistribucion, que se deciden aparte.",
+  "politicaAlmacenamiento": {
+    "metadata-only": "Solo URL, fecha, titulo y tipo. No se guarda el cuerpo.",
+    "permitted-excerpts": "Se guarda el cuerpo editorial completo. Es lo que hace el pipeline actual y lo que exige la trazabilidad: una cita tiene que poder comprobarse contra el fichero guardado.",
+    "fulltext": "Reservado. No usado."
+  },
+  "limitesPorDefecto": {
+    "concurrency": 1,
+    "minIntervalMs": 3000,
+    "maxUrlsPerRun": 12,
+    "timeoutMs": 30000,
+    "maxBodyBytes": 5242880,
+    "maxRedirects": 3,
+    "maxRetries": 2,
+    "userAgent": "wiiki-3d-research/1.0 (source verification for a cited wiki article)"
+  },
+  "dominios": [
+    {
+      "id": "bambu-wiki",
+      "origin": "https://wiki.bambulab.com",
+      "sourceType": "oficial-fabricante",
+      "allowedPathPrefixes": [
+        "/en/general/",
+        "/en/knowledge-sharing/",
+        "/en/filament-acc/",
+        "/en/software/"
+      ],
+      "robotsCheckedAt": "2026-10-04",
+      "robotsResult": "El dominio no publica robots.txt: la peticion devuelve cuerpo vacio con estado 200. Ausencia de robots.txt no es permiso. El registro se limita a las rutas de documentacion que el plan ya habia verificado una a una.",
+      "termsUrl": "https://bambulab.com/en/legal/terms-of-use",
+      "termsReviewed": false,
+      "rightsEvidenceUrl": null,
+      "storagePolicy": "permitted-excerpts",
+      "status": "allowed",
+      "notas": "Solo lectura de documentacion tecnica. Sin bypass de login, CAPTCHA ni paywall."
+    },
+    {
+      "id": "prusa-kb",
+      "origin": "https://help.prusa3d.com",
+      "sourceType": "oficial-fabricante",
+      "allowedPathPrefixes": [
+        "/article/",
+        "/filament-material-guide/",
+        "/category/",
+        "/glossary/",
+        "/product/"
+      ],
+      "robotsCheckedAt": "2026-10-04",
+      "robotsResult": "robots.txt leido. User-agent * permitido en /article/; Crawl-delay: 10; bloqueados /admin/, /search/, /api/, /edge/.",
+      "termsUrl": "https://www.prusa3d.com/terms-and-conditions/",
+      "termsReviewed": false,
+      "rightsEvidenceUrl": null,
+      "storagePolicy": "permitted-excerpts",
+      "status": "allowed",
+      "crawlDelayOverride": null,
+      "notas": "El Crawl-delay declarado es de 10 s y este proyecto usa 3 s como minimo general. Discrepancia registrada; este dominio se trata con 10 s entre peticiones, que es lo que el sitio pide.",
+      "hallazgosTecnicos": {
+        "conversionVaciaNoEsPaginaVacia": "Los articulos se sirven como aplicacion React: el texto esta dentro del fragmento oculto `<div hidden id=\"S:1\">` y la conversion ingenua a Markdown devuelve CUERPO VACIO con estado 200. Hay tres capturas de este proyecto donde el cuerpo se extrajo de ahi. Consecuencia para el pipeline: un 200 con cuerpo vacio NO demuestra una pagina vacia, y tratar ese caso como empty habria descartado las tres. Al reintentar una captura vacia hay que mirar el HTML servido antes de dar la fuente por vacia.",
+        "verificado": "2026-10-04: los cuerpos de under-extrusion, steel-sheet-profiles y extrusion-multiplier-calibration coinciden al 100 % con bloques de ocho palabras del HTML original."
+      }
+    }
+  ],
+  "pendientes": [
+    "termsReviewed es false en los dos dominios: las condiciones de uso no se han leido. Es una decision del propietario, no del agente.",
+    "rightsEvidenceUrl es null: no se ha comprobado si el archivo y la redistribucion del texto estan permitidos. wiki/raw/ es versionado, asi que esto debe resolverse antes de que el repositorio sea publico o se comparta.",
+    "La discrepancia de Crawl-delay en prusa-kb esta pendiente de decision."
+  ]
+}
