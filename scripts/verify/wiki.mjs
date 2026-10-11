@@ -282,6 +282,7 @@ try {
       citas: document.querySelectorAll('.tarjeta-cita a').length,
       riel: !!document.querySelector('.riel'),
       textoInyectado: document.querySelectorAll('.guia script').length,
+      entrada: document.querySelector('.guia-entrada')?.textContent?.trim() ?? null,
       numerosEtapa: [...document.querySelectorAll('.etapa-num')].map((e) => e.textContent.trim()),
     }));
 
@@ -315,6 +316,21 @@ try {
     );
     comprobar('las fuentes son enlaces externos de verdad', estructura.fuentesExternas);
     comprobar('el HTML no inyecta etiquetas', estructura.textoInyectado === 0);
+    /*
+     * El párrafo de entrada se pinta, y es el de verdad.
+     *
+     * `entrada` es dato del módulo de la guía, así que podría existir sin que la
+     * página lo enseñe —que es justo el estado a medias en el que se encontró:
+     * escrito en las nueve guías y sin renderizar en ninguna—. Esta comprobación
+     * mide el DOM, no el dato: si el elemento no está, o si muestra otro texto,
+     * sale en rojo. Un párrafo que no se ve es un dato decorativo, y éste es el
+     * sitio donde eso se detecta.
+     */
+    comprobar(
+      `${SLUG}: la entrada se pinta y coincide con la guía`,
+      estructura.entrada === guia.entrada,
+      `pintada: «${(estructura.entrada ?? '(nada)').slice(0, 30)}» · dato: «${guia.entrada.slice(0, 30)}»`
+    );
 
     await ctx.close();
   }

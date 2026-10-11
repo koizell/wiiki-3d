@@ -188,6 +188,7 @@ for (const guia of GUIAS) {
     const sinInterpretar = [
       guia.sintoma,
       guia.resumen,
+      guia.entrada,
       guia.titulo,
       ...guia.reglas.map((r) => r.accion),
       ...guia.reglas.map((r) => r.valor ?? ''),
@@ -212,6 +213,21 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
       assert.match(f.url, /^https?:\/\//, `URL inválida: ${f.url}`);
       assert.ok(f.quien.length > 1 && f.que.length > 5);
     }
+  });
+
+  /*
+   * La entrada existe y es un párrafo, no un titular.
+   *
+   * El tipo ya la hace obligatoria, así que el compilador la exige. Esto comprueba
+   * lo que el compilador no puede: que esté **escrita** y no rellenada con un
+   * mínimo para pasar el tipo. Un umbral de 60 caracteres separa una frase de
+   * párrafo; las nueve rondan los 150–250, así que queda holgado.
+   */
+  comprobar(`${guia.slug}: la entrada es un párrafo escrito, no un relleno`, () => {
+    assert.ok(
+      typeof guia.entrada === 'string' && guia.entrada.length > 60,
+      `entrada de ${guia.entrada?.length ?? 0} caracteres`
+    );
   });
 
   comprobar(`${guia.slug}: el diferencial tiene salida si declara siNo`, () => {

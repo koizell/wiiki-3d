@@ -198,6 +198,16 @@ function Cabecera({ guia }: { guia: Guia }) {
         </p>
         <h1>{guia.sintoma}</h1>
         <p className="guia-cabecera-resumen">{guia.resumen}</p>
+        {/*
+          El párrafo de entrada, justo bajo el resumen. Es la única prosa que
+          contextualiza el problema antes de descartarlo, y por eso vive en la
+          cabecera y no suelto entre etapas: `resumen` es una frase para la
+          tarjeta del índice y el `<meta description>`; `entrada` es el párrafo
+          que se lee mirando la pieza. Van juntos porque son lo mismo en dos
+          longitudes, y los badges de abajo siguen siendo el cierre de la
+          cabecera.
+        */}
+        <p className="guia-entrada">{guia.entrada}</p>
         <p className="guia-cabecera-meta">
           <span className="insignia">{guia.minutos} min</span>
           {guia.campos && guia.campos.length > 0 && (

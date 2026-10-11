@@ -2539,6 +2539,21 @@ body {
   font-size: 0.98rem;
 }
 
+/*
+ * El párrafo de entrada. Es `resumen` en su versión larga, y se pinta como tal:
+ * un poco mayor y con más aire, porque es lo primero que se lee al abrir la guía
+ * y contexto del problema antes de descartarlo. La medida es la de `.etapa-intro`
+ * (44rem) —el ancho cómodo de lectura del cuerpo—, no la del resumen, que es una
+ * frase suelta para la tarjeta.
+ */
+.guia-entrada {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 44rem;
+  font-size: 1.03rem;
+  margin: 0.7rem 0 0;
+}
+
 .guia-cabecera-meta {
   display: flex;
   flex-wrap: wrap;

@@ -6,6 +6,7 @@ export const enclosureYWarping: Guia = {
   resumen: 'Cerrar o abrir la puerta del enclosure, y qué temperatura de cámara buscar, según tu filamento, tu chapa y tu habitación.',
   sintoma: 'Warping o heat creep con impresora cerrada',
   dibujo: 'camara',
+  entrada: 'Con la impresora cerrada, la misma puerta que evita el warping de fuera provoca el de dentro. Esta guía dice cuándo cerrar y cuándo abrir, y por qué las dos cosas son ciertas a la vez.',
   minutos: 4,
   leeDelAnalisis: ['material', 'bedTemp'],
   diferencial: {

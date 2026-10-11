@@ -6,6 +6,7 @@ export const temperaturaHotend: Guia = {
   resumen: 'Qué temperatura de boquilla poner según el material, y cómo distinguir si un defecto es la temperatura o es otra cosa.',
   sintoma: 'Piezas frágiles entre capas, hilos o superficie con rebabas',
   dibujo: 'hotend',
+  entrada: 'Piezas frágiles entre capas, hilos o rebabas suelen ser la boquilla, no el filamento. Esta guía separa los tres síntomas y te da la temperatura que toca a tu material.',
   minutos: 4,
   campos: ['hotendTemp'],
   leeDelAnalisis: ['hotendTemp'],

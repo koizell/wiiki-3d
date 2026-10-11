@@ -25,6 +25,7 @@ export const warping: Guia = {
     'Las esquinas se levantan. Antes de subir la cama, comprueba que es warping y no separación entre capas, y qué chapa usas: la cifra de cama depende de ella más que del fabricante.',
   sintoma: 'Las esquinas se levantan de la cama',
   dibujo: 'esquinas',
+  entrada: 'El PLA es el material rígido que menos warpea, así que cuando sus esquinas se levantan casi nunca es el filamento: es la chapa, la cama o el aire. Esta guía empieza por lo que se ve —una base plana y esquinas que se curvan hacia arriba— y termina con la cifra de cama que toca a tu montaje.',
   minutos: 3,
 
   diferencial: {

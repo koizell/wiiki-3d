@@ -49,6 +49,7 @@ export const adhesion: Guia = {
     'La base no se pega. Antes de tocar nada, comprueba que no sea infraextrusión —apretar la boquilla cambia de fallo— y que el perfil diga la chapa que tienes montada.',
   sintoma: 'La base no se pega a la cama',
   dibujo: 'primera-capa',
+  entrada: 'La primera capa no pega, o pega y sale frágil. Son dos fallos distintos con dos arreglos distintos, y apretar la boquilla para forzarla cambia de fallo. Aquí se empieza por saber cuál de los dos tienes.',
   minutos: 3,
 
   /*

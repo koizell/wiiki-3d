@@ -6,6 +6,7 @@ export const material: Guia = {
   resumen: 'Qué cambia entre un filamento y otro —contracción, humedad, cámara— y cuándo el material es la causa del problema.',
   sintoma: 'Mi filamento no se comporta como debería',
   dibujo: 'rugosidad',
+  entrada: 'Un filamento que se comporta raro casi nunca es el filamento: es la humedad, la temperatura o la altura de capa. Esta guía separa las tres y te dice qué cambiar según cuál sea la tuya.',
   minutos: 3,
   campos: ['material'],
   leeDelAnalisis: ['material'],

@@ -232,6 +232,27 @@ export interface Guia {
   titulo: string;
   /** Una frase. Sale en la tarjeta del índice y en el `description`. */
   resumen: string;
+  /**
+   * El párrafo de entrada de la guía, en prosa. Es lo primero que se lee al
+   * abrirla, bajo la cabecera y antes del diferencial.
+   *
+   * No es `resumen`, y la diferencia es de propósito, no de longitud. `resumen`
+   * es **una frase** hecha para la tarjeta del índice y para el `<meta
+   * description>`, donde sólo cabe una línea. `entrada` es el párrafo que
+   * contextualiza el problema en la propia guía: por qué ocurre, qué se va a
+   * mirar y qué NO es —el warping de un PLA casi nunca es el filamento—, escrito
+   * para leerse mirando la pieza.
+   *
+   * **Es obligatorio a propósito.** Un campo opcional sería un campo que se
+   * puede dejar de escribir sin que nada se queje, y una guía sin su párrafo de
+   * entrada es el mismo fallo que una variable decorativa: el compilador deja de
+   * proteger el contenido. Todas las guías lo llevan, así que hacerlo requerido
+   * no rompe ninguna y sí obliga al redactor a escribirlo.
+   *
+   * Se pinta como **texto plano**, igual que `resumen`: si lleva `**`, salen los
+   * asteriscos. `verify:guias` lo comprueba.
+   */
+  entrada: string;
   /** Cómo lo ve alguien, en sus palabras. Es el título de la tarjeta del índice. */
   sintoma: string;
   /** Qué dibujo lleva la tarjeta del índice. */

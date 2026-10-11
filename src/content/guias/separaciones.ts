@@ -20,6 +20,7 @@ export const separaciones: Guia = {
     'Las capas se sueltan por dentro y la base está plana. Antes de tocar la temperatura hay una comprobación que decide el ajuste, y las dos listas oficiales no dicen lo mismo.',
   sintoma: 'Las capas se sueltan por dentro',
   dibujo: 'grieta',
+  entrada: 'Las capas se abren por dentro y la base queda plana. Parece warping y no lo es: el arreglo es otro, y subir la cama no lo arregla. Aquí se distinguen mirando dónde está la rotura y si la base se levanta o no.',
   minutos: 3,
 
   diferencial: {

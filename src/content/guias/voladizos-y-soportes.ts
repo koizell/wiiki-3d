@@ -35,6 +35,7 @@ export const voladizosSoportes: Guia = {
     'Un voladizo que se descuelga, unos soportes que se rompen y una cara apoyada rugosa se ven parecidos pero no se arreglan igual. Aprende a distinguirlos y a decidir si necesitas soportes o con refrigeración y orientación es suficiente.',
   sintoma: 'Un voladizo cuelga, los soportes fallan o la cara apoyada sale rugosa',
   dibujo: 'voladizo',
+  entrada: 'Un voladizo que cuelga, unos soportes que no salen o una cara apoyada rugosa son tres problemas que se confunden. Aquí se distinguen por dónde está el fallo y qué ángulo tiene el saliente.',
   minutos: 4,
 
   /*
