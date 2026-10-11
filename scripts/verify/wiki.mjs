@@ -283,6 +283,7 @@ try {
       riel: !!document.querySelector('.riel'),
       textoInyectado: document.querySelectorAll('.guia script').length,
       entrada: document.querySelector('.guia-entrada')?.textContent?.trim() ?? null,
+      autor: document.querySelector('.guia-autor')?.textContent?.trim() ?? null,
       numerosEtapa: [...document.querySelectorAll('.etapa-num')].map((e) => e.textContent.trim()),
     }));
 
@@ -330,6 +331,16 @@ try {
       `${SLUG}: la entrada se pinta y coincide con la guía`,
       estructura.entrada === guia.entrada,
       `pintada: «${(estructura.entrada ?? '(nada)').slice(0, 30)}» · dato: «${guia.entrada.slice(0, 30)}»`
+    );
+    /*
+     * La firma y la fecha. Autoría es señal de calidad para un evaluador y para
+     * E-E-A-T: si el campo está en las nueve guías y no lo pinta nadie, sería el
+     * mismo dato decorativo que este repo prohíbe. Se mide el DOM.
+     */
+    comprobar(
+      `${SLUG}: la firma se pinta con el nombre del autor`,
+      estructura.autor !== null && estructura.autor.includes(guia.autor.nombre),
+      estructura.autor === null ? '(no se pinta .guia-autor)' : `«${estructura.autor}»`
     );
 
     await ctx.close();

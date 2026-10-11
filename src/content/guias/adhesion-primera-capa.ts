@@ -1,4 +1,5 @@
 import type { Guia } from './tipos';
+import { AUTOR } from './autor.ts';
 
 /**
  * Adhesión en la primera capa.
@@ -50,6 +51,8 @@ export const adhesion: Guia = {
   sintoma: 'La base no se pega a la cama',
   dibujo: 'primera-capa',
   entrada: 'La primera capa no pega, o pega y sale frágil. Son dos fallos distintos con dos arreglos distintos, y apretar la boquilla para forzarla cambia de fallo. Aquí se empieza por saber cuál de los dos tienes.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 3,
 
   /*

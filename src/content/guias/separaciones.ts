@@ -1,4 +1,5 @@
 import type { Guia } from './tipos';
+import { AUTOR } from './autor.ts';
 
 /**
  * Separaciones entre capas.
@@ -21,6 +22,8 @@ export const separaciones: Guia = {
   sintoma: 'Las capas se sueltan por dentro',
   dibujo: 'grieta',
   entrada: 'Las capas se abren por dentro y la base queda plana. Parece warping y no lo es: el arreglo es otro, y subir la cama no lo arregla. Aquí se distinguen mirando dónde está la rotura y si la base se levanta o no.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 3,
 
   diferencial: {

@@ -1,4 +1,5 @@
 import type { Guia } from './tipos.ts';
+import { AUTOR } from './autor.ts';
 
 export const enclosureYWarping: Guia = {
   slug: 'enclosure-y-warping',
@@ -7,6 +8,8 @@ export const enclosureYWarping: Guia = {
   sintoma: 'Warping o heat creep con impresora cerrada',
   dibujo: 'camara',
   entrada: 'Con la impresora cerrada, la misma puerta que evita el warping de fuera provoca el de dentro. Esta guía dice cuándo cerrar y cuándo abrir, y por qué las dos cosas son ciertas a la vez.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 4,
   leeDelAnalisis: ['material', 'bedTemp'],
   diferencial: {

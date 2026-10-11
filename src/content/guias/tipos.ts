@@ -226,6 +226,16 @@ export interface FueraDeAlcance {
   guia?: string;
 }
 
+/** Quien firma la guía. Es la señal de autoría que el nicho en español no tiene. */
+export interface Autor {
+  /** Nombre y apellidos, o el nombre público con el que se firma. */
+  nombre: string;
+  /** Una línea de credenciales, si aplica. Es lo que sostiene la autoridad del contenido. */
+  credencial?: string;
+  /** Perfil público verificable (red social, web personal). Da identidad al autor. */
+  perfil?: string;
+}
+
 /** Una guía completa. */
 export interface Guia {
   slug: string;
@@ -253,6 +263,16 @@ export interface Guia {
    * asteriscos. `verify:guias` lo comprueba.
    */
   entrada: string;
+  /** Quien firma la guía. Obligatorio: la autoría es señal de calidad y lo que pide E-E-A-T. */
+  autor: Autor;
+  /**
+   * Fecha de la última revisión de contenido, en ISO `YYYY-MM-DD`.
+   *
+   * No se autogenera ni se inventa: se declara y se sube cuando cambia el fondo
+   * de la guía. Un `actualizado` que no se toca es una fecha decorativa, la misma
+   * falta que este repo persigue en las variables.
+   */
+  actualizado: string;
   /** Cómo lo ve alguien, en sus palabras. Es el título de la tarjeta del índice. */
   sintoma: string;
   /** Qué dibujo lleva la tarjeta del índice. */

@@ -18,6 +18,24 @@ export function formatarFecha(ms: number): string {
 }
 
 /**
+ * Una fecha ISO `YYYY-MM-DD` en español largo: «11 de octubre de 2026».
+ *
+ * Se parte la cadena y se construye la fecha con el constructor local
+ * (`new Date(y, m-1, d)`) en vez de `new Date(iso)` a propósito: una cadena
+ * `YYYY-MM-DD` sola se interpreta como **UTC**, y en una zona horaria negativa
+ * la fecha cae un día antes. Para un «actualizado el …» eso sería una fecha
+ * que no es la que se declaró en la guía.
+ */
+export function fechaLarga(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+/**
  * Una clase por nivel de riesgo, para que el color venga del CSS y no de aquí.
  *
  * El `riskLevel` es un texto en castellano que viene del clasificador, y usarlo

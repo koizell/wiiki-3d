@@ -1,4 +1,5 @@
 import type { Guia } from './tipos';
+import { AUTOR } from './autor.ts';
 
 /**
  * Warping en PLA.
@@ -26,6 +27,8 @@ export const warping: Guia = {
   sintoma: 'Las esquinas se levantan de la cama',
   dibujo: 'esquinas',
   entrada: 'El PLA es el material rígido que menos warpea, así que cuando sus esquinas se levantan casi nunca es el filamento: es la chapa, la cama o el aire. Esta guía empieza por lo que se ve —una base plana y esquinas que se curvan hacia arriba— y termina con la cifra de cama que toca a tu montaje.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 3,
 
   diferencial: {

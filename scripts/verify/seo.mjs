@@ -95,17 +95,22 @@ try {
         assert.deepEqual(schema.step.map((s) => s.name), guia.reglas.slice(0, 8).map((r) => r.accion));
       });
       /*
-       * Sin `datePublished`.
+       * Fecha real y declarada, no inventada.
        *
-       * El formato anterior era un artículo con fecha de revisión, y la metía. Este no
-       * es un artículo, es un procedimiento, y **no hay dato de cuándo se escribió cada
-       * guía**: inventar una fecha es peor que no ponerla, porque Google la lee y nadie
-       * puede comprobarla. Si algún día se guarda, se pone; mientras tanto, que no esté.
+       * El formato antiguo no metía fecha porque no había dato de cuándo se
+       * escribió cada guía, e inventarla era peor que omitirla. Eso cambió: cada
+       * guía declara `actualizado`, así que el HowTo publica `datePublished` y
+       * `dateModified` con ese valor. El guard ya no comprueba «que no esté»,
+       * sino **que sea exactamente la declarada**: si el schema y la guía se
+       * desfasan, o si alguien teclea una fecha a mano en el JSON-LD, sale aquí.
+       * Aprovecha y fija también la autoría, la otra señal nueva.
        */
-      comprobar(`${ruta}: no inventa fecha de publicación`, () => {
+      comprobar(`${ruta}: publica la fecha declarada y el autor`, () => {
         const schema = JSON.parse(json);
-        assert.equal(schema.datePublished, undefined);
-        assert.equal(schema.dateModified, undefined);
+        assert.equal(schema.datePublished, guia.actualizado);
+        assert.equal(schema.dateModified, guia.actualizado);
+        assert.equal(schema.author?.['@type'], 'Person');
+        assert.equal(schema.author?.name, guia.autor.nombre);
       });
       /*
        * El contenido sin JavaScript.

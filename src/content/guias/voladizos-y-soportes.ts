@@ -1,4 +1,5 @@
 import type { Guia } from './tipos';
+import { AUTOR } from './autor.ts';
 
 /**
  * Voladizos y soportes.
@@ -36,6 +37,8 @@ export const voladizosSoportes: Guia = {
   sintoma: 'Un voladizo cuelga, los soportes fallan o la cara apoyada sale rugosa',
   dibujo: 'voladizo',
   entrada: 'Un voladizo que cuelga, unos soportes que no salen o una cara apoyada rugosa son tres problemas que se confunden. Aquí se distinguen por dónde está el fallo y qué ángulo tiene el saliente.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 4,
 
   /*

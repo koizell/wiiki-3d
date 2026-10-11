@@ -65,6 +65,8 @@ export function seoGuia(guia: {
   sintoma: string;
   resumen: string;
   minutos: number;
+  autor: { nombre: string; credencial?: string; perfil?: string };
+  actualizado: string;
   reglas: Array<{ accion: string; valor?: string }>;
 }): SeoPagina {
   const path = `/wiki/${guia.slug}/`;
@@ -86,6 +88,15 @@ export function seoGuia(guia: {
       inLanguage: 'es',
       totalTime: `PT${guia.minutos}M`,
       mainEntityOfPage: `${ORIGEN}${path}`,
+      author: {
+        '@type': 'Person',
+        name: guia.autor.nombre,
+        ...(guia.autor.credencial ? { jobTitle: guia.autor.credencial } : {}),
+        ...(guia.autor.perfil ? { url: guia.autor.perfil } : {}),
+      },
+      publisher: { '@type': 'Organization', name: 'wiiki-3d' },
+      datePublished: guia.actualizado,
+      dateModified: guia.actualizado,
       step: pasos,
     },
   };

@@ -2866,6 +2866,23 @@ body {
   margin-top: 0.85rem;
 }
 
+/*
+ * La firma y la fecha: quién responde por el contenido y de cuándo es. Es la
+ * señal de autoría que busca un evaluador de calidad y que el nicho en español
+ * no tiene. Discreta —no compite con las insignias de arriba— pero con el
+ * nombre enlazado al perfil público del autor.
+ */
+.guia-autor {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.guia-autor a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
 /* Las etapas. */
 
 .etapa {

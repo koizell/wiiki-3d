@@ -1,4 +1,5 @@
 import type { Guia } from './tipos.ts';
+import { AUTOR } from './autor.ts';
 
 export const temperaturaHotend: Guia = {
   slug: 'temperatura-hotend',
@@ -7,6 +8,8 @@ export const temperaturaHotend: Guia = {
   sintoma: 'Piezas frágiles entre capas, hilos o superficie con rebabas',
   dibujo: 'hotend',
   entrada: 'Piezas frágiles entre capas, hilos o rebabas suelen ser la boquilla, no el filamento. Esta guía separa los tres síntomas y te da la temperatura que toca a tu material.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 4,
   campos: ['hotendTemp'],
   leeDelAnalisis: ['hotendTemp'],

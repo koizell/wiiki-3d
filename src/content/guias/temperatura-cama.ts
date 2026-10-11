@@ -1,4 +1,5 @@
 import type { Guia } from './tipos';
+import { AUTOR } from './autor.ts';
 
 /**
  * Temperatura de cama.
@@ -34,6 +35,8 @@ export const temperaturaCama: Guia = {
   sintoma: '¿Qué número de cama pongo?',
   dibujo: 'cama',
   entrada: 'No hay un número de cama: hay seis para el PLA y dependen de la chapa más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',
+  autor: AUTOR,
+  actualizado: '2026-10-11',
   minutos: 2,
 
   /*

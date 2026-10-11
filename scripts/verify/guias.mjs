@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GUIAS, guiaPorSlug, compararValor, conocimientoVisible, reglasQueSalen, seCumple, variablesEnOrden, precontestar } from '../../src/lib/guias.ts';
+import { AUTOR } from '../../src/content/guias/autor.ts';
 import {
   anclasDeCampos,
   camposDeLaGuia,
@@ -190,6 +191,8 @@ for (const guia of GUIAS) {
       guia.resumen,
       guia.entrada,
       guia.titulo,
+      guia.autor.nombre,
+      ...(guia.autor.credencial ? [guia.autor.credencial] : []),
       ...guia.reglas.map((r) => r.accion),
       ...guia.reglas.map((r) => r.valor ?? ''),
       ...guia.conocimiento.map((c) => c.cifra?.valor ?? ''),
@@ -227,6 +230,25 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
     assert.ok(
       typeof guia.entrada === 'string' && guia.entrada.length > 60,
       `entrada de ${guia.entrada?.length ?? 0} caracteres`
+    );
+  });
+
+  /*
+   * Autoría y fecha: la señal de calidad que un evaluador busca y que el nicho
+   * en español no tiene. Se comprueba igual que el contenido —el tipo ya las
+   * hace obligatorias, esto verifica que estén **bien**: un nombre real, un
+   * perfil que sea URL si existe, y una fecha ISO válida (no «2026-13-40»).
+   */
+  comprobar(`${guia.slug}: tiene autor con nombre y fecha de actualización válida`, () => {
+    assert.ok(typeof guia.autor?.nombre === 'string' && guia.autor.nombre.length > 3, 'el autor no tiene nombre');
+    assert.equal(guia.autor, AUTOR, 'la guía no firma con el autor del proyecto (¿AUTOR duplicado a mano?)');
+    if (guia.autor.perfil) {
+      assert.match(guia.autor.perfil, /^https?:\/\//, `el perfil no es una URL: ${guia.autor.perfil}`);
+    }
+    assert.match(guia.actualizado ?? '', /^\d{4}-\d{2}-\d{2}$/, `actualizado no es ISO YYYY-MM-DD: ${guia.actualizado}`);
+    assert.ok(
+      !Number.isNaN(new Date(`${guia.actualizado}T00:00:00`).getTime()),
+      `fecha de actualización inválida: ${guia.actualizado}`
     );
   });
 
