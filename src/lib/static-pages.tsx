@@ -38,6 +38,23 @@ import type { SeoPagina } from './seo';
  *
  * El diagnóstico interactivo, porque no hay quién lo maneje. Las etapas 1, 2 y las
  * fuentes sí están, y son texto. El `<noscript>` lo dice.
+ *
+ * ## Y por eso la etapa 4 se exporta en modo recetario
+ *
+ * «No puede contener el diagnóstico interactivo» no puede significar «no puede
+ * contener las acciones», y durante un tiempo significó eso: sin respuestas,
+ * `reglasQueSalen` devuelve el array vacío y **ocho de las nueve guías publicaban
+ * «Qué cambiar» con cero acciones**. La etapa que es el producto de la guía era la
+ * única que no aparecía.
+ *
+ * La salida es `exportEstatico`: la misma etapa, contada como recetario completo
+ * agrupado por la variable que lo desbloquea. Misma información, forma distinta, y
+ * sin necesidad de estado. Ver `accionesPosibles` en `lib/guias.ts`.
+ *
+ * El flag se pasa **a la ruta** y no se lee de un contexto a propósito: es una
+ * propiedad del render —se está exportando o no— y no un estado de la aplicación.
+ * Un contexto lo convertiría en algo que alguien puede cambiar en tiempo de
+ * ejecución, y eso no tiene ningún sentido para una bandera de compilación.
  */
 export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
   const paginas = [
@@ -68,7 +85,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
             <main>
               <Routes>
                 <Route path="/wiki" element={<WikiIndexRoute />} />
-                <Route path="/wiki/:slug" element={<GuiaRoute />} />
+                <Route path="/wiki/:slug" element={<GuiaRoute exportEstatico />} />
                 <Route path="/acerca-de" element={<InfoRoute pagina="acerca-de" />} />
                 <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
                 <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />

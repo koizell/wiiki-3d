@@ -7,6 +7,7 @@ import TuArchivo from '../components/TuArchivo';
 import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
 import { actualizarSeo, seoGuia } from '../lib/seo';
 import {
+  accionesPosibles,
   compararValor,
   conocimientoVisible,
   guiaPorSlug,
@@ -39,8 +40,21 @@ import type { ProjectMetadata } from '../services/types';
  * con un problema lo primero que tiene que poder hacer es descartarlo. Por eso va
  * primero, con dos caras enfrentadas por comprobación, y con salida: si la
  * respuesta es «no», el enlace lleva a la guía que sí lo es.
+ *
+ * ## `exportEstatico`: la misma guía, contada de otra forma
+ *
+ * Este componente se renderiza dos veces con propósitos distintos: en el navegador,
+ * donde hay estado y por tanto hay diagnóstico interactivo, y en
+ * `scripts/export-static.mjs`, que genera el HTML que lee quien **no** ejecuta
+ * JavaScript —y el primer vistazo de cualquier rastreador—.
+ *
+ * En la segunda no hay estado que calcular, y sin respuestas la etapa 4 salía vacía:
+ * ocho de las nueve guías publicaban «Qué cambiar» con cero acciones. Con esta
+ * bandera, la etapa 4 publica el recetario completo agrupado por la variable que lo
+ * desbloquea, que es la misma información en la única forma en que se puede contar
+ * sin respuestas. Ver `accionesPosibles` en `src/lib/guias.ts`.
  */
-export default function GuiaRoute() {
+export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?: boolean } = {}) {
   const { slug } = useParams();
   const guia = guiaPorSlug(slug);
   const { metadata } = useAnalysis();
@@ -83,6 +97,10 @@ export default function GuiaRoute() {
    * respuestas de la anterior se van con ella. De lo contrario, las variables que
    * comparten nombre entre las dos guías se quedarían marcadas con el valor del
    * otro material, y eso es peor que no tener nada.
+   *
+   * En la exportación estática el efecto no llega a correr —`renderToStaticMarkup`
+   * no ejecuta efectos—, así que el HTML sale siempre sin diagnosticar. Es lo que
+   * se quiere, y no depende de esta bandera.
    */
   useEffect(() => {
     limpiar();
@@ -161,7 +179,11 @@ export default function GuiaRoute() {
 
       <EtapaConocimiento guia={guia} tarjetas={tarjetas} elegidas={elegidas} alternar={alternar} />
 
-      <EtapaRecomendacion reglas={reglas} metadata={metadata} />
+      <EtapaRecomendacion
+        reglas={reglas}
+        metadata={metadata}
+        guia={exportEstatico ? guia : null}
+      />
 
       <FueraDeAlcance guia={guia} />
 
@@ -234,7 +256,6 @@ function EtapaDiferencial({ guia }: { guia: Guia }) {
     <section className="etapa etapa--diferencial">
       {/*
         El título dice «descártalo como X» y no «comprueba que es Y».
-        *
         Es la misma información en las dos direcciones, pero llega distinta. «Comprueba
         que es warping» exige que quien lee ya sepa lo que es el warping; «descártalo
         como separación entre capas» sólo exige que mire su pieza. Y quien llega aquí
@@ -293,9 +314,9 @@ function EtapaDiferencial({ guia }: { guia: Guia }) {
  * Etapa 2 · Las variables.
  *
  * Cada grupo es una fila de botones con `aria-pressed`, y volver a pulsar el que
- * está marcado lo desmarca. Poder arrepentirse importa: una guía que no
- * deja volver atrás obliga a acertar a la primera, y acertar a la primera es
- * justo lo que no se puede pedir a alguien que está diagnosing por primera vez.
+ * está marcado lo desmarca. Poder arrepentirse importa: una guía que no deja
+ * volver atrás obliga a acertar a la primera, y acertar a la primera es justo lo
+ * que no se puede pedir a alguien que está diagnosing por primera vez.
  */
 function EtapaVariables({
   guia,
@@ -501,14 +522,26 @@ function EtapaConocimiento({
  * Cada acción lleva su valor, su porqué y su fuente, y el alcance cuando la
  * fuente acota lo que recomienda. Ese bloque es lo que separa una recomendación
  * de un consejo.
+ *
+ * ## Los dos modos
+ *
+ * `guia` llega con valor **sólo** en la exportación estática, y entonces esta etapa
+ * publica el recetario completo agrupado por la variable que lo desbloquea, en vez
+ * de la lista filtrada por las respuestas —que en ese render no existen—. En el
+ * navegador `guia` es `null` y se pinta la lista calculada, que es el
+ * comportamiento de siempre.
  */
 function EtapaRecomendacion({
   reglas,
   metadata,
+  guia,
 }: {
   reglas: Guia['reglas'];
   metadata: ProjectMetadata | null;
+  guia: Guia | null;
 }) {
+  if (guia) return <Recetario guia={guia} />;
+
   return (
     <section className="etapa etapa--recomendacion" id="recomendacion">
       <h2 className="etapa-titulo">
@@ -557,6 +590,94 @@ function EtapaRecomendacion({
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * Etapa 4 en la exportación estática: el recetario completo, agrupado.
+ *
+ * Lleva su propio `id="recomendacion"` porque el atajo de la etapa 2 apunta ahí, y
+ * el `<h2>` es el mismo número y el mismo título que en el modo interactivo: el
+ * ancla y el índice de la página no pueden cambiar según haya JavaScript.
+ *
+ * El texto de entrada dice **qué se está viendo**, y es lo que impide que esto sea
+ * una lista huérfana: sin él, un lector vería dieciséis acciones sin saber que su
+ * caso es un subconjunto. Con él, sabe que marcar es estrechar.
+ */
+function Recetario({ guia }: { guia: Guia }) {
+  const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
+  const totalCondicionadas = bloque.reduce((n, b) => n + b.reglas.length, 0);
+
+  return (
+    <section className="etapa etapa--recomendacion" id="recomendacion">
+      <h2 className="etapa-titulo">
+        <span className="etapa-num">4</span> Qué cambiar
+      </h2>
+
+      <p className="etapa-intro">
+        Estas son las {guia.reglas.length} acciones que esta guía puede llegar a
+        recomendar, con lo que desbloquea cada una. Marca tu montaje arriba y la lista
+        se estrecha: quedan sólo las que aplican a tu caso, con{' '}
+        <strong>tu</strong> cifra.
+      </p>
+
+      {sinCondicion.length > 0 && (
+        <div className="recetario-bloque">
+          <p className="recetario-desbloquea">Se aplican siempre</p>
+          <ol className="acciones">
+            {sinCondicion.map((r, i) => (
+              <AccionEstatica key={r.id} regla={r} orden={i + 1} />
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {bloque.map(({ variable, reglas }) => (
+        <div className="recetario-bloque" key={variable.id}>
+          <p className="recetario-desbloquea">
+            Si declaras <strong>{variable.etiqueta.toLowerCase()}</strong>
+            {variable.necesaria ? ' (necesaria)' : ''}
+          </p>
+          <ol className="acciones">
+            {reglas.map((r, i) => (
+              <AccionEstatica key={r.id} regla={r} orden={i + 1} />
+            ))}
+          </ol>
+        </div>
+      ))}
+
+      {bloque.length === 0 && totalCondicionadas === 0 && sinCondicion.length === 0 && (
+        <p className="etapa-vacia">Esta guía no tiene acciones: explica, no recomienda.</p>
+      )}
+    </section>
+  );
+}
+
+/** Una acción del recetario estático. Sin índice de lista: el orden se repite. */
+function AccionEstatica({ regla, orden }: { regla: Regla; orden: number }) {
+  return (
+    <li className="accion">
+      <div className="accion-cabeza">
+        <span className="accion-orden" aria-hidden="true">
+          {orden}
+        </span>
+        <div className="accion-titulo">
+          <h3>{regla.accion}</h3>
+          {regla.valor && <p className="accion-valor">{regla.valor}</p>}
+        </div>
+      </div>
+      <p className="accion-porque">
+        <Negrita>{regla.porque}</Negrita>
+      </p>
+      {regla.alcance && (
+        <p className="accion-alcance">
+          <Negrita>{regla.alcance}</Negrita>
+        </p>
+      )}
+      <p className="accion-fuente">
+        <span>{regla.fuente}</span>
+      </p>
+    </li>
   );
 }
 

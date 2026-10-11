@@ -50,7 +50,7 @@ import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/g
  * anterior. Con glob el índice se derivaría del contenido y no podría
  * desincronizarse, que era el argumento bueno; pero el registro también es donde
  * vive el **orden**, y el orden de un índice de síntomas es editorial —el más
- * frecuente primero—, no alfabetético. Un array lo declara quien lo piensa; un
+ * frecuente primero—, no alfabético. Un array lo declara quien lo piensa; un
  * `glob` con un `.sort()` obliga a que el orden sea un dato del nombre del
  * fichero, y eso se rompe con el primer artículo que se llame de otra manera.
  *
@@ -105,6 +105,68 @@ export function reglasQueSalen(guia: Guia, elegidas: Record<string, string>): Re
 }
 
 /**
+ * Las acciones que esta guía puede llegar a recomendar, y **de qué depende cada una**.
+ *
+ * ## El problema que resuelve
+ *
+ * La etapa 4 se calcula, y sin respuestas no hay nada que calcular. En el navegador
+ * eso está bien —la lista se llena mientras se marca—, pero el HTML que se exporta
+ * para GitHub Pages no ejecuta JavaScript: **ocho de las nueve guías publicaban
+ * «Qué cambiar» con cero acciones** y el texto «con lo declarado hasta ahora no sale
+ * ninguna acción». Una página cuyo bloque principal dice eso es, casi literalmente,
+ * la señal de contenido de poco valor que busca una revisión de AdSense.
+ *
+ * La salida no es inventar una recomendación. Es publicar el recetario completo
+ * **diciendo de qué depende cada acción**, de modo que quien lee sin JavaScript
+ * obtiene la misma información que quien marca los chips, en otra forma: en vez de
+ * una lista filtrada, la lista con sus condiciones a la vista.
+ *
+ * ## Por qué agrupa por variable
+ *
+ * Porque una acción que depende de `chapa` y `cama` no es una acción: son tantas
+ * como combinaciones de esos campos. Enseñarlas sueltas obliga a repetir el mismo
+ * porqué en cada variante y deja que el lector deduzca qué le falta. Agrupadas, el
+ * encabezado del grupo **es** la respuesta a «¿qué me falta para que esto salga?».
+ *
+ * El orden es el de la guía, que es editorial —las tres primeras acciones son las
+ * del Tier 1 del fabricante—, y agrupar no puede romperlo. Por eso los bloques
+ * salen en el orden en que aparece su primera regla.
+ *
+ * Una regla condicionada por dos variables sale en los dos bloques, y es
+ * deliberado: quien lee «marca la chapa» tiene que verla ahí. El bloque no dice
+ * «estas salen con esto» sino «esto es lo que depende de esto», y una acción que
+ * depende de dos cosas depende de las dos.
+ *
+ * @param guia La guía.
+ * @param variables Las variables del estado, en el orden en que se piden. Sólo
+ *   genera bloque la variable que aparece en alguna condición.
+ */
+export function accionesPosibles(
+  guia: Guia,
+  variables: Variable[]
+): { sinCondicion: Regla[]; bloque: { variable: Variable; reglas: Regla[] }[] } {
+  const sinCondicion: Regla[] = [];
+  const condicionadas: Regla[] = [];
+  for (const r of guia.reglas) {
+    if (r.cuando) condicionadas.push(r);
+    else sinCondicion.push(r);
+  }
+
+  // Las variables que alguna condición usa, en el orden en que se piden.
+  const usadas = new Set<string>();
+  for (const r of condicionadas) for (const id of Object.keys(r.cuando ?? {})) usadas.add(id);
+
+  const bloque: { variable: Variable; reglas: Regla[] }[] = [];
+  for (const variable of variables) {
+    if (!usadas.has(variable.id)) continue;
+    const reglas = condicionadas.filter((r) => r.cuando !== undefined && variable.id in r.cuando);
+    if (reglas.length > 0) bloque.push({ variable, reglas });
+  }
+
+  return { sinCondicion, bloque };
+}
+
+/**
  * Las tarjetas de conocimiento que son pertinentes con lo declarado.
  *
  * Una tarjeta sin `cuando` sale siempre; una con `cuando` sale si se cumple. Es
@@ -116,7 +178,7 @@ export function conocimientoVisible(guia: Guia, elegidas: Record<string, string>
 }
 
 /**
- * Cuánta información falta, y qué variables laean.
+ * Cuánta información falta, y qué variables la piden.
  *
  * Sirve para dos cosas: para el contador del carril —«2 pasos más y esta guía te
  * dice tu cifra»— y para que las variables necesarias se pidan **antes** que las

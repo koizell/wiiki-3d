@@ -15,7 +15,7 @@ import { startPreview } from './probe.mjs';
  * que usa la web es la del registro. Leerla de otro sitio comprobaría una lista
  * paralela, que es un segundo sitio que puede desfasarse.
  */
-const { GUIAS, conocimientoVisible } = await import('../../src/lib/guias.ts');
+const { GUIAS, accionesPosibles, conocimientoVisible, variablesEnOrden } = await import('../../src/lib/guias.ts');
 
 const raiz = new URL('../../', import.meta.url).pathname;
 const dist = join(raiz, 'dist');
@@ -30,6 +30,34 @@ function comprobar(nombre, fn) {
   pruebas++;
   console.log(`OK ${nombre}`);
 }
+
+/**
+ * Las palabras que se leen en un HTML, contadas como las cuenta una persona.
+ *
+ * Se quitan `script`, `style`, `svg`, `noscript`, `nav` y los comentarios, y el
+ * resto de etiquetas se convierte en separador para que dos bloques distintos no
+ * peguen sus palabras. Se cuentan tokens con al menos una letra o un número, y de
+ * dos caracteres en adelante.
+ *
+ * No vale `wc -w` sobre el fichero: cuenta atributos, clases y comentarios, y da
+ * una cifra que no se corresponde con nada que nadie lea.
+ */
+function palabrasDe(html) {
+  const body = (html.match(/<body[\s\S]*<\/body>/i) || [html])[0];
+  const texto = body
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&#?\w+;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return texto.split(/\s+/).filter((w) => /[\p{L}\p{N}]{2,}/u.test(w)).length;
+}
+
 const browser = await chromium.launch();
 try {
   const sin = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
@@ -104,7 +132,7 @@ try {
        * un hueco que no se llena nunca, y en la versión sin JavaScript no hay
        * ninguna forma de quitarlo.
        *
-       * Y las anclas sí tienen que estar, porque son lo que permite que un enlace
+       * Y las anclas sí tienen que estar, porque son las que permiten que un enlace
        * a `#v-cama` funcione con el motor apagado.
        */
       comprobar(`${ruta}: sin JS no hay barra «Tu archivo» en el HTML exportado`, () => {
@@ -123,6 +151,99 @@ try {
         for (const c of conocimientoVisible(guia, {})) {
           assert.ok(html.includes(`id="c-${c.id}"`), `falta el ancla de la tarjeta ${c.id}`);
         }
+      });
+
+      /*
+       * ======================================================================
+       * La etapa 4, que es el producto de la guía, tiene que estar sin JS
+       * ======================================================================
+       *
+       * Esto no se comprobaba, y el hueco no era teórico: como `reglasQueSalen`
+       * depende de las respuestas y la exportación estática no tiene ninguna,
+       * **ocho de las nueve guías publicaban «Qué cambiar» con cero acciones** y el
+       * texto «con lo declarado hasta ahora no sale ninguna acción». La etapa que
+       * justifica la guía entera era la única que no salía en el HTML, justo en la
+       * versión que lee quien no ejecuta JavaScript y el primer vistazo de un
+       * rastreador.
+       *
+       * Las tres comprobaciones de abajo atacan tres formas distintas de que eso
+       * vuelva, y ninguna se conforma con «hay algo de texto ahí»:
+       *
+       * 1. **El recuento exacto** contra el motor, no contra el HTML de ayer: si una
+       *    regla nueva no llega a la exportación, el número deja de cuadrar. Una
+       *    regla con condición sale una vez por cada variable que la condiciona, y
+       *    por eso el esperado se calcula con `accionesPosibles`, que es la misma
+       *    función que usa el componente.
+       * 2. **Un suelo de palabras** por guía, medido sobre el texto visible. Es tosco
+       *    y por eso va acompañado de lo demás, pero es lo único que cae si alguien
+       *    revierte el render sin tocar ninguna etiqueta con nombre.
+       * 3. **El ancla `#recomendacion`**, que la etapa 2 usa como atajo: si el bloque
+       *    desaparece, el atajo apunta a un sitio que no existe y la comprobación de
+       *    anclas de `verify:wiki` no lo ve, porque sólo mira la etapa 2.
+       */
+      const esperadas = (() => {
+        const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
+        return sinCondicion.length + bloque.reduce((n, b) => n + b.reglas.length, 0);
+      })();
+
+      comprobar(`${ruta}: la etapa 4 publica todas sus acciones sin JavaScript`, () => {
+        const enHtml = (html.match(/class="accion"/g) ?? []).length;
+        assert.ok(guia.reglas.length > 0, 'la guía no tiene reglas');
+        assert.equal(
+          enHtml,
+          esperadas,
+          `${guia.slug}: el HTML trae ${enHtml} acciones y el motor dice ${esperadas}`
+        );
+        assert.ok(
+          !html.includes('no sale ninguna acción'),
+          'el HTML dice que no sale ninguna acción: la etapa 4 volvió a exportarse vacía'
+        );
+        assert.ok(html.includes('id="recomendacion"'), 'falta el ancla de la etapa 4');
+      });
+
+      comprobar(`${ruta}: cada acción del recetario dice de dónde sale`, () => {
+        /*
+         * Un `accion-fuente` por acción, y el número de fuentes citadas no puede ser
+         * cero: una acción sin fuente es exactamente lo que este proyecto no publica.
+         */
+        const fuentesEnAcciones = (html.match(/class="accion-fuente"/g) ?? []).length;
+        assert.equal(fuentesEnAcciones, esperadas, `${fuentesEnAcciones} fuentes para ${esperadas} acciones`);
+      });
+
+      comprobar(`${ruta}: el recetario enseña qué desbloquea cada bloque`, () => {
+        const bloques = (html.match(/class="recetario-bloque"/g) ?? []).length;
+        const encabezados = (html.match(/class="recetario-desbloquea"/g) ?? []).length;
+        assert.equal(bloques, encabezados, `${bloques} bloques y ${encabezados} encabezados`);
+        const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
+        const esperados = bloque.length + (sinCondicion.length > 0 ? 1 : 0);
+        assert.equal(bloques, esperados, `${bloques} bloques en el HTML y ${esperados} en el motor`);
+        for (const { variable } of bloque) {
+          assert.ok(
+            html.includes(`<strong>${variable.etiqueta.toLowerCase()}</strong>`),
+            `ningún bloque dice que se desbloquea declarando «${variable.etiqueta}»`
+          );
+        }
+      });
+
+      /*
+       * El suelo de palabras, y por qué es 900 y no 1200.
+       *
+       * 900 es el mínimo real medido hoy —la guía más corta, `temperatura-hotend`,
+       * está en 975— con margen para que una edición que recorte un párrafo no
+       * rompa la comprobación, y muy por encima de lo que queda si la etapa 4 se
+       * vuelve a exportar vacía: la guía más corta perdería más de cien palabras y
+       * las demás entre seiscientas y mil cuatrocientas. Un umbral más alto
+       * convertiría esto en un objetivo de longitud, que es otra cosa y no la
+       * queremos aquí: el criterio editorial de la casa es que el texto sea
+       * suficiente, no que llegue a un número.
+       */
+      const MINIMO_PALABRAS = 900;
+      comprobar(`${ruta}: la guía tiene cuerpo suficiente sin JavaScript`, () => {
+        const palabras = palabrasDe(html);
+        assert.ok(
+          palabras >= MINIMO_PALABRAS,
+          `${guia.slug}: ${palabras} palabras en el HTML exportado, por debajo del mínimo de ${MINIMO_PALABRAS}`
+        );
       });
     }
     await page.close();
