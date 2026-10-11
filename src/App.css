@@ -405,15 +405,17 @@ body {
 }
 
 /*
- * El `font-size` explícito es lo que mantiene el aspecto al subir este elemento de
- * `h2` a `h1`. Los dos miden lo mismo (1,5 rem), así que el selector cambia y el
- * número no: si se quitara, el `<h1>` caería en su 2em por defecto y mediría el
+ * El `font-size` explícito es lo que mantiene el aspecto al cambiar este elemento
+ * de nivel. Cuando el inicio tenía la zona de subida como única cosa, su título
+ * era el `<h1>` de la ruta; ahora el `<h1>` es la cabecera del inicio y éste baja
+ * a `<h2>`, así que el selector cambia y el número no: si se quitara, el `<h2>`
+ * caería en su 1,5em por defecto (el `h1` caía en 2em) y el título mediría el
  * doble. El `margin-bottom` sí hace falta, porque el reset `* { margin: 0 }` de
  * arriba lo anula en los dos.
  *
  * `.file-name` hace lo mismo con su `h1`, a 0,9 rem.
  */
-.upload-zone h1 {
+.upload-zone h2 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -421,6 +423,205 @@ body {
 .upload-zone p {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
+}
+
+/* --- El inicio: la subida deja de ser toda la pantalla ----------------------- *
+ *
+ * La raíz `/` es la pantalla de subida, y lo sigue siendo: los scripts de
+ * `scripts/verify/` cargan el fichero sobre `/` en 29 viewports. Lo que cambia es
+ * que la subida deja de ocupar la pantalla entera: alrededor van la cabecera que
+ * dice qué es el sitio, tres síntomas frecuentes que llevan a la wiki y los
+ * destinos que no son la subida.
+ *
+ * `.inicio` es una columna, y no la fila que resultaba de los tres hijos sueltos
+ * de antes: con `Recientes` visible, la zona de subida, el aviso y la lista se
+ * ponían uno al lado del otro en vez de apilados, porque `.canvas-area` es
+ * `display: flex` en fila. Un solo hijo que es columna lo arregla de raíz.
+ */
+.inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  width: 100%;
+  max-width: 52rem;
+  padding: 1.5rem 0.25rem 3rem;
+}
+
+.inicio-hero {
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.inicio-hero h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+
+.inicio-hero p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* La zona de subida conserva su `max-width: 500px` y se centra en la columna. */
+.inicio .upload-zone {
+  align-self: center;
+  width: 100%;
+}
+
+.inicio-sintomas h2,
+.inicio-modulos h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
+}
+
+.inicio-sintomas-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 44rem;
+  margin-bottom: 1.1rem;
+}
+
+/*
+ * `auto-fit` con `minmax(11rem, 1fr)` y no un número fijo de columnas: la columna
+ * central mide distinto en cada tramo (335px en móvil, ~500 en tablet, hasta
+ * 832 en escritorio) y una rejilla fija de tres dejaría las tarjetas en 160px en
+ * el tramo estrecho, donde el síntoma se parte en cinco líneas. Con `auto-fit`
+ * caben dos cuando hay sitio para dos y tres cuando hay para tres, y las vacías
+ * se colapsan, así que las tres tarjetas se reparten el ancho entero.
+ */
+.inicio-sintomas-lista,
+.inicio-modulos-lista {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.inicio-sintomas-lista > li,
+.inicio-modulos-lista > li {
+  display: flex;
+}
+
+/*
+ * La tarjeta es el enlace entero, como en el índice de la wiki, y por el mismo
+ * motivo: el área pulsable es toda la tarjeta y el foco de teclado pasa por la
+ * misma forma que el ratón.
+ */
+.inicio-sintoma {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0.85rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.inicio-sintoma:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.inicio-sintoma:focus-visible,
+.inicio-modulo:focus-visible,
+.inicio-sintomas-enlace:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+.inicio-sintoma-dibujo {
+  width: 4.5rem;
+  flex: none;
+}
+
+.inicio-sintoma-texto {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.inicio-sintoma-sintoma {
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.inicio-sintoma-flecha {
+  color: var(--accent-text);
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.inicio-sintoma:hover .inicio-sintoma-flecha {
+  transform: translateX(3px);
+}
+
+/*
+ * El enlace al índice mide 44px de alto **siempre**, como el de `Recientes` y por
+ * el mismo motivo: es un control táctil y no un texto de 0,9rem.
+ */
+.inicio-sintomas-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.9rem;
+  color: var(--accent-text);
+  font-size: 0.9rem;
+}
+
+.inicio-modulo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 0.95rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.inicio-modulo:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.inicio-modulo-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.inicio-modulo-detalle {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inicio-sintoma,
+  .inicio-modulo,
+  .inicio-sintoma-flecha {
+    transition: none;
+  }
+
+  .inicio-sintoma:hover,
+  .inicio-modulo:hover,
+  .inicio-sintoma:hover .inicio-sintoma-flecha {
+    transform: none;
+  }
 }
 
 /* Contenedor del visor 3D */
@@ -632,43 +833,28 @@ body {
 }
 
 /*
- * Pantallas vacías de los módulos que todavía no existen.
+ * La página de Proyectos y su lista.
  *
- * Se centran en la columna en vez de ir arriba a la izquierda porque `.canvas-area`
- * es un contenedor flex centrado, y una pantalla vacía pegada al borde parece
- * un error de maquetación.
+ * Aquí vivían los estilos de `PlaceholderRoute`, la pantalla vacía que pintaba
+ * `/proyectos`. Cuando esa ruta pasó a ser una página real (`ProyectosRoute.tsx`)
+ * el componente se fue, y con él estas reglas: dejarlas sería CSS que nadie usa.
  *
- * El orden visual va al revés que el del DOM a propósito: la línea que dice qué
- * va a hacer el módulo —"Va a calcular cuánto cuesta una pieza…"— es el contenido,
- * y por eso usa el color principal de texto. "Sin implementar." es el estado, y
- * por eso va debajo, en el color secundario, que en esta paleta da 5,1:1 sobre
- * `--bg-dark` y cumple AA.
- *
- * `max-width` para que la línea no se estire de lado a lado en >=1200, donde la
- * columna central llega a 676px: a ese ancho una frase de una línea y media se
- * lee peor que la misma frase en 46rem.
+ * La página comparte el esqueleto de las de información (`.wiki-info`), así que lo
+ * único que hace falta añadir es el hueco del párrafo de entrada —las de
+ * información empiezan directamente en un `<section>`— y la lista de enlaces.
  */
-.placeholder-route {
-  text-align: center;
-  max-width: 46rem;
+.wiki-info > p {
+  margin-bottom: 1.5rem;
 }
 
-.placeholder-route h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.placeholder-route-purpose {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
-}
-
-.placeholder-route-note {
+.proyectos-lista {
+  list-style: disc;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  line-height: 1.68;
   color: var(--text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.45;
 }
 
 /* Panel de análisis: estados de carga y error */
@@ -1688,6 +1874,84 @@ body {
   margin-top: 0.5rem;
 }
 
+/* --- Proyectos: los análisis guardados con nombre propio -------------------- *
+ *
+ * Comparte con el historial las clases de la lista (`.historial-lista`,
+ * `.historial-fila`, `.historial-abrir`, `.historial-nombre`, `.historial-meta`),
+ * y a propósito: es la misma información con el mismo aspecto, y darle un segundo
+ * juego de estilos sería garantizar que un día uno de los dos cambie y el otro no.
+ * Lo que añade esta sección es la página —título, intro, bloques con subtítulo— y
+ * la fila de acciones, que en el historial es un solo botón y aquí son dos.
+ */
+.proyectos {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.proyectos-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.proyectos-intro {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.proyectos-bloque {
+  margin-bottom: 1.75rem;
+}
+
+.proyectos-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.proyectos-cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.proyectos-nota {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 0.7rem;
+}
+
+/*
+ * La columna de acciones es `flex: none` y en vertical: el nombre de la entrada
+ * es lo que crece y los botones se quedan a la derecha en su ancho natural. En
+ * vertical porque «Renombrar» y «Borrar» son dos controles de 44px y en una fila
+ * se comerían media pantalla a 375px, dejando el nombre en una columna de letras.
+ */
+.proyectos-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: none;
+}
+
+.proyectos-uso {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
 /* --- La confirmación de borrado ---------------------------------------------- *
  *
  * Capa fija a pantalla completa, porque «vaciar todo» no se puede deshacer y el
@@ -1724,6 +1988,47 @@ body {
   gap: 0.6rem;
   justify-content: flex-end;
   flex-wrap: wrap;
+}
+
+/*
+ * El campo del diálogo de nombre. Comparte la caja de `.confirmacion` y sólo
+ * añade el control: una etiqueta en versalitas —el mismo tratamiento que el
+ * buscador de la wiki— y un campo oscuro con el borde de acento al enfocar.
+ *
+ * El `outline: none` del foco va acompañado del `box-shadow`, no solo: quitar el
+ * anillo sin poner otro indicador dejaría el campo sin señal visible para quien
+ * navega con teclado.
+ */
+.confirmacion-etiqueta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+
+.confirmacion-campo {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 1.1rem;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.confirmacion-campo:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.22);
+}
+
+.confirmacion-campo::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.65;
 }
 
 /* --- Los botones de abrir un análisis del historial ------------------------- *

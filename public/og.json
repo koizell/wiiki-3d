@@ -1,0 +1,9 @@
+{
+  "herramienta": "cloudflare-image.generate_image",
+  "preset": "landscape",
+  "modelo": "@cf/black-forest-labs/flux-1-schnell",
+  "archivo": "og.png",
+  "uso": "Tarjeta Open Graph (og:image / twitter:image) de todo el sitio.",
+  "prompt": "Ilustración técnica estilo flat design, paleta limitada a #0f1115, #161a20, #2563eb, #60a5fa, #e8ecf1. Líneas limpias, sin degradados, fondo oscuro. Estilo de manual técnico moderno, no realista. Sin texto en la imagen. High detail. Composición: una impresora 3D de escritorio con una pieza a medio imprimir sobre la cama, y a su lado un panel abstracto con una gráfica de líneas y una lupa sobre las capas de la pieza. Encuadre horizontal, mucho aire, sensación de análisis y precisión.",
+  "nota": "La salida del modelo mide 1536×1024 (3:2). Se recortó a 1200×630 (1,91:1, el formato de las tarjetas grandes) con ffmpeg: crop=1536:806:0:100,scale=1200:630. El prompt lleva «High detail» a propósito: sin un marcador de calidad, el MCP reescribe el prompt con «photorealistic / premium lighting» y contradice el estilo."
+}

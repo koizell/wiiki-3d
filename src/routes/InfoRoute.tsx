@@ -218,12 +218,19 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
       {
         titulo: 'Cookies y seguimiento',
         cuerpo: (
-          <p>
-            El código actual no incorpora cookies publicitarias ni herramientas
-            de analítica. El historial usa IndexedDB, no cookies. El alojamiento
-            y los servicios de red pueden procesar datos de conexión, como tu
-            dirección IP, para servir la página y atender las peticiones.
-          </p>
+          <>
+            <p>
+              El código actual no incorpora cookies publicitarias ni herramientas
+              de analítica. El historial usa IndexedDB, no cookies, y no hay cuentas
+              de usuario.
+            </p>
+            <p>
+              El sitio se sirve desde <strong>GitHub Pages</strong>, que como
+              cualquier alojamiento puede registrar datos de conexión —dirección IP,
+              agente de navegador y la página pedida— para servirla y proteger el
+              servicio.
+            </p>
+          </>
         ),
       },
       {
@@ -236,30 +243,53 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
             </p>
             <p>
               Está previsto publicitar mediante <strong>Google AdSense</strong>. Si
-              se hace, Google actuará como tercero y podrá usar cookies para
-              mostrarte anuncios según tus visitas anteriores a este y a otros
-              sitios, según el consentimiento aplicable. Los anuncios pueden
-              procesar la URL de la página, la dirección IP e información del
-              navegador. No se enviará el archivo subido como dato publicitario.
-              Antes de activar anuncios se actualizará esta política y se
-              configurará la gestión del consentimiento que corresponda. Consulta las{' '}
+              se activa, <strong>Google y sus socios</strong> actuarán como terceros
+              y podrán usar cookies —incluida la de DoubleClick— para mostrarte
+              anuncios según tus visitas anteriores a este y a otros sitios, según el
+              consentimiento aplicable. Los anuncios pueden procesar la URL de la
+              página, la dirección IP y datos del navegador. No se enviará el archivo
+              subido como dato publicitario. Antes de activar anuncios se actualizará
+              esta política y se configurará la gestión del consentimiento que
+              corresponda. Consulta las{' '}
               <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">
                 políticas de publicidad de Google
               </a>.
             </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Tus opciones',
+        cuerpo: (
+          <>
             <p>
               Puedes gestionar qué permite Google con tu actividad publicitaria en{' '}
               <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">
                 los ajustes de anuncios de Google
               </a>
-              , y lo que un editor del sitio tiene que declarar a la hora de
-              usar AdSense está en{' '}
+              , y qué cookies acepta este sitio desde los controles de tu navegador.
+              Borrar el historial local no depende de ningún servidor: está en{' '}
+              <Link to="/historial">Historial</Link>.
+            </p>
+            <p>
+              Lo que un editor tiene que declarar sobre el consentimiento está en{' '}
               <a href="https://support.google.com/adsense/answer/1348695" target="_blank" rel="noopener noreferrer">
                 la ayuda de AdSense sobre el consentimiento
               </a>
               .
             </p>
           </>
+        ),
+      },
+      {
+        titulo: 'Cambios en esta política',
+        cuerpo: (
+          <p>
+            Cuando se active la publicidad o una herramienta de analítica, esta
+            página se actualizará para decirlo <strong>antes</strong> de que el cambio
+            llegue al sitio publicado. Lo que lees aquí describe lo que el código hace
+            hoy, no lo que podría llegar a hacer.
+          </p>
         ),
       },
     ],

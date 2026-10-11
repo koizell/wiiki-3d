@@ -2,10 +2,10 @@
  * El historial, sobre IndexedDB.
  *
  * **Un solo almacén y tres vistas.** El mismo almacenamiento se ve desde `/` —los
- * cinco últimos—, desde `/historial` —todos— y desde donde haga falta. `/proyectos`
- * sigue siendo un placeholder a propósito: hoy no habría nada que lo distinguiera
- * del historial, y dos vistas de la misma lista es trabajo tirado. Cuando exista
- * backend, o se pueda guardar el archivo entero, ya habrá algo que decir.
+ * cinco últimos—, desde `/historial` —todos— y desde `/proyectos` —los que tienen
+ * nombre—. El nombre es lo que distingue un proyecto de una entrada del historial,
+ * así que las dos listas no son la misma: `/historial` es el registro automático y
+ * `/proyectos` es la biblioteca curada.
  *
  * **Sin dependencias.** `indexedDB` es del navegador y su envoltorio son cuarenta
  * líneas de `open()` y `onupgradeneeded`. Una librería aquí añadiría un peso al
@@ -52,6 +52,15 @@ export interface EntradaHistorial {
   fecha: number;
   metadata: ProjectMetadata;
   classification: JevClassification;
+  /**
+   * El nombre que le ha puesto quien lo guarda como proyecto.
+   *
+   * **Es lo que distingue un proyecto de una entrada del historial.** El historial
+   * es automático —todo lo que se analiza acaba ahí solo—; un proyecto es lo que
+   * alguien ha decidido conservar con un nombre propio. Sin `nombre`, la entrada
+   * vive sólo en el historial; con él, aparece también en `/proyectos`.
+   */
+  nombre?: string;
 }
 
 /** Lo que hay que darle a `guardarAnalisis`. El `id` y la `fecha` los pone la función. */
@@ -235,6 +244,57 @@ export async function borrarAnalisis(id: string): Promise<boolean> {
       tx.onabort = () => reject(tx.error ?? new Error('Borrado cancelado'));
     });
     db.close();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Pone o quita el nombre de una entrada: la convierte en proyecto o la devuelve al
+ * historial.
+ *
+ * **Leer, cambiar un campo y volver a escribir, en una sola transacción.** El
+ * almacén ya tiene `id` como clave, así que no hace falta un segundo almacén ni un
+ * índice: nombrar es `get` + `put`. Las dos operaciones van en la misma
+ * transacción para que entre la lectura y la escritura no se cuele otra pestaña y
+ * se pierda un campo.
+ *
+ * Un nombre **vacío quita el nombre**, no guarda una cadena vacía. «Sin nombre»
+ * tiene que ser una sola cosa: si el vacío se guardara, habría dos formas de no
+ * ser un proyecto y las dos se pintarían igual.
+ *
+ * Avisa a los suscriptores **después de cerrar**, como `guardarAnalisis`, porque
+ * quien escucha va a releer y una relectura antes del cierre daría la lista vieja.
+ */
+export async function nombrarAnalisis(id: string, nombre: string): Promise<boolean> {
+  if (!(await estaDisponible())) return false;
+  const limpio = nombre.trim();
+  try {
+    const db = await abrir();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(ALMACEN, 'readwrite');
+      const store = tx.objectStore(ALMACEN);
+      const peticion = store.get(id);
+      peticion.onsuccess = () => {
+        const entrada = peticion.result as EntradaHistorial | undefined;
+        if (!entrada) {
+          reject(new Error('La entrada no existe'));
+          return;
+        }
+        const actualizada: EntradaHistorial = { ...entrada };
+        if (limpio) actualizada.nombre = limpio;
+        else delete actualizada.nombre;
+        store.put(actualizada);
+      };
+      peticion.onerror = () =>
+        reject(peticion.error ?? new Error('No se ha podido leer la entrada'));
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('No se ha podido nombrar'));
+      tx.onabort = () => reject(tx.error ?? new Error('Operación cancelada'));
+    });
+    db.close();
+    for (const s of suscriptores) s();
     return true;
   } catch {
     return false;

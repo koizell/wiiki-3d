@@ -39,8 +39,8 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
     description: 'Consulta y elimina los análisis guardados en este navegador. Los archivos completos no se almacenan ni se sincronizan entre dispositivos.', noindex: true,
   },
   '/proyectos': {
-    path: '/proyectos/', title: 'Proyectos: función en desarrollo | wiiki-3d',
-    description: 'La organización de proyectos está en desarrollo. El historial local de análisis ya está disponible desde la página de inicio.', noindex: true,
+    path: '/proyectos/', title: 'Proyectos: tus análisis guardados | wiiki-3d',
+    description: 'Guarda un análisis con nombre propio para volver a consultarlo sin subir el archivo otra vez. Los datos viven sólo en este navegador.', noindex: true,
   },
 };
 

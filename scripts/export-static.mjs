@@ -15,9 +15,24 @@ function documento(seo, html) {
   const head = `<link rel="canonical" href="${escapar(canonical)}" />\n` +
     `<meta name="robots" content="${seo.noindex ? 'noindex, follow' : 'index, follow'}" />\n` +
     (seo.schema ? `<script id="wiki-schema" type="application/ld+json">${JSON.stringify(seo.schema).replaceAll('<', '\\u003c')}</script>\n` : '');
+  /*
+   * El título y la descripción se reescriben en los tres sitios donde aparecen:
+   * `<title>`/`description` para buscadores, y `og:`/`twitter:` para las tarjetas
+   * al compartir. Sin esto, cada página compartida enseñaría el título de la
+   * raíz, porque los `og:` vienen de la plantilla y no se enteran de la ruta.
+   *
+   * `og:image` y `og:type` no se tocan: la portada es la misma para todo el sitio.
+   * Las expresiones de `og:description` y `twitter:description` aceptan saltos de
+   * línea porque en `index.html` esas etiquetas están partidas en tres líneas.
+   */
   return plantilla
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapar(seo.title)}</title>`)
     .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/>/, `<meta name="description" content="${escapar(seo.description)}" />`)
+    .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/, `$1${escapar(seo.title)}$2`)
+    .replace(/(<meta\s+property="og:description"[\s\S]*?content=")[^"]*(")/, `$1${escapar(seo.description)}$2`)
+    .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/, `$1${escapar(canonical)}$2`)
+    .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/, `$1${escapar(seo.title)}$2`)
+    .replace(/(<meta\s+name="twitter:description"[\s\S]*?content=")[^"]*(")/, `$1${escapar(seo.description)}$2`)
     .replace('</head>', `${head}</head>`)
     .replace('<div id="root"></div>', `<div id="root">${html}</div>`);
 }

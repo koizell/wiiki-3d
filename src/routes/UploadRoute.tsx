@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
+import Inicio from "../components/Inicio";
 
 /**
  * El visor 3D se carga bajo demanda, y desde aquí.
@@ -94,16 +95,27 @@ function UploadRoute() {
 
   if (!file) {
     return (
-      <>
+      <div className="inicio">
+        <section className="inicio-hero">
+          {/*
+          El `<h1>` de la vista cuando no hay archivo. Antes lo llevaba la zona de
+          subida; ahora lo lleva la cabecera, porque con el inicio lleno de
+          contenido el título de la página es qué es wiiki-3d y no el gesto de
+          arrastrar un archivo. La zona de subida baja a `h2` (ver `App.css`) para
+          que siga habiendo **un solo** `<h1>` visible, que es lo que exige
+          `verify:rutas`.
+        */}
+          <h1>¿Va a salir bien tu impresión?</h1>
+          <p>
+            Sube el archivo que exportó tu slicer y wiiki-3d lee lo que ya está
+            escrito dentro —material, temperaturas, gramos, tiempo— antes de que
+            gastes filamento. Y si la pieza sale mal, aquí está el porqué.
+          </p>
+        </section>
+
         <div className="upload-zone">
           <div className="upload-icon">⬆</div>
-          {/*
-          El `<h1>` de la vista cuando no hay archivo. El otro estado de esta
-          misma ruta lo tiene en `.file-info`, así que los dos estados de `/`
-          tienen título, y es el único de los dos que puede tener: esta pantalla
-          no tiene otro contenido donde poner uno.
-        */}
-          <h1>Arrastra tu archivo aquí</h1>
+          <h2>Arrastra tu archivo aquí</h2>
           <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
           <button
             type="button"
@@ -113,9 +125,19 @@ function UploadRoute() {
             Seleccionar Archivo
           </button>
         </div>
+
+        {/*
+          Síntomas frecuentes y los otros módulos. Va aquí, en el estado sin
+          archivo, y no en los otros dos: con un archivo cargado el sujeto es el
+          visor y el análisis, y con un análisis restaurado la pantalla explica por
+          qué no hay visor. Añadir el inicio en esos dos sería tapar lo que se
+          acaba de pedir.
+        */}
+        <Inicio />
+
         <AvisoAlmacenamiento />
         <Recientes />
-      </>
+      </div>
     );
   }
 

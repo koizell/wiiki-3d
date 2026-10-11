@@ -27,6 +27,10 @@
  *     importa del tercer estado: si al no poder guardar se rompiera el análisis,
  *     `estaDisponible()` estaría haciendo su trabajo pero al revés.
  *
+ *  6. **Proyectos**: que nombrar un análisis lo convierta en proyecto, que dejar
+ *     el nombre vacío lo devuelva al historial y que el diálogo sea usable con
+ *     teclado. Es el módulo que comparte el almacén con esta lista.
+ *
  * Uso:  node scripts/verify/historial.mjs
  * Sale con código 1 si algo falla.
  */
@@ -903,6 +907,77 @@ try {
     comprobar(
       enMovil.lineas >= 2,
       `a 375px el nombre se parte en varias líneas (sale: ${enMovil.lineas} en ${enMovil.ancho}px)`
+    );
+
+    await page.close();
+  }
+
+  // --- Proyectos: nombrar un análisis lo convierte en proyecto ---
+  //
+  // El nombre es **lo único** que distingue un proyecto de una entrada del
+  // historial, así que es lo que hay que medir: que un análisis recién hecho se
+  // ofrezca para nombrar, que al nombrarlo pase a «Tus proyectos», que dejar el
+  // nombre vacío lo devuelva al historial, y que el diálogo sea usable con teclado.
+  {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await page.goto('http://127.0.0.1:4173/');
+    await subirYAnalizar(page);
+
+    await page.goto('http://127.0.0.1:4173/proyectos');
+    await page.waitForSelector('.historial-fila', { timeout: 10000 });
+
+    const subtitulos = () =>
+      page.$$eval('.proyectos-subtitulo', (els) => els.map((e) => e.textContent.trim()));
+
+    comprobar(
+      (await subtitulos()).some((t) => t.startsWith('Sin guardar')),
+      'proyectos: el análisis recién hecho se ofrece para nombrar'
+    );
+
+    const uso = await page.$eval('.proyectos-uso', (e) => e.textContent ?? '').catch(() => '');
+    comprobar(
+      /\d+\s*(B|kB|MB)/.test(uso),
+      `proyectos: dice cuánto ocupa (sale: ${uso.trim() || 'nada'})`
+    );
+
+    // El diálogo abre con el foco dentro, y `Escape` cierra sin guardar.
+    await page.click('.historial-fila .btn-primary');
+    await page.waitForSelector('[role="dialog"]');
+    const focoEnCampo = await page.evaluate(
+      () => document.activeElement?.tagName === 'INPUT'
+    );
+    comprobar(focoEnCampo, 'proyectos: el diálogo abre con el foco en el campo');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+    comprobar(
+      (await page.$('[role="dialog"]')) === null,
+      'proyectos: Escape cierra el diálogo sin guardar'
+    );
+
+    // Nombrar lo mueve a «Tus proyectos».
+    await page.click('.historial-fila .btn-primary');
+    await page.waitForSelector('[role="dialog"]');
+    await page.fill('[role="dialog"] input', 'Pieza de prueba');
+    await page.click('[role="dialog"] button[type="submit"]');
+    await page.waitForTimeout(400);
+    comprobar(
+      (await subtitulos()).some((t) => t.startsWith('Tus proyectos')),
+      'proyectos: al nombrarlo pasa a «Tus proyectos»'
+    );
+    const nombre = await page
+      .$eval('.historial-nombre', (e) => e.textContent?.trim() ?? '')
+      .catch(() => '');
+    comprobar(nombre === 'Pieza de prueba', `proyectos: se ve el nombre puesto (sale: «${nombre}»)`);
+
+    // Y el nombre vacío lo devuelve al historial: «sin nombre» es una sola cosa.
+    await page.click('.historial-fila .btn-ghost');
+    await page.waitForSelector('[role="dialog"]');
+    await page.fill('[role="dialog"] input', '');
+    await page.click('[role="dialog"] button[type="submit"]');
+    await page.waitForTimeout(400);
+    comprobar(
+      (await subtitulos()).some((t) => t.startsWith('Sin guardar')),
+      'proyectos: dejar el nombre vacío lo devuelve al historial'
     );
 
     await page.close();

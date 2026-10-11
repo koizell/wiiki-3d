@@ -45,10 +45,12 @@ const RUTAS = [
  * Los cinco casos de encabezado, uno por cada estado de pantalla.
  *
  * La raíz aparece dos veces porque son dos pantallas distintas: sin archivo se
- * pinta la zona de subida y su título; con archivo se pinta el visor y el título
- * es el nombre del fichero. Antes de este cambio la segunda de esas pantallas no
- * tenía ningún encabezado en la columna central, y la primera tenía un `h2`, así
- * que ninguna de las dos tenía un `h1`.
+ * pinta el inicio y su `<h1>` es la cabecera; con archivo se pinta el visor y el
+ * título es el nombre del fichero. Antes de este cambio la segunda de esas
+ * pantallas no tenía ningún encabezado en la columna central, y la primera tenía
+ * un `h2`, así que ninguna de las dos tenía un `h1`. Cuando el inicio ganó
+ * contenido, su cabecera pasó a ser el `<h1>` y la zona de subida bajó a `h2`
+ * (ver `App.css`), para que siga habiendo uno solo.
  */
 const CASOS_ENCABEZADOS = [
   { ruta: '/', etiqueta: 'en / sin archivo', conArchivo: false },
@@ -366,6 +368,63 @@ async function main() {
             .map((h) => (h.visible ? '' : '(oculto)') + `h${h.nivel}`)
             .join(' ')}]` +
           (j.saltos.length ? ` *** SALTOS: ${j.saltos.join(' | ')} ***` : '')
+      );
+    }
+
+    await context.close();
+  }
+
+  /* --- Check 7: el inicio no es sólo la zona de subida ----------------------
+   *
+   * La raíz siguió siendo la pantalla de subida, pero dejó de ser sólo eso: el
+   * inicio lleva cabecera, síntomas que abren la wiki y los destinos que no son la
+   * subida. Esta comprobación es la que impide que la pantalla vuelva a quedarse
+   * en una caja de arrastrar sin que nadie se entere, y la que caza un slug de
+   * guía mal escrito en la lista de síntomas: cada enlace se navega y tiene que
+   * dar una guía con título, no un 404 del router.
+   */
+  {
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 800 },
+      colorScheme: 'dark',
+    });
+    const page = await context.newPage();
+
+    await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+    const inicio = await page.evaluate(() => {
+      const hrefs = [...document.querySelectorAll('.canvas-area a[href]')].map((a) =>
+        a.getAttribute('href')
+      );
+      return {
+        guias: [...new Set(hrefs.filter((h) => h && h.startsWith('/wiki/')))],
+        tieneWiki: hrefs.includes('/wiki'),
+        tieneTaller: hrefs.includes('/taller'),
+        tieneHistorial: hrefs.includes('/historial'),
+        sintomas: document.querySelectorAll('.inicio-sintoma').length,
+        modulos: document.querySelectorAll('.inicio-modulo').length,
+      };
+    });
+
+    check(
+      'el inicio lleva a la wiki, al taller y al historial',
+      inicio.tieneWiki && inicio.tieneTaller && inicio.tieneHistorial,
+      `wiki=${inicio.tieneWiki} taller=${inicio.tieneTaller} historial=${inicio.tieneHistorial}`
+    );
+    check(
+      'el inicio enseña síntomas como puerta a la wiki, y no un solo enlace',
+      inicio.sintomas >= 3 && inicio.guias.length >= 3 && inicio.modulos >= 3,
+      `${inicio.sintomas} tarjetas, ${inicio.guias.length} guías distintas, ${inicio.modulos} módulos`
+    );
+
+    for (const href of inicio.guias) {
+      await page.goto(BASE + href, { waitUntil: 'networkidle' });
+      const titulo = await page.evaluate(
+        () => document.querySelector('.canvas-area h1')?.textContent?.trim() ?? ''
+      );
+      check(
+        `el inicio enlaza a ${href}, que existe`,
+        titulo.length > 5,
+        titulo ? `"${titulo}"` : 'la guía no pinta título'
       );
     }
 

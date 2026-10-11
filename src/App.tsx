@@ -13,7 +13,7 @@ import {
 import UploadRoute from './routes/UploadRoute';
 import TallerRoute from './routes/TallerRoute';
 import HistorialRoute from './routes/HistorialRoute';
-import PlaceholderRoute from './routes/PlaceholderRoute';
+import ProyectosRoute from './routes/ProyectosRoute';
 import AnalysisPanel from './components/AnalysisPanel';
 import RielWiki from './components/RielWiki';
 import { IconoInicio, IconoProyectos, IconoTaller, IconoWiki } from './components/NavIconos';
@@ -73,6 +73,16 @@ const RUTAS_ANALISIS = [/^\/$/, /^\/historial$/];
  * lista de rutas cuyo contenido supera la caja, y eso depende de la ruta y no del
  * ancho.
  *
+ * **`/` entra con el inicio lleno.** Antes no estaba, y era correcto: sin
+ * historial la raíz era la zona de subida, que cabe entera. Ahora el estado sin
+ * archivo lleva cabecera, síntomas y módulos, y eso no cabe en la altura fija del
+ * shell a partir de 1200px —por debajo el documento ya se desplaza solo—. Sin
+ * esta entrada, a 1200×667 el final del inicio se recortaría sin barra ni aviso.
+ * La clase se aplica por ruta, así que el estado con un archivo cargado también
+ * la lleva; el visor no se entera porque `.viewer-container` se estira con
+ * `align-self: stretch`, y `npm run verify:layout` lo comprueba en los 29
+ * viewports.
+ *
  * Vive aquí y no en cada ruta por una razón de layout: quien decide cómo se
  * desplaza la caja central es el shell, porque el shell es quien conoce su
  * geometría. Una ruta que se desplazara a sí misma tendría que saber a qué altura
@@ -83,7 +93,13 @@ const RUTAS_ANALISIS = [/^\/$/, /^\/historial$/];
  * herramienta que no quepa, la misma pregunta hay que responder midiendo, no
  * suponiendo: un formulario corto dentro de `.canvas-area` se recorta sin aviso.
  */
-const RUTAS_DESPLAZABLES = [/^\/wiki(\/|$)/, /^\/acerca-de$/, /^\/contacto$/, /^\/privacidad$/];
+const RUTAS_DESPLAZABLES = [
+  /^\/$/,
+  /^\/wiki(\/|$)/,
+  /^\/acerca-de$/,
+  /^\/contacto$/,
+  /^\/privacidad$/,
+];
 
 
 /**
@@ -307,8 +323,10 @@ function AppShell() {
  * ruta en los cuatro scripts.
  *
  * Cuando "Inicio" tenga contenido, se añade debajo de la zona de subida en esta
- * misma vista. Si algún día se mueve, se actualizan los scripts en el mismo
- * commit.
+ * misma vista. **Ya lo tiene**: `src/components/Inicio.tsx` pone los síntomas
+ * frecuentes y los módulos debajo de la caja, y la cabecera del inicio pasa a ser
+ * el `<h1>` de la ruta. Si algún día la subida se mueve a otra ruta, se actualizan
+ * los scripts en el mismo commit.
  *
  * La redirección con `*` existe para que una ruta inventada no deje la pantalla
  * en blanco: vuelve a la raíz con `replace`, para que el botón "atrás" del
@@ -324,10 +342,10 @@ function AppShell() {
  * gratis, en los cuatro enlaces. Es justo lo que el bug de navegación por teclado
  * necesitaba, y no conviene reimplementarlo a mano.
  *
- * Los módulos todavía vacíos llevan su propósito en la propia pantalla. Esa línea
- * sale de la sección correspondiente de `docs/historias-de-usuario.md`, donde las
- * lecturas están marcadas como supuesto y no como requisito cerrado, así que el
- * texto se cambia con la decisión de producto, no al revés.
+ * **Ya no hay ningún módulo vacío en la barra.** `/proyectos` era el último y ahora
+ * es una página real: dice qué será un proyecto, por qué todavía no está y qué usar
+ * mientras (`src/routes/ProyectosRoute.tsx`). Se fue el `PlaceholderRoute` genérico
+ * con él, porque no quedaba ninguna ruta que lo usara.
  *
  * `/acerca-de`, `/contacto` y `/privacidad` son las tres páginas que la revisión
  * de contenido de Google AdSense exige tener presentes, y están enlazadas desde el
@@ -374,15 +392,7 @@ function App() {
                 siguiente sólo entra si la anterior no.
               */}
               <Route path="/wiki/:slug" element={<GuiaRoute />} />
-              <Route
-                path="/proyectos"
-                element={
-                  <PlaceholderRoute
-                    title="Proyectos"
-                    purpose="Aquí vivirán los proyectos con nombre. El historial ya guarda los análisis; un proyecto es un análisis con un nombre y una decisión alrededor, y eso todavía no se ha decidido qué es."
-                  />
-                }
-              />
+              <Route path="/proyectos" element={<ProyectosRoute />} />
               {/*
                 `/historial` **no está en la barra inferior**, y es deliberado: la
                 barra tiene cuatro destinos decididos y siguen siendo los mismos.

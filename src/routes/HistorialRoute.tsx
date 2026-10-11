@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useAnalysisActions } from '../state/useAnalysis';
 import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, vaciarHistorial } from '../lib/storage';
+import { Confirmacion } from '../components/Dialogos';
+import { formatarFecha, riesgoClase } from '../lib/formato';
 
 /**
  * El historial completo: todas las entradas guardadas, con borrar una y vaciar
  * todas.
  *
- * **Es la tercera vista del mismo almacén**, no un módulo aparte: `/` enseña los
- * cinco últimos y esto enseña todo. `/proyectos` sigue siendo un placeholder
- * porque hoy no habría nada que lo distinguiera de esta lista.
+ * **Es la vista completa del mismo almacén**, no un módulo aparte: `/` enseña los
+ * cinco últimos y esto enseña todo. `/proyectos` es la otra cara: lo que has
+ * guardado con nombre propio, sobre la misma base.
  *
  * El borrado pide confirmación, y la del vaciado **dice cuántos se van**. Sin el
  * número, «¿vaciar el historial?» es una pregunta que se acepta sin leer, y
@@ -135,86 +137,6 @@ function HistorialRoute() {
       )}
     </div>
   );
-}
-
-/**
- * Una confirmación modal, con el foco dentro y `Escape` para salir.
- *
- * Va en el propio fichero y no en un componente compartido porque es el único
- * sitio de la app que necesita uno, y un componente para un solo uso que además
- * hay que mantener es peor que unas líneas aquí.
- */
-function Confirmacion({
-  texto,
-  aceptar,
-  onAceptar,
-  onCancelar,
-}: {
-  texto: string;
-  aceptar: string;
-  onAceptar: () => void;
-  onCancelar: () => void;
-}) {
-  const ref = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    ref.current?.focus();
-    const alPulsar = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancelar();
-    };
-    window.addEventListener('keydown', alPulsar);
-    return () => window.removeEventListener('keydown', alPulsar);
-  }, [onCancelar]);
-
-  // `alertdialog` y no `dialog`: con `alertdialog` el lector de pantalla anuncia
-  // que el resto está bloqueado, y quien navega con teclado sabe que hay que
-  // decidir antes de seguir.
-  return (
-    <div className="confirmacion-capa" role="presentation">
-      <div className="confirmacion" role="alertdialog" aria-modal="true" aria-label={texto}>
-        <p className="confirmacion-texto">{texto}</p>
-        <div className="confirmacion-botones">
-          <button type="button" className="btn-ghost" onClick={onCancelar}>
-            Cancelar
-          </button>
-          <button ref={ref} type="button" className="btn-danger" onClick={onAceptar}>
-            {aceptar}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** La fecha en corto y en español, sin librerías de formato. */
-function formatarFecha(ms: number): string {
-  return new Date(ms).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-/**
- * Una clase por nivel de riesgo, para que el color venga del CSS y no de aquí.
- *
- * El `riskLevel` es un texto en castellano que viene del clasificador, y usarlo
- * directamente como clase ataría el color al valor. Con esta tabla, un nivel
- * nuevo sale sin color en vez de salir con el color del nivel equivocado.
- */
-function riesgoClase(riskLevel: string): string {
-  switch (riskLevel) {
-    case 'Bajo':
-      return 'bajo';
-    case 'Moderado':
-      return 'moderado';
-    case 'Alto':
-      return 'alto';
-    case 'Crítico':
-      return 'critico';
-    default:
-      return 'desconocido';
-  }
 }
 
 export default HistorialRoute;

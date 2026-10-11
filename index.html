@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!--
+      El icono de iOS no admite SVG: es un PNG de 180×180 con el fondo oscuro
+      incrustado (un PNG transparente se ve con un recuadro blanco al añadirlo a
+      la pantalla de inicio). El `manifest` da el nombre y los iconos cuando la
+      app se instala como acceso directo.
+    -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
       Pinta la barra del navegador móvil con el fondo de la app. Sin esto el
@@ -21,6 +29,35 @@
       content="Analiza metadatos de G-code, consulta guías con fuentes sobre impresión 3D y calcula el coste de tus piezas. Visor local para modelos STL y 3MF."
     />
     <title>wiiki-3d: análisis de G-code y guías de impresión 3D</title>
+    <!--
+      Tarjeta para redes sociales (Open Graph y Twitter). Estos son los valores de
+      la raíz; la exportación estática los reescribe por ruta, igual que el título
+      y la descripción. `og:image` es la misma para todo el sitio —una portada de
+      1200×630— porque no hay una imagen por página que merezca la pena.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="wiiki-3d" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:title" content="wiiki-3d: análisis de G-code y guías de impresión 3D" />
+    <meta
+      property="og:description"
+      content="Analiza metadatos de G-code, consulta guías con fuentes sobre impresión 3D y calcula el coste de tus piezas."
+    />
+    <meta property="og:url" content="https://wiiki-3d.com/" />
+    <meta property="og:image" content="https://wiiki-3d.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Ilustración de una impresora 3D con una pieza a medio imprimir y un panel de análisis."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="wiiki-3d: análisis de G-code y guías de impresión 3D" />
+    <meta
+      name="twitter:description"
+      content="Analiza metadatos de G-code, consulta guías con fuentes sobre impresión 3D y calcula el coste de tus piezas."
+    />
+    <meta name="twitter:image" content="https://wiiki-3d.com/og.png" />
   </head>
   <body>
     <div id="root"></div>

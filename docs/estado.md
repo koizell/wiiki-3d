@@ -14,13 +14,81 @@
 
 | Módulo | Historias | Estado | Qué lo bloquea |
 |---|---|---|---|
-| **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La pantalla de subida **está hecha** (`/`) y el historial también (`/historial`, con tres vistas). Falta el enlace a `/proyectos` desde el historial, y decidir si `/proyectos` deja de ser una pantalla vacía (P5). |
+| **Inicio** | H-3.1, H-3.2, H-3.3 | En curso | La raíz `/` deja de ser sólo la caja de subida: lleva cabecera, tres síntomas que abren la wiki y los módulos, además de la subida y el historial. Falta el enlace a `/proyectos` desde el historial. |
 | **Taller** | H-2.1, H-2.2 | Hecho | La calculadora está hecha y los cinco estados tienen comprobación propia (`verify:taller`, 180). |
 | **Wiki 3D** | H-1.1, H-1.2 | Hecho | Nada técnico. Rutas, buscador, riel, barra «Tu archivo» y **las nueve** guías están escritas y verificadas. El plan es [`plan-guias.md`](plan-guias.md) y el tablero [`kanban.md`](kanban.md). |
-| **Proyectos** | H-4.1 | Bloqueado | **S1 + S3**: sin backend, los datos viven en la máquina de quien los guarda. Y con P2 resuelto, guardar el análisis no permite volver a abrir el archivo en el visor. |
+| **Proyectos** | H-4.1 | En curso | **Hecho lo que no depende del backend**: la biblioteca de análisis guardados con nombre propio (`ProyectosRoute.tsx`), sobre el mismo IndexedDB del historial, con nombrar, borrar y uso de espacio. Siguen en pie los límites de **S1 + S3** (los datos viven en el navegador y no se sincronizan) y de **P2** (un análisis guardado no se reabre en el visor). |
 
 Las cuatro rutas existen y responden. Dos pintan una pantalla que dice qué
 módulo van a ser y que no está implementado; la wiki tiene nueve guías completas.
+
+### El inicio deja de ser sólo la subida
+
+`/` es la pantalla de subida y lo sigue siendo —los scripts de `scripts/verify/`
+cargan el fichero sobre `/`—, pero dejó de ser **sólo** eso. Sin historial,
+`Recientes` devuelve `null` y la pantalla quedaba reducida a la caja de arrastrar:
+quien llegaba nuevo veía una caja de subir archivos y nada del resto del sitio, que
+tiene nueve guías, una calculadora y un historial. El estado sin archivo lleva ahora:
+
+- una **cabecera** que dice qué es wiiki-3d, y que pasa a ser el `<h1>` de la ruta:
+  la zona de subida baja a `h2` para que siga habiendo **un solo** `h1` visible;
+- **tres síntomas frecuentes** (`warping-pla`, `adhesion-primera-capa`,
+  `separaciones-entre-capas`), con el mismo dibujo que el índice de la wiki, porque
+  el que reconoce su pieza en la tarjeta llega a la guía con el diagnóstico empezado;
+- los **módulos** que no son la subida: Taller, Wiki 3D e Historial. Proyectos no
+  está porque sigue siendo una pantalla vacía, y ya tiene su sitio en la navegación.
+
+Dos cosas que el cambio obligó a decidir y quedan escritas:
+
+- **`/` entra en `RUTAS_DESPLAZABLES`.** Con el inicio lleno, el contenido no cabe en
+  la altura fija del shell a partir de 1200 px y se recortaría sin barra ni aviso. La
+  clase se aplica por ruta, así que el estado con archivo cargado también la lleva;
+  `verify:layout` comprueba en los 29 viewports que el visor no se entera.
+- **`Inicio` reutiliza `GUIAS` y `DibujoSintoma` y no una copia.** No añade peso que
+  no estuviera ya: `RielWiki`, que va en el shell, importa `lib/guias` de forma
+  estática, así que el contenido de las guías ya estaba en el chunk de entrada. Lo
+  que sí se mueve es `DibujoSintoma` —8 kB—, que antes era un chunk aparte de las
+  rutas de la wiki y ahora entra en el de entrada al usar el inicio.
+
+La comprobación nueva vive en `verify:rutas` (check 7): navega cada enlace a una guía
+del inicio y falla si un slug deja de existir, que es el fallo que una lista escrita a
+mano puede tener sin que nadie lo vea.
+
+### Lo que faltaba para que el sitio fuera una web, no una app
+
+Con el contenido escrito y verificado, quedaban cuatro cosas de forma que separan una
+aplicación de un sitio publicable. Ninguna es de producto; todas son de la capa que
+Google y las redes leen antes de ejecutar una línea de JavaScript:
+
+- **`/proyectos` deja de ser un placeholder, y luego un módulo de verdad.** Era la
+  única pantalla vacía de la navegación —título, una frase y «Sin implementar.» en
+  una caja de 850 px—, y eso es lo peor que puede encontrar quien llega por la
+  barra, incluida una revisión de contenido. Pasó por dos estados: primero una
+  página que decía qué será un proyecto y por qué no estaba; después el módulo,
+  cuando quedó claro que **el nombre** es lo que distingue un proyecto de una
+  entrada del historial. Ahora `/proyectos` es la biblioteca curada —nombrar,
+  renombrar, borrar y uso de espacio— sobre el mismo almacén, sin una base de datos
+  nueva. La razón por la que llevaba tanto tiempo sin existir está escrita en el
+  comentario de `lib/storage.ts`: no había nada que lo distinguiera. El nombre es
+  ese algo. Y una comprobación nueva en `verify:historial` mide el ciclo entero:
+  que un análisis se ofrezca para nombrar, que al nombrarlo pase a «Tus proyectos»
+  y que dejar el nombre vacío lo devuelva al historial.
+- **Tarjetas al compartir.** Faltaban `og:` y `twitter:`. Ahora los lleva la plantilla
+  y la exportación estática los reescribe **por ruta**, igual que el título: sin eso,
+  cada página compartida enseñaría el título de la raíz. La portada `og.png` (1200×630)
+  se generó con el estilo del proyecto y su prompt quedó en `og.json`.
+- **Icono e instalación.** `apple-touch-icon.png` y `manifest.webmanifest`, con los PNG
+  rasterizados del propio `favicon.svg` para que no cambien de diseño. Un `apple-touch-icon`
+  transparente se ve con un recuadro blanco al añadirlo a la pantalla de inicio; estos
+  llevan el fondo oscuro incrustado.
+- **Privacidad completa.** La política gana el tratamiento del alojamiento (GitHub
+  Pages), el detalle de que Google y **sus socios** podrán usar cookies —incluida la de
+  DoubleClick— cuando se active la publicidad, una sección de **opciones** y otra de
+  **cambios**. Sigue diciendo la verdad de hoy: no hay anuncios ni analítica todavía.
+
+Y una limpieza: `public/wiki/warping-pla/` tenía dos SVG y un `imagenes.json` que
+ninguna guía referenciaba desde el cambio de formato. Eran peso muerto servido en cada
+despliegue.
 
 ---
 
