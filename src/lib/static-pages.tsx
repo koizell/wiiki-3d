@@ -238,6 +238,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
     SEO_PAGINAS['/acerca-de'],
     SEO_PAGINAS['/contacto'],
     SEO_PAGINAS['/privacidad'],
+    SEO_PAGINAS['/autor'],
     ...GUIAS.map(seoGuia),
   ];
   return paginas.map((seo) => ({
@@ -255,6 +256,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
                 <Route path="/acerca-de" element={<InfoRoute pagina="acerca-de" />} />
                 <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
                 <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
+                <Route path="/autor" element={<InfoRoute pagina="autor" />} />
               </Routes>
             </Pagina>
           </MemoryRouter>

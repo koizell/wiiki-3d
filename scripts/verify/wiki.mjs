@@ -900,7 +900,7 @@ try {
         texto: document.querySelector('.site-footer')?.textContent ?? '',
       };
     });
-    for (const ruta of ['/acerca-de', '/contacto', '/privacidad']) {
+    for (const ruta of ['/acerca-de', '/contacto', '/privacidad', '/autor']) {
       comprobar(`el pie enlaza ${ruta}`, pie.hrefs.includes(ruta), pie.hrefs.join(' '));
     }
     await ctx.close();
@@ -911,7 +911,7 @@ try {
     // `/contacto` a `/privacidad`, y las dos assertions fallaron porque la página no
     // enlazaba. No era el test el equivocado: era un hueco real, y la página decía
     // «el artículo sobre warping está a un clic» sin ningún enlace.
-    for (const pagina of ['acerca-de', 'contacto', 'privacidad']) {
+    for (const pagina of ['acerca-de', 'contacto', 'privacidad', 'autor']) {
       const { ctx, page } = await abrir(navegador, 1280, 800, `/${pagina}`);
       const info = await page.evaluate(() => ({
         h1: document.querySelectorAll('.canvas-area h1').length,

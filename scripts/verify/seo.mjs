@@ -21,7 +21,7 @@ const raiz = new URL('../../', import.meta.url).pathname;
 const dist = join(raiz, 'dist');
 const BASE = process.env.BASE_URL ?? (await startPreview()) ?? 'http://127.0.0.1:4173';
 const slugs = GUIAS.map((g) => g.slug);
-const rutas = ['/wiki', '/acerca-de', '/contacto', '/privacidad', ...slugs.map((s) => `/wiki/${s}`)];
+const rutas = ['/wiki', '/acerca-de', '/contacto', '/privacidad', '/autor', ...slugs.map((s) => `/wiki/${s}`)];
 const origen = 'https://wiiki-3d.com';
 const canonical = (ruta) => `${origen}${ruta === '/' ? '/' : `${ruta}/`}`;
 let pruebas = 0;

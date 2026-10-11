@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { GUIAS } from '../lib/guias';
+import { AUTOR } from '../content/guias/autor';
 
 /**
  * Páginas de información y transparencia: Acerca de, Contacto y Privacidad.
@@ -60,7 +62,7 @@ interface Seccion {
 const CONTACTO = 'contacto@wiiki-3d.com';
 
 /** Las secciones de cada página, en el orden en que se leen. */
-const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string; secciones: Seccion[] }> = {
+const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titulo: string; secciones: Seccion[] }> = {
   'acerca-de': {
     titulo: 'Acerca de wiiki-3d',
     secciones: [
@@ -290,6 +292,62 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad', { titulo: string;
             llegue al sitio publicado. Lo que lees aquí describe lo que el código hace
             hoy, no lo que podría llegar a hacer.
           </p>
+        ),
+      },
+    ],
+  },
+  autor: {
+    titulo: 'Quién escribe en wiiki-3d',
+    secciones: [
+      {
+        titulo: 'El autor',
+        cuerpo: (
+          <>
+            <p>
+              <strong>{AUTOR.nombre}</strong> — {AUTOR.credencial}. Escribe las guías de
+              la wiki y responde de ellas en el{' '}
+              <a href={AUTOR.perfil} target="_blank" rel="noopener noreferrer">
+                perfil de Instagram
+              </a>
+              .
+            </p>
+            <p>
+              No es un redactor genérico. Si una guía se equivoca o una fuente cambia,
+              hay una persona concreta a la que se le puede pedir la corrección: ésa es
+              la mitad del valor de firmar lo que se lee.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Cómo se hace cada guía',
+        cuerpo: (
+          <>
+            <p>
+              Cuatro pasos, y ninguno se salta. Se recogen fuentes primarias —fichas de
+              fabricante y bases de conocimiento—; se extraen sólo las afirmaciones que
+              esas fuentes respaldan; se redactan como un instrumento que calcula la
+              recomendación según tu montaje; y se revisan contra las fuentes antes de
+              publicar.
+            </p>
+            <p>
+              Cuando dos fabricantes se contradicen, la guía enseña la contradicción en
+              vez de elegir una y callar la otra. Ninguna cifra aparece sin la fuente de
+              la que sale.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Las guías publicadas',
+        cuerpo: (
+          <ul className="autor-guias">
+            {GUIAS.map((g) => (
+              <li key={g.slug}>
+                <Link to={`/wiki/${g.slug}`}>{g.sintoma}</Link> · {g.minutos} min
+              </li>
+            ))}
+          </ul>
         ),
       },
     ],

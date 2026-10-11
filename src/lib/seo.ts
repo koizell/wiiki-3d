@@ -1,3 +1,5 @@
+import { AUTOR } from '../content/guias/autor';
+
 /** Metadatos compartidos entre la navegación y la exportación estática. */
 export const ORIGEN = 'https://wiiki-3d.com';
 
@@ -33,6 +35,18 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
   '/privacidad': {
     path: '/privacidad/', title: 'Política de privacidad e historial local | wiiki-3d',
     description: 'Qué guarda wiiki-3d en IndexedDB, cómo borrar el historial y qué metadatos puede enviar el clasificador. Información sobre publicidad y privacidad.',
+  },
+  '/autor': {
+    path: '/autor/', title: 'Quién escribe en wiiki-3d | wiiki-3d',
+    description: 'John Puerta Sáez, ingeniero en sistemas, escribe y responde de las guías de impresión 3D de wiiki-3d. Cómo se construye cada guía y las nueve publicadas.',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: AUTOR.nombre,
+      jobTitle: 'Ingeniero en sistemas',
+      url: `${ORIGEN}/autor/`,
+      sameAs: [AUTOR.perfil],
+    },
   },
   '/historial': {
     path: '/historial/', title: 'Historial local de análisis | wiiki-3d',
