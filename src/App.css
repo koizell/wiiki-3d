@@ -66,6 +66,30 @@
   --viewer-fondo: #1a1f26;
 
   /*
+   * Escala de esquinas. Tres valores, y la regla que los gobierna:
+   *
+   *   - `--radio-sm`   6px  controles y elementos pequeños (botones, badges,
+   *                         chips, anillos de foco).
+   *   - `--radio-md`  10px  contenedores medios: campos, avisos, filas.
+   *   - `--radio-lg`  12px  tarjetas. TODAS las tarjetas, sin excepción:
+   *                         `.sintoma` y `.guia-cabecera-dibujo` estaban a
+   *                         14px junto a tarjetas hermanas a 12px.
+   *   - píldora      999px  insignias y etiquetas que deben ser cápsulas.
+   *
+   * Antes había once valores (2, 3, 4, 6, 7, 8, 9, 10, 12, 14, 999) y dos de
+   * ellos —7px y 9px— no significaban nada: eran tarjetas contiguas con
+   * esquinas distintas por haberse ajustado a ojo en momentos distintos.
+   *
+   * Los `border-radius: 2px` y `3px` de los anillos de foco se quedan fuera
+   * a propósito: son el radio del `outline`, y redondearlo como una caja
+   * deformaría el anillo.
+   */
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 12px;
+  --radio-pill: 999px;
+
+  /*
    * Ajustes de renderizado de texto que vienen del reset del navegador.
    *
    * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
@@ -265,7 +289,7 @@ body {
   color: white;
   border: none;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radio-sm);
   cursor: pointer;
   font-weight: 500;
   transition: background 0.2s;
@@ -281,7 +305,7 @@ body {
   color: var(--text-primary);
   border: 1px solid var(--border);
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radio-sm);
   cursor: pointer;
   transition: background 0.2s;
   font-size: 0.9rem;
@@ -296,7 +320,7 @@ body {
   color: white;
   border: none;
   padding: 0.25rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radio-sm);
   cursor: pointer;
   font-weight: bold;
   min-width: 44px;
@@ -343,7 +367,7 @@ body {
   gap: 0.2rem;
   min-height: 44px;
   padding: 0.4rem 0.2rem;
-  border-radius: 6px;
+  border-radius: var(--radio-sm);
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.15s;
@@ -426,7 +450,7 @@ body {
   text-align: center;
   padding: 1.5rem 1rem;
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   max-width: 500px;
 }
 
@@ -552,7 +576,7 @@ body {
   padding: 1rem 0.85rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   text-decoration: none;
   color: inherit;
   text-align: center;
@@ -619,7 +643,7 @@ body {
   padding: 1rem 0.95rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   text-decoration: none;
   color: inherit;
   transition: border-color 0.2s, transform 0.2s;
@@ -692,7 +716,7 @@ body {
   gap: 0.75rem;
   background: var(--bg-panel);
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   border: 1px solid var(--border);
 }
 
@@ -726,7 +750,7 @@ body {
 .viewer-3d-container {
   flex: 1;
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-dark);
@@ -823,7 +847,7 @@ body {
   background: var(--accent);
   color: white;
   padding: 0.15rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radio-sm);
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -867,7 +891,7 @@ body {
   color: var(--text-secondary);
   font-size: 0.9rem;
   border: 1px dashed var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   background: var(--bg-panel);
   /*
    * El mismo suelo que el visor 3D, y por el mismo motivo: también es
@@ -941,7 +965,7 @@ body {
   padding: 0.75rem 0.9rem;
   background: color-mix(in srgb, var(--danger) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
 }
 
 /*
@@ -953,7 +977,7 @@ body {
 .panel-unsupported {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
   /* El mismo azul del resto del sitio, por `color-mix` sobre el token y no
      como literal: aquí estaba `rgba(59, 130, 246, 0.08)`, que es el
      `#3b82f6` que se retiró de `:root` por contraste (5,17:1 medidos),
@@ -1021,7 +1045,7 @@ body {
 .risk-badge {
   display: inline-block;
   padding: 0.12rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1050,7 +1074,7 @@ body {
 .panel-recommendation {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
   background: var(--bg-hover);
   font-size: 0.82rem;
   line-height: 1.45;
@@ -1597,7 +1621,7 @@ body {
 .wiki-aviso {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   font-size: 0.9rem;
 }
@@ -1699,7 +1723,7 @@ body {
   background: var(--bg-panel);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   font-size: 1rem;
   font-family: inherit;
 }
@@ -1762,7 +1786,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-left: 3px solid var(--warning);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   max-width: 34rem;
 }
 
@@ -1811,7 +1835,7 @@ body {
   padding: 0.6rem 0.8rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
 }
 
 .historial-datos {
@@ -1982,7 +2006,7 @@ body {
   height: 1.4rem;
   padding: 0 0.4rem;
   font-size: 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   background: var(--bg-hover);
   border: 1px solid var(--border);
   color: var(--text-secondary);
@@ -2034,7 +2058,7 @@ body {
 .confirmacion {
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   padding: 1.25rem;
   max-width: 26rem;
   width: 100%;
@@ -2078,7 +2102,7 @@ body {
   background: var(--bg-dark);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   font-family: inherit;
   font-size: 1rem;
 }
@@ -2127,7 +2151,7 @@ body {
 .historial-abrir:focus-visible {
   outline: 2px solid var(--accent-text);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: var(--radio-sm);
 }
 
 /*
@@ -2436,7 +2460,7 @@ body {
   background: var(--bg-panel);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radio-md);
   font-family: inherit;
   font-size: 1rem;
   transition: border-color 0.18s, box-shadow 0.18s;
@@ -2519,7 +2543,7 @@ body {
   padding: 1.1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radio-lg);
   text-decoration: none;
   color: inherit;
   transition: border-color 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
@@ -2579,7 +2603,7 @@ body {
 .sintoma-dibujo {
   background: var(--bg-dark);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radio-md);
   padding: 0.5rem;
 }
 
@@ -2631,7 +2655,7 @@ body {
   align-items: center;
   padding: 0.1rem 0.45rem;
   font-size: 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   background: var(--bg-hover);
   border: 1px solid var(--border);
   color: var(--text-secondary);
@@ -2652,7 +2676,7 @@ body {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--border);
   border-left: 3px solid var(--warning);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
   background: color-mix(in srgb, var(--warning) 7%, transparent);
 }
 
@@ -2766,7 +2790,7 @@ body {
   min-width: 0;
   padding: 0.45rem 0.6rem;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--radio-md);
   color: inherit;
   text-decoration: none;
 }
@@ -2872,7 +2896,7 @@ body {
 .guia-cabecera-dibujo {
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radio-lg);
   padding: 0.75rem;
 }
 
@@ -2969,7 +2993,7 @@ body {
   min-width: 1.7rem;
   height: 1.7rem;
   padding: 0 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent-text) 35%, transparent);
   color: var(--accent-text);
@@ -2989,7 +3013,7 @@ body {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text-secondary);
   line-height: 1.6;
@@ -3014,7 +3038,7 @@ body {
   padding: 0.9rem 1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   animation: entra-fila 0.34s cubic-bezier(0.22, 0.7, 0.3, 1) both;
 }
 
@@ -3040,7 +3064,7 @@ body {
 .diferencial-cara {
   position: relative;
   padding: 0.7rem 0.75rem 0.7rem 0.85rem;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
   font-size: 0.86rem;
   line-height: 1.55;
   color: var(--text-secondary);
@@ -3086,7 +3110,7 @@ body {
   padding: 0.85rem 1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   font-size: 0.88rem;
   color: var(--text-secondary);
 }
@@ -3097,7 +3121,7 @@ body {
   gap: 0.35rem;
   min-height: 44px;
   padding: 0.45rem 0.95rem;
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   font-family: inherit;
   font-size: 0.88rem;
   font-weight: 600;
@@ -3154,7 +3178,7 @@ body {
   padding: 0.9rem 1rem 1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
 }
 
 .variable-titulo {
@@ -3173,7 +3197,7 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 0.08rem 0.35rem;
-  border-radius: 4px;
+  border-radius: var(--radio-sm);
   background: color-mix(in srgb, var(--warning) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
   color: var(--warning);
@@ -3230,7 +3254,7 @@ body {
   padding: 0.4rem 0.7rem;
   background: var(--bg-hover);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: var(--radio-md);
   font-family: inherit;
   color: var(--text-primary);
   cursor: pointer;
@@ -3290,7 +3314,7 @@ body {
   padding: 0.9rem 1rem;
   background: var(--bg-dark);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
 }
 
 @media (min-width: 1200px) {
@@ -3323,7 +3347,7 @@ body {
   padding: 1rem 1.1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   animation: entra-fila 0.35s cubic-bezier(0.22, 0.7, 0.3, 1) both;
   transition: border-color 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
     box-shadow 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
@@ -3363,7 +3387,7 @@ body {
   padding: 0.25rem 0.55rem;
   background: var(--bg-dark);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radio-md);
   text-align: right;
 }
 
@@ -3395,7 +3419,7 @@ body {
   padding: 0.6rem 0.75rem;
   border-left: 2px solid var(--border);
   background: var(--bg-dark);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
 }
 
 .tarjeta-cita p {
@@ -3472,7 +3496,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
   animation: accion-entra 0.38s cubic-bezier(0.22, 0.7, 0.3, 1) both;
   animation-delay: calc(var(--i, 0) * 50ms);
   transition: border-color 0.2s cubic-bezier(0.22, 0.7, 0.3, 1),
@@ -3497,7 +3521,7 @@ body {
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   background: var(--accent);
   color: #fff;
   font-size: 0.85rem;
@@ -3533,7 +3557,7 @@ body {
 .accion-comparacion {
   margin-top: 0.55rem;
   padding: 0.45rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--radio-sm);
   background: var(--bg-hover);
   border-left: 3px solid var(--border);
   font-size: 0.8rem;
@@ -3592,7 +3616,7 @@ body {
 
 .accion-fuente span {
   padding: 0.08rem 0.4rem;
-  border-radius: 4px;
+  border-radius: var(--radio-sm);
   background: var(--bg-hover);
   border: 1px solid var(--border);
 }
@@ -3617,7 +3641,7 @@ body {
   padding: 0.85rem 0.95rem;
   background: color-mix(in srgb, var(--danger) 6%, transparent);
   border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   animation: entra-fila 0.32s cubic-bezier(0.22, 0.7, 0.3, 1) both;
 }
 
@@ -3674,7 +3698,7 @@ body {
   padding: 0.55rem 0.7rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: var(--radio-md);
   text-decoration: none;
   transition: border-color 0.15s, transform 0.15s;
   animation: entra-fila 0.3s ease-out both;
@@ -3729,7 +3753,7 @@ body {
   padding: 0.85rem 0.9rem;
   background: var(--bg-dark);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radio-lg);
   animation: entra-fila 0.34s ease-out both;
 }
 
@@ -3772,7 +3796,7 @@ body {
 .riel-progreso {
   height: 4px;
   background: var(--bg-hover);
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -3781,7 +3805,7 @@ body {
   display: block;
   height: 100%;
   background: var(--accent);
-  border-radius: 999px;
+  border-radius: var(--radio-pill);
   transition: width 0.4s cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
@@ -3817,7 +3841,7 @@ body {
   padding: 0.5rem 0.6rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: var(--radio-md);
   text-decoration: none;
   transition: border-color 0.15s, transform 0.15s;
 }
@@ -3895,7 +3919,7 @@ body {
   padding: 0.35rem 0.5rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: var(--radio-sm);
   animation: entra-fila 0.24s ease-out both;
 }
 
@@ -4088,7 +4112,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
 }
 
 .taller-explica p {
