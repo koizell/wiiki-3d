@@ -58,6 +58,20 @@
    */
   --danger-hover: #dc2626;
   /*
+   * El cuarto nivel de riesgo. El dominio define cuatro (Bajo, Moderado,
+   * Alto, Crítico —`RISK_LEVELS` en `JevService`) y los tres primeros se
+   * pintaban con tokens existentes (success, warning, danger). El cuarto se
+   * resolvió con un naranja escrito a mano en `.risk-alto`, y el historial
+   * acabó colapsando «alto» y «crítico» en el mismo rojo: el mismo dato se
+   * veía naranja en una pantalla y rojo en la otra.
+   *
+   * Texto oscuro encima, como los otros tres: el contraste medido sobre
+   * `#fb923c` es 8,35:1. El `.risk-critico` llevaba un `color: white` que
+   * bajaba a 3,76:1 —quitarlo hereda el oscuro del `.risk-badge`, que en
+   * `#ef4444` da 5,02:1.
+   */
+  --riesgo-alto: #fb923c;
+  /*
    * El centro del degradado del área central. Un paso por debajo de
    * `--bg-panel` para que el visor 3D tenga un fondo propio sin ser un
    * cuarto color de fondo: sigue siendo el mismo gris azulado, sólo que
@@ -1133,12 +1147,11 @@ body {
 }
 
 .risk-alto {
-  background: #fb923c;
+  background: var(--riesgo-alto);
 }
 
 .risk-critico {
   background: var(--danger);
-  color: white;
 }
 
 /* Recomendación de Jev al final del panel */
@@ -1957,7 +1970,10 @@ body {
   color: var(--warning);
 }
 
-.historial-riesgo--alto,
+.historial-riesgo--alto {
+  color: var(--riesgo-alto);
+}
+
 .historial-riesgo--critico {
   color: var(--danger);
 }
