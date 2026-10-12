@@ -6,6 +6,23 @@
   --text-primary: #e8ecf1;
   --text-secondary: #8b949e;
   /*
+   * Terciario para el texto que debe leerse pero no competir.
+   *
+   * Nació de un fallo medido, no de una preferencia: tres sitios "suavizaban"
+   * el secundario con `opacity` sobre el fondo oscuro, y la mezcla bajaba el
+   * contraste por debajo del mínimo de WCAG AA para texto normal (4,5:1):
+   *
+   *   - `.tabla-sin-dato` (opacidad 0,6 sobre `--bg-panel`):  2,87:1
+   *   - `.site-footer-nota` (0,75 sobre `--bg-dark`):         3,94:1
+   *   - `::placeholder` de los dos campos (0,65):             3,15:1
+   *
+   * Un tono por encima del secundario elegido por contraste real —6,2:1 sobre
+   * `--bg-hover` y 7,5:1 sobre `--bg-dark`— mantiene la jerarquía sin que la
+   * jerarquía cueste accesibilidad. A partir de aquí, `opacity` es para
+   * elementos decorativos y SVG, nunca para texto.
+   */
+  --text-tertiary: #9aa4ae;
+  /*
    * El acento se oscureció de #3b82f6 a #2563eb porque el azul anterior solo
    * daba 3,68:1 con texto blanco, por debajo del 4,5:1 que WCAG AA exige a
    * cualquier tamaño de fuente. El valor nuevo da 5,17:1.
@@ -1459,8 +1476,7 @@ body {
   margin-top: 0.6rem;
   text-align: center;
   font-size: 0.78rem;
-  color: var(--text-secondary);
-  opacity: 0.75;
+  color: var(--text-tertiary);
 }
 
 /* --- El columna central, cuando la ruta la necesita -------------------------
@@ -2027,8 +2043,7 @@ body {
 }
 
 .confirmacion-campo::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.65;
+  color: var(--text-tertiary);
 }
 
 /* --- Los botones de abrir un análisis del historial ------------------------- *
@@ -2381,8 +2396,7 @@ body {
 }
 
 .wiki-buscador-campo::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.65;
+  color: var(--text-tertiary);
 }
 
 .wiki-buscador-campo:focus {

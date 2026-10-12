@@ -160,8 +160,7 @@
 }
 
 .tabla-sin-dato {
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
