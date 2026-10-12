@@ -3771,6 +3771,25 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * La guía que está abierta, marcada en el carril.
+ *
+ * `RielWiki.tsx` aplicaba esta clase desde el primer día y aquí no había nada:
+ * quien llegaba a una guía veía las nueve tarjetas del carril exactamente
+ * iguales, y la que tenía abierta era indistinguible de las otras ocho.
+ *
+ * El lenguaje ya existe en dos sitios del mismo sitio: `[aria-current="page"]`
+ * marca el destino activo con el acento fuerte (`--accent`), y `:hover` usa el
+ * claro (`--accent-text`). Activo = `--accent` + fondo `--bg-hover`, que es
+ * leerlo sin inventar un tercer estado. No lleva `aria-current` el `<a>`: en la
+ * ruta de la guía, el `aria-current="page"` de la barra lateral izquierda es el
+ * que anuncia la página, y duplicarlo aquí anunciaría dos veces lo mismo.
+ */
+.riel-enlace--activa {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
 .riel-enlace-sintoma {
   font-size: 0.85rem;
   font-weight: 600;
