@@ -176,6 +176,54 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
     titulo: 'Política de privacidad',
     secciones: [
       {
+        titulo: 'Responsable del tratamiento',
+        cuerpo: (
+          <p>
+            El responsable de los datos es <strong>{AUTOR.nombre}</strong>. Para
+            cualquier cuestión de privacidad escribe a{' '}
+            <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. Los datos no se venden a
+            terceros ni se usan para tomar decisiones automatizadas con efectos
+            jurídicos.
+          </p>
+        ),
+      },
+      {
+        titulo: 'Finalidad y base legal',
+        cuerpo: (
+          <ul>
+            <li>
+              <strong>Analizar el archivo que subes</strong> y darte el diagnóstico:
+              tu consentimiento al subirlo y la ejecución de lo que pides.
+            </li>
+            <li>
+              <strong>Guardar el historial en tu navegador</strong> (IndexedDB): tu
+              consentimiento; los datos no salen de tu dispositivo salvo que se
+              envíen al clasificador.
+            </li>
+            <li>
+              <strong>Servir y proteger el sitio</strong> (GitHub Pages): interés
+              legítimo en entregar las páginas y evitar abusos.
+            </li>
+            <li>
+              <strong>Publicidad</strong>, si se activa: consentimiento, que podrás
+              dar o retirar en el aviso.
+            </li>
+          </ul>
+        ),
+      },
+      {
+        titulo: 'Conservación',
+        cuerpo: (
+          <p>
+            El historial permanece en tu navegador hasta que lo borres. Los metadatos
+            enviados al clasificador se usan para responder y no se conservan con fines
+            propios más allá de esa respuesta. Los registros de conexión del
+            alojamiento se conservan el tiempo que exijan la ley y la operación del
+            servicio.
+          </p>
+        ),
+      },
+      {
         titulo: 'Qué guardamos',
         cuerpo: (
           <>
@@ -257,7 +305,12 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
                 políticas de publicidad de Google
               </a>.
             </p>
-          </>
+          
+            <p>
+              Con los anuncios activos, <strong>terceros —incluido Google— podrán colocar y leer cookies</strong> en tu navegador, junto con identificadores de terceros, para servir y medir los anuncios según tu consentimiento.
+              Puedes revisar cómo usa Google los datos de los sitios que usan sus servicios en{' '}
+              <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">«Cómo usa Google la información de sitios y aplicaciones que utilizan sus servicios»</a>.
+            </p></>
         ),
       },
       {
@@ -279,6 +332,51 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
                 la ayuda de AdSense sobre el consentimiento
               </a>
               .
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Destinatarios y transferencias internacionales',
+        cuerpo: (
+          <>
+            <p>
+              Hoy los datos no se comparten con terceros con fines propios, salvo el
+              clasificador al que se envían los metadatos cuando el servicio real está
+              activo. El alojamiento (GitHub Pages) puede tratar datos de conexión para
+              servir el sitio.
+            </p>
+            <p>
+              Con la publicidad activada, <strong>Google y sus socios</strong>{' '}
+              recibirán datos y podrán alojarlos en servidores fuera del Espacio
+              Económico Europeo; esas transferencias se amparan en las garantías que
+              ofrece Google. Consulta{' '}
+              <a href="https://policies.google.com/privacy/frameworks" target="_blank" rel="noopener noreferrer">
+                sus garantías de transferencia internacional
+              </a>
+              .
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Tus derechos',
+        cuerpo: (
+          <>
+            <p>
+              Puedes <strong>acceder, rectificar, suprimir, limitar u oponerte</strong>{' '}
+              al tratamiento de tus datos, pedir su <strong>portabilidad</strong> y
+              retirar el consentimiento cuando lo haya, escribiendo a{' '}
+              <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. Si no se atienden, puedes
+              reclamar ante la{' '}
+              <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">
+                Agencia Española de Protección de Datos (AEPD)
+              </a>
+              .
+            </p>
+            <p>
+              Como el historial vive en tu navegador, el control más directo es local:
+              bórralo desde <Link to="/historial">Historial</Link>.
             </p>
           </>
         ),

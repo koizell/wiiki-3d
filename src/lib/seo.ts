@@ -35,8 +35,8 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
     description: 'Contacta con wiiki-3d para comunicar errores en las guías de impresión 3D, aportar fuentes y enviar consultas sobre la aplicación.',
   },
   '/privacidad': {
-    path: '/privacidad/', title: 'Política de privacidad e historial local | wiiki-3d',
-    description: 'Qué guarda wiiki-3d en IndexedDB, cómo borrar el historial y qué metadatos puede enviar el clasificador. Información sobre publicidad y privacidad.',
+    path: '/privacidad/', title: 'Política de privacidad (RGPD) e historial local | wiiki-3d',
+    description: 'Política de privacidad de wiiki-3d conforme al RGPD: qué se guarda en tu navegador, finalidad y base legal, tus derechos, conservación, cookies y la publicidad de Google AdSense, con su responsable de datos.',
   },
   '/autor': {
     path: '/autor/', title: 'Quién escribe en wiiki-3d | wiiki-3d',
