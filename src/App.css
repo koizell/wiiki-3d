@@ -919,7 +919,11 @@ body {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
   border-radius: 0 8px 8px 0;
-  background: rgba(59, 130, 246, 0.08);
+  /* El mismo azul del resto del sitio, por `color-mix` sobre el token y no
+     como literal: aquí estaba `rgba(59, 130, 246, 0.08)`, que es el
+     `#3b82f6` que se retiró de `:root` por contraste (5,17:1 medidos),
+     todavía vivo en un fondo. Es el patrón que `Estatico.css` ya usaba. */
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   font-size: 0.82rem;
   line-height: 1.45;
   color: var(--text-primary);
@@ -2500,23 +2504,23 @@ body {
   }
 }
 
-.sintoma::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgb(37 99 235 / 0.06),
-    transparent 40%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-
-.sintoma:hover::before {
-  opacity: 1;
-}
+/*
+ * Aquí había un halo que seguía al cursor: un `::before` con
+ * `radial-gradient(600px circle at var(--mouse-x, 50%) ...)` y
+ * `--mouse-y`. Se fue por dos razones, y ninguna es de gusto:
+ *
+ *  1. **Nadie escribía esas variables.** En todo el repo sólo aparecían en
+ *     la lectura, nunca en una asignación: el gradiente caía siempre en los
+ *     valores por defecto (50 %/50 %), así que el efecto que prometía
+ *     —luz que persigue al cursor— no ocurría. Era un halo azul centrado
+ *     fijo al 6 %.
+ *  2. **Era el único resto del patrón "tarjeta con foco de luz" de las
+ *     landings generadas de 2024**, y la tarjeta ya tiene tres efectos
+ *     simultáneos en `:hover` (borde, desplazamiento y sombra, justo abajo).
+ *
+ * Con `pointer-events: none` no estorbaba al teclado ni al lector, pero
+ * tampoco hacía nada: media hoja de CSS a cambio de nada.
+ */
 
 .sintoma:hover {
   border-color: var(--accent);
