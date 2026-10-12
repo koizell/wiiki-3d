@@ -814,6 +814,26 @@ body {
   text-transform: uppercase;
 }
 
+/*
+ * La insignia de modo del panel: «Jev» (real) o «Demo».
+ *
+ * La variante real se queda con la forma base —el acento— porque es el
+ * servicio de verdad. La de demostración **no puede parecerse**, y el
+ * comentario de `App.tsx` explica por qué: en demo el veredicto sale de
+ * una heurística local que no consulta ningún servicio; pintar «Jev» con
+ * el mismo azul hacía creer que había un modelo detrás. Así que aquí el
+ * distintivo es el color de aviso, que en el sistema ya significa «esto
+ * es una estimación, no un dato» (los cuatro niveles de riesgo lo usan
+ * igual). Contraste medido: 8,13:1 sobre `--bg-panel`.
+ *
+ * `badge-modo-real` no lleva regla a propósito: se hereda la base.
+ */
+.badge-modo-demo {
+  background: color-mix(in srgb, var(--warning) 16%, var(--bg-panel));
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
 .panel-empty {
   color: var(--text-secondary);
   font-size: 0.875rem;

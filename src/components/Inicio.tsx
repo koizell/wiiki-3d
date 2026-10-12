@@ -223,7 +223,7 @@ export default function Inicio({ interactivo = true }: { interactivo?: boolean }
           puedes aplicar, cada una con la fuente de donde sale.
         </p>
         {!interactivo ? (
-          <p className="inicio-aviso">
+          <p className="inicio-estatico-aviso">
             El analizador y el taller necesitan JavaScript. Esta página y las guías no:
             se leen enteras sin él, y la tabla de abajo viene con su fuente.
           </p>
