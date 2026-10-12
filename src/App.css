@@ -90,6 +90,30 @@
   --radio-pill: 999px;
 
   /*
+   * Movimiento y elevación, gobernados.
+   *
+   * `--easing-suave` llevaba escrito seis veces en las entradas de fila, con
+   * cuatro duraciones distintas para la misma animación (0,24 a 0,40s): el
+   * mismo efecto no entraba igual en una lista que en otra. Ahora hay una.
+   *
+   * `--sombra-sm/md` son las dos elevaciones reales del sistema: la tarjeta
+   * grande al pasar el ratón y el resto. Las cinco que había (12px/32px,
+   * 6px/20px, 4px/16px, 4px/12px y el anillo de foco) eran el mismo gesto
+   * repetido con números distintos.
+   *
+   * `--hover-alzar`: una sola cifra para «la tarjeta se alza». Eran -2px en
+   * cuatro sitios y -3px en uno, sin criterio que lo justificara. Los
+   * `translateY` de los `@keyframes` de `DibujoSintoma` no entran: son
+   * animación explicativa, no hover.
+   */
+  --easing-suave: cubic-bezier(0.22, 0.7, 0.3, 1);
+  --anim-entrada: 0.34s;
+  --sombra-sm: 0 4px 12px rgb(0 0 0 / 0.2);
+  --sombra-md: 0 12px 32px rgb(0 0 0 / 0.35);
+  --anilla-foco: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  --hover-alzar: -2px;
+
+  /*
    * Ajustes de renderizado de texto que vienen del reset del navegador.
    *
    * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
@@ -585,7 +609,7 @@ body {
 
 .inicio-sintoma:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(var(--hover-alzar));
 }
 
 .inicio-sintoma:focus-visible,
@@ -651,7 +675,7 @@ body {
 
 .inicio-modulo:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(var(--hover-alzar));
 }
 
 .inicio-modulo-titulo {
@@ -2103,7 +2127,7 @@ body {
 .confirmacion-campo:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: var(--anilla-foco);
 }
 
 .confirmacion-campo::placeholder {
@@ -2466,7 +2490,7 @@ body {
 .wiki-buscador-campo:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: var(--anilla-foco);
 }
 
 .wiki-resultados {
@@ -2584,8 +2608,8 @@ body {
 
 .sintoma:hover {
   border-color: var(--accent);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35), 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
+  transform: translateY(var(--hover-alzar));
+  box-shadow: var(--sombra-md), 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .sintoma:focus-visible {
@@ -2736,7 +2760,7 @@ body {
   padding: 0.7rem 0 0.8rem;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  animation: entra-fila 0.36s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .tu-archivo-titulo {
@@ -2876,7 +2900,7 @@ body {
   gap: 1.1rem;
   align-items: center;
   padding-bottom: 0.5rem;
-  animation: entra-fila 0.36s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 @media (min-width: 620px) {
@@ -2965,7 +2989,7 @@ body {
 
 .etapa {
   min-width: 0;
-  animation: entra-fila 0.4s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .etapa-titulo {
@@ -3032,7 +3056,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);
-  animation: entra-fila 0.34s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .diferencial-mira {
@@ -3262,8 +3286,8 @@ body {
 
 .chip:hover {
   border-color: var(--accent-text);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  transform: translateY(var(--hover-alzar));
+  box-shadow: var(--sombra-sm);
 }
 
 .chip:focus-visible {
@@ -3341,7 +3365,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);
-  animation: entra-fila 0.35s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
   transition: border-color 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
     box-shadow 0.25s cubic-bezier(0.22, 0.7, 0.3, 1),
     transform 0.25s cubic-bezier(0.22, 0.7, 0.3, 1);
@@ -3349,8 +3373,8 @@ body {
 
 .tarjeta:hover {
   border-color: color-mix(in srgb, var(--accent-text) 30%, transparent);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
-  transform: translateY(-2px);
+  box-shadow: var(--sombra-sm);
+  transform: translateY(var(--hover-alzar));
 }
 
 .tarjeta-titulo {
@@ -3498,7 +3522,7 @@ body {
 
 .accion:hover {
   border-color: color-mix(in srgb, var(--accent-text) 25%, transparent);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  box-shadow: var(--sombra-sm);
 }
 
 .accion-cabeza {
@@ -3635,7 +3659,7 @@ body {
   background: color-mix(in srgb, var(--danger) 6%, transparent);
   border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
   border-radius: var(--radio-lg);
-  animation: entra-fila 0.32s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .fuera-sintoma {
@@ -3694,7 +3718,7 @@ body {
   border-radius: var(--radio-md);
   text-decoration: none;
   transition: border-color 0.15s, transform 0.15s;
-  animation: entra-fila 0.3s ease-out both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .guia-fuentes-lista a:hover {
@@ -3747,7 +3771,7 @@ body {
   background: var(--bg-dark);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);
-  animation: entra-fila 0.34s ease-out both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .riel-titulo {
@@ -3913,7 +3937,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radio-sm);
-  animation: entra-fila 0.24s ease-out both;
+  animation: entra-fila var(--anim-entrada) var(--easing-suave) both;
 }
 
 .riel-var-nombre {
