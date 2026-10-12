@@ -49,6 +49,21 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
+  /*
+   * El `:hover` del peligro, un paso más oscuro en la misma rampa. Antes
+   * estaba escrito a mano en `.btn-danger:hover` (`#dc2626`), que es el
+   * único sitio del sistema donde el acento de estado se oscurece; tenerlo
+   * como token evita que el día que haya un segundo botón de peligro alguien
+   * invente otro rojo.
+   */
+  --danger-hover: #dc2626;
+  /*
+   * El centro del degradado del área central. Un paso por debajo de
+   * `--bg-panel` para que el visor 3D tenga un fondo propio sin ser un
+   * cuarto color de fondo: sigue siendo el mismo gris azulado, sólo que
+   * más denso para que la pieza flote.
+   */
+  --viewer-fondo: #1a1f26;
 
   /*
    * Ajustes de renderizado de texto que vienen del reset del navegador.
@@ -288,7 +303,7 @@ body {
 }
 
 .btn-danger:hover {
-  background: #dc2626;
+  background: var(--danger-hover);
 }
 
 /* Navegación */
@@ -402,7 +417,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1a1f26 0%, #0f1115 100%);
+  background: radial-gradient(circle at center, var(--viewer-fondo) 0%, var(--bg-dark) 100%);
   padding: 1rem;
   overflow: hidden;
 }
@@ -748,7 +763,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 17, 21, 0.8);
+  background: color-mix(in srgb, var(--bg-dark) 80%, transparent);
   color: var(--text-secondary);
   font-size: 1rem;
   z-index: 10;
@@ -924,8 +939,8 @@ body {
   font-size: 0.875rem;
   line-height: 1.45;
   padding: 0.75rem 0.9rem;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
   border-radius: 8px;
 }
 
@@ -1408,6 +1423,14 @@ body {
  * `--accent-text`: si esta sección tuviera sus propios valores, cambiar el tema
  * obligaría a recorrerla entera.
  *
+ * Así era la promesa y durante un tiempo no se cumplió: las mezclas del acento
+ * estaban copiadas a mano (`rgb(37 99 235 / 0.22)`, cinco sitios; el
+ * `rgba(239, 68, 68, …)` del error…). Desde que son `color-mix()` sobre los
+ * tokens, cambiar `--accent` mueve la sección entera con él. Las dos excepciones
+ * que quedan están a la vista y dichas: el `rgba(0, 0, 0, 0.6)` de los velos
+ * —el negro es el mismo en cualquier tema— y el naranja `#fb923c` del riesgo
+ * alto, que espera la decisión de cuántos niveles de riesgo tiene el sistema.
+ *
  * No se tocan los cortes de 640px ni de 1200px. Todo lo responsive de aquí va con
  * `clamp()`, con `%` o con consultas de contenedor, y por eso no necesita ninguno.
  * Un solo tramo nuevo, al final, con `@media (min-width: 768px)` para el caso de
@@ -1575,7 +1598,7 @@ body {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
   border-radius: 0 8px 8px 0;
-  background: rgba(37, 99, 235, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   font-size: 0.9rem;
 }
 
@@ -2063,7 +2086,7 @@ body {
 .confirmacion-campo:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.22);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .confirmacion-campo::placeholder {
@@ -2426,7 +2449,7 @@ body {
 .wiki-buscador-campo:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.22);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .wiki-resultados {
@@ -2545,7 +2568,7 @@ body {
 .sintoma:hover {
   border-color: var(--accent);
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(37 99 235 / 0.15);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35), 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .sintoma:focus-visible {
@@ -2616,8 +2639,8 @@ body {
 }
 
 .insignia--acento {
-  background: rgb(37 99 235 / 0.16);
-  border-color: rgb(96 165 250 / 0.4);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent-text) 40%, transparent);
   color: var(--accent-text);
 }
 
@@ -2630,7 +2653,7 @@ body {
   border: 1px solid var(--border);
   border-left: 3px solid var(--warning);
   border-radius: 0 12px 12px 0;
-  background: rgb(245 158 11 / 0.07);
+  background: color-mix(in srgb, var(--warning) 7%, transparent);
 }
 
 .wiki-encuentre h2 {
@@ -2947,8 +2970,8 @@ body {
   height: 1.7rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: rgb(37 99 235 / 0.18);
-  border: 1px solid rgb(96 165 250 / 0.35);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-text) 35%, transparent);
   color: var(--accent-text);
   font-size: 0.85rem;
   font-weight: 700;
@@ -2967,7 +2990,7 @@ body {
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
   border-radius: 0 10px 10px 0;
-  background: rgb(37 99 235 / 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text-secondary);
   line-height: 1.6;
   font-size: 0.92rem;
@@ -3026,12 +3049,12 @@ body {
 
 .diferencial-cara--si {
   border-left: 3px solid var(--success);
-  background: rgb(34 197 94 / 0.08);
+  background: color-mix(in srgb, var(--success) 8%, transparent);
 }
 
 .diferencial-cara--no {
   border-left: 3px solid var(--danger);
-  background: rgb(239 68 68 / 0.08);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
 }
 
 .diferencial-veredicto {
@@ -3089,14 +3112,14 @@ body {
 }
 
 .boton--ruta {
-  background: rgb(37 99 235 / 0.16);
-  border-color: rgb(96 165 250 / 0.4);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent-text) 40%, transparent);
   color: var(--accent-text);
   text-decoration: none;
 }
 
 .boton--ruta:hover {
-  background: rgb(37 99 235 / 0.28);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
   transform: translateX(2px);
 }
 
@@ -3151,8 +3174,8 @@ body {
   text-transform: uppercase;
   padding: 0.08rem 0.35rem;
   border-radius: 4px;
-  background: rgb(245 158 11 / 0.16);
-  border: 1px solid rgb(245 158 11 / 0.35);
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
   color: var(--warning);
   cursor: help;
 }
@@ -3232,7 +3255,7 @@ body {
 }
 
 .chip--activo {
-  background: rgb(37 99 235 / 0.2);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
@@ -3308,7 +3331,7 @@ body {
 }
 
 .tarjeta:hover {
-  border-color: rgb(96 165 250 / 0.3);
+  border-color: color-mix(in srgb, var(--accent-text) 30%, transparent);
   box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
   transform: translateY(-2px);
 }
@@ -3457,7 +3480,7 @@ body {
 }
 
 .accion:hover {
-  border-color: rgb(96 165 250 / 0.25);
+  border-color: color-mix(in srgb, var(--accent-text) 25%, transparent);
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
 }
 
@@ -3592,8 +3615,8 @@ body {
 
 .fuera-item {
   padding: 0.85rem 0.95rem;
-  background: rgb(239 68 68 / 0.06);
-  border: 1px solid rgb(239 68 68 / 0.22);
+  background: color-mix(in srgb, var(--danger) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
   border-radius: 12px;
   animation: entra-fila 0.32s cubic-bezier(0.22, 0.7, 0.3, 1) both;
 }
