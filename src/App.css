@@ -114,6 +114,19 @@
   --hover-alzar: -2px;
 
   /*
+   * Tipografía. La prosa va en Plex Sans; las cifras en Plex Mono.
+   *
+   * El token de datos existe por lo que se lee aquí: temperaturas, gramos,
+   * alturas de capa, porcentajes. Un número en monoespaciada no sólo se
+   * distingue de la palabras —se compara—: `220 °C` y `220 °C` de dos guías
+   * distintas se alinean dígito a dígito, y en una sans proporcional cada
+   * cifra tiene ancho propio. Va en cascada desde `body`; lo que no son
+   * cifras lo sobreescribe con `--fuente-texto` donde hace falta.
+   */
+  --fuente-texto: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fuente-dato: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /*
    * Ajustes de renderizado de texto que vienen del reset del navegador.
    *
    * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
@@ -142,7 +155,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--fuente-texto);
   background: var(--bg-dark);
   color: var(--text-primary);
 }
@@ -1783,6 +1796,7 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 /* --- El historial: lista, recientes y confirmaciones ------------------------- *
@@ -3413,6 +3427,7 @@ body {
   color: var(--accent-text);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 .tarjeta-cifra em {
@@ -3544,6 +3559,7 @@ body {
   font-size: 0.85rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 .accion-titulo {
@@ -3561,6 +3577,7 @@ body {
   font-weight: 700;
   color: var(--accent-text);
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 /*
@@ -3580,6 +3597,7 @@ body {
   font-size: 0.8rem;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 .accion-comparacion strong {
@@ -3803,6 +3821,7 @@ body {
   line-height: 1;
   color: var(--accent-text);
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 .riel-cifra span {

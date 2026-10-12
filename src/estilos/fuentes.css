@@ -1,0 +1,55 @@
+/*
+ * IBM Plex Sans para el texto, IBM Plex Mono para los datos.
+ *
+ * ## Por qué autoalojadas y no desde Google Fonts
+ *
+ * El sitio ya está en modo consentimiento, y servir tipografía desde
+ * `fonts.gstatic.com` sería añadir un tercero más a esa lista —y a la
+ * política de privacidad, y al trabajo de `verify:seo`— por dos ficheros.
+ * Autoalojado en `public/fuentes/`, el woff2 sale del propio dominio: sin
+ * cookies de terceros, sin conexión extra a otro operador, y con el control
+ * de versionado que da el repo.
+ *
+ * ## Por qué Plex y no la pila del sistema
+ *
+ * La web declaraba `'Inter'` en `body` **sin cargarla** —no había `@font-face`
+ * ni `<link>` en ninguna página—, así que todo el mundo veía la tipografía de
+ * su sistema. Declarar la pila del sistema sin más habría sido honesto, pero
+ * habría dejado el sitio sin cara. Plex es la apuesta de la spec de identidad
+ * visual, y tiene una pieza que encaja con el contenido mejor que cualquier
+ * sans genérica: **IBM Plex Mono para las cifras** —temperaturas, gramos,
+ * alturas de capa—, que son el 80 % de lo que se lee en este proyecto y lo
+ * único que el visitante viene a buscar.
+ *
+ * ## Subset y variable
+ *
+ * Google Fonts sirve la Sans como **variable** (un solo fichero, pesos 100–700):
+ * por eso hay un `@font-face` para ella y dos para el Mono, que no es variable
+ * y se sirve por peso. Los tres ficheros son subset *latin* y pesan 80 KB en
+ * total; `font-display: swap` pinta con el fallback mientras llegan, que es lo
+ * que evita el texto invisible durante la carga.
+ */
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/fuentes/plex-sans-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fuentes/plex-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fuentes/plex-mono-500.woff2') format('woff2');
+}

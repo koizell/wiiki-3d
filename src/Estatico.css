@@ -152,6 +152,7 @@
 .tabla-referencia tbody td {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 .tabla-referencia tbody tr:last-child th,
@@ -211,6 +212,7 @@
   content: counter(paso) " · ";
   color: var(--accent-text);
   font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-dato);
 }
 
 /* --- Los nueve problemas ------------------------------------------------- */
