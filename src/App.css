@@ -127,6 +127,40 @@
   --fuente-dato: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /*
+   * Escala tipográfica. Ocho tokens para lo que eran 33 valores.
+   *
+   * **Encabezados.** Un solo clamp para todos los `h1` de contenido —antes
+   * había cinco, con techos de 2.0, 2.1, 2.15 y 2.2rem y arranques distintos—,
+   * un fijo de 1.5rem para los títulos de módulo (Taller, Historial,
+   * Proyectos, zona de subida) y dos pasos para sección (`--h2`) y
+   * subsección (`--h3`). `.etapa-titulo` (1.22rem) se queda fuera a
+   * propósito: es un nivel intermedio que no existe en otra página.
+   *
+   * **Cuerpo.** Tres pasos y ninguno más: `--texto-lg` para el párrafo que
+   * abre una guía, `--texto-md` para el cuerpo que se lee seguido y
+   * `--texto-sm` para el secundario. Antes, el párrafo "que acompaña" tenía
+   * nueve tamaños (0.84 a 1.03) elegidos uno a uno por bloque, así que la
+   * misma función cambiaba de tamaño según dónde cayera.
+   *
+   * **Etiquetas.** Las versalitas eran doce con tamaños de 0.64 a 0.82rem,
+   * cuatro interletrados (0.03, 0.05, 0.06, 0.07, 0.08, 0.09) y tres pesos.
+   * Un tamaño y un interletrado, con dos pesos por rol: 600 para etiqueta
+   * de formulario, 700 para encabezado de sección. `--diferencial-veredicto`
+   * queda fuera documentado: es un veredicto binario de dos estados, no una
+   * etiqueta.
+   */
+  --h1: clamp(1.5rem, 1.15rem + 1.6vw, 2.1rem);
+  --h1-interletraje: -0.02em;
+  --h1-modulo: 1.5rem;
+  --h2: 1.1rem;
+  --h3: 1rem;
+  --texto-lg: 1.03rem;
+  --texto-md: 0.94rem;
+  --texto-sm: 0.86rem;
+  --etiqueta: 0.72rem;
+  --etiqueta-interletraje: 0.06em;
+
+  /*
    * Ajustes de renderizado de texto que vienen del reset del navegador.
    *
    * `color-scheme: dark` no es decoración: le dice al navegador que esta app es
@@ -330,7 +364,7 @@ body {
   cursor: pointer;
   font-weight: 500;
   transition: background 0.2s;
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
 }
 
 .btn-primary:hover {
@@ -345,7 +379,7 @@ body {
   border-radius: var(--radio-sm);
   cursor: pointer;
   transition: background 0.2s;
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
 }
 
 .btn-ghost:hover {
@@ -509,7 +543,7 @@ body {
  * `.file-name` hace lo mismo con su `h1`, a 0,9 rem.
  */
 .upload-zone h2 {
-  font-size: 1.5rem;
+  font-size: var(--h1-modulo);
   margin-bottom: 0.5rem;
 }
 
@@ -547,9 +581,9 @@ body {
 }
 
 .inicio-hero h1 {
-  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+  font-size: var(--h1);
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--h1-interletraje);
   margin-bottom: 0.6rem;
 }
 
@@ -566,7 +600,7 @@ body {
 
 .inicio-sintomas h2,
 .inicio-modulos h2 {
-  font-size: 1.15rem;
+  font-size: var(--h2);
   margin-bottom: 0.4rem;
 }
 
@@ -644,7 +678,7 @@ body {
 }
 
 .inicio-sintoma-sintoma {
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -669,7 +703,7 @@ body {
   min-height: 44px;
   margin-top: 0.9rem;
   color: var(--accent-text);
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
 }
 
 .inicio-modulo {
@@ -692,13 +726,13 @@ body {
 }
 
 .inicio-modulo-titulo {
-  font-size: 1rem;
+  font-size: var(--h3);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .inicio-modulo-detalle {
-  font-size: 0.86rem;
+  font-size: var(--texto-sm);
   line-height: 1.5;
   color: var(--text-secondary);
 }
@@ -764,7 +798,7 @@ body {
    * ahora vive el nombre del archivo. No es decorativo: sin él el título mide 32
    * px en vez de 14,4, y la fila de `.file-info` crece con un archivo cargado.
    */
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
   color: var(--accent-text);
   /*
    * `.file-name` es flex item de `.file-info` y ahí sí que manda `min-width:
@@ -826,7 +860,7 @@ body {
   justify-content: center;
   background: color-mix(in srgb, var(--bg-dark) 80%, transparent);
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: var(--h3);
   z-index: 10;
   padding: 1rem;
   text-align: center;
@@ -885,7 +919,7 @@ body {
   color: white;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radio-sm);
-  font-size: 0.7rem;
+  font-size: var(--etiqueta);
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -912,7 +946,7 @@ body {
 
 .panel-empty {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--texto-md);
   text-align: center;
   padding: 2rem 1rem;
 }
@@ -926,7 +960,7 @@ body {
   text-align: center;
   padding: 1.5rem 1rem;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
   border: 1px dashed var(--border);
   border-radius: var(--radio-lg);
   background: var(--bg-panel);
@@ -940,7 +974,7 @@ body {
 
 .canvas-error {
   color: var(--danger);
-  font-size: 0.875rem;
+  font-size: var(--texto-md);
   line-height: 1.45;
   max-width: 32rem;
 }
@@ -973,7 +1007,7 @@ body {
 /* Panel de análisis: estados de carga y error */
 .panel-loading {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--texto-md);
   text-align: center;
   padding: 2rem 1rem;
   animation: panel-pulse 1.4s ease-in-out infinite;
@@ -997,7 +1031,7 @@ body {
 
 .panel-error {
   color: var(--danger);
-  font-size: 0.875rem;
+  font-size: var(--texto-md);
   line-height: 1.45;
   padding: 0.75rem 0.9rem;
   background: color-mix(in srgb, var(--danger) 8%, transparent);
@@ -1043,10 +1077,10 @@ body {
 }
 
 .panel-section-title {
-  font-size: 0.72rem;
+  font-size: var(--etiqueta);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--etiqueta-interletraje);
   color: var(--text-secondary);
   margin-bottom: 0.6rem;
 }
@@ -1074,7 +1108,7 @@ body {
 .panel-data-value {
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   text-align: right;
 }
 
@@ -1083,10 +1117,10 @@ body {
   display: inline-block;
   padding: 0.12rem 0.55rem;
   border-radius: var(--radio-pill);
-  font-size: 0.7rem;
+  font-size: var(--etiqueta);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--etiqueta-interletraje);
   color: var(--bg-dark);
 }
 
@@ -1120,9 +1154,9 @@ body {
 
 .panel-recommendation-title {
   display: block;
-  font-size: 0.72rem;
+  font-size: var(--etiqueta);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--etiqueta-interletraje);
   color: var(--accent-text);
   margin-bottom: 0.35rem;
 }
@@ -1522,7 +1556,7 @@ body {
   padding: 1.25rem 1rem calc(1.25rem + 60px + env(safe-area-inset-bottom));
   background: var(--bg-dark);
   border-top: 1px solid var(--border);
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   color: var(--text-secondary);
 }
 
@@ -1619,7 +1653,7 @@ body {
 
 .wiki-no-encontrado h1,
 .wiki-info h1 {
-  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+  font-size: var(--h1);
   line-height: 1.22;
   margin-bottom: 0.75rem;
 }
@@ -1635,7 +1669,7 @@ body {
 }
 
 .wiki-info section h2 {
-  font-size: 1.1rem;
+  font-size: var(--h2);
   line-height: 1.3;
   margin-bottom: 0.4rem;
   color: var(--text-primary);
@@ -1660,7 +1694,7 @@ body {
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radio-md) var(--radio-md) 0;
   background: color-mix(in srgb, var(--accent) 10%, transparent);
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
 }
 
 /* --- El enlace del panel a la wiki ------------------------------------------
@@ -1711,7 +1745,7 @@ body {
  * espacio inferior. Mismo motivo y mismo número que en el otro sitio.
  */
 .taller-titulo {
-  font-size: 1.5rem;
+  font-size: var(--h1-modulo);
   margin-bottom: 0.75rem;
 }
 
@@ -1722,7 +1756,7 @@ body {
  */
 .taller-aviso {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   line-height: 1.5;
 }
 
@@ -1733,7 +1767,7 @@ body {
 }
 
 .taller-gramos {
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   color: var(--text-secondary);
 }
 
@@ -1818,7 +1852,7 @@ body {
  */
 .historial-aviso {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
   line-height: 1.5;
   padding: 0.75rem 0.9rem;
   background: var(--bg-panel);
@@ -1840,7 +1874,7 @@ body {
 }
 
 .historial-titulo {
-  font-size: 1.5rem;
+  font-size: var(--h1-modulo);
   margin-bottom: 0.9rem;
 }
 
@@ -1938,9 +1972,9 @@ body {
 }
 
 .recientes-titulo {
-  font-size: 0.72rem;
+  font-size: var(--etiqueta);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--etiqueta-interletraje);
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
@@ -1978,7 +2012,7 @@ body {
   min-height: 44px;
   margin-top: 0.3rem;
   color: var(--accent-text);
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
 }
 
 /* Aquí había un `@media (pointer: coarse)` que repetía, una por una, las cuatro
@@ -2007,7 +2041,7 @@ body {
 }
 
 .proyectos-titulo {
-  font-size: 1.5rem;
+  font-size: var(--h1-modulo);
   margin-bottom: 0.5rem;
 }
 
@@ -2025,7 +2059,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--h3);
   margin-bottom: 0.6rem;
 }
 
@@ -2044,7 +2078,7 @@ body {
 }
 
 .proyectos-nota {
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   line-height: 1.5;
   color: var(--text-secondary);
   margin-bottom: 0.7rem;
@@ -2096,7 +2130,7 @@ body {
 }
 
 .confirmacion-texto {
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   line-height: 1.5;
   margin-bottom: 1.1rem;
 }
@@ -2119,10 +2153,10 @@ body {
  */
 .confirmacion-etiqueta {
   display: block;
-  font-size: 0.78rem;
+  font-size: var(--etiqueta);
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--etiqueta-interletraje);
   margin-bottom: 0.4rem;
 }
 
@@ -2459,10 +2493,10 @@ body {
 }
 
 .wiki-index h1 {
-  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+  font-size: var(--h1);
   line-height: 1.15;
   margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--h1-interletraje);
 }
 
 .wiki-index-intro {
@@ -2478,11 +2512,11 @@ body {
 
 .wiki-buscador-etiqueta {
   display: block;
-  font-size: 0.78rem;
+  font-size: var(--etiqueta);
   color: var(--text-secondary);
   margin-bottom: 0.35rem;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: var(--etiqueta-interletraje);
 }
 
 .wiki-buscador-campo {
@@ -2643,7 +2677,7 @@ body {
 }
 
 .sintoma-titulo {
-  font-size: 1.1rem;
+  font-size: var(--h2);
   line-height: 1.3;
   margin-bottom: 0.15rem;
   color: var(--text-primary);
@@ -2657,7 +2691,7 @@ body {
 }
 
 .sintoma-resumen {
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   line-height: 1.55;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
@@ -2712,12 +2746,12 @@ body {
 }
 
 .wiki-encuentre h2 {
-  font-size: 1rem;
+  font-size: var(--h3);
   margin-bottom: 0.35rem;
 }
 
 .wiki-encuentre p {
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   line-height: 1.6;
   color: var(--text-secondary);
   max-width: 46rem;
@@ -2740,7 +2774,7 @@ body {
 }
 
 .guia--vacia h1 {
-  font-size: 1.6rem;
+  font-size: var(--h1);
   margin-bottom: 0.75rem;
 }
 
@@ -2782,9 +2816,9 @@ body {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.82rem;
+  font-size: var(--etiqueta);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--etiqueta-interletraje);
   text-transform: uppercase;
   color: var(--text-secondary);
   margin-bottom: 0.6rem;
@@ -2859,15 +2893,15 @@ body {
 }
 
 .tu-archivo-campo {
-  font-size: 0.7rem;
+  font-size: var(--etiqueta);
   line-height: 1.2;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--etiqueta-interletraje);
   text-transform: uppercase;
   color: var(--text-secondary);
 }
 
 .tu-archivo-valor {
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   font-weight: 600;
   line-height: 1.3;
   color: var(--text-primary);
@@ -2946,9 +2980,9 @@ body {
 }
 
 .guia-cabecera h1 {
-  font-size: clamp(1.5rem, 1.15rem + 1.7vw, 2.15rem);
+  font-size: var(--h1);
   line-height: 1.12;
-  letter-spacing: -0.025em;
+  letter-spacing: var(--h1-interletraje);
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
@@ -2957,7 +2991,7 @@ body {
   color: var(--text-secondary);
   line-height: 1.65;
   max-width: 42rem;
-  font-size: 0.98rem;
+  font-size: var(--texto-md);
 }
 
 /*
@@ -2971,7 +3005,7 @@ body {
   color: var(--text-secondary);
   line-height: 1.7;
   max-width: 44rem;
-  font-size: 1.03rem;
+  font-size: var(--texto-lg);
   margin: 0.7rem 0 0;
 }
 
@@ -2990,7 +3024,7 @@ body {
  */
 .guia-autor {
   margin-top: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   color: var(--text-secondary);
 }
 
@@ -3028,7 +3062,7 @@ body {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent-text) 35%, transparent);
   color: var(--accent-text);
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   font-weight: 700;
 }
 
@@ -3037,7 +3071,7 @@ body {
   line-height: 1.6;
   max-width: 44rem;
   margin-bottom: 1rem;
-  font-size: 0.94rem;
+  font-size: var(--texto-md);
 }
 
 .etapa-vacia {
@@ -3048,7 +3082,7 @@ body {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text-secondary);
   line-height: 1.6;
-  font-size: 0.92rem;
+  font-size: var(--texto-md);
 }
 
 /* --- Etapa 1: el diferencial ---------------------------------------------- *
@@ -3074,7 +3108,7 @@ body {
 }
 
 .diferencial-mira {
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   font-weight: 600;
   line-height: 1.4;
   margin-bottom: 0.7rem;
@@ -3096,7 +3130,7 @@ body {
   position: relative;
   padding: 0.7rem 0.75rem 0.7rem 0.85rem;
   border-radius: 0 var(--radio-md) var(--radio-md) 0;
-  font-size: 0.86rem;
+  font-size: var(--texto-sm);
   line-height: 1.55;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
@@ -3142,7 +3176,7 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   color: var(--text-secondary);
 }
 
@@ -3154,7 +3188,7 @@ body {
   padding: 0.45rem 0.95rem;
   border-radius: var(--radio-md);
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: var(--texto-md);
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -3216,16 +3250,16 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.95rem;
+  font-size: var(--texto-md);
   font-weight: 700;
   padding: 0;
   margin-bottom: 0.15rem;
 }
 
 .variable-requerida {
-  font-size: 0.64rem;
+  font-size: var(--etiqueta);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--etiqueta-interletraje);
   text-transform: uppercase;
   padding: 0.08rem 0.35rem;
   border-radius: var(--radio-sm);
@@ -3236,7 +3270,7 @@ body {
 }
 
 .variable-para {
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   line-height: 1.55;
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
@@ -3316,7 +3350,7 @@ body {
 }
 
 .chip-texto {
-  font-size: 0.88rem;
+  font-size: var(--texto-md);
   font-weight: 600;
   line-height: 1.25;
 }
@@ -3396,7 +3430,7 @@ body {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem 0.75rem;
-  font-size: 1rem;
+  font-size: var(--h3);
   line-height: 1.3;
   margin-bottom: 0.45rem;
 }
@@ -3423,7 +3457,7 @@ body {
 }
 
 .tarjeta-cifra strong {
-  font-size: 0.98rem;
+  font-size: var(--texto-md);
   color: var(--accent-text);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -3439,7 +3473,7 @@ body {
 }
 
 .tarjeta-cuerpo {
-  font-size: 0.92rem;
+  font-size: var(--texto-md);
   line-height: 1.68;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
@@ -3455,7 +3489,7 @@ body {
 }
 
 .tarjeta-cita p {
-  font-size: 0.84rem;
+  font-size: var(--texto-sm);
   line-height: 1.55;
   color: var(--text-primary);
   font-style: italic;
@@ -3485,7 +3519,7 @@ body {
   align-items: center;
   gap: 0.3rem;
   margin-top: 0.8rem;
-  font-size: 0.86rem;
+  font-size: var(--texto-sm);
   font-weight: 600;
   color: var(--accent-text);
   text-decoration: none;
@@ -3556,7 +3590,7 @@ body {
   border-radius: var(--radio-pill);
   background: var(--accent);
   color: #fff;
-  font-size: 0.85rem;
+  font-size: var(--texto-sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-family: var(--fuente-dato);
@@ -3567,13 +3601,13 @@ body {
 }
 
 .accion-titulo h3 {
-  font-size: 1rem;
+  font-size: var(--h3);
   line-height: 1.35;
 }
 
 .accion-valor {
   margin-top: 0.2rem;
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   font-weight: 700;
   color: var(--accent-text);
   font-variant-numeric: tabular-nums;
@@ -3620,7 +3654,7 @@ body {
 
 .accion-porque {
   margin-top: 0.55rem;
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   line-height: 1.6;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
@@ -3681,7 +3715,7 @@ body {
 }
 
 .fuera-sintoma {
-  font-size: 0.9rem;
+  font-size: var(--texto-md);
   font-weight: 700;
   line-height: 1.35;
   margin-bottom: 0.35rem;
@@ -3798,10 +3832,10 @@ body {
 }
 
 .riel-subtitulo {
-  font-size: 0.7rem;
+  font-size: var(--etiqueta);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--etiqueta-interletraje);
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
@@ -4152,7 +4186,7 @@ body {
 }
 
 .taller-explica p {
-  font-size: 0.88rem;
+  font-size: var(--texto-sm);
   line-height: 1.6;
   color: var(--text-secondary);
 }
