@@ -1943,19 +1943,12 @@ body {
   font-size: 0.85rem;
 }
 
-/*
- * `min-height: 44px` en el enlace. Un enlace de texto de 0,85rem mide unos
- * veinte píxeles de alto, y el objetivo táctil mínimo son 44. Sin esto, el
- * enlace que lleva a la lista completa —el único camino a los análisis
- * guardados— sería el control más pequeño de la pantalla.
- */
-@media (pointer: coarse) {
-  .recientes-enlace {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-  }
-}
+/* Aquí había un `@media (pointer: coarse)` que repetía, una por una, las cuatro
+   declaraciones de arriba. Sobró cuando el `min-height` pasó a ser
+   incondicional —el comentario de `.recientes-enlace` explica por qué el
+   condicional se retiró—, y dejar una copia dentro de una consulta que además
+   Chromium headless no cumple es invitar a que alguien la edite creyendo que
+   está editando la regla viva. */
 
 .historial-vaciar {
   margin-top: 0.5rem;

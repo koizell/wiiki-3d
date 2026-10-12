@@ -180,7 +180,11 @@
   gap: 0.75rem;
 }
 
-@media (min-width: 760px) {
+/* El corte es 768, el mismo que usa `App.css` para pasar a dos columnas. Aquí
+   estaba en 760, un valor que no coincide con ningún otro del sitio y que no
+   tiene aritmética de contenido que lo defienda: las rejillas de dos columnas
+   de la portada exportada cambiaban de fase 8px antes que las de la app. */
+@media (min-width: 768px) {
   .inicio-pasos-lista {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -220,7 +224,7 @@
   gap: 0.5rem;
 }
 
-@media (min-width: 760px) {
+@media (min-width: 768px) {
   .inicio-problemas-lista {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
