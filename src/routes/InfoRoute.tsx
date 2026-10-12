@@ -179,8 +179,9 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         titulo: 'Responsable del tratamiento',
         cuerpo: (
           <p>
-            El responsable de los datos es <strong>{AUTOR.nombre}</strong>. Para
-            cualquier cuestión de privacidad escribe a{' '}
+            El responsable de los datos es el titular de{' '}
+            <strong>wiiki-3d</strong>. Para cualquier cuestión de privacidad
+            escribe a{' '}
             <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. Los datos no se venden a
             terceros ni se usan para tomar decisiones automatizadas con efectos
             jurídicos.
