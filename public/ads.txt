@@ -1,0 +1,4 @@
+# wiiki-3d — declara a Google AdSense como vendedor autorizado de anuncios.
+# El pub-ID sale del panel de AdSense (Cuenta > Información de la cuenta > ID de editor).
+# DIRECT = que vendemos nuestro propio inventario; el último campo es el TAG ID de Google.
+google.com, pub-1976099124866284, DIRECT, f08c47fec0942fa0
