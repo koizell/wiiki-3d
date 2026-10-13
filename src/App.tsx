@@ -39,6 +39,7 @@ import { ProveedorGuia } from './state/useGuia.tsx';
 const WikiIndexRoute = lazy(() => import('./routes/WikiIndexRoute'));
 const GuiaRoute = lazy(() => import('./routes/GuiaRoute'));
 const InfoRoute = lazy(() => import('./routes/InfoRoute'));
+const MaquinasRoute = lazy(() => import('./routes/MaquinasRoute'));
 
 /**
  * Las tres rutas secundarias, también en `lazy`.
@@ -116,6 +117,7 @@ const RUTAS_DESPLAZABLES = [
   /^\/contacto$/,
   /^\/privacidad$/,
   /^\/autor$/,
+  /^\/maquinas$/,
 ];
 
 
@@ -422,6 +424,7 @@ function App() {
               <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
               <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
               <Route path="/autor" element={<InfoRoute pagina="autor" />} />
+              <Route path="/maquinas" element={<MaquinasRoute />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

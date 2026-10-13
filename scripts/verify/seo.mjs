@@ -21,7 +21,7 @@ const raiz = new URL('../../', import.meta.url).pathname;
 const dist = join(raiz, 'dist');
 const BASE = process.env.BASE_URL ?? (await startPreview()) ?? 'http://127.0.0.1:4173';
 const slugs = GUIAS.map((g) => g.slug);
-const rutas = ['/wiki', '/acerca-de', '/contacto', '/privacidad', '/autor', ...slugs.map((s) => `/wiki/${s}`)];
+const rutas = ['/wiki', '/acerca-de', '/contacto', '/privacidad', '/autor', '/maquinas', ...slugs.map((s) => `/wiki/${s}`)];
 const origen = 'https://wiiki-3d.com';
 const canonical = (ruta) => `${origen}${ruta === '/' ? '/' : `${ruta}/`}`;
 let pruebas = 0;
@@ -68,7 +68,11 @@ try {
       assert.ok(html.includes(`href="${canonical(ruta)}"`));
       assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
       assert.ok(!html.includes('noindex'));
-      assert.equal((html.match(/<title>/g) ?? []).length, 1);
+      // Sólo el <title> del <head>. Los SVG legítimos pueden llevar su propio
+      // <title> de accesibilidad (lo hace MaquinaSVG, uno por máquina); contarlos
+      // en todo el HTML rompería esta comprobación sin que hubiera fallo de SEO.
+      const head = (html.match(/<head[\s\S]*?<\/head>/i) ?? [''])[0];
+      assert.equal((head.match(/<title>/g) ?? []).length, 1);
       const titulo = html.match(/<title>(.*?)<\/title>/)?.[1];
       assert.ok(titulo && !titulos.has(titulo));
       titulos.add(titulo);

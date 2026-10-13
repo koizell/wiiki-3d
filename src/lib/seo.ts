@@ -50,6 +50,10 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
       sameAs: [AUTOR.perfil],
     },
   },
+  '/maquinas': {
+    path: '/maquinas/', title: 'Catálogo de impresoras 3D comparadas | wiiki-3d',
+    description: 'Catálogo de ocho impresoras 3D habituales con el origen de cada cifra —fabricante, terceros o pendiente de fichar—. Elige un filamento y ve compatibilidad, cámara y warping.',
+  },
   '/historial': {
     path: '/historial/', title: 'Historial local de análisis | wiiki-3d',
     description: 'Consulta y elimina los análisis guardados en este navegador. Los archivos completos no se almacenan ni se sincronizan entre dispositivos.', noindex: true,

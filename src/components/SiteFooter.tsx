@@ -46,6 +46,9 @@ export default function SiteFooter() {
           <li>
             <Link to="/autor">Autor</Link>
           </li>
+          <li>
+            <Link to="/maquinas">Máquinas</Link>
+          </li>
         </ul>
       </nav>
       <p className="site-footer-nota">wiiki-3d · {anio}</p>

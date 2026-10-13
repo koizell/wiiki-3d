@@ -14,6 +14,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import WikiIndexRoute from '../routes/WikiIndexRoute';
 import GuiaRoute from '../routes/GuiaRoute';
 import InfoRoute from '../routes/InfoRoute';
+import MaquinasRoute from '../routes/MaquinasRoute';
 import Inicio from '../components/Inicio';
 import SiteFooter from '../components/SiteFooter';
 import { AnalysisProvider } from '../state/AnalysisContext';
@@ -239,6 +240,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
     SEO_PAGINAS['/contacto'],
     SEO_PAGINAS['/privacidad'],
     SEO_PAGINAS['/autor'],
+    SEO_PAGINAS['/maquinas'],
     ...GUIAS.map(seoGuia),
   ];
   return paginas.map((seo) => ({
@@ -257,6 +259,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
                 <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
                 <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
                 <Route path="/autor" element={<InfoRoute pagina="autor" />} />
+                <Route path="/maquinas" element={<MaquinasRoute />} />
               </Routes>
             </Pagina>
           </MemoryRouter>
