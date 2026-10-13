@@ -15,7 +15,7 @@
  * lee porque las aristas son claras, no porque el fill lo sea.
  */
 
-.maquina {
+.maquina-svg {
   width: 100%;
   max-width: 720px;
   height: auto;
@@ -23,41 +23,41 @@
 }
 
 /* ── estructura ── */
-.maquina .est {
+.maquina-svg .est {
   fill: var(--bg-hover);
   stroke: var(--text-primary);
   stroke-opacity: 0.75;
   stroke-width: 1.4;
 }
 
-.maquina .ranura {
+.maquina-svg .ranura {
   stroke: var(--text-primary);
   stroke-opacity: 0.3;
   stroke-width: 1;
 }
 
-.maquina .panel {
+.maquina-svg .panel {
   fill: #1d2129;
   stroke: var(--text-primary);
   stroke-opacity: 0.5;
   stroke-width: 1.2;
 }
 
-.maquina .chapa {
+.maquina-svg .chapa {
   fill: #1a2029;
   stroke: var(--text-primary);
   stroke-opacity: 0.55;
   stroke-width: 1;
 }
 
-.maquina .metal {
+.maquina-svg .metal {
   fill: #9aa3ad;
   stroke: var(--text-primary);
   stroke-opacity: 0.45;
   stroke-width: 0.8;
 }
 
-.maquina .cristal {
+.maquina-svg .cristal {
   fill: #8ab4d8;
   fill-opacity: 0.1;
   stroke: #8ab4d8;
@@ -65,72 +65,72 @@
   stroke-width: 1.2;
 }
 
-.maquina .pant {
+.maquina-svg .pant {
   fill: #0e1014;
   stroke: var(--text-primary);
   stroke-opacity: 0.55;
   stroke-width: 1;
 }
 
-.maquina .pant-luz {
+.maquina-svg .pant-luz {
   fill: var(--accent-text);
 }
 
-.maquina .boquilla {
+.maquina-svg .boquilla {
   fill: #d8b34a;
 }
 
-.maquina .bobina {
+.maquina-svg .bobina {
   fill: #24303f;
   stroke: var(--text-primary);
   stroke-opacity: 0.45;
   stroke-width: 1;
 }
 
-.maquina .hilo {
+.maquina-svg .hilo {
   fill: none;
   stroke: #d8dde3;
   stroke-width: 1.6;
   stroke-dasharray: 5 7;
 }
 
-.maquina .rejilla {
+.maquina-svg .rejilla {
   stroke: #0a0c10;
   stroke-width: 3;
   stroke-opacity: 0.8;
 }
 
-.maquina .pieza {
+.maquina-svg .pieza {
   fill: #3f6fd8;
   fill-opacity: 0.9;
   stroke: #6f9af0;
   stroke-width: 0.6;
 }
 
-.maquina .vent-il {
+.maquina-svg .vent-il {
   fill: none;
   stroke: var(--accent-text);
   stroke-width: 1.2;
 }
 
-.maquina .vent-asp {
+.maquina-svg .vent-asp {
   stroke: var(--accent-text);
   stroke-width: 1.4;
 }
 
 /* ── lo que se mueve siempre es azul de acento ── */
-.maquina .moviendo {
+.maquina-svg .moviendo {
   fill: none;
   stroke: var(--accent-text);
   stroke-width: 2.2;
 }
 
-.maquina .moviendo-r {
+.maquina-svg .moviendo-r {
   fill: var(--accent-text);
 }
 
 /* ── animación: sale de la ficha, no del dibujante ── */
-.maquina .traza-x {
+.maquina-svg .traza-x {
   animation: maquinaTrazaX var(--ciclo) ease-in-out infinite alternate;
 }
 
@@ -143,7 +143,7 @@
   }
 }
 
-.maquina .cama-y {
+.maquina-svg .cama-y {
   animation: maquinaCamaY calc(var(--ciclo) * 2) ease-in-out infinite alternate;
 }
 
@@ -156,7 +156,7 @@
   }
 }
 
-.maquina .sube-z {
+.maquina-svg .sube-z {
   animation: maquinaSubeZ var(--ciclo) ease-in-out infinite;
 }
 
@@ -174,7 +174,7 @@
   }
 }
 
-.maquina .portico {
+.maquina-svg .portico {
   animation: maquinaPorticoZ var(--ciclo) ease-in-out infinite;
 }
 
@@ -192,7 +192,7 @@
   }
 }
 
-.maquina .capa {
+.maquina-svg .capa {
   opacity: 0;
   animation: maquinaCapa var(--ciclo) linear infinite;
 }
@@ -212,8 +212,8 @@
   }
 }
 
-.maquina .giro,
-.maquina .aspas {
+.maquina-svg .giro,
+.maquina-svg .aspas {
   transform-box: fill-box;
   transform-origin: center;
   animation: maquinaGiro 2.6s linear infinite;
@@ -225,17 +225,17 @@
   }
 }
 
-.maquina .aspas {
+.maquina-svg .aspas {
   animation-duration: 0.5s;
 }
 
-.maquina .husillo-marca {
+.maquina-svg .husillo-marca {
   transform-box: fill-box;
   transform-origin: center;
   animation: maquinaGiro calc(2.6s / var(--v)) linear infinite;
 }
 
-.maquina .fluye {
+.maquina-svg .fluye {
   animation: maquinaFluye 1.6s linear infinite;
 }
 
@@ -246,7 +246,7 @@
 }
 
 /* El rizado: las esquinas suben al final del ciclo, con pivote en el borde interior. */
-.maquina .riza {
+.maquina-svg .riza {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: maquinaRiza var(--ciclo) ease-in infinite;
@@ -264,7 +264,7 @@
 }
 
 /* El curado de resina: destello en el film cada vez que nace una capa. */
-.maquina .cura {
+.maquina-svg .cura {
   opacity: 0;
   animation: maquinaCura calc(var(--ciclo) / 12) linear infinite;
 }
@@ -337,7 +337,7 @@
   border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit; font-size: 0.9rem;
 }
 .maquinas-lista { display: flex; flex-direction: column; gap: 1.5rem; }
-.maquina {
+.maquina-svg {
   display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem;
   padding: 1.1rem; border: 1px solid var(--border); border-radius: 12px;
 }

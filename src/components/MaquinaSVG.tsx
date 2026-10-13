@@ -287,7 +287,16 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
   } as React.CSSProperties;
 
   return (
-    <svg viewBox="0 0 480 320" className={className ?? 'maquina'} role="img" style={vars}>
+    <svg
+      viewBox="0 0 480 320"
+      /* La clase propia del SVG va siempre, y la del llamador se añade: si el
+         llamador pone `maquina` (como hacía la página del catálogo), los
+         selectores de `maquinas.css` —que son descendientes de `.maquina-svg`—
+         dejarían de aplicar y la ilustración saldría sin estilo. */
+      className={['maquina-svg', className].filter(Boolean).join(' ')}
+      role="img"
+      style={vars}
+    >
       <g className="ciclo">
         {maquina.familia === 'resina' ? (
           <VistaResina maquina={maquina} />
