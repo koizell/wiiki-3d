@@ -1,0 +1,288 @@
+{
+  "version": 2,
+  "actualizado": "2026-10-13",
+  "sitios": [
+    {
+      "url": "https://wiki.bambulab.com/en/knowledge-sharing/first-layer-not-sticking",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 50007,
+      "sha": "490b3d24bfd169c2"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/extrusion-multiplier-calibration_2257",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1236556,
+      "sha": "5f9d7ac31f04a62e"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/first-layer-calibration-i3_112364",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1260912,
+      "sha": "6c1b4813d92750d9"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/mesh-bed-leveling_112163",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1197303,
+      "sha": "e6f42e1a73745cb4"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/skirt-and-brim_133969",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1191292,
+      "sha": "2707d2f99bb9d552"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/steel-sheet-profiles_1955",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1220040,
+      "sha": "c1fa98c78185e6f0"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/under-extrusion_2007",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1210989,
+      "sha": "28e5390495a67f52"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/software/bambu-studio/adaptive-layer-height",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 51588,
+      "sha": "0583edf6b3533a54"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/software/bambu-studio/layer-height",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 54654,
+      "sha": "3b0fe3898d5ef432"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/layers-and-perimeters_1748",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1288140,
+      "sha": "b4e97c78fa6142c8"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/variable-layer-height-function_1750",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1202042,
+      "sha": "b920f8a2361e92d9"
+    },
+    {
+      "url": "https://forum.bambulab.com/t/pla-in-x1c/144237",
+      "sitio": "forum.bambulab.com",
+      "bytes": 61692,
+      "sha": "aca2fab2f2fe1dc5"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/software/bambu-studio/chamber-temperature",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 52384,
+      "sha": "fd588d79dd2aacd8"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/heat-creep",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 59280,
+      "sha": "41b3b3eecbb87863"
+    },
+    {
+      "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-user-mods-octoprint-enclosures-nozzles/optimal-enclosure-temps-for-pla-petg-abs",
+      "sitio": "forum.prusa3d.com",
+      "bytes": 182090,
+      "sha": "9048169424a73d4e"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/knowledge-sharing/filament-guide-beginners",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 53358,
+      "sha": "7140ae175833def7"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/dry-filament",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 84046,
+      "sha": "9f42f0837524ed54"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/general/filament-guide-material-table",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 82459,
+      "sha": "fdecdc83f6ac1b0c"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/knowledge-sharing/3d-prints-shrinkage",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 56185,
+      "sha": "1078a8608aae1003"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/print-quality/interlayer-cracking",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 48385,
+      "sha": "ba6844cce8982d7d"
+    },
+    {
+      "url": "https://forum.prusa3d.com/forum/user-mods/layer-separation-delamination-help/?language=en",
+      "sitio": "forum.prusa3d.com",
+      "bytes": 152395,
+      "sha": "3d7d2ae9327e880c"
+    },
+    {
+      "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/separation-of-layers-in-middle-of-print/",
+      "sitio": "forum.prusa3d.com",
+      "bytes": 142700,
+      "sha": "1a568c0fd745977c"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/layer-separation-and-splitting-fdm_1806",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1136312,
+      "sha": "b23806bd1e00f026"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/layer-shifting_2020",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1300744,
+      "sha": "e4c258982248761f"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/software/bambu-studio/how-to-set-slicing-parameters",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 53323,
+      "sha": "f939387e4929d3e2"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/software/bambu-studio/view-slicing-information",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 56734,
+      "sha": "3b33739eca1e5533"
+    },
+    {
+      "url": "https://github.com/Ultimaker/Cura/wiki/Start-End-G%E2%80%90Code",
+      "sitio": "github.com",
+      "bytes": 299925,
+      "sha": "b64bfa782e3cb724"
+    },
+    {
+      "url": "https://www.orcaslicer.com/wiki/print_settings/others/others_settings_g_code_output.html",
+      "sitio": "www.orcaslicer.com",
+      "bytes": 121223,
+      "sha": "dd013746798825a9"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/binary-g-code_646763",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1165309,
+      "sha": "23ede2d9620be712"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/faq-prusaslicer_1789",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1181048,
+      "sha": "51975ab2307d0e23"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/first-print-with-prusaslicer_1753",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1200480,
+      "sha": "ab0d6de0b3ae59a7"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/prusament-tpu-95a-material-guide_899653",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1186434,
+      "sha": "cff5ec72032de32a"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/prusaslicer-general-info_1910",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1182148,
+      "sha": "da173ea0a364ab1f"
+    },
+    {
+      "url": "https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html",
+      "sitio": "www.orcaslicer.com",
+      "bytes": 125315,
+      "sha": "07ac4bc62bc88f15"
+    },
+    {
+      "url": "https://help.prusa3d.com/filament-material-guide",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1305485,
+      "sha": "d8b303b7e7fe4a90"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/first-layer-issues_1804",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1319143,
+      "sha": "977fd817a6b1dde7"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/pla_2062",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1199206,
+      "sha": "94752ae8106cd40d"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/slice-param",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 56129,
+      "sha": "70a886f9f62f4e52"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/stringing-and-oozing_1805",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1217999,
+      "sha": "0c4e8a4107dfc9eb"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/print-quality/overhang",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 54683,
+      "sha": "5be5da89a306f5e8"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/bad-looking-surface-above-supports_1803",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1141677,
+      "sha": "d59c15915fc306a5"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/failing-supports_1807",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1131541,
+      "sha": "ecb9af00ac7418b2"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/knowledge-sharing/printed-model-warping",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 52263,
+      "sha": "86cbfc8a7a0da6be"
+    },
+    {
+      "url": "https://wiki.bambulab.com/en/filament-acc/filament/print-quality/warping-falling-off-collapsing",
+      "sitio": "wiki.bambulab.com",
+      "bytes": 69606,
+      "sha": "6c4ef4252e84e39e"
+    },
+    {
+      "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/",
+      "sitio": "forum.prusa3d.com",
+      "bytes": 161105,
+      "sha": "bedaee5a6c466f09"
+    },
+    {
+      "url": "https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/",
+      "sitio": "forum.prusa3d.com",
+      "bytes": 162978,
+      "sha": "7fc4df88fb6dfffb"
+    },
+    {
+      "url": "https://help.prusa3d.com/article/warping_2011",
+      "sitio": "help.prusa3d.com",
+      "bytes": 1177054,
+      "sha": "7f396e8e50cc77ef"
+    }
+  ]
+}

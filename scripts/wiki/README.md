@@ -151,6 +151,47 @@ Es el puente entre el pipeline y la vista. Un artículo puede estar perfectament
 cocinado y aun así tener una cita sin fuente, un enlace a una página que no existe
 o un `campo` mal escrito: eso lo ve el revisor, y lo ve el navegador.
 
+## Comprobar que las fuentes siguen vivas
+
+```bash
+npm run verify:fuentes                        # pasada completa (~3,5 min)
+node scripts/wiki/fuentes.mjs --cambios       # sólo lo que cambió
+```
+
+Las tres fases del pipeline van en un sentido y ninguna comprobaba que las
+fuentes siguieran ahí: una KB que muda un artículo o una URL que se retira
+dejaban la guía vieja sin que nadie lo supiera. Este script recorre las URLs
+del frontmatter de `wiki/raw/` y dice, una por una, si sigue siendo fuente.
+
+Sale con código 1 si alguna está **ROTA**, **BLOQUEADA** o es **CÁSCARA** —así
+que sirve de paso de CI igual que los de `scripts/verify/`—. Un **CAMBIÓ** no
+es un fallo: es el aviso para reprocesar esa guía **desde el `cocinero`**, no
+desde el `redactor`.
+
+Cuatro decisiones que están en el código con su porqué:
+
+- **Respeta el `robots.txt` de cada host** (la norma es
+  [RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)), incluido el
+  `crawl-delay`: `help.prusa3d.com`, la fuente principal de la wiki, pide
+  **10 segundos** entre peticiones, y una pasada toca su KB decenas de veces.
+  User-Agent con contacto, caché de robots en memoria, `allow`/`disallow`
+  respetados, y «ilegible» se interpreta como no pasar.
+- **CÁSCARA se mide por texto, no por código HTTP.** La trampa que ya coló una
+  afirmación falsa en `warping-pla` fue una página 200 con 551 caracteres de
+  aviso. El umbral son 1.000 caracteres de texto útil.
+- **CAMBIÓ compara el sha256 del texto normalizado**, no del HTML: las KB de
+  Prusa inyectan nonces en sus scripts y el hash del cuerpo crudo cambia sin
+  que cambie una palabra.
+- **Las URLs duplicadas se piden una vez.** Varios ficheros crudos comparten
+  fuente —la tabla de materiales de Bambu la citan tres guías—, y pedirla
+  tres veces es gastar tres turnos de `crawl-delay` por el mismo dato.
+
+El registro vive en `wiki/fuentes.json`, versionado: guarda bytes y sha de
+cada fuente verificada. Las pasadas parciales **fusionan**, no sobrescriben, y
+la `version` del fichero existe porque la v1 guardaba el hash del HTML crudo;
+encontrar esa versión invalida la comparación entera en vez de comparar
+métricas distintas.
+
 ## Control de idioma
 
 ```bash

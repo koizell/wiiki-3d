@@ -14,10 +14,12 @@
     "verify:shots": "node scripts/verify/shots.mjs",
     "verify:rutas": "node scripts/verify/rutas.mjs",
     "verify:wiki": "node scripts/verify/wiki.mjs",
+    "verify:fuentes": "node scripts/wiki/fuentes.mjs --verificar",
     "verify:seo": "node scripts/verify/seo.mjs",
     "verify:taller": "node scripts/verify/taller.mjs",
     "verify:historial": "node scripts/verify/historial.mjs",
-    "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs"
+    "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
+    "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
