@@ -11,11 +11,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import UploadRoute from './routes/UploadRoute';
-import TallerRoute from './routes/TallerRoute';
-import HistorialRoute from './routes/HistorialRoute';
-import ProyectosRoute from './routes/ProyectosRoute';
-import AnalysisPanel from './components/AnalysisPanel';
-import RielWiki from './components/RielWiki';
+import AnalysisPanel from './components/AnalysisPanel';import RielWiki from './components/RielWiki';
 import { IconoInicio, IconoProyectos, IconoTaller, IconoWiki } from './components/NavIconos';
 import SiteFooter from './components/SiteFooter';
 import RouteSeo from './components/RouteSeo';
@@ -43,6 +39,26 @@ import { ProveedorGuia } from './state/useGuia.tsx';
 const WikiIndexRoute = lazy(() => import('./routes/WikiIndexRoute'));
 const GuiaRoute = lazy(() => import('./routes/GuiaRoute'));
 const InfoRoute = lazy(() => import('./routes/InfoRoute'));
+
+/**
+ * Las tres rutas secundarias, también en `lazy`.
+ *
+ * `WikiIndexRoute`, `GuiaRoute` e `InfoRoute` ya lo eran; éstas tres se
+ * quedaron estáticas y su código se coló en el chunk de entrada: quien
+ * llegaba desde Google a leer una guía bajaba también el taller, el
+ * historial y los proyectos sin abrirlos ninguno. Medido antes del
+ * cambio: el chunk de entrada eran 432 KB.
+ *
+ * `UploadRoute` sigue estática a propósito, y no es olvido: es la
+ * portada —la ruta más visitada— y su código vive con el shell. Darla
+ * aire pondría un `Suspense` delante de lo único que todo el mundo
+ * viene a ver. La regla, escrita para que no se discuta cada vez:
+ * la portada entra; lo que se abre por decisión de quien navega,
+ * espera.
+ */
+const TallerRoute = lazy(() => import('./routes/TallerRoute'));
+const HistorialRoute = lazy(() => import('./routes/HistorialRoute'));
+const ProyectosRoute = lazy(() => import('./routes/ProyectosRoute'));
 
 /**
  * Las rutas en las que la columna derecha es el panel de análisis.
