@@ -65,6 +65,46 @@
       El pub-ID es el mismo que el de `public/ads.txt`, en su variante `ca-pub`.
     -->
     <meta name="google-adsense-account" content="ca-pub-1976099124866284" />
+
+    <!--
+      Medida de audiencia: GA4 con Consent Mode v2.
+
+      **El ID es un marcador y el snippet no se inyecta con él puesto.** Con
+      `G-XXXXXXXXXX` no se crea el `<script>`, así que mientras no haya una
+      propiedad real la página no llama a Google ni le deja cookies. Cuando
+      exista, se sustituye la constante y ya está; el runbook de los pasos
+      manuales (crear la propiedad, verificar GSC por DNS, enviar el sitemap
+      que `scripts/export-static.mjs` ya genera) está en
+      `docs/medicion-setup.md`.
+
+      **El consentimiento va denegado por defecto, y no es un detalle.** La
+      política de privacidad de este sitio promete que la medida y la
+      publicidad funcionan con consentimiento; cargar GA4 sin esto mediría a
+      todo el mundo sin permiso. Con `analytics_storage` denegado, Google
+      recoge la visita en modo limitado —sin cookies de identificador— hasta
+      que un banner lo desbloquee. Cuando el banner llegue, sólo tiene que
+      llamar a `gtag('consent', 'update', { … })`: nada de aquí se toca.
+    -->
+    <script>
+      const GA_ID = 'G-XXXXXXXXXX';
+      if (GA_ID !== 'G-XXXXXXXXXX') {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          analytics_storage: 'denied',
+          wait_for_update: 500,
+        });
+        const etiqueta = document.createElement('script');
+        etiqueta.async = true;
+        etiqueta.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+        document.head.appendChild(etiqueta);
+        gtag('js', new Date());
+        gtag('config', GA_ID);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
