@@ -1,0 +1,308 @@
+/*
+ * La previsualización 2D de máquinas: estilos de la ilustración.
+ *
+ * Va en su propio fichero, y no en `App.css`, por una razón de convivencia: los
+ * estilos de la ilustración se tocan cada vez que se añade una familia de
+ * máquina, y `App.css` ya es el fichero que más se edita del proyecto. Un
+ * fichero propio mantiene el choque pequeño (el precedente es
+ * `src/estilos/fuentes.css`).
+ *
+ * ## El lenguaje visual, tomado de los dibujos de síntoma
+ *
+ * Lo que se mueve lleva `--accent-text` (el mismo azul que marca el filete
+ * activo), la estructura es trazo claro sobre fill oscuro, y el material se
+ * distingue por el acabado (metal, cristal, plástico). Una máquina oscura se
+ * lee porque las aristas son claras, no porque el fill lo sea.
+ */
+
+.maquina {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  display: block;
+}
+
+/* ── estructura ── */
+.maquina .est {
+  fill: var(--bg-hover);
+  stroke: var(--text-primary);
+  stroke-opacity: 0.75;
+  stroke-width: 1.4;
+}
+
+.maquina .ranura {
+  stroke: var(--text-primary);
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+}
+
+.maquina .panel {
+  fill: #1d2129;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.5;
+  stroke-width: 1.2;
+}
+
+.maquina .chapa {
+  fill: #1a2029;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+}
+
+.maquina .metal {
+  fill: #9aa3ad;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.45;
+  stroke-width: 0.8;
+}
+
+.maquina .cristal {
+  fill: #8ab4d8;
+  fill-opacity: 0.1;
+  stroke: #8ab4d8;
+  stroke-opacity: 0.5;
+  stroke-width: 1.2;
+}
+
+.maquina .pant {
+  fill: #0e1014;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+}
+
+.maquina .pant-luz {
+  fill: var(--accent-text);
+}
+
+.maquina .boquilla {
+  fill: #d8b34a;
+}
+
+.maquina .bobina {
+  fill: #24303f;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+
+.maquina .hilo {
+  fill: none;
+  stroke: #d8dde3;
+  stroke-width: 1.6;
+  stroke-dasharray: 5 7;
+}
+
+.maquina .rejilla {
+  stroke: #0a0c10;
+  stroke-width: 3;
+  stroke-opacity: 0.8;
+}
+
+.maquina .pieza {
+  fill: #3f6fd8;
+  fill-opacity: 0.9;
+  stroke: #6f9af0;
+  stroke-width: 0.6;
+}
+
+.maquina .vent-il {
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 1.2;
+}
+
+.maquina .vent-asp {
+  stroke: var(--accent-text);
+  stroke-width: 1.4;
+}
+
+/* ── lo que se mueve siempre es azul de acento ── */
+.maquina .moviendo {
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2.2;
+}
+
+.maquina .moviendo-r {
+  fill: var(--accent-text);
+}
+
+/* ── animación: sale de la ficha, no del dibujante ── */
+.maquina .traza-x {
+  animation: maquinaTrazaX var(--ciclo) ease-in-out infinite alternate;
+}
+
+@keyframes maquinaTrazaX {
+  from {
+    transform: translateX(var(--x0));
+  }
+  to {
+    transform: translateX(var(--x1));
+  }
+}
+
+.maquina .cama-y {
+  animation: maquinaCamaY calc(var(--ciclo) * 2) ease-in-out infinite alternate;
+}
+
+@keyframes maquinaCamaY {
+  from {
+    transform: translateX(-26px);
+  }
+  to {
+    transform: translateX(26px);
+  }
+}
+
+.maquina .sube-z {
+  animation: maquinaSubeZ var(--ciclo) ease-in-out infinite;
+}
+
+@keyframes maquinaSubeZ {
+  0%,
+  8% {
+    transform: translateY(0);
+  }
+  60%,
+  88% {
+    transform: translateY(var(--z0));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.maquina .portico {
+  animation: maquinaPorticoZ var(--ciclo) ease-in-out infinite;
+}
+
+@keyframes maquinaPorticoZ {
+  0%,
+  8% {
+    transform: translateY(0);
+  }
+  60%,
+  88% {
+    transform: translateY(var(--z1));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.maquina .capa {
+  opacity: 0;
+  animation: maquinaCapa var(--ciclo) linear infinite;
+}
+
+@keyframes maquinaCapa {
+  0%,
+  2% {
+    opacity: 0;
+  }
+  14%,
+  86% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.maquina .giro,
+.maquina .aspas {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: maquinaGiro 2.6s linear infinite;
+}
+
+@keyframes maquinaGiro {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.maquina .aspas {
+  animation-duration: 0.5s;
+}
+
+.maquina .husillo-marca {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: maquinaGiro calc(2.6s / var(--v)) linear infinite;
+}
+
+.maquina .fluye {
+  animation: maquinaFluye 1.6s linear infinite;
+}
+
+@keyframes maquinaFluye {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* El rizado: las esquinas suben al final del ciclo, con pivote en el borde interior. */
+.maquina .riza {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: maquinaRiza var(--ciclo) ease-in infinite;
+}
+
+@keyframes maquinaRiza {
+  0%,
+  72% {
+    transform: rotate(0deg);
+  }
+  92%,
+  100% {
+    transform: rotate(-24deg);
+  }
+}
+
+/* El curado de resina: destello en el film cada vez que nace una capa. */
+.maquina .cura {
+  opacity: 0;
+  animation: maquinaCura calc(var(--ciclo) / 12) linear infinite;
+}
+
+@keyframes maquinaCura {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+ * Movimiento reducido: la animación se apaga, la ilustración se queda en su
+ * estado final (todas las capas visibles). La máquina sigue reconociéndose.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .maquina .traza-x,
+  .maquina .cama-y,
+  .maquina .sube-z,
+  .maquina .portico,
+  .maquina .capa,
+  .maquina .giro,
+  .maquina .aspas,
+  .maquina .husillo-marca,
+  .maquina .fluye,
+  .maquina .riza,
+  .maquina .cura {
+    animation: none !important;
+  }
+
+  .maquina .capa {
+    opacity: 1;
+  }
+}
