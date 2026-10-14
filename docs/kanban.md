@@ -127,6 +127,38 @@ resultado de la prueba.
 
 ---
 
+## Sprint 5 — Lo que quedó pendiente en la auditoría ⏳
+
+*Estado: abierto, ninguna tarjeta empezada. Plan completo:
+[`plan-mejoras-frontend.md`](plan-mejoras-frontend.md). Este sprint sólo cubre lo
+que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
+*dejó pendiente; lo ya corregido no se repite.*
+
+| # | Tarjeta | Estado | Prueba que la cierra |
+|---|---|---|---|
+| 5.1 | `verify:taller` muere al cerrar el servidor | ⏳ | `npm run verify:taller` → 180 ok y código 0 **sin** `BASE_URL` |
+| 5.2 | Registrar `verify:subida` en `package.json` | ⏳ | `npm run verify:subida` → OK |
+| 5.3 | La auditoría repetible: `verify:ui` | ⏳ | `npm run verify:ui` → todas ok; y se ve fallar al quitar el `<title>` del SVG |
+| 5.4 | Material de referencia por modelo, con fuente | ⏳ | 3 rasgos con fuente por modelo en `wiki/raw/` + `wiki/cooked/`; `git diff wiki/raw/` sólo añade |
+| 5.5 | Rasgos por modelo interpretados por `MaquinaSVG` | ⏳ | `verify:maquinas` con comprobación de rasgos; SE y KE con firma distinta |
+| 5.6 | La mecánica se mueve junta (filamento al cabezal, cama y pórtico) | ⏳ | Comprobación que recorra el ciclo y mida; `verify:ui` con movimiento reducido |
+| 5.7 | Revisión técnica del catálogo campo a campo | ⏳ | `verify:maquinas` → 0 fallos; informe en `wiki/reviews/` con el número de campos que pasaron a pendiente |
+| 5.8 | Revisar las reglas, no sólo los números | ⏳ | Base física escrita en `src/lib/maquinas.ts`; veredictos leídos con ABS y PLA |
+| 5.9 | Que la verificación no afirme más de lo que prueba | ⏳ | `grep -rn "cada una vista fallar"` sin resultados |
+| 5.10 | El inicio explica antes de pedir | ⏳ | `verify:teclado` + `verify:ui` |
+| 5.11 | La guía responde al cambiar una variable | ⏳ | Comprobación nueva en `verify:guias`; resumen anunciado con `role="status"` |
+| 5.12 | El resultado se ve antes en móvil | ⏳ | `verify:ui` a 375 px + captura antes/después |
+| 5.13 | La ficha no enseña todo de golpe | ⏳ | Fichas dentro de la tarjeta a 320 px (`verify:ui`) |
+| 5.14 | Estados vacíos con salida (Proyectos/Historial) | ⏳ | `verify:ui` + capturas a 375 px |
+| 5.15 | Orientación dentro de `/maquinas` | ⏳ | `verify:ui` + `verify:teclado` |
+| 5.16 | Sin JavaScript, la ficha se lee | ⏳ | `dist/maquinas/index.html` con JS desactivado |
+| 5.17 | La copia dice lo que el dibujo es | ⏳ | Lectura de `/maquinas` a 1440 px tras 5.5 |
+
+**Regla del sprint:** los bloqueos primero (5.4 → 5.8). Ninguna tarjeta se cierra
+sin el comando ejecutado y su salida en el mensaje de commit.
+
+---
+
 ## Backlog de contenido
 
 El contenido **no se escribe a mano**: lo produce el pipeline con fuentes reales. La
