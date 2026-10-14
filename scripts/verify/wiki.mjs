@@ -43,7 +43,7 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { GCODE_FIXTURE } from './fixtures.mjs';
-import { startPreview } from './probe.mjs';
+import { arrancarPreview } from './probe.mjs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -62,8 +62,8 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * `startPreview()` el script levanta lo que necesita, y si ya hay algo escuchando en
  * ese puerto lo reutiliza en vez de pelearse con él.
  */
-const preview = await startPreview();
-const BASE = process.env.BASE_URL ?? preview ?? 'http://127.0.0.1:4173';
+const servidor = await arrancarPreview();
+const BASE = process.env.BASE_URL ?? servidor?.base ?? 'http://127.0.0.1:4173';
 
 /**
  * Las guías, leídas del registro de la aplicación.
@@ -1276,13 +1276,14 @@ try {
 } finally {
   await navegador.close();
   /*
-   * Sólo se cierra lo que este proceso ha abierto. Si ya había un `vite preview`
-   * escuchando —porque lo levantó otra ejecución o porque alguien lo dejó
-   * levantado— `startPreview()` devuelve `null` y no hay nada que cerrar. Sin el
-   * `?.`, la segunda ejecución seguida de la primera moría aquí con
-   * `preview.kill is not a function`, después de imprimir todas las comprobaciones.
+   * Sólo se cierra lo que este proceso ha abierto. `arrancarPreview` devuelve
+   * `{ base, detener }`, y `detener()` **sólo cierra lo que este proceso levantó**:
+   * si ya había un `vite preview` escuchando, devuelve un no-op. La versión
+   * anterior llamaba `preview?.kill()` sobre la URL que devolvía `startPreview`,
+   * y una cadena no tiene `.kill` —el script moría aquí **después** de imprimir
+   * todas las comprobaciones, así que parecía un fallo de lo medido.
    */
-  preview?.kill();
+  servidor?.detener();
 }
 
 console.log('');
