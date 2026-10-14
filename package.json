@@ -19,7 +19,9 @@
     "verify:taller": "node scripts/verify/taller.mjs",
     "verify:historial": "node scripts/verify/historial.mjs",
     "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
-    "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs"
+    "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs",
+    "verify:subida": "node scripts/verify/subida-ui.mjs",
+    "verify:ui": "node scripts/verify/ui.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",

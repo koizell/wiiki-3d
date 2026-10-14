@@ -228,14 +228,34 @@ export function probePage() {
   };
 }
 
-/** Arranca `vite preview` y devuelve la URL, o `null` si ya había uno vivo. */
-export async function startPreview(port = 4173) {
-  const host = `http://127.0.0.1:${port}`;
-  const alive = await fetch(host).then(
+/** ¿Hay algo escuchando en esa URL? */
+async function vivo(url) {
+  return fetch(url).then(
     () => true,
     () => false
   );
-  if (alive) return null;
+}
+
+/** Arranca `vite preview` y devuelve la URL, o `null` si ya había uno vivo. */
+export async function startPreview(port = 4173) {
+  return (await arrancarPreview(port)).base;
+}
+
+/**
+ * Arranca `vite preview` y devuelve `{ base, detener }`.
+ *
+ * `startPreview` devuelve la URL y nada más, así que **un script no puede cerrar
+ * el servidor que ha abierto**: se queda huérfano. Dos scripts lo intentaron
+ * haciendo `.kill()` sobre esa URL y morían con `preview.kill is not a function`
+ * después de imprimir todas las comprobaciones (`taller.mjs`,
+ * `historial.mjs`). Parecía un fallo de lo que medían y era del script.
+ *
+ * `detener()` cierra el servidor **sólo si este proceso lo abrió**: si ya había
+ * uno vivo —el de otra sesión, o uno levantado a mano— no hace nada.
+ */
+export async function arrancarPreview(port = 4173) {
+  const host = `http://127.0.0.1:${port}`;
+  if (await vivo(host)) return { base: host, detener: () => {} };
 
   const { spawn } = await import('node:child_process');
   const child = spawn(
@@ -247,7 +267,21 @@ export async function startPreview(port = 4173) {
 
   for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 400));
-    if (await fetch(host).then(() => true, () => false)) return host;
+    if (await vivo(host)) {
+      return {
+        base: host,
+        detener: () => {
+          // `detached: true` hace al hijo líder de su grupo de procesos, así que
+          // matar el grupo se lleva también al `vite` real que lanza `npx`. Con
+          // `child.kill()` a secas quedaría el servidor vivo y huérfano.
+          try {
+            process.kill(-child.pid, 'SIGTERM');
+          } catch {
+            child.kill();
+          }
+        },
+      };
+    }
   }
   throw new Error('vite preview no arrancó en 12s');
 }

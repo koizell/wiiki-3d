@@ -37,7 +37,7 @@
 
 import { chromium } from 'playwright';
 import { GCODE_FIXTURE, GCODE_SIN_GRAMOS, STL_FIXTURE } from './fixtures.mjs';
-import { startPreview } from './probe.mjs';
+import { arrancarPreview } from './probe.mjs';
 
 /**
  * Los cuatro tramos de ancho, tomados del módulo que ya los usa `rutas.mjs`.
@@ -139,18 +139,19 @@ async function seSale(page) {
 }
 
 /*
- * `startPreview()` devuelve `null` cuando ya hay algo escuchando en el puerto, y ese
- * caso no estaba contemplado: al final se hacía `preview.kill()` sin mirar, y la
- * segunda ejecución followed de la primera —o cualquiera contra un `vite preview` que
- * alguien había dejado levantado— moría con `preview.kill is not a function` **después
- * de imprimir todas las comprobaciones**. Parecía un fallo del taller y era del script.
+ * El servidor de esta verificación, y cómo se cierra.
  *
- * El patrón que usan el resto de scripts es el correcto y se aplica aquí también:
- * `?? 'http://127.0.0.1:4173'` para tener siempre una base, y `?.kill()` para poder
- * cerrar sólo lo que este proceso ha abierto.
+ * `arrancarPreview` devuelve `{ base, detener }`, y `detener()` **sólo cierra lo
+ * que este proceso ha abierto**. Antes se guardaba la URL que da
+ * `startPreview` y se hacía `preview?.kill()` sobre ella: una cadena no tiene
+ * `kill`, así que el script moría con `TypeError` **después de imprimir las 180
+ * comprobaciones correctas**. Parecía un fallo del taller y era del script.
+ *
+ * `BASE_URL` sigue mandando cuando está puesto: se mide contra el servidor vivo
+ * —el de otra sesión, o uno levantado a mano— y no se cierra ninguno.
  */
-const preview = await startPreview();
-const BASE = process.env.BASE_URL ?? preview ?? 'http://127.0.0.1:4173';
+const servidor = await arrancarPreview();
+const BASE = process.env.BASE_URL ?? servidor.base;
 const browser = await chromium.launch({
   args: ['--no-sandbox'],
   executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -444,7 +445,7 @@ try {
   }
 } finally {
   await browser.close();
-  preview?.kill();
+  servidor.detener();
 }
 
 for (const c of checks) console.log(c);

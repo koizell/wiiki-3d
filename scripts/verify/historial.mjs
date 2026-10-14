@@ -37,7 +37,7 @@
 
 import { chromium } from 'playwright';
 import { GCODE_FIXTURE } from './fixtures.mjs';
-import { startPreview } from './probe.mjs';
+import { arrancarPreview } from './probe.mjs';
 
 /** Los cuatro tramos, los mismos que `rutas.mjs` y `taller.mjs`. */
 const TRAMOS = [
@@ -294,7 +294,8 @@ async function exponerContador(page) {
   });
 }
 
-const preview = await startPreview();
+const servidor = await arrancarPreview();
+const BASE = process.env.BASE_URL ?? servidor.base;
 const browser = await chromium.launch({
   args: ['--no-sandbox'],
   executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -1014,7 +1015,7 @@ try {
   comprobar(false, `el script se ha caído antes de terminar: ${falloDeScript}`);
 } finally {
   await browser.close();
-  if (preview) preview.kill();
+  servidor.detener();
 }
 
 for (const c of checks) console.log(c);
