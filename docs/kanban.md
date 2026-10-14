@@ -145,7 +145,7 @@ que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 | 5.7 | Revisión técnica del catálogo campo a campo | ⏳ | `verify:maquinas` → 0 fallos; informe en `wiki/reviews/` con el número de campos que pasaron a pendiente |
 | 5.8 | Revisar las reglas, no sólo los números | ⏳ | Base física escrita en `src/lib/maquinas.ts`; veredictos leídos con ABS y PLA |
 | 5.9 | Que la verificación no afirme más de lo que prueba | ⏳ | `grep -rn "cada una vista fallar"` sin resultados |
-| 5.10 | El inicio explica antes de pedir | ⏳ | `verify:teclado` + `verify:ui` |
+| 5.10 | El inicio explica antes de pedir | ✅ | A 375×667: h1 arriba, propuesta antes del botón, botón y zona enteros en la primera pantalla. `verify:teclado`, `verify:subida` y `verify:ui` (170) en verde. |
 | 5.11 | La guía responde al cambiar una variable | ⏳ | Comprobación nueva en `verify:guias`; resumen anunciado con `role="status"` |
 | 5.12 | El resultado se ve antes en móvil | ⏳ | `verify:ui` a 375 px + captura antes/después |
 | 5.13 | La ficha no enseña todo de golpe | ⏳ | Fichas dentro de la tarjeta a 320 px (`verify:ui`) |
