@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "actualizado": "2026-10-13",
+  "actualizado": "2026-10-14",
   "sitios": [
     {
       "url": "https://wiki.bambulab.com/en/knowledge-sharing/first-layer-not-sticking",
@@ -11,7 +11,7 @@
     {
       "url": "https://help.prusa3d.com/article/extrusion-multiplier-calibration_2257",
       "sitio": "help.prusa3d.com",
-      "bytes": 1236556,
+      "bytes": 1236552,
       "sha": "5f9d7ac31f04a62e"
     },
     {
@@ -29,20 +29,20 @@
     {
       "url": "https://help.prusa3d.com/article/skirt-and-brim_133969",
       "sitio": "help.prusa3d.com",
-      "bytes": 1191292,
+      "bytes": 1191288,
       "sha": "2707d2f99bb9d552"
     },
     {
       "url": "https://help.prusa3d.com/article/steel-sheet-profiles_1955",
       "sitio": "help.prusa3d.com",
-      "bytes": 1220040,
-      "sha": "c1fa98c78185e6f0"
+      "bytes": 1219813,
+      "sha": "04e925d7f33f21fc"
     },
     {
       "url": "https://help.prusa3d.com/article/under-extrusion_2007",
       "sitio": "help.prusa3d.com",
-      "bytes": 1210989,
-      "sha": "28e5390495a67f52"
+      "bytes": 1211216,
+      "sha": "19deece0dc94f2ce"
     },
     {
       "url": "https://wiki.bambulab.com/en/software/bambu-studio/adaptive-layer-height",
@@ -71,7 +71,7 @@
     {
       "url": "https://forum.bambulab.com/t/pla-in-x1c/144237",
       "sitio": "forum.bambulab.com",
-      "bytes": 61692,
+      "bytes": 61694,
       "sha": "aca2fab2f2fe1dc5"
     },
     {
@@ -89,8 +89,8 @@
     {
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-user-mods-octoprint-enclosures-nozzles/optimal-enclosure-temps-for-pla-petg-abs",
       "sitio": "forum.prusa3d.com",
-      "bytes": 182090,
-      "sha": "9048169424a73d4e"
+      "bytes": 182057,
+      "sha": "8e68fefb1359adf8"
     },
     {
       "url": "https://wiki.bambulab.com/en/knowledge-sharing/filament-guide-beginners",
@@ -125,25 +125,25 @@
     {
       "url": "https://forum.prusa3d.com/forum/user-mods/layer-separation-delamination-help/?language=en",
       "sitio": "forum.prusa3d.com",
-      "bytes": 152395,
-      "sha": "3d7d2ae9327e880c"
+      "bytes": 152362,
+      "sha": "6826ee1f82f48a40"
     },
     {
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/separation-of-layers-in-middle-of-print/",
       "sitio": "forum.prusa3d.com",
-      "bytes": 142700,
-      "sha": "1a568c0fd745977c"
+      "bytes": 142667,
+      "sha": "62c8179a17b42ea5"
     },
     {
       "url": "https://help.prusa3d.com/article/layer-separation-and-splitting-fdm_1806",
       "sitio": "help.prusa3d.com",
-      "bytes": 1136312,
+      "bytes": 1134626,
       "sha": "b23806bd1e00f026"
     },
     {
       "url": "https://help.prusa3d.com/article/layer-shifting_2020",
       "sitio": "help.prusa3d.com",
-      "bytes": 1300744,
+      "bytes": 1300748,
       "sha": "e4c258982248761f"
     },
     {
@@ -161,7 +161,7 @@
     {
       "url": "https://github.com/Ultimaker/Cura/wiki/Start-End-G%E2%80%90Code",
       "sitio": "github.com",
-      "bytes": 299925,
+      "bytes": 300093,
       "sha": "b64bfa782e3cb724"
     },
     {
@@ -191,13 +191,13 @@
     {
       "url": "https://help.prusa3d.com/article/prusament-tpu-95a-material-guide_899653",
       "sitio": "help.prusa3d.com",
-      "bytes": 1186434,
-      "sha": "cff5ec72032de32a"
+      "bytes": 1186207,
+      "sha": "f07a36a2a3f7c962"
     },
     {
       "url": "https://help.prusa3d.com/article/prusaslicer-general-info_1910",
       "sitio": "help.prusa3d.com",
-      "bytes": 1182148,
+      "bytes": 1182152,
       "sha": "da173ea0a364ab1f"
     },
     {
@@ -215,13 +215,13 @@
     {
       "url": "https://help.prusa3d.com/article/first-layer-issues_1804",
       "sitio": "help.prusa3d.com",
-      "bytes": 1319143,
+      "bytes": 1319147,
       "sha": "977fd817a6b1dde7"
     },
     {
       "url": "https://help.prusa3d.com/article/pla_2062",
       "sitio": "help.prusa3d.com",
-      "bytes": 1199206,
+      "bytes": 1199202,
       "sha": "94752ae8106cd40d"
     },
     {
@@ -245,13 +245,13 @@
     {
       "url": "https://help.prusa3d.com/article/bad-looking-surface-above-supports_1803",
       "sitio": "help.prusa3d.com",
-      "bytes": 1141677,
+      "bytes": 1141681,
       "sha": "d59c15915fc306a5"
     },
     {
       "url": "https://help.prusa3d.com/article/failing-supports_1807",
       "sitio": "help.prusa3d.com",
-      "bytes": 1131541,
+      "bytes": 1131545,
       "sha": "ecb9af00ac7418b2"
     },
     {
@@ -269,20 +269,20 @@
     {
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/",
       "sitio": "forum.prusa3d.com",
-      "bytes": 161105,
-      "sha": "bedaee5a6c466f09"
+      "bytes": 161072,
+      "sha": "62635ee816730693"
     },
     {
       "url": "https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/",
       "sitio": "forum.prusa3d.com",
-      "bytes": 162978,
-      "sha": "7fc4df88fb6dfffb"
+      "bytes": 162945,
+      "sha": "fd54d494d4aac48e"
     },
     {
       "url": "https://help.prusa3d.com/article/warping_2011",
       "sitio": "help.prusa3d.com",
-      "bytes": 1177054,
-      "sha": "7f396e8e50cc77ef"
+      "bytes": 1176823,
+      "sha": "4d52b0731644dad1"
     }
   ]
 }
