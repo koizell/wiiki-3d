@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAnalysis } from '../state/useAnalysis';
+import { useAnalysis, useAnalysisActions } from '../state/useAnalysis';
 import { conComa, lineaCalculo, validarPrecio } from '../lib/coste';
 
 /**
@@ -24,6 +24,7 @@ import { conComa, lineaCalculo, validarPrecio } from '../lib/coste';
  */
 function TallerRoute() {
   const { file, fileType, metadata } = useAnalysis();
+  const { openFilePicker } = useAnalysisActions();
   // El precio vive aquí, no en el contexto: es de esta vista y de nadie más.
   const [precio, setPrecio] = useState('');
   const campoId = useId();
@@ -78,6 +79,12 @@ function TallerRoute() {
           Tu slicer no escribió los gramos consumidos. Sin ese dato no se puede
           calcular el coste.
         </p>
+      )}
+
+      {(!esGcode || gramos === undefined) && (
+        <button type="button" className="btn-primary" onClick={openFilePicker}>
+          Seleccionar G-code
+        </button>
       )}
 
       {/* 4 y 5 · Hay gramos. El precio se pide sólo aquí, cuando hay algo que multiplicar. */}

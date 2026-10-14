@@ -400,8 +400,9 @@ body {
   background: var(--bg-hover);
 }
 
+/* Blanco sobre el rojo oscuro alcanza 4,83:1; sobre --danger sólo 3,76:1. */
 .btn-danger {
-  background: var(--danger);
+  background: var(--danger-hover);
   color: white;
   border: none;
   padding: 0.25rem 0.6rem;
@@ -409,6 +410,18 @@ body {
   cursor: pointer;
   font-weight: bold;
   min-width: 44px;
+}
+
+/*
+ * Los botones se quedaban sin anillo de foco propio y caían en el `outline` del
+ * navegador, mientras .nav-item y los enlaces llevan el del sistema (2 px de
+ * --accent-text). Mismo anillo, mismo offset.
+ */
+.btn-primary:focus-visible,
+.btn-danger:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
 }
 
 .btn-danger:hover {
@@ -537,6 +550,11 @@ body {
   border: 2px dashed var(--border);
   border-radius: var(--radio-lg);
   max-width: 500px;
+}
+
+.upload-zone--activa {
+  border-color: var(--accent-text);
+  background: var(--bg-panel);
 }
 
 .upload-icon {

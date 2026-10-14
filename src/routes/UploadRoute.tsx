@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
@@ -40,7 +40,9 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  */
 function UploadRoute() {
   const { file, fileType, metadata } = useAnalysis();
-  const { clearFile, openFilePicker } = useAnalysisActions();
+  const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
+  const [arrastrando, setArrastrando] = useState(false);
+  const [errorSubida, setErrorSubida] = useState('');
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === "gcode";
@@ -76,7 +78,7 @@ function UploadRoute() {
       <>
         <div className="file-info">
           <h1 className="file-name">Análisis: {metadata.filename}</h1>
-          <button className="btn-danger" onClick={clearFile}>
+          <button className="btn-danger" onClick={clearFile} aria-label="Cerrar análisis">
             X
           </button>
         </div>
@@ -105,9 +107,32 @@ function UploadRoute() {
           los dos modos comparten. Lo que queda aquí es sólo lo que sí lo necesita:
           la zona de subida.
         */}
-        <div className="upload-zone">
+        <div
+          className={`upload-zone${arrastrando ? ' upload-zone--activa' : ''}`}
+          onDragOver={(event) => {
+            if (!event.dataTransfer.types.includes('Files')) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            setArrastrando(true);
+          }}
+          onDragLeave={(event) => {
+            if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+            setArrastrando(false);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setArrastrando(false);
+            const archivos = event.dataTransfer.files;
+            if (archivos.length !== 1) {
+              setErrorSubida('Arrastra un solo archivo cada vez.');
+              return;
+            }
+            setErrorSubida('');
+            loadFile(archivos[0]);
+          }}
+        >
           <div className="upload-icon">⬆</div>
-          <h2>Arrastra tu archivo aquí</h2>
+          <h2>{arrastrando ? 'Suelta el archivo para abrirlo' : 'Arrastra tu archivo aquí'}</h2>
           <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
           <button
             type="button"
@@ -116,6 +141,7 @@ function UploadRoute() {
           >
             Seleccionar Archivo
           </button>
+          {errorSubida && <p role="alert">{errorSubida}</p>}
         </div>
 
         {/*
@@ -152,7 +178,7 @@ function UploadRoute() {
           base son 32 px en vez de 14,4, y la fila de `.file-info` crece.
         */}
           <h1 className="file-name">Archivo: {file.name}</h1>
-          <button className="btn-danger" onClick={clearFile}>
+          <button className="btn-danger" onClick={clearFile} aria-label="Cerrar archivo">
             X
           </button>
         </div>
