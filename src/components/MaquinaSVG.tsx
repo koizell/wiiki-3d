@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { Filamento, Maquina } from '../content/maquinas/tipos.ts';
+import type { Filamento, Maquina, RasgosDibujo } from '../content/maquinas/tipos.ts';
 import { duracionCiclo, rizaria } from '../lib/maquinas.ts';
 
 /**
@@ -112,23 +112,59 @@ function Capas({ rizar, yBase, anchoFn }: { rizar: boolean; yBase: number; ancho
   );
 }
 
+/** Un ventilador de refrigeración de pieza, con sus aspas girando. */
+function Ventilador({ cx, cy }: { cx: number; cy: number }): ReactElement {
+  return (
+    <g className="aspas">
+      <circle cx={cx} cy={cy} r={7} className="vent-il" />
+      <line x1={cx - 7} y1={cy} x2={cx + 7} y2={cy} className="vent-asp" />
+      <line x1={cx} y1={cy - 7} x2={cx} y2={cy + 7} className="vent-asp" />
+    </g>
+  );
+}
+
 /** Bed-slinger: el pórtico sube con la boquilla, la cama se desliza. */
-function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
+function VistaBedSlinger({ rizar, rasgos }: { rizar: boolean; rasgos: RasgosDibujo }): ReactElement {
   return (
     <>
       <ExtrusionH x={46} y={44} w={388} />
+      {/*
+        El carril lineal en X. Es el rasgo que la fuente oficial de la Ender 3 V3
+        KE afirma y que la separa de la SE: «carril lineal preciso en el eje X,
+        carro con rodamientos de bola, de acero rígido». Va justo debajo de la
+        viga, como una barra fina: dentro de ella quedaría tapado por la extrusión
+        y no se vería.
+      */}
+      {rasgos.carrilLinealX ? (
+        <rect className="carril" x={46} y={58} width={388} height={4} />
+      ) : null}
       <ExtrusionV x={46} y={52} h={232} />
       <ExtrusionV x={422} y={52} h={232} />
       <rect className="est" x={36} y={278} width={408} height={18} rx={3} />
       <rect className="panel" x={36} y={292} width={408} height={10} />
 
-      {/* bobina girando en su soporte */}
-      <g className="giro">
-        <circle className="bobina" cx={104} cy={88} r={21} />
-        <circle className="metal" cx={104} cy={88} r={6} />
-        <line className="moviendo" x1={104} y1={67} x2={104} y2={109} />
-      </g>
-      <line className="metal" x1={104} y1={44} x2={104} y2={56} strokeWidth={3} />
+      {/*
+        La bobina. En la CORE One va alojada en un hueco lateral a ras, y eso
+        cambia el perfil entero de la máquina; en el resto, en el soporte de
+        arriba. Donde ninguna fuente dice dónde va —que son cinco de los ocho
+        modelos— se dibuja el soporte neutro de la familia.
+      */}
+      {rasgos.bobinaLateral ? (
+        <>
+          <rect className="hueco-bobina" x={24} y={96} width={30} height={70} rx={4} />
+          <circle className="bobina" cx={39} cy={131} r={17} />
+          <circle className="metal" cx={39} cy={131} r={5} />
+        </>
+      ) : (
+        <>
+          <g className="giro">
+            <circle className="bobina" cx={104} cy={88} r={21} />
+            <circle className="metal" cx={104} cy={88} r={6} />
+            <line className="moviendo" x1={104} y1={67} x2={104} y2={109} />
+          </g>
+          <line className="metal" x1={104} y1={44} x2={104} y2={56} strokeWidth={3} />
+        </>
+      )}
       {/*
         El filamento, en dos tramos.
 
@@ -152,11 +188,22 @@ function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
           <path className="moviendo" d="M240 136 L240 168" fill="none" />
           <path className="est" d="M232 168 L248 168 L244 186 L236 186 Z" fill="none" />
           <path className="boquilla" d="M236 186 L244 186 L240 196 Z" />
-          <g className="aspas">
-            <circle cx={254} cy={158} r={7} className="vent-il" />
-            <line x1={247} y1={158} x2={261} y2={158} className="vent-asp" />
-            <line x1={254} y1={151} x2={254} y2={165} className="vent-asp" />
-          </g>
+          {/*
+            Los ventiladores de refrigeración de pieza.
+
+            La Ender 3 V3 KE lleva **uno a cada lado del cabezal** —es lo que su
+            ficha oficial afirma y lo que la separa de la SE—. Donde ninguna
+            fuente lo dice, se dibuja el ventilador neutro de la familia, que es
+            el de un solo lado.
+          */}
+          {rasgos.ventiladoresDobles ? (
+            <>
+              <Ventilador cx={226} cy={158} />
+              <Ventilador cx={254} cy={158} />
+            </>
+          ) : (
+            <Ventilador cx={254} cy={158} />
+          )}
           {/* el filamento que cuelga de la barra hasta el extrusor: dentro del
               grupo que barrea, para que su extremo acompañe al cabezal */}
           <path className="hilo fluye hilo-cabeza" d="M240 46 C230 74 250 98 240 122" fill="none" />
@@ -178,7 +225,7 @@ function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
 }
 
 /** CoreXY: cabezal fijo arriba, cama subiendo por husillos, hub de filamento. */
-function VistaCoreXY({ rizar, abierta }: { rizar: boolean; abierta: boolean }): ReactElement {
+function VistaCoreXY({ rizar, abierta, rasgos }: { rizar: boolean; abierta: boolean; rasgos: RasgosDibujo }): ReactElement {
   return (
     <>
       <ExtrusionH x={44} y={40} w={392} />
@@ -212,6 +259,41 @@ function VistaCoreXY({ rizar, abierta }: { rizar: boolean; abierta: boolean }): 
       <g className="husillo-marca">
         <line className="moviendo" x1={334} y1={200} x2={346} y2={200} />
       </g>
+      {/*
+        El tercer husillo en Z. La ficha oficial de la Flashforge AD5X afirma tres
+        husillos, y es un rasgo que se ve de frente: uno en el centro, además de
+        los dos de los extremos. Donde no está afirmado, los dos de siempre.
+      */}
+      {rasgos.zTriple ? (
+        <>
+          <line className="metal" x1={240} y1={150} x2={240} y2={268} strokeWidth={5} />
+          <g className="husillo-marca">
+            <line className="moviendo" x1={234} y1={176} x2={246} y2={176} />
+          </g>
+        </>
+      ) : null}
+
+      {/*
+        Las bobinas.
+
+        La AD5X lleva el alimentador IFS **con cuatro bobinas dentro de la
+        máquina** (ficha oficial), así que se dibujan cuatro en el hueco de arriba
+        y no una en un soporte. La CORE One aloja **una** bobina en un hueco
+        lateral a ras. En el resto, el hub genérico de la familia.
+      */}
+      {rasgos.ifsBobinas ? (
+        <g className="ifs">
+          {Array.from({ length: rasgos.ifsBobinas }, (_, i) => (
+            <circle key={i} className="bobina" cx={330 + i * 26} cy={24} r={12} />
+          ))}
+        </g>
+      ) : rasgos.bobinaLateral ? (
+        <>
+          <rect className="hueco-bobina" x={446} y={96} width={30} height={70} rx={4} />
+          <circle className="bobina" cx={461} cy={131} r={17} />
+          <circle className="metal" cx={461} cy={131} r={5} />
+        </>
+      ) : null}
 
       {/* viga y cabezal: sólo traza en X (la Z la hace la cama) */}
       <rect className="panel" x={86} y={62} width={308} height={9} />
@@ -284,6 +366,17 @@ function VistaCoreXY({ rizar, abierta }: { rizar: boolean; abierta: boolean }): 
       <rect className="pant" x={58} y={12} width={62} height={34} rx={3} />
       <rect className="pant-luz" x={64} y={18} width={50} height={5} />
       <rect className="pant-luz" x={64} y={27} width={34} height={4} opacity={0.6} />
+      {/*
+        El filtro de carbón activado. La ficha oficial de la Bambu P1S lo declara
+        entre sus tres ventiladores de regulación, y en el dibujo es una caja con
+        rejilla en un lateral. Donde no está afirmado, no se pinta.
+      */}
+      {rasgos.filtroCarbon ? (
+        <>
+          <rect className="filtro" x={34} y={238} width={26} height={40} rx={3} />
+          <Rejilla x={34} y={238} h={40} n={4} />
+        </>
+      ) : null}
     </>
   );
 }
@@ -373,9 +466,9 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
         {maquina.familia === 'resina' ? (
           <VistaResina />
         ) : maquina.familia === 'bed-slinger' ? (
-          <VistaBedSlinger rizar={rizar} />
+          <VistaBedSlinger rizar={rizar} rasgos={maquina.rasgos} />
         ) : (
-          <VistaCoreXY rizar={rizar} abierta={!maquina.cerrada} />
+          <VistaCoreXY rizar={rizar} abierta={!maquina.cerrada} rasgos={maquina.rasgos} />
         )}
       </g>
     </svg>

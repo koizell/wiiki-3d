@@ -107,6 +107,37 @@
   stroke-width: 0.6;
 }
 
+/*
+ * Los rasgos por modelo. Todos salen de `wiki/cooked/rasgos-visuales-*.md`: si
+ * una fuente no afirma el rasgo, no se dibuja y la ilustración usa la silueta
+ * neutra de su familia.
+ */
+.maquina-svg .carril {
+  fill: #9aa3ad;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.3;
+  stroke-width: 0.8;
+}
+
+.maquina-svg .hueco-bobina {
+  fill: var(--bg-dark);
+  stroke: var(--text-primary);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+
+.maquina-svg .filtro {
+  fill: #2f3a2c;
+  stroke: var(--text-primary);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+
+/* Las bobinas del alimentador integrado giran, como la del soporte. */
+.maquina-svg .ifs .bobina {
+  animation: none;
+}
+
 .maquina-svg .vent-il {
   fill: none;
   stroke: var(--accent-text);

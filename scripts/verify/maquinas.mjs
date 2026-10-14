@@ -83,5 +83,48 @@ ok(avisos(ender, abs).length === 2, 'ABS en la Ender abierta avisa de boquilla y
 ok(avisos(p1s, abs).length === 0, 'ABS en la P1S no avisa de nada');
 ok(avisos(mars, pla).length === 1 && avisos(mars, pla)[0].includes('resina'), 'la Mars explica que no lleva filamento');
 
+/*
+ * 7 · Los rasgos que la ilustración dibuja
+ *
+ * El catálogo existe para contar que dos máquinas de la misma marca no son la
+ * misma máquina. Mientras el SVG sólo miraba la familia, la Ender 3 V3 SE y la KE
+ * se dibujaban iguales: la ficha las separaba y el dibujo no.
+ *
+ * La comprobación es de datos, y a propósito. Contar píxeles o nodos del SVG
+ * diría que dos dibujos son distintos sin decir por qué ni si la diferencia es
+ * verdad. Lo que se mide es la firma de rasgos declarados, que sale de
+ * `wiki/cooked/rasgos-visuales-*.md`; si un rasgo no está en el material cocinado,
+ * no se declara, y dos máquinas sin rasgos propios compartirán silueta —que es
+ * lo honesto.
+ */
+const firma = (m) =>
+  Object.entries(m.rasgos)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}${typeof v === 'number' ? `:${v}` : ''}`)
+    .sort()
+    .join(',') || '(familia)';
+
+const porSlug = (s) => MAQUINAS.find((m) => m.slug === s);
+
+for (const [a, b, motivo] of [
+  ['ender-3-v3-se', 'ender-3-v3-ke', 'la KE lleva dos ventiladores y carril lineal en X'],
+  ['bambu-p1s', 'prusa-core-one', 'la P1S lleva filtro de carbono; la CORE One aloja la bobina en un lateral'],
+]) {
+  const fa = firma(porSlug(a));
+  const fb = firma(porSlug(b));
+  ok(fa !== fb, `${a} y ${b} no comparten firma de rasgos (${motivo})`);
+  console.log(`        ${a}: ${fa}`);
+  console.log(`        ${b}: ${fb}`);
+}
+
+// Los rasgos declarados tienen que ser rasgos que la ilustración sabe dibujar:
+// una clave inventada sería un rasgo que no se pinta y que la ficha promete.
+const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral', 'filtroCarbon', 'ifsBobinas', 'zTriple', 'pantallaTactil'];
+for (const m of MAQUINAS) {
+  for (const clave of Object.keys(m.rasgos)) {
+    ok(RASGOS_DIBUJABLES.includes(clave), `${m.slug}: el rasgo «${clave}» es dibujable`);
+  }
+}
+
 console.log(`\n${fallos === 0 ? 'VERDE' : 'ROJO'}: ${fallos} fallos\n`);
 process.exit(fallos === 0 ? 0 : 1);

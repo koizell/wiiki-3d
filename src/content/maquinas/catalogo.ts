@@ -36,6 +36,7 @@ export const MAQUINAS: Maquina[] = [
       { url: 'https://makerspecs.com/en/products/creality-ender-3-v3-se/', titulo: 'MakerSpecs · ficha de la Ender 3 V3 SE', origen: 'T' },
       { url: 'https://gavler.com/products/creality-ender-3-v3-se', titulo: 'Gavler · ficha y votos de comunidad', origen: 'T' },
     ],
+    rasgos: {},
   },
   {
     slug: 'ender-3-v3-ke',
@@ -60,6 +61,7 @@ export const MAQUINAS: Maquina[] = [
       { url: 'https://makerspecs.com/en/compare/creality-ender-3-v3-ke-vs-creality-ender-3-v3-se/', titulo: 'MakerSpecs · comparativa KE vs SE', origen: 'T' },
       { url: 'https://store.creality.com/blogs/all/ender-3-v3-se-vs-ke', titulo: 'Creality · SE vs KE (blog del fabricante)', origen: 'F' },
     ],
+    rasgos: { ventiladoresDobles: true, carrilLinealX: true, pantallaTactil: true },
   },
   {
     slug: 'ad5x',
@@ -84,6 +86,7 @@ export const MAQUINAS: Maquina[] = [
       { url: 'https://github.com/ghzserg/zmod', titulo: 'zmod · configuración Klipper de la AD5X (recorridos, husillo, temperaturas)', origen: 'T' },
       { url: 'https://gavler.com/products/flashforge-ad5x', titulo: 'Gavler · ficha', origen: 'T' },
     ],
+    rasgos: { ifsBobinas: 4, zTriple: true, pantallaTactil: true },
   },
   {
     slug: 'bambu-a1',
@@ -107,6 +110,7 @@ export const MAQUINAS: Maquina[] = [
     fuentes: [
       { url: 'https://bambulab.com/en/a1', titulo: 'Bambu Lab · página de producto de la A1', origen: 'F' },
     ],
+    rasgos: { pantallaTactil: true },
   },
   {
     slug: 'bambu-p1s',
@@ -130,6 +134,7 @@ export const MAQUINAS: Maquina[] = [
     fuentes: [
       { url: 'https://bambulab.com/en/p1s', titulo: 'Bambu Lab · página de producto de la P1S', origen: 'F' },
     ],
+    rasgos: { filtroCarbon: true },
   },
   {
     slug: 'prusa-mk4s',
@@ -153,6 +158,7 @@ export const MAQUINAS: Maquina[] = [
     fuentes: [
       { url: 'https://www.prusa3d.com/product/original-prusa-mk4s-3d-printer-6/', titulo: 'Prusa · ficha de la MK4S', origen: 'F' },
     ],
+    rasgos: {},
   },
   {
     slug: 'prusa-core-one',
@@ -176,6 +182,7 @@ export const MAQUINAS: Maquina[] = [
     fuentes: [
       { url: 'https://www.prusa3d.com/product/prusa-core-one-6/', titulo: 'Prusa · ficha de la CORE One', origen: 'F' },
     ],
+    rasgos: { bobinaLateral: true },
   },
   {
     slug: 'elegoo-mars-5-ultra',
@@ -199,6 +206,7 @@ export const MAQUINAS: Maquina[] = [
     fuentes: [
       { url: 'https://gavler.com/products/elegoo-mars-5-ultra', titulo: 'Gavler · ficha', origen: 'T' },
     ],
+    rasgos: {},
   },
 ];
 

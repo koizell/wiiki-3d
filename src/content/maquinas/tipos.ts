@@ -67,6 +67,43 @@ export interface Maquina {
   origen: Partial<Record<'dims' | 'vol' | 'velMax' | 'tNozMax' | 'tCamaMax' | 'extrusor' | 'nivelacion', OrigenDato | null>>;
   /** Fuentes que respaldan la ficha. Vacío = todo pendiente. */
   fuentes: { url: string; titulo: string; origen: OrigenDato }[];
+  /**
+   * Los rasgos que la ilustración dibuja de este modelo, y de dónde salen.
+   *
+   * **Sólo lo que una fuente afirma.** Cada rasgo apunta a su origen y a la
+   * fuente concreta; si ninguna fuente lo dice, el rasgo no está y la
+   * ilustración usa el valor neutro de su familia. Es la misma regla de la ficha
+   * aplicada al dibujo: un rasgo inventado es una ficha inventada con más
+   * trabajo.
+   *
+   * Los rasgos disponibles son los que se distinguen en un esquema de frente o de
+   * lado, que es lo que esta ilustración dibuja.
+   */
+  rasgos: RasgosDibujo;
+}
+
+/**
+ * Los rasgos que cambian el dibujo de una máquina.
+ *
+ * Todos son opcionales: `false`/ausente significa «este modelo no lo tiene o no
+ * está verificado», y la ilustración pinta la silueta neutra de su familia. No
+ * hay un valor «por defecto del modelo» que invente lo que la calla.
+ */
+export interface RasgosDibujo {
+  /** Dos ventiladores de refrigeración de pieza, uno a cada lado del cabezal. */
+  ventiladoresDobles?: boolean;
+  /** Carril lineal en X, en vez de varilla con rodamientos. */
+  carrilLinealX?: boolean;
+  /** Bobina alojada en un hueco lateral de la máquina, a ras. */
+  bobinaLateral?: boolean;
+  /** Filtro de carbón activado visible en un lateral. */
+  filtroCarbon?: boolean;
+  /** Alimentador integrado con varias bobinas dentro de la máquina. */
+  ifsBobinas?: number;
+  /** Tres husillos en Z, en vez de uno. */
+  zTriple?: boolean;
+  /** Pantalla táctil, en vez de botonera con pantalla pequeña. */
+  pantallaTactil?: boolean;
 }
 
 /** Un filamento: genérico por familia, o de marca con perfil propio. */
