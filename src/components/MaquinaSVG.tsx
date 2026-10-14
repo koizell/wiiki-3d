@@ -107,7 +107,7 @@ function VistaBedSlinger({ maquina, rizar }: { maquina: Maquina; rizar: boolean 
       <rect className="panel" x={36} y={292} width={408} height={10} />
 
       {/* bobina girando en su soporte, con el filamento bajando al cabezal */}
-      <g className="giro" style={{ transformOrigin: '104px 88px' }}>
+      <g className="giro">
         <circle className="bobina" cx={104} cy={88} r={21} />
         <circle className="metal" cx={104} cy={88} r={6} />
         <line className="moviendo" x1={104} y1={67} x2={104} y2={109} />
@@ -125,7 +125,7 @@ function VistaBedSlinger({ maquina, rizar }: { maquina: Maquina; rizar: boolean 
           <path className="moviendo" d="M240 136 L240 168" fill="none" />
           <path className="est" d="M232 168 L248 168 L244 186 L236 186 Z" fill="none" />
           <path className="boquilla" d="M236 186 L244 186 L240 196 Z" />
-          <g className="aspas" style={{ transformOrigin: '254px 158px' }}>
+          <g className="aspas">
             <circle cx={254} cy={158} r={7} className="vent-il" />
             <line x1={247} y1={158} x2={261} y2={158} className="vent-asp" />
             <line x1={254} y1={151} x2={254} y2={165} className="vent-asp" />
@@ -192,7 +192,7 @@ function VistaCoreXY({ maquina, rizar, abierta }: { maquina: Maquina; rizar: boo
         <path className="moviendo" d="M240 69 L240 94" fill="none" />
         <path className="est" d="M231 94 L249 94 L245 110 L235 110 Z" fill="none" />
         <path className="boquilla" d="M235 110 L245 110 L240 120 Z" />
-        <g className="aspas" style={{ transformOrigin: '256px 84px' }}>
+        <g className="aspas">
           <circle cx={256} cy={84} r={7} className="vent-il" />
           <line x1={249} y1={84} x2={263} y2={84} className="vent-asp" />
           <line x1={256} y1={77} x2={256} y2={91} className="vent-asp" />
