@@ -337,27 +337,31 @@
   border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit; font-size: 0.9rem;
 }
 .maquinas-lista { display: flex; flex-direction: column; gap: 1.5rem; }
-.maquina-svg {
+/* La tarjeta es el <article class="maquina">: ilustración a la izquierda, ficha a
+   la derecha. La ilustración (.maquina-svg) sólo pone su tamaño. */
+.maquina {
   display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem;
-  padding: 1.1rem; border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.1rem; border: 1px solid var(--border); border-radius: var(--radio-lg);
 }
 @media (max-width: 640px) { .maquina { grid-template-columns: 1fr; } }
 .maquina-ilustracion { width: 100%; height: auto; }
-.maquina-ficha h2 { font-size: 1.15rem; margin-bottom: 0.2rem; }
-.maquina-precio { color: var(--accent-text); font-weight: 700; font-size: 0.9rem; margin-bottom: 0.5rem; }
-.maquina-veredicto { font-size: 0.88rem; padding: 0.4rem 0.6rem; border-radius: 8px; margin-bottom: 0.8rem; }
-.maquina-veredicto--ok { background: rgb(74 222 128 / 0.12); color: #86efac; }
-.maquina-veredicto--aviso { background: rgb(251 146 60 / 0.14); color: #fdba74; }
+.maquina-ficha h2 { font-size: var(--h2); margin-bottom: 0.2rem; }
+.maquina-precio { color: var(--accent-text); font-weight: 700; font-size: var(--texto-sm); margin-bottom: 0.5rem; }
+.maquina-veredicto { font-size: var(--texto-sm); padding: 0.4rem 0.6rem; border-radius: var(--radio-sm); margin-bottom: 0.8rem; }
+.maquina-veredicto--ok { background: rgb(74 222 128 / 0.12); color: var(--success); }
+.maquina-veredicto--aviso { background: rgb(251 146 60 / 0.14); color: var(--warning); }
 .maquina-veredicto--info { background: rgb(37 99 235 / 0.12); color: var(--accent-text); }
 .maquina-campos { margin: 0; display: grid; gap: 0.2rem; }
 .maquina-campo { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--border); padding: 0.35rem 0; }
-.maquina-campo dt { color: var(--text-secondary); font-size: 0.85rem; }
-.maquina-campo dd { margin: 0; text-align: right; font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.15rem; }
+.maquina-campo dt { color: var(--text-secondary); font-size: var(--texto-sm); }
+.maquina-campo dd { margin: 0; text-align: right; font-size: var(--texto-sm); display: flex; flex-direction: column; gap: 0.15rem; }
 .maquina-campo-valor { font-weight: 600; }
-.maquina-origen { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.85; }
+/* El origen se distingue por color, nunca por opacidad: el propio repo documenta
+   que atenuar texto baja el contraste por debajo de AA. */
+.maquina-origen { font-size: var(--etiqueta); text-transform: uppercase; letter-spacing: var(--etiqueta-interletraje); }
 .maquina-origen--fabricante { color: var(--accent-text); }
-.maquina-origen--terceros { color: #93c5fd; }
-.maquina-origen--pendiente-de-fichar { color: var(--text-secondary); }
-.maquina-origen--no-aplica { color: var(--text-secondary); opacity: 0.55; }
+.maquina-origen--terceros { color: var(--accent-text); }
+.maquina-origen--pendiente-de-fichar { color: var(--warning); }
+.maquina-origen--no-aplica { color: var(--text-tertiary); }
 .maquinas-nota p { color: var(--text-secondary); line-height: 1.6; max-width: 44rem; }
-.maquinas-nota h2 { font-size: 1.1rem; margin-bottom: 0.4rem; }
+.maquinas-nota h2 { font-size: var(--h2); margin-bottom: 0.4rem; }

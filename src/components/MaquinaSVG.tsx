@@ -97,7 +97,7 @@ function Capas({ rizar, yBase, anchoFn }: { rizar: boolean; yBase: number; ancho
 }
 
 /** Bed-slinger: el pórtico sube con la boquilla, la cama se desliza. */
-function VistaBedSlinger({ maquina, rizar }: { maquina: Maquina; rizar: boolean }): ReactElement {
+function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
   return (
     <>
       <ExtrusionH x={46} y={44} w={388} />
@@ -142,13 +142,12 @@ function VistaBedSlinger({ maquina, rizar }: { maquina: Maquina; rizar: boolean 
 
       <rect className="pant" x={376} y={252} width={38} height={24} rx={2} />
       <rect className="pant-luz" x={380} y={270} width={30} height={3} />
-      <title>{`${maquina.marca} ${maquina.modelo}: armazón, pórtico con cabezal, cama deslizante y bobina`}</title>
     </>
   );
 }
 
 /** CoreXY: cabezal fijo arriba, cama subiendo por husillos, hub de filamento. */
-function VistaCoreXY({ maquina, rizar, abierta }: { maquina: Maquina; rizar: boolean; abierta: boolean }): ReactElement {
+function VistaCoreXY({ rizar, abierta }: { rizar: boolean; abierta: boolean }): ReactElement {
   return (
     <>
       <ExtrusionH x={44} y={40} w={392} />
@@ -220,13 +219,12 @@ function VistaCoreXY({ maquina, rizar, abierta }: { maquina: Maquina; rizar: boo
       <rect className="pant" x={58} y={12} width={62} height={34} rx={3} />
       <rect className="pant-luz" x={64} y={18} width={50} height={5} />
       <rect className="pant-luz" x={64} y={27} width={34} height={4} opacity={0.6} />
-      <title>{`${maquina.marca} ${maquina.modelo}: CoreXY ${abierta ? 'abierta' : 'cerrada con puerta de cristal'}, husillos y cama que sube`}</title>
     </>
   );
 }
 
 /** Resina: la capa nace en el film y la plataforma sube con la pieza. */
-function VistaResina({ maquina }: { maquina: Maquina }): ReactElement {
+function VistaResina(): ReactElement {
   return (
     <>
       <rect className="est" x={184} y={64} width={112} height={6} rx={2} />
@@ -267,13 +265,18 @@ function VistaResina({ maquina }: { maquina: Maquina }): ReactElement {
       <rect className="pant" x={196} y={246} width={88} height={26} rx={3} />
       <rect className="pant-luz" x={202} y={252} width={60} height={4} />
       <rect className="pant-luz" x={202} y={260} width={38} height={4} opacity={0.6} />
-      <title>{`${maquina.marca} ${maquina.modelo}: tanque de resina, LCD en el fondo y plataforma que sube capa a capa`}</title>
     </>
   );
 }
 
 /** La ilustración completa de la máquina elegida. */
 export default function MaquinaSVG({ maquina, filamento, className }: Props) {
+  const descripcion =
+    maquina.familia === 'resina'
+      ? `${maquina.marca} ${maquina.modelo}: tanque de resina, LCD en el fondo y plataforma que sube capa a capa`
+      : maquina.familia === 'bed-slinger'
+        ? `${maquina.marca} ${maquina.modelo}: armazón, pórtico con cabezal, cama deslizante y bobina`
+        : `${maquina.marca} ${maquina.modelo}: CoreXY ${maquina.cerrada ? 'cerrada con puerta de cristal' : 'abierta'}, husillos y cama que sube`;
   const rizar = rizaria(maquina, filamento);
   const ciclo = duracionCiclo(maquina);
   const v = (maquina.velMax ?? 150) / 500;
@@ -297,13 +300,14 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
       role="img"
       style={vars}
     >
+      <title>{descripcion}</title>
       <g className="ciclo">
         {maquina.familia === 'resina' ? (
-          <VistaResina maquina={maquina} />
+          <VistaResina />
         ) : maquina.familia === 'bed-slinger' ? (
-          <VistaBedSlinger maquina={maquina} rizar={rizar} />
+          <VistaBedSlinger rizar={rizar} />
         ) : (
-          <VistaCoreXY maquina={maquina} rizar={rizar} abierta={!maquina.cerrada} />
+          <VistaCoreXY rizar={rizar} abierta={!maquina.cerrada} />
         )}
       </g>
     </svg>
