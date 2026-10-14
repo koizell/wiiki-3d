@@ -36,7 +36,7 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
   },
   '/privacidad': {
     path: '/privacidad/', title: 'Política de privacidad (RGPD) e historial local | wiiki-3d',
-    description: 'Política de privacidad de wiiki-3d conforme al RGPD: qué se guarda en tu navegador, finalidad y base legal, tus derechos, conservación, cookies y la publicidad de Google AdSense, con su responsable de datos.',
+    description: 'Política de privacidad (RGPD) de wiiki-3d: qué se guarda en tu navegador, finalidad y base legal, tus derechos, conservación, la analítica de Google Analytics y la publicidad de AdSense, con su responsable.',
   },
   '/autor': {
     path: '/autor/', title: 'Quién escribe en wiiki-3d | wiiki-3d',

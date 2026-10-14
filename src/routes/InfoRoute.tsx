@@ -270,15 +270,12 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         cuerpo: (
           <>
             <p>
-              El código actual no incorpora cookies publicitarias ni herramientas
-              de analítica. El historial usa IndexedDB, no cookies, y no hay cuentas
-              de usuario.
+              Este sitio mide audiencia con <strong>Google Analytics (GA4)</strong> a través de la etiqueta de Google, que se carga en <strong>modo de consentimiento denegado por defecto</strong>: <strong>mientras no lo aceptes, GA4 no instala cookies</strong> y sólo cuenta visitas de forma limitada y sin identificarte. El historial de análisis sigue en <strong>IndexedDB</strong>, no en cookies, y no hay cuentas de usuario.
             </p>
             <p>
               El sitio se sirve desde <strong>GitHub Pages</strong>, que como
               cualquier alojamiento puede registrar datos de conexión —dirección IP,
-              agente de navegador y la página pedida— para servirla y proteger el
-              servicio.
+              agente de navegador y la página pedida— para servirla y proteger el servicio. Sobre cómo usa Google estos datos, consulta su <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">política de privacidad</a> y <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">cómo usa la información de sitios que usan sus servicios</a>.
             </p>
           </>
         ),
