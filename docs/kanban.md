@@ -141,7 +141,7 @@ que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 | 5.3 | La auditoría repetible: `verify:ui` | ✅ | `npm run verify:ui` → 121 ok. **Visto fallar**: quitando el `<title>` del `<svg>`, detecta las 8 ilustraciones sin nombre. |
 | 5.4 | Material de referencia por modelo, con fuente | ⏳ | 3 rasgos con fuente por modelo en `wiki/raw/` + `wiki/cooked/`; `git diff wiki/raw/` sólo añade |
 | 5.5 | Rasgos por modelo interpretados por `MaquinaSVG` | ⏳ | `verify:maquinas` con comprobación de rasgos; SE y KE con firma distinta |
-| 5.6 | La mecánica se mueve junta (filamento al cabezal, cama y pórtico) | ⏳ | Comprobación que recorra el ciclo y mida; `verify:ui` con movimiento reducido |
+| 5.6 | La mecánica se mueve junta (filamento al cabezal, cama y pórtico) | ✅ | `verify:ui` lo mide en las 7 fracciones del ciclo y en las 3 familias: filamento que acaba en el cabezal (14 ok), boquilla que no atraviesa la pieza (14 ok), pieza que se mueve con su cama (21 ok). **Visto fallar** devolviendo el filamento a un trazo fijo. |
 | 5.7 | Revisión técnica del catálogo campo a campo | ⏳ | `verify:maquinas` → 0 fallos; informe en `wiki/reviews/` con el número de campos que pasaron a pendiente |
 | 5.8 | Revisar las reglas, no sólo los números | ⏳ | Base física escrita en `src/lib/maquinas.ts`; veredictos leídos con ABS y PLA |
 | 5.9 | Que la verificación no afirme más de lo que prueba | ⏳ | `grep -rn "cada una vista fallar"` sin resultados |
