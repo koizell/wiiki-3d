@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import DibujoSintoma from './DibujoSintoma';
 import { GUIAS, guiaPorSlug } from '../lib/guias';
@@ -195,7 +196,23 @@ const PREGUNTAS: { pregunta: string; respuesta: React.ReactNode }[] = [
  * @param interactivo Si hay navegador. Quita la zona de subida y el enlace que
  *   necesita estado, y deja el resto —que es la mayor parte— igual.
  */
-export default function Inicio({ interactivo = true }: { interactivo?: boolean }) {
+interface InicioProps {
+  /** Si hay navegador. Quita lo que necesita estado y deja el resto igual. */
+  interactivo?: boolean;
+  /**
+   * Lo que va entre la propuesta de valor y el resto de la página.
+   *
+   * La zona de subida vive en `UploadRoute` —necesita estado— y la cabecera en
+   * `Inicio`. Pintarlas una detrás de otra dejaba el `<h2>` de subida ANTES del
+   * `<h1>`; mover toda `Inicio` delante dejaba la subida al final de una página
+   * larguísima. Con esto la ruta coloca la subida justo detrás de la propuesta de
+   * valor, que es donde se decide si se suelta el archivo, y el HTML exportado
+   * —que pinta `Inicio` sin children— no cambia.
+   */
+  children?: ReactNode;
+}
+
+export default function Inicio({ interactivo = true, children }: InicioProps) {
   const destacadas = DESTACADAS.map((slug) => guiaPorSlug(slug)).filter(
     (g): g is Guia => g !== null
   );
@@ -208,19 +225,17 @@ export default function Inicio({ interactivo = true }: { interactivo?: boolean }
         HTML exportado tenía **cero** `<h1>` —empezaba por la tabla— y el titular es
         lo primero que tiene que leer quien llega. Es texto y no necesita estado, así
         que no hay motivo para que el navegador lo tenga y el rastreador no.
+
+        **Sólo el titular y la promesa corta.** El párrafo de la wiki estaba aquí y
+        empujaba la zona de subida por debajo del pliegue a 375 px: el botón, que es
+        la acción principal de la página, quedaba fuera de la primera pantalla. Se ha
+        bajado detrás de la subida, que es donde se lee sin estorbar.
       */}
       <header className="inicio-hero">
         <h1>¿Va a salir bien tu impresión?</h1>
         <p>
-          Sube el archivo que exportó tu slicer y wiiki-3d lee lo que ya está escrito
-          dentro —material, temperaturas, gramos, tiempo— antes de que gastes
-          filamento. Y si la pieza sale mal, aquí está el porqué.
-        </p>
-        <p>
-          Alrededor del analizador hay una wiki de {GUIAS.length} guías escritas por
-          síntoma: cada una empieza confirmando que el problema es el que crees, sigue
-          con lo que hace falta saber de tu montaje y termina con las acciones que
-          puedes aplicar, cada una con la fuente de donde sale.
+          Sube el archivo que exportó tu slicer y lee lo que lleva escrito dentro
+          —material, temperaturas, gramos— antes de gastar filamento.
         </p>
         {!interactivo ? (
           <p className="inicio-estatico-aviso">
@@ -229,6 +244,20 @@ export default function Inicio({ interactivo = true }: { interactivo?: boolean }
           </p>
         ) : null}
       </header>
+
+      {children}
+
+      {/*
+        Lo de la wiki, que antes estaba en la cabecera. Va aquí, justo detrás de la
+        zona de subida: en el navegador la subida va en este sitio y en el HTML
+        exportado este párrafo queda pegado al titular, que es donde estaba.
+      */}
+      <p className="inicio-hero-nota">
+        Alrededor del analizador hay una wiki de {GUIAS.length} guías escritas por
+        síntoma: cada una empieza confirmando que el problema es el que crees, sigue
+        con lo que hace falta saber de tu montaje y termina con las acciones que
+        puedes aplicar, cada una con la fuente de donde sale.
+      </p>
 
       {interactivo ? (
         <section className="inicio-sintomas" aria-labelledby="inicio-sintomas-titulo">
@@ -390,14 +419,6 @@ export default function Inicio({ interactivo = true }: { interactivo?: boolean }
         <section className="inicio-modulos" aria-labelledby="inicio-modulos-titulo">
           <h2 id="inicio-modulos-titulo">Qué más puedes hacer</h2>
           <ul className="inicio-modulos-lista">
-            <li>
-              <Link className="inicio-modulo" to="/maquinas">
-                <span className="inicio-modulo-titulo">Máquinas</span>
-                <span className="inicio-modulo-detalle">
-                  Consulta las impresoras con su ilustración, ficha técnica y fuentes.
-                </span>
-              </Link>
-            </li>
             <li>
               <Link className="inicio-modulo" to="/taller">
                 <span className="inicio-modulo-titulo">Taller</span>

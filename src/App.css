@@ -400,9 +400,8 @@ body {
   background: var(--bg-hover);
 }
 
-/* Blanco sobre el rojo oscuro alcanza 4,83:1; sobre --danger sólo 3,76:1. */
 .btn-danger {
-  background: var(--danger-hover);
+  background: var(--danger);
   color: white;
   border: none;
   padding: 0.25rem 0.6rem;
@@ -410,18 +409,6 @@ body {
   cursor: pointer;
   font-weight: bold;
   min-width: 44px;
-}
-
-/*
- * Los botones se quedaban sin anillo de foco propio y caían en el `outline` del
- * navegador, mientras .nav-item y los enlaces llevan el del sistema (2 px de
- * --accent-text). Mismo anillo, mismo offset.
- */
-.btn-primary:focus-visible,
-.btn-danger:focus-visible,
-.btn-ghost:focus-visible {
-  outline: 2px solid var(--accent-text);
-  outline-offset: 2px;
 }
 
 .btn-danger:hover {
@@ -552,15 +539,27 @@ body {
   max-width: 500px;
 }
 
-.upload-zone--activa {
-  border-color: var(--accent-text);
-  background: var(--bg-panel);
-}
-
 .upload-icon {
   font-size: 3rem;
   color: var(--accent-text);
   margin-bottom: 1rem;
+}
+
+/*
+ * En móvil el icono de 3rem y la zona entera se comían la primera pantalla: el
+ * botón, que es la acción principal de la página, caía por debajo del pliegue.
+ * El icono baja a 2rem y la zona aprieta su relleno; medido a 375×667 el botón
+ * entra en pantalla.
+ */
+@media (max-width: 640px) {
+  .upload-icon {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .upload-zone {
+    padding: 1.1rem 0.9rem;
+  }
 }
 
 /*
@@ -579,9 +578,22 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/*
+ * Ahora son dos párrafos, no uno: la promesa del G-code y la del STL/3MF están
+ * separadas. El margen se baja a 0,9rem porque con dos párrafos seguidos 1,5rem
+ * los separaba más de lo que los une, y el `p` de abajo ya lleva su propio
+ * espacio antes del botón.
+ */
 .upload-zone p {
   color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+  line-height: 1.55;
+  margin-bottom: 0.9rem;
+}
+
+/* El último párrafo —el error de subida— no lleva margen de más. */
+.upload-zone p[role='alert'] {
+  margin-bottom: 0;
+  color: var(--danger);
 }
 
 /* --- El inicio: la subida deja de ser toda la pantalla ----------------------- *
@@ -624,10 +636,28 @@ body {
   line-height: 1.6;
 }
 
-/* La zona de subida conserva su `max-width: 500px` y se centra en la columna. */
+/* La nota de la wiki: bajó de la cabecera para no empujar la subida. Mantiene el
+   ancho de lectura del hero y su Color de texto secundario. */
+.inicio-hero-nota {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/*
+ * La zona de subida conserva su `max-width: 500px` y se centra en la columna.
+ *
+ * El margen de arriba la separa de la propuesta de valor: al pasar a ir justo
+ * detrás del `</header>`, sin él quedaba pegada al párrafo. El de abajo la
+ * separa de la sección de síntomas, que es lo que viene a continuación.
+ */
 .inicio .upload-zone {
   align-self: center;
   width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 2.25rem;
 }
 
 .inicio-sintomas h2,

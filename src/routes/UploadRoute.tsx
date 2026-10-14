@@ -99,59 +99,64 @@ function UploadRoute() {
     return (
       <div className="inicio">
         {/*
-          La cabecera la pone `Inicio`, no esta ruta.
+          El orden, y por qué.
 
-          Estaba aquí, y por eso el HTML exportado no tenía ningún `<h1>`: la ruta
-          del navegador no se renderiza en la exportación. Como la cabecera no
-          necesita estado —es un titular y tres párrafos—, se movió a la pieza que
-          los dos modos comparten. Lo que queda aquí es sólo lo que sí lo necesita:
-          la zona de subida.
-        */}
-        <div
-          className={`upload-zone${arrastrando ? ' upload-zone--activa' : ''}`}
-          onDragOver={(event) => {
-            if (!event.dataTransfer.types.includes('Files')) return;
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'copy';
-            setArrastrando(true);
-          }}
-          onDragLeave={(event) => {
-            if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
-            setArrastrando(false);
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            setArrastrando(false);
-            const archivos = event.dataTransfer.files;
-            if (archivos.length !== 1) {
-              setErrorSubida('Arrastra un solo archivo cada vez.');
-              return;
-            }
-            setErrorSubida('');
-            loadFile(archivos[0]);
-          }}
-        >
-          <div className="upload-icon">⬆</div>
-          <h2>{arrastrando ? 'Suelta el archivo para abrirlo' : 'Arrastra tu archivo aquí'}</h2>
-          <p>Soporta STL, 3MF, G-code (Cura, PrusaSlicer, BambuStudio)</p>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={openFilePicker}
-          >
-            Seleccionar Archivo
-          </button>
-          {errorSubida && <p role="alert">{errorSubida}</p>}
-        </div>
+          La auditoría del 14/10 lo marcó como jerarquía invertida: en la raíz el
+          `<h2>Arrastra tu archivo aquí</h2>` caía ANTES que el `<h1>` de la
+          cabecera, porque la zona de subida vive en esta ruta y la cabecera en
+          `Inicio`. Quien llegaba veía la petición antes de saber qué iba a
+          recibir.
 
-        {/*
-          Síntomas frecuentes y los otros módulos. Va aquí, en el estado sin
-          archivo, y no en los otros dos: con un archivo cargado el sujeto es el
-          visor y el análisis, y con un análisis restaurado la pantalla explica por
-          qué no hay visor. Añadir el inicio en esos dos sería tapar lo que se
-          acaba de pedir.
+          No se ha movido la cabecera aquí —eso rompería la exportación estática,
+          que pinta `Inicio` y no esta ruta— sino que la subida va como hija de
+          `Inicio`, que la pinta justo detrás de la propuesta de valor. El HTML
+          exportado no cambia porque allí se pinta `Inicio` sin hijos.
         */}
-        <Inicio />
+        <Inicio>
+  <div
+    className={`upload-zone${arrastrando ? ' upload-zone--activa' : ''}`}
+    onDragOver={(event) => {
+      if (!event.dataTransfer.types.includes('Files')) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+      setArrastrando(true);
+    }}
+    onDragLeave={(event) => {
+      if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+      setArrastrando(false);
+    }}
+    onDrop={(event) => {
+      event.preventDefault();
+      setArrastrando(false);
+      const archivos = event.dataTransfer.files;
+      if (archivos.length !== 1) {
+        setErrorSubida('Arrastra un solo archivo cada vez.');
+        return;
+      }
+      setErrorSubida('');
+      loadFile(archivos[0]);
+    }}
+  >
+    <div className="upload-icon" aria-hidden="true">⬆</div>
+    <h2>{arrastrando ? 'Suelta el archivo para abrirlo' : 'Sube tu archivo'}</h2>
+    <p>
+      <strong>G-code</strong> (Cura, PrusaSlicer, BambuStudio): lee material,
+      temperaturas, gramos y tiempo, y dice qué le pasa a esa pieza.
+    </p>
+    <p>
+      <strong>STL o 3MF</strong>: visor 3D. No se analiza: no lleva datos de
+      impresión dentro.
+    </p>
+    <button
+      type="button"
+      className="btn-primary"
+      onClick={openFilePicker}
+    >
+      Seleccionar Archivo
+    </button>
+    {errorSubida && <p role="alert">{errorSubida}</p>}
+  </div>
+        </Inicio>
 
         <AvisoAlmacenamiento />
         <Recientes />
