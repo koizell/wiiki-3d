@@ -350,6 +350,14 @@ function EtapaVariables({
         {contestadas === 0
           ? 'Marca lo que puedas. Cada respuesta acorta lo que hay que mirar: las tarjetas que no aplican desaparecen y la lista de abajo cambia.'
           : `${contestadas} de ${guia.variables.length} contestadas · ${reglas} ${reglas === 1 ? 'acción' : 'acciones'} que se pueden aplicar ya.`}
+        {reglas > 0 && (
+          <>
+            {' '}
+            <a className="etapa-intro-enlace" href="#recomendacion">
+              Ver las {reglas} →
+            </a>
+          </>
+        )}
       </p>
 
       {/*
@@ -564,7 +572,15 @@ function EtapaRecomendacion({
         </p>
       ) : (
         <>
-          <p className="etapa-intro">
+          {/*
+            El recuento se anuncia, no sólo se ve.
+
+            La lista de abajo cambia en cuanto marcas una variable, pero para
+            alguien que llega con lector de pantalla —o para quien ha marcado y ha
+            perdido la cuenta— el número tiene que poder leerse. El `aria-live` va
+            en el párrafo del recuento, que es el que cambia.
+          */}
+          <p className="etapa-intro" role="status" aria-live="polite">
             {reglas.length === 1 ? '1 acción' : `${reglas.length} acciones`} que se
             aplican a tu caso. Las tres primeras son los pasos que el fabricante da por buenos de
             entrada; a partir de ahí el orden es nuestro, no de la fuente.

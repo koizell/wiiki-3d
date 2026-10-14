@@ -3138,6 +3138,26 @@ body {
   font-size: var(--texto-md);
 }
 
+/*
+ * El atajo al resultado desde la etapa 2.
+ *
+ * El recuento de acciones estaba en un párrafo que no llevaba a ninguna parte:
+ * decía «6 acciones que se pueden aplicar ya» y había que bajar a buscarlas. Este
+ * enlace es el mismo texto con destino, y va en el propio párrafo para que no
+ * ocupe una línea más en móvil, donde la guía ya es larga.
+ */
+.etapa-intro-enlace {
+  color: var(--accent-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.etapa-intro-enlace:hover {
+  color: var(--text-primary);
+}
+
 .etapa-vacia {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--border);
