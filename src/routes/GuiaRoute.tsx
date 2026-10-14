@@ -235,7 +235,7 @@ function Cabecera({ guia }: { guia: Guia }) {
           <span className="insignia">{guia.minutos} min</span>
           {guia.campos && guia.campos.length > 0 && (
             <span className="insignia insignia--acento">
-              Explica {guia.campos.join(' y ')} del panel
+              Explica {guia.campos.map((c) => etiquetaCampo(c) ?? c).join(' y ')} del panel
             </span>
           )}
         </p>
@@ -480,7 +480,7 @@ function EtapaConocimiento({
       <p className="etapa-intro">
         {tarjetas.length === guia.conocimiento.length
           ? `Las ${tarjetas.length} tarjetas de esta guía. Marca algo arriba y las que no apliquen se irán.`
-          : `${tarjetas.length} de ${guia.conocimiento.length} tarjetas: las que no se han filtrado son las que no aplican a lo que has marcado.`}
+          : `${tarjetas.length} de ${guia.conocimiento.length} tarjetas: se han quedado fuera las ${guia.conocimiento.length - tarjetas.length} que no aplican a lo que has marcado.`}
       </p>
 
       {tarjetas.length === 0 ? (
