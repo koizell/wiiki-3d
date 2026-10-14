@@ -136,9 +136,9 @@ que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 
 | # | Tarjeta | Estado | Prueba que la cierra |
 |---|---|---|---|
-| 5.1 | `verify:taller` muere al cerrar el servidor | ⏳ | `npm run verify:taller` → 180 ok y código 0 **sin** `BASE_URL` |
-| 5.2 | Registrar `verify:subida` en `package.json` | ⏳ | `npm run verify:subida` → OK |
-| 5.3 | La auditoría repetible: `verify:ui` | ⏳ | `npm run verify:ui` → todas ok; y se ve fallar al quitar el `<title>` del SVG |
+| 5.1 | `verify:taller` muere al cerrar el servidor | ✅ | `npm run verify:taller` → 180 ok y código 0 **sin** `BASE_URL`. También `verify:historial` (109 ok), que tenía el mismo fallo: ambos hacían `.kill()` sobre la URL que devuelve `startPreview`. Con `BASE_URL` el servidor vivo sigue en pie. |
+| 5.2 | Registrar `verify:subida` en `package.json` | ✅ | `npm run verify:subida` → OK. **Visto fallar**: quitando `event.preventDefault()` del `onDrop`, el script falla con código 1 y el mensaje exacto. |
+| 5.3 | La auditoría repetible: `verify:ui` | ✅ | `npm run verify:ui` → 121 ok. **Visto fallar**: quitando el `<title>` del `<svg>`, detecta las 8 ilustraciones sin nombre. |
 | 5.4 | Material de referencia por modelo, con fuente | ⏳ | 3 rasgos con fuente por modelo en `wiki/raw/` + `wiki/cooked/`; `git diff wiki/raw/` sólo añade |
 | 5.5 | Rasgos por modelo interpretados por `MaquinaSVG` | ⏳ | `verify:maquinas` con comprobación de rasgos; SE y KE con firma distinta |
 | 5.6 | La mecánica se mueve junta (filamento al cabezal, cama y pórtico) | ⏳ | Comprobación que recorra el ciclo y mida; `verify:ui` con movimiento reducido |
