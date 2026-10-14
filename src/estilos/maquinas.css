@@ -156,6 +156,18 @@
   }
 }
 
+/*
+ * El documental de la ilustración dice que el pórtico sube con la boquilla. Es
+ * cierto, pero hay que decir de dónde sale cada variable ahora que hay tres
+ * movimientos en Z y no dos:
+ *
+ *   `--z1`  el pórtico de la bed-slinger SUBE 46 px (la cama baja, en la prática).
+ *   `baja-z` la cama de la CoreXY baja, y usa el mismo viaje: calc(var(--z1) * -1).
+ *   `--z0`  la plataforma de resina SUBE 55 px (saca la pieza del tanque).
+ *
+ * La resina es la única que sube: en una MSLA la pieza se levanta del vat. Las
+ * FDM bajan porque la cama se aleja de la boquilla a medida que crece la pieza.
+ */
 .maquina-svg .sube-z {
   animation: maquinaSubeZ var(--ciclo) ease-in-out infinite;
 }
@@ -168,6 +180,26 @@
   60%,
   88% {
     transform: translateY(var(--z0));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* La cama de una FDM baja mientras la pieza crece. Mismo recorrido que el
+   pórtico, en el otro sentido. */
+.maquina-svg .baja-z {
+  animation: maquinaBajaZ var(--ciclo) ease-in-out infinite;
+}
+
+@keyframes maquinaBajaZ {
+  0%,
+  8% {
+    transform: translateY(0);
+  }
+  60%,
+  88% {
+    transform: translateY(calc(var(--z1) * -1));
   }
   100% {
     transform: translateY(0);
@@ -297,6 +329,7 @@
   .maquinas .maquinas-movimiento { display: none; }
   .maquina .traza-x,
   .maquina .cama-y,
+  .maquina .baja-z,
   .maquina .sube-z,
   .maquina .portico,
   .maquina .capa,

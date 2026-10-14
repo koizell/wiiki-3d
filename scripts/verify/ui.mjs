@@ -201,6 +201,84 @@ try {
       (await giro.evaluate((el) => getComputedStyle(el).animationPlayState)) === 'running',
       '/maquinas: la animación se reanuda'
     );
+
+    // ── 2b · La mecánica se mueve junta, medido a lo largo del ciclo ─────────
+    /*
+     * Este es el fallo que más veces ha aparecido en esta página: piezas que no
+     * se mueven con la pieza a la que están unidas. Se mide en siete momentos del
+     * ciclo —no en un fotograma, que es donde antes se veía "bien"— pausando las
+     * animaciones y poniendo cada una en su fracción de tiempo.
+     */
+    const mecanica = await page.evaluate(() => {
+      document.getAnimations().forEach((a) => a.pause());
+      const q = (s, el) => Array.from(el.querySelectorAll(s));
+      const caja = (el) => {
+        const r = el.getBoundingClientRect();
+        return { t: r.top, b: r.bottom, l: r.left, r: r.right };
+      };
+      const tarjeta = (modelo) =>
+        Array.from(document.querySelectorAll('.maquina')).find((c) =>
+          c.querySelector('h2')?.textContent?.includes(modelo)
+        );
+      const salida = [];
+      for (const [clave, modelo] of [
+        ['bed-slinger', 'Ender 3 V3 SE'],
+        ['corexy', 'Flashforge AD5X'],
+        ['resina', 'Mars 5 Ultra'],
+      ]) {
+        const card = tarjeta(modelo);
+        const cabeza = q('.traza-x', card)[0] ?? null;
+        const hilo = q('.hilo-cabeza', card).concat(q('.tubo-cabeza', card))[0] ?? null;
+        const cama = q('.cama-y', card)[0] ?? q('.baja-z', card)[0] ?? q('.sube-z', card)[0];
+        const boquilla = q('.boquilla', card)[0] ?? null;
+        const capas = q('.capa', card);
+        const alta = capas.length
+          ? [...capas].sort((a, z) => a.getBoundingClientRect().top - z.getBoundingClientRect().top)[0]
+          : null;
+        for (const f of [0, 0.15, 0.3, 0.5, 0.7, 0.85, 1]) {
+          document.getAnimations().forEach((a) => {
+            const d = a.effect?.getComputedTiming().duration ?? 0;
+            try {
+              a.currentTime = d * f;
+            } catch {
+              /* una animación que no acepta currentTime no invalida la medida */
+            }
+          });
+          const c = cabeza ? caja(cabeza) : null;
+          const h = hilo ? caja(hilo) : null;
+          const m = caja(cama);
+          const pz = alta ? caja(alta) : null;
+          const bo = boquilla ? caja(boquilla) : null;
+          salida.push({
+            clave,
+            f,
+            // El extremo del filamento tiene que caer dentro del rectángulo del cabezal.
+            hiloPega:
+              c && h ? h.b >= c.t - 2 && h.b <= c.b + 2 && h.r >= c.l - 2 && h.l <= c.r + 2 : null,
+            // La boquilla no puede atravesar la capa de arriba de la pieza.
+            perfora: bo && pz ? bo.b > pz.t + 1 : null,
+            // La pieza se mueve con la cama (o la plataforma) que la sostiene.
+            piezaConCama: pz ? pz.t >= m.t - 4 && pz.b <= m.b + 4 : null,
+          });
+        }
+      }
+      return salida;
+    });
+
+    for (const s of mecanica) {
+      if (s.hiloPega !== null) {
+        comprobar(
+          s.hiloPega,
+          `${s.clave} · f=${s.f.toFixed(2)}: el filamento acaba en el cabezal`
+        );
+      }
+      if (s.perfora !== null) {
+        comprobar(s.perfora === false, `${s.clave} · f=${s.f.toFixed(2)}: la boquilla no atraviesa la pieza`);
+      }
+      if (s.piezaConCama !== null) {
+        comprobar(s.piezaConCama, `${s.clave} · f=${s.f.toFixed(2)}: la pieza se mueve con su cama`);
+      }
+    }
     await page.close();
   }
 

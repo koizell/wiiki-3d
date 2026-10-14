@@ -34,10 +34,26 @@ interface Props {
   className?: string;
 }
 
-/** Capas de la pieza: 12 capas visibles (exageradas para leerse). */
-const CAPAS = 12;
+/**
+ * Capas visibles de la pieza.
+ *
+ * Nueve, y no doce, por una razón de encaje: la pieza tiene que caber entre la
+ * cama y la boquilla. Con doce capas medía 60 px y su parte alta pasaba por
+ * encima de la punta de la boquilla —la boquilla quedaba dentro de la pieza—.
+ * Con nueve mide 45 px y se queda por debajo en las tres familias.
+ */
+const CAPAS = 9;
 const CAPA_H = 5;
 const ANCHO = 74;
+
+/**
+ * Los cuatro filamentos del hub de una CoreXY con AMS.
+ *
+ * Van como constante porque se dibujan dos veces —el tramo fijo que corre por la
+ * barra y el que cuelga al cabezal— y tienen que ser los mismos cuatro colores
+ * en el mismo orden, o el tubo azul del hub no sería el que llega al cabezal.
+ */
+const TUBOS = ['#2fa8e0', '#e05fa0', '#e0d05f', '#e8eaee'];
 
 /** Una extrusión vertical con su ranura. */
 function ExtrusionV({ x, y, h, w = 12 }: { x: number; y: number; h: number; w?: number }): ReactElement {
@@ -106,14 +122,25 @@ function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
       <rect className="est" x={36} y={278} width={408} height={18} rx={3} />
       <rect className="panel" x={36} y={292} width={408} height={10} />
 
-      {/* bobina girando en su soporte, con el filamento bajando al cabezal */}
+      {/* bobina girando en su soporte */}
       <g className="giro">
         <circle className="bobina" cx={104} cy={88} r={21} />
         <circle className="metal" cx={104} cy={88} r={6} />
         <line className="moviendo" x1={104} y1={67} x2={104} y2={109} />
       </g>
       <line className="metal" x1={104} y1={44} x2={104} y2={56} strokeWidth={3} />
-      <path className="hilo fluye" d="M104 88 Q170 120 214 150" fill="none" />
+      {/*
+        El filamento, en dos tramos.
+
+        El de arriba baja de la bobina a la barra del armazón y corre por ella: es
+        fijo. El de abajo cuelga de la barra hasta el extrusor, y va DENTRO de
+        `.traza-x`, que es el grupo que barrea. Antes era un solo trazo fijo cuyo
+        extremo se quedaba en el aire en cuanto el cabezal se movía.
+
+        Los dos se solapan a propósito: el fijo llega hasta x=376 y el móvil barre
+        de 122 a 358, así que en ningún punto del recorrido se ve una separación.
+      */}
+      <path className="hilo fluye" d="M104 66 Q134 48 170 46 Q286 38 376 48" fill="none" />
 
       {/* pórtico + carro y cabezal: sube con Z y barrea en X */}
       <g className="portico">
@@ -130,14 +157,18 @@ function VistaBedSlinger({ rizar }: { rizar: boolean }): ReactElement {
             <line x1={247} y1={158} x2={261} y2={158} className="vent-asp" />
             <line x1={254} y1={151} x2={254} y2={165} className="vent-asp" />
           </g>
+          {/* el filamento que cuelga de la barra hasta el extrusor: dentro del
+              grupo que barrea, para que su extremo acompañe al cabezal */}
+          <path className="hilo fluye hilo-cabeza" d="M240 46 C230 74 250 98 240 122" fill="none" />
         </g>
       </g>
 
-      {/* cama deslizando en Y con su chapa y la pieza creciendo */}
+      {/* cama deslizando en Y con su chapa y la pieza creciendo. La pieza nace
+          encima de la chapa (y=244), no por debajo: con doce capas flotaba. */}
       <g className="cama-y">
         <rect className="est" x={96} y={252} width={288} height={16} rx={2} />
         <rect className="chapa" x={96} y={244} width={288} height={8} />
-        <Capas rizar={rizar} yBase={236} anchoFn={(i) => ANCHO - i * 1.2} />
+        <Capas rizar={rizar} yBase={244} anchoFn={(i) => ANCHO - i * 1.2} />
       </g>
 
       <rect className="pant" x={376} y={252} width={38} height={24} rx={2} />
@@ -196,20 +227,54 @@ function VistaCoreXY({ rizar, abierta }: { rizar: boolean; abierta: boolean }): 
           <line x1={249} y1={84} x2={263} y2={84} className="vent-asp" />
           <line x1={256} y1={77} x2={256} y2={91} className="vent-asp" />
         </g>
+        {TUBOS.map((c, i) => (
+          <path
+            key={c}
+            className="tubo tubo-cabeza"
+            d={`M${236 + i * 3} 40 Q${246 + i * 3} 66 ${248 + i * 4} 94`}
+            fill="none"
+            stroke={c}
+            strokeWidth={2.2}
+            opacity={0.9}
+          />
+        ))}
       </g>
 
-      {/* hub de filamento con sus cuatro tubos hasta el cabezal */}
-      {['#2fa8e0', '#e05fa0', '#e0d05f', '#e8eaee'].map((c, i) => (
-        <path key={c} d={`M${344 + i * 12} 44 Q${300 + i * 8} 76 ${248 + i * 4} 94`} fill="none" stroke={c} strokeWidth={2.2} opacity={0.9} />
+      {/*
+        Los cuatro tubos del hub, en dos tramos y por el mismo motivo que el
+        filamento de la bed-slinger: el de arriba corre desde el hub por la barra
+        del armazón (fijo), y el de abajo cuelga hasta el cabezal DENTRO de
+        `.traza-x`. El cabezal barrea de 122 a 358 y el tramo fijo cubre de 110 a
+        380, así que nunca se separan.
+      */}
+      {TUBOS.map((c, i) => (
+        <path
+          key={c}
+          className="tubo"
+          d={`M${344 + i * 12} 46 Q${214 + i * 3} 32 ${110 + i * 3} 44`}
+          fill="none"
+          stroke={c}
+          strokeWidth={2.2}
+          opacity={0.9}
+        />
       ))}
 
-      {/* cama que sube en Z, con tuercas montadas en los husillos */}
-      <g className="sube-z">
+      {/*
+        La cama BAJA a lo largo del ciclo, que es lo que hace una cama móvil
+        cuando la pieza crece. Antes subía (`.sube-z` con `--z0` = -58 px): la
+        pieza se acercaba a la boquilla y acababa atravesándola, porque la pieza
+        ya estaba a 52 px de la punta en reposo.
+
+        `baja-z` usa el mismo recorrido que el pórtico de la bed-slinger
+        (`calc(var(--z1) * -1)`, 46 px) pero en sentido contrario: es el mismo
+        viaje de Z, expresado desde el lado de la cama.
+      */}
+      <g className="baja-z">
         <rect className="est" x={128} y={244} width={224} height={12} rx={2} />
         <rect className="metal" x={134} y={238} width={12} height={22} rx={2} />
         <rect className="metal" x={334} y={238} width={12} height={22} rx={2} />
         <rect className="chapa" x={128} y={236} width={224} height={8} />
-        <Capas rizar={rizar} yBase={232} anchoFn={(i) => ANCHO - i} />
+        <Capas rizar={rizar} yBase={244} anchoFn={(i) => ANCHO - i} />
       </g>
 
       <rect className="panel" x={336} y={16} width={80} height={28} rx={3} />
@@ -234,16 +299,18 @@ function VistaResina(): ReactElement {
       <rect className="panel" x={160} y={188} width={160} height={90} rx={3} />
       <rect className="est" x={146} y={276} width={188} height={12} rx={2} />
 
-      {/* plataforma que sube y corona la pila al final del ciclo */}
+      {/*
+        La plataforma y la pieza suben JUNTAS, en el mismo grupo: la pieza está
+        montada en la plataforma. Antes la pila de capas vivía fuera de `sube-z`,
+        así que la plataforma subía y la pieza se quedaba abajo, flotando.
+      */}
       <g className="sube-z">
         <rect className="metal" x={300} y={58} width={7} height={130} />
         <rect className="panel" x={294} y={172} width={18} height={26} rx={2} />
         <rect className="panel" x={200} y={174} width={100} height={6} rx={2} />
         <rect className="metal" x={216} y={177} width={84} height={5} rx={1} />
-      </g>
 
-      {/* cada capa se cura en el film: la pila crece hacia arriba */}
-      <g>
+        {/* cada capa se cura en el film: la pila crece hacia arriba */}
         {Array.from({ length: CAPAS }, (_, i) => (
           <rect
             key={i}
@@ -255,10 +322,11 @@ function VistaResina(): ReactElement {
             style={{ animationDelay: `${(i * 0.5).toFixed(2)}s` }}
           />
         ))}
-        {Array.from({ length: CAPAS }, (_, i) => (
-          <rect key={`c${i}`} className="cura" x={200} y={182} width={80} height={2} style={{ animationDelay: `${(i * 0.5).toFixed(2)}s` }} />
-        ))}
       </g>
+
+      {Array.from({ length: CAPAS }, (_, i) => (
+        <rect key={`c${i}`} className="cura" x={200} y={182} width={80} height={2} style={{ animationDelay: `${(i * 0.5).toFixed(2)}s` }} />
+      ))}
 
       <rect className="est" x={140} y={54} width={200} height={12} rx={3} />
       <rect className="pant-luz" x={150} y={57} width={44} height={6} opacity={0.85} />
@@ -285,7 +353,7 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
     '--v': String(v),
     '--x0': '-118px',
     '--x1': '118px',
-    '--z0': maquina.familia === 'resina' ? '-55px' : '-58px',
+    '--z0': '-55px',
     '--z1': '-46px',
   } as React.CSSProperties;
 
