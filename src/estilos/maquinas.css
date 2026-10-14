@@ -288,7 +288,13 @@
  * estado final (todas las capas visibles). La máquina sigue reconociéndose.
  */
 @media (prefers-reduced-motion: reduce) {
-  .maquinas-movimiento { display: none; }
+  /*
+   * El control de pausa se esconde: con la animación apagada no hace nada. Va
+   * con `.maquinas` delante a propósito —`.btn-ghost` pone `display: inline-flex`
+   * con la misma especificidad, y `App.css` se carga después que este fichero, así
+   * que sin el ancestro ganaría el botón y seguiría viéndose.
+   */
+  .maquinas .maquinas-movimiento { display: none; }
   .maquina .traza-x,
   .maquina .cama-y,
   .maquina .sube-z,
