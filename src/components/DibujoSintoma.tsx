@@ -67,6 +67,8 @@ const DESCRIPCION: Record<Dibujo, string> = {
     'Esquema de una pieza en corte con sus capas horizontales y una acotación de la altura de una capa.',
   hotend:
     'Esquema de una boquilla depositando filamento sobre la pieza, con ondas de calor a los lados.',
+  slicer:
+    'Esquema de un modelo que un slicer corta en capas paralelas para escribir el G-code.',
 };
 
 /**
@@ -287,6 +289,28 @@ const CUERPO: Record<Dibujo, ReactElement> = {
       {/* El calor, a los dos lados. */}
       <path className="dibujo-acento" d="M38 34 q5 -6 0 -12 q-5 -6 0 -12" fill="none" />
       <path className="dibujo-acento" d="M82 34 q5 -6 0 -12 q-5 -6 0 -12" fill="none" />
+    </>
+  ),
+
+  /*
+   * Un slicer cortando el modelo en capas paralelas.
+   *
+   * No es un defecto sino el acto que da nombre al tema: el plano de acento baja
+   * por el sólido y deja detrás las capas que acabarán en el G-code. Es el mismo
+   * trazo de capas que usan la grieta y la altura de capa, con el plano que corta
+   * añadido para decir «esto lo hace el slicer».
+   */
+  slicer: (
+    <>
+      <rect className="dibujo-chapa" x="10" y="66" width="100" height="6" rx="2" />
+      <path className="dibujo-pieza" d="M32 66 L32 20 L82 20 L82 66" fill="none" />
+      <path className="dibujo-capa" d="M32 58 L82 58" />
+      <path className="dibujo-capa" d="M32 50 L82 50" />
+      <path className="dibujo-capa" d="M32 42 L82 42" />
+      <path className="dibujo-capa" d="M32 34 L82 34" />
+      <path className="dibujo-capa" d="M32 26 L82 26" />
+      <path className="dibujo-acento" d="M16 16 L96 26" />
+      <path className="dibujo-punta" d="M96 26 L87 22 L90 30 Z" />
     </>
   ),
 };

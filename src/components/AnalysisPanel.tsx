@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ArticuloDeCampo } from '../lib/wiki-campos';
+import { etiquetaSlicer } from '../lib/tu-archivo';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
 
 /**
@@ -162,6 +163,18 @@ function AnalysisPanel({
             que acordarse.
           */}
           <DataRow label="Material" value={metadata.material} campo="material" explicar={explicar} />
+          {/*
+            La fila del slicer va justo debajo del material, y es a propósito: es
+            el programa que escribió el valor de al lado. `slicer` es obligatorio
+            en `ProjectMetadata`, así que nunca es «—»; si el G-code no trae
+            cabecera reconocible, el análisis no llega a esta pantalla.
+          */}
+          <DataRow
+            label="Slicer"
+            value={etiquetaSlicer(metadata.slicer)}
+            campo="slicer"
+            explicar={explicar}
+          />
           <DataRow
             label="Temp. hotend"
             value={formatCelsius(metadata.hotendTemp)}

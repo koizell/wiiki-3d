@@ -310,4 +310,5 @@ export type Dibujo =
   | 'camara'
   | 'voladizo'
   | 'capas'
-  | 'hotend';
+  | 'hotend'
+  | 'slicer';

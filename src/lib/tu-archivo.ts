@@ -6,7 +6,7 @@
  * en el bundle por este fichero.
  */
 import type { Guia } from '../content/guias/tipos.ts';
-import type { JevClassification, ProjectMetadata } from '../services/types.ts';
+import type { JevClassification, ProjectMetadata, SlicerKind } from '../services/types.ts';
 
 /**
  * La barra «Tu archivo»: los datos del archivo que ha subido quien lee, y dónde
@@ -122,6 +122,35 @@ function decimal(valor: number, decimales: number): string {
 }
 
 /**
+ * Cómo se llama en la barra cada valor de `SlicerKind`.
+ *
+ * El nombre de la familia, y no el del programa, porque **el analizador no
+ * siempre puede distinguirlos**: OrcaSlicer, Bambu Studio y los forks de
+ * Creality comparten el formato de cabecera, y PrusaSlicer y SuperSlicer
+ * también. Escribir «OrcaSlicer» sobre un fichero de Bambu Studio sería
+ * atribuir el archivo a un programa que no lo generó, que es exactamente lo que
+ * el tipo `SlicerKind` dice que no se hace. La guía de `slicer` explica el
+ * agrupamiento.
+ */
+const SLICER_LABEL: Record<SlicerKind, string> = {
+  cura: 'Cura',
+  prusa: 'PrusaSlicer',
+  orca: 'Orca / Bambu Studio',
+  unknown: 'Desconocido',
+};
+
+/**
+ * El nombre con el que se enseña el slicer detectado, o el valor tal cual.
+ *
+ * Vive aquí y lo importa el panel, para que la fila del panel y la fila de la
+ * barra no puedan decir dos cosas distintas del mismo campo. Es un `import` de
+ * valor y no de tipo, y no cuesta bundle: este módulo no importa contenido.
+ */
+export function etiquetaSlicer(kind: SlicerKind | undefined): string | undefined {
+  return kind ? SLICER_LABEL[kind] ?? kind : undefined;
+}
+
+/**
  * Los campos de los dos contratos de datos, con su etiqueta y su formato.
  *
  * La lista está completa a propósito, no sólo los que hoy usan las cuatro guías:
@@ -148,6 +177,19 @@ const CAMPOS: Record<string, DefinicionCampo> = {
      * la guía lo cubra.
      */
     valor: (m) => (m?.material ? m.material : null),
+  },
+  slicer: {
+    etiqueta: 'Slicer',
+    origen: 'archivo',
+    /*
+     * Obligatorio en `ProjectMetadata`, así que jamás es una fila ausente. En la
+     * práctica tampoco llega a valer «Desconocido»: un G-code cuya cabecera no
+     * trae la firma de ninguna de las tres familias no produce metadatos —el
+     * parseo se detiene con un aviso— y la barra no se llega a pintar. La
+     * etiqueta existe porque `SlicerKind` la declara y el `Record` la exige, no
+     * porque se espere verla.
+     */
+    valor: (m) => (m?.slicer ? SLICER_LABEL[m.slicer] : null),
   },
   bedTemp: {
     etiqueta: 'Cama',
