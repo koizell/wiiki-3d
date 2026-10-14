@@ -391,6 +391,14 @@ export default function Inicio({ interactivo = true }: { interactivo?: boolean }
           <h2 id="inicio-modulos-titulo">Qué más puedes hacer</h2>
           <ul className="inicio-modulos-lista">
             <li>
+              <Link className="inicio-modulo" to="/maquinas">
+                <span className="inicio-modulo-titulo">Máquinas</span>
+                <span className="inicio-modulo-detalle">
+                  Consulta las impresoras con su ilustración, ficha técnica y fuentes.
+                </span>
+              </Link>
+            </li>
+            <li>
               <Link className="inicio-modulo" to="/taller">
                 <span className="inicio-modulo-titulo">Taller</span>
                 <span className="inicio-modulo-detalle">

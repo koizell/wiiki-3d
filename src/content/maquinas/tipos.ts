@@ -53,9 +53,9 @@ export interface Maquina {
   tNozMax: number | null;
   /** Temperatura máxima de cama en °C. `null` = no aplica (resina). */
   tCamaMax: number | null;
-  extrusor: string;
+  extrusor: string | null;
   boquilla: string;
-  nivelacion: string;
+  nivelacion: string | null;
   sensorFilamento: boolean;
   /**
    * Origen por campo, con las mismas claves que los campos de arriba.

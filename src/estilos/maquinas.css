@@ -288,6 +288,7 @@
  * estado final (todas las capas visibles). La máquina sigue reconociéndose.
  */
 @media (prefers-reduced-motion: reduce) {
+  .maquinas-movimiento { display: none; }
   .maquina .traza-x,
   .maquina .cama-y,
   .maquina .sube-z,
@@ -324,7 +325,7 @@
 }
 .maquinas-migas { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
 .maquinas-migas a { color: var(--accent-text); }
-.maquinas-cabecera h1 { font-size: 1.7rem; line-height: 1.2; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+.maquinas-cabecera h1 { font-size: var(--h1); line-height: 1.2; margin-bottom: 0.6rem; letter-spacing: var(--h1-interletraje); }
 .maquinas-cabecera p { color: var(--text-secondary); line-height: 1.65; max-width: 44rem; }
 .maquinas-filamento {
   display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
@@ -335,16 +336,19 @@
 .maquinas-filamento select {
   background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit; font-size: 0.9rem;
+  min-height: 44px; max-width: 100%;
 }
 .maquinas-lista { display: flex; flex-direction: column; gap: 1.5rem; }
+.maquinas--pausadas .maquina-svg * { animation-play-state: paused !important; }
 /* La tarjeta es el <article class="maquina">: ilustración a la izquierda, ficha a
    la derecha. La ilustración (.maquina-svg) sólo pone su tamaño. */
 .maquina {
-  display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1.25rem;
   padding: 1.1rem; border: 1px solid var(--border); border-radius: var(--radio-lg);
 }
 @media (max-width: 640px) { .maquina { grid-template-columns: 1fr; } }
-.maquina-ilustracion { width: 100%; height: auto; }
+.maquina-ilustracion { width: 100%; height: auto; align-self: start; }
+.maquina-ficha { min-width: 0; overflow-wrap: anywhere; }
 .maquina-ficha h2 { font-size: var(--h2); margin-bottom: 0.2rem; }
 .maquina-precio { color: var(--accent-text); font-weight: 700; font-size: var(--texto-sm); margin-bottom: 0.5rem; }
 .maquina-veredicto { font-size: var(--texto-sm); padding: 0.4rem 0.6rem; border-radius: var(--radio-sm); margin-bottom: 0.8rem; }
@@ -365,3 +369,13 @@
 .maquina-origen--no-aplica { color: var(--text-tertiary); }
 .maquinas-nota p { color: var(--text-secondary); line-height: 1.6; max-width: 44rem; }
 .maquinas-nota h2 { font-size: var(--h2); margin-bottom: 0.4rem; }
+
+/* Resumen en vivo del filtro y fuentes desplegables. */
+.maquinas-resumen { margin: 0; font-size: var(--texto-sm); color: var(--text-primary); font-weight: 600; }
+.maquina-fuentes { margin-top: 0.6rem; font-size: var(--texto-sm); }
+.maquina-fuentes summary { cursor: pointer; color: var(--accent-text); font-size: var(--texto-sm); min-height: 44px; padding-block: 0.75rem; }
+.maquina-fuentes ul { margin: 0.4rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; }
+.maquina-fuentes a { color: var(--text-secondary); }
+.maquina-fuentes a:hover { color: var(--accent-text); }
+.maquinas-filamento select:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.maquinas-migas a:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }

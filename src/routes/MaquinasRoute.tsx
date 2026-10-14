@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import MaquinaSVG from '../components/MaquinaSVG';
 import { FILAMENTOS, MAQUINAS, filamentoPorId } from '../content/maquinas/catalogo';
 import { CAMPOS_FICHA, TEXTO_ORIGEN } from '../content/maquinas/tipos';
-import type { Maquina } from '../content/maquinas/tipos';
-import { estadoFilamento } from '../lib/maquinas';
+import type { Familia, Maquina } from '../content/maquinas/tipos';
+import { estadoFilamento, rizaria } from '../lib/maquinas';
 
 /**
  * El catálogo de impresoras: qué es cada modelo y cómo se comporta con un
@@ -21,7 +22,7 @@ import { estadoFilamento } from '../lib/maquinas';
  * ## Por qué no hay un flag de «modo estático»
  *
  * El selector de filamento es estado del componente. En la exportación estática
- * se renderiza con el valor inicial (PLA genérico) y sin interacción, igual que
+ * se renderiza sin filamento elegido y sin interacción, igual que
  * las guías exportan su etapa 4 como recetario: **la misma pieza, un estado
  * inicial fijo**. No hace falta una bandera que distinga «estoy exportando».
  */
@@ -39,15 +40,22 @@ function valorCampo(maquina: Maquina, campo: (typeof CAMPOS_FICHA)[number]): str
     case 'velMax':
       return `${v} mm/s`;
     case 'tNozMax':
-      return `${v} °C boquilla`;
     case 'tCamaMax':
-      return `${v} °C cama`;
+      return `${v} °C`;   // la etiqueta de la fila ya dice de qué es
     case 'sensorFilamento':
       return v ? 'Sí' : 'No';
     default:
-      return String(v);
+      return campo === 'familia' ? TEXTO_FAMILIA[v as Familia] : String(v);
   }
 }
+
+/** La cinemática en palabras de usuario, no el identificador del tipo. */
+const TEXTO_FAMILIA: Record<Familia, string> = {
+  'bed-slinger': 'Cama móvil',
+  'corexy-cerrada': 'CoreXY cerrada',
+  'corexy-abierta': 'CoreXY abierta',
+  resina: 'Resina',
+};
 
 /** La etiqueta de un campo en la ficha. `Partial` porque `CAMPOS_FICHA` sólo lista los campos de ficha, no todas las claves de la máquina. */
 const ETIQUETA: Partial<Record<keyof Maquina, string>> = {
@@ -73,42 +81,63 @@ const CON_ORIGEN = new Set<string>(['dims', 'vol', 'velMax', 'tNozMax', 'tCamaMa
 /** El veredicto de compatibilidad, en una línea concreta. */
 function Veredicto({ maquina, filamento }: { maquina: Maquina; filamento: ReturnType<typeof filamentoPorId> }) {
   const r = estadoFilamento(maquina, filamento);
-  const clase = { ok: 'ok', 'limite-boquilla': 'aviso', 'necesita-camara': 'aviso', resina: 'info' }[r.estado];
-  let texto: string;
-  switch (r.estado) {
-    case 'resina':
-      texto = 'Impresora de resina: no lleva filamento, sino resina.';
-      break;
-    case 'limite-boquilla':
-      texto = `Boquilla insuficiente: el filamento pide ${(r as { faltan: number }).faltan} °C más de lo que esta máquina puede dar.`;
-      break;
-    case 'necesita-camara':
-      texto = 'Necesita cámara cerrada: en equipo abierto este material warpea.';
-      break;
-    default:
-      texto = filamento ? `Compatible con ${filamento.nombre.toLowerCase()}.` : 'Elige un filamento para ver la compatibilidad.';
-  }
-  return <p className={`maquina-veredicto maquina-veredicto--${clase}`}>{texto}</p>;
+  const revisarCamara = maquina.familia !== 'resina' && rizaria(maquina, filamento);
+  const clase = !filamento || r.estado === 'resina' ? 'info' : r.estado === 'ok' ? 'ok' : 'aviso';
+  const texto = r.estado === 'resina'
+    ? 'Utiliza resina líquida, no filamento.'
+    : !filamento
+      ? 'Selecciona un filamento para comparar los datos de la ficha.'
+      : r.estado === 'limite-boquilla'
+        ? `Rango indicado para ${filamento.nombre}: ${filamento.noz[0]}–${filamento.noz[1]} °C. Máximo de boquilla de esta ficha: ${maquina.tNozMax} °C. Revisa el perfil recomendado.`
+        : revisarCamara
+          ? 'Revisa las condiciones de cámara que recomienda el perfil de este material.'
+          : `Sin avisos en esta comparación para ${filamento.nombre}. No confirma compatibilidad completa.`;
+  return (
+    <p className={`maquina-veredicto maquina-veredicto--${clase}`}>
+      {texto}
+      {revisarCamara && (
+        <>
+          {' '}
+          <Link to="/wiki/enclosure-y-warping">Consultar cámara y warping →</Link>
+        </>
+      )}
+    </p>
+  );
 }
 
 export default function MaquinasRoute() {
-  const [filId, setFilId] = useState('pla-gen');
+  const [filId, setFilId] = useState('');
+  const [pausadas, setPausadas] = useState(false);
   const filamento = useMemo(() => filamentoPorId(filId), [filId]);
 
+  // El resumen anuncia los cambios sin tener que recorrer todas las fichas.
+  const resumen = useMemo(() => {
+    if (!filamento) return `Sin comparar filamento: ${MAQUINAS.length} fichas con su ilustración.`;
+    const estados = MAQUINAS.map((m) => estadoFilamento(m, filamento).estado);
+    const bien = estados.filter((e) => e === 'ok').length;
+    const mal = estados.filter((e) => e === 'limite-boquilla' || e === 'necesita-camara').length;
+    const resina = estados.filter((e) => e === 'resina').length;
+    return [
+      `${filamento.nombre}: ${bien} fichas sin avisos`,
+      mal > 0 ? `${mal} por revisar` : null,
+      resina > 0 ? `${resina} de resina (no aplica)` : null,
+    ].filter(Boolean).join(' · ') + '.';
+  }, [filamento]);
+
   return (
-    <div className="maquinas">
+    <div className={`maquinas${pausadas ? ' maquinas--pausadas' : ''}`}>
       <header className="maquinas-cabecera">
         <p className="maquinas-migas">
-          <a href="/wiki">Wiki 3D</a> · Catálogo
+          <Link to="/wiki">Wiki 3D</Link> · Catálogo
         </p>
         <h1>Catálogo de impresoras 3D</h1>
         <p>
-          Ocho modelos habituales y cómo se comportan con un filamento. Cada cifra
+          Modelos de impresoras con ilustración y ficha técnica. Cada cifra
           lleva de dónde sale —<strong>fabricante</strong>, <strong>terceros</strong>{' '}
           o <strong>pendiente de fichar</strong>—, y lo que nadie ha verificado se
-          muestra como pendiente, no se rellena. Elige un filamento para ver si cabe
-          en cada máquina, si necesita cámara cerrada y si el warping rizaría la
-          pieza.
+          muestra como pendiente, no se rellena. Elige un filamento para comparar
+          los datos disponibles. Las ilustraciones son esquemas por familia,
+          no reproducciones exactas de cada modelo ni simulaciones del resultado.
         </p>
       </header>
 
@@ -119,12 +148,32 @@ export default function MaquinasRoute() {
           value={filId}
           onChange={(e) => setFilId(e.target.value)}
         >
-          {FILAMENTOS.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.nombre}
-            </option>
-          ))}
+          <option value="">Sin comparar filamento</option>
+          <optgroup label="Genéricos">
+            {FILAMENTOS.filter((f) => !f.marca).map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nombre}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="De marca">
+            {FILAMENTOS.filter((f) => f.marca).map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nombre}
+              </option>
+            ))}
+          </optgroup>
         </select>
+        <button
+          type="button"
+          className="btn-ghost maquinas-movimiento"
+          onClick={() => setPausadas(!pausadas)}
+        >
+          {pausadas ? 'Reanudar animaciones' : 'Pausar animaciones'}
+        </button>
+        <p className="maquinas-resumen" role="status">
+          {resumen}
+        </p>
       </div>
 
       <div className="maquinas-lista">
@@ -142,12 +191,12 @@ export default function MaquinasRoute() {
                   const valor = valorCampo(m, campo);
                   const conOrigen = CON_ORIGEN.has(campo);
                   const raw = m.origen[campo as keyof Maquina['origen']];
+                  // La etiqueta sale del ORIGEN, no del valor: un campo sin
+                  // fichar (valor null, origen P) es «pendiente», y uno que no
+                  // aplica a esta máquina (origen null) es «no aplica». Antes se
+                  // miraba el valor y los dos casos salían intercambiados.
                   const origenTexto =
-                    valor === null
-                      ? 'no aplica'
-                      : raw === 'F' || raw === 'T' || raw === 'P'
-                        ? TEXTO_ORIGEN[raw]
-                        : TEXTO_ORIGEN.P;
+                    raw === null ? 'no aplica' : TEXTO_ORIGEN[raw ?? 'P'];
                   return (
                     <div className="maquina-campo" key={campo}>
                       <dt>{ETIQUETA[campo] ?? campo}</dt>
@@ -163,6 +212,18 @@ export default function MaquinasRoute() {
                   );
                 })}
               </dl>
+              <details className="maquina-fuentes">
+                <summary>Fuentes de esta ficha ({m.fuentes.length})</summary>
+                <ul>
+                  {m.fuentes.map((f) => (
+                    <li key={f.url}>
+                      <a href={f.url} target="_blank" rel="nofollow noopener noreferrer">
+                        {f.titulo}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             </div>
           </article>
         ))}
