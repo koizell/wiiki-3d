@@ -34,7 +34,7 @@ import { AUTOR } from './autor.ts';
  *    comprobación en su propio sitio: `gcode_comments` es de Orca, las
  *    plantillas de Start/End son de Cura, la carpeta `snapshots` es de Prusa y
  *    el visor de información de laminado es de Bambu. Cada opción dispara una
- *    acción distinta; sin la variable, cuatro de las seis reglas condicionadas
+ *    acción distinta; sin la variable, cinco de las seis reglas condicionadas
  *    no podrían existir.
  * 5. **La segunda variable es el formato de salida, no el perfil.** Si exportas
  *    `.bgcode` el fichero no es texto y «leer la cabecera» necesita un paso
