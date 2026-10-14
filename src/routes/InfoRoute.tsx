@@ -179,7 +179,7 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         titulo: 'Responsable del tratamiento',
         cuerpo: (
           <p>
-            El responsable de los datos es <strong>John Puerta</strong>. Para
+            El responsable de los datos es el titular de <strong>wiiki-3d</strong>. Para
             cualquier cuestión de privacidad escribe a{' '}
             <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. Los datos no se venden a
             terceros ni se usan para tomar decisiones automatizadas con efectos
@@ -395,21 +395,13 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
     titulo: 'Quién escribe en wiiki-3d',
     secciones: [
       {
-        titulo: 'El autor',
+        titulo: 'Quién está detrás',
         cuerpo: (
           <>
             <p>
-              <strong>{AUTOR.nombre}</strong> — {AUTOR.credencial}. Escribe las guías de
-              la wiki y responde de ellas en el{' '}
-              <a href={AUTOR.perfil} target="_blank" rel="noopener noreferrer">
-                perfil de Instagram
-              </a>
-              .
-            </p>
+              <strong>{AUTOR.nombre}</strong> es una publicación independiente sobre impresión 3D. Detrás hay una persona, no un equipo ni una redacción, y puedes escribirle a <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>, el buzón del dominio que llega a quien escribe. Si una guía se equivoca o una fuente cambia, ese correo es la vía directa para corregirlo, y se responde.</p>
             <p>
-              No es un redactor genérico. Si una guía se equivoca o una fuente cambia,
-              hay una persona concreta a la que se le puede pedir la corrección: ésa es
-              la mitad del valor de firmar lo que se lee.
+              No se oculta que haya alguien real detrás: la transparencia es que se puede contactar. Lo que no se publica es su nombre en cada ficha.
             </p>
           </>
         ),

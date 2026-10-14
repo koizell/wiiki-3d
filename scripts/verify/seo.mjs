@@ -113,7 +113,7 @@ try {
         const schema = JSON.parse(json);
         assert.equal(schema.datePublished, guia.actualizado);
         assert.equal(schema.dateModified, guia.actualizado);
-        assert.equal(schema.author?.['@type'], 'Person');
+        assert.equal(schema.author?.['@type'], 'Organization');
         assert.equal(schema.author?.name, guia.autor.nombre);
       });
       /*

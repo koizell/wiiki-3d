@@ -240,21 +240,11 @@ function Cabecera({ guia }: { guia: Guia }) {
           )}
         </p>
         {/*
-          La firma y la fecha. Es la señal de autoría que el nicho en español no
-          tiene y que un evaluador de calidad busca: quién responde por esto y de
-          cuándo es. El nombre enlaza al perfil público (Instagram) —identidad
-          verificable— y la fecha es la última revisión del contenido, no la del
-          build. `actualizado` se declara en cada guía; aquí sólo se pinta.
+          La firma y la fecha: quién responde por el contenido y de cuándo es. La autoría es la publicación (guia.autor.nombre); la identidad verificable es el buzón de contacto del dominio (una vía real y transparente para corregir algo), no un perfil personal. `actualizado` se declara en cada guía y aquí se pinta.
         */}
         <p className="guia-autor">
-          {guia.autor.perfil ? (
-            <a href={guia.autor.perfil} target="_blank" rel="noopener noreferrer">
-              {guia.autor.nombre}
-            </a>
-          ) : (
-            guia.autor.nombre
-          )}
-          {guia.autor.credencial ? ` · ${guia.autor.credencial}` : ''}
+          {guia.autor.nombre} ·{" "}
+          <a href="mailto:contacto@wiiki-3d.com">Contacto</a>
           {` · Actualizado el ${fechaLarga(guia.actualizado)}`}
         </p>
       </div>

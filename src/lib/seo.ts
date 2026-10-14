@@ -39,15 +39,13 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
     description: 'Política de privacidad (RGPD) de wiiki-3d: qué se guarda en tu navegador, finalidad y base legal, tus derechos, conservación, la analítica de Google Analytics y la publicidad de AdSense, con su responsable.',
   },
   '/autor': {
-    path: '/autor/', title: 'Quién escribe en wiiki-3d | wiiki-3d',
-    description: 'John Puerta Sáez, ingeniero en sistemas, escribe y responde de las guías de impresión 3D de wiiki-3d. Cómo se construye cada guía y las nueve publicadas.',
+    path: '/autor/', title: 'Quién está detrás de wiiki-3d | wiiki-3d',
+    description: 'Quién está detrás de wiiki-3d: una publicación independiente sobre impresión 3D con un buzón de contacto directo. Cómo se construye cada guía y las diez publicadas.',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'Person',
+      '@type': 'Organization',
       name: AUTOR.nombre,
-      jobTitle: 'Ingeniero en sistemas',
       url: `${ORIGEN}/autor/`,
-      sameAs: [AUTOR.perfil],
     },
   },
   '/maquinas': {
@@ -110,10 +108,9 @@ export function seoGuia(guia: {
       totalTime: `PT${guia.minutos}M`,
       mainEntityOfPage: `${ORIGEN}${path}`,
       author: {
-        '@type': 'Person',
+        '@type': 'Organization',
         name: guia.autor.nombre,
-        ...(guia.autor.credencial ? { jobTitle: guia.autor.credencial } : {}),
-        ...(guia.autor.perfil ? { url: guia.autor.perfil } : {}),
+        url: ORIGEN,
       },
       publisher: { '@type': 'Organization', name: 'wiiki-3d' },
       datePublished: guia.actualizado,
