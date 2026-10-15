@@ -18,7 +18,7 @@ export const MAQUINAS: Maquina[] = [
     marca: 'Creality',
     modelo: 'Ender 3 V3 SE',
     familia: 'bed-slinger',
-    cerrada: false,
+    cerrada: null,
     color: 0x2b2f38,
     acento: 0x9a3535,
     precioRef: '199 $',
@@ -31,7 +31,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'CR Touch + strain gauge',
     sensorFilamento: false,
-    origen: { dims: 'T', vol: 'T', velMax: 'T', tNozMax: 'T', tCamaMax: 'T', extrusor: 'T', nivelacion: 'T' },
+    origen: { familia: 'T', cerrada: 'P', dims: 'T', vol: 'T', velMax: 'T', tNozMax: 'T', tCamaMax: 'T', extrusor: 'T', nivelacion: 'T' },
     fuentes: [
       { url: 'https://makerspecs.com/en/products/creality-ender-3-v3-se/', titulo: 'MakerSpecs · ficha de la Ender 3 V3 SE', origen: 'T' },
       { url: 'https://gavler.com/products/creality-ender-3-v3-se', titulo: 'Gavler · ficha y votos de comunidad', origen: 'T' },
@@ -43,7 +43,7 @@ export const MAQUINAS: Maquina[] = [
     marca: 'Creality',
     modelo: 'Ender 3 V3 KE',
     familia: 'bed-slinger',
-    cerrada: false,
+    cerrada: null,
     color: 0x2b2f38,
     acento: 0x9a3535,
     precioRef: '299 $',
@@ -56,7 +56,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Mesh',
     sensorFilamento: true,
-    origen: { dims: 'T', vol: 'T', velMax: 'T', tNozMax: 'T', tCamaMax: 'T', extrusor: 'T', nivelacion: 'T' },
+    origen: { familia: 'T', cerrada: 'P', dims: 'T', vol: 'T', velMax: 'T', tNozMax: 'T', tCamaMax: 'T', extrusor: 'T', nivelacion: 'T' },
     fuentes: [
       { url: 'https://makerspecs.com/en/compare/creality-ender-3-v3-ke-vs-creality-ender-3-v3-se/', titulo: 'MakerSpecs · comparativa KE vs SE', origen: 'T' },
       { url: 'https://store.creality.com/blogs/all/ender-3-v3-se-vs-ke', titulo: 'Creality · SE vs KE (blog del fabricante)', origen: 'F' },
@@ -67,22 +67,31 @@ export const MAQUINAS: Maquina[] = [
     slug: 'ad5x',
     marca: 'Flashforge',
     modelo: 'AD5X',
+    // Core-XY sí está afirmado (wiki oficial de Flashforge). El cerramiento NO: se
+    // vende como kit de accesorio, y de ahí no se sigue que la máquina salga
+    // abierta de fábrica. La familia dice «cerrada» porque el cerramiento es su
+    // modo completo, pero `cerrada` se queda sin verificar.
     familia: 'corexy-cerrada',
-    cerrada: true,
+    cerrada: null,
     color: 0x2b2f38,
     acento: 0xf07c1f,
     precioRef: '~1.000 $',
     dims: null,
     vol: [220, 220, 220],
     velMax: 600,
-    tNozMax: 350,
-    tCamaMax: 120,
+    // 350 °C salía de zmod, que es un firmware MODIFICADO: es lo que permite el
+    // mod, no la especificación de fábrica. Con esa cifra el ABS parecía viable en
+    // una máquina cuya temperatura de boquilla no está verificada. Queda pendiente.
+    tNozMax: null,
+    tCamaMax: null,
     extrusor: 'Directo',
     boquilla: '0,4 mm',
-    nivelacion: 'Auto',
+    nivelacion: null,
     sensorFilamento: true,
-    origen: { dims: 'P', vol: 'T', velMax: 'T', tNozMax: 'T', tCamaMax: 'P', extrusor: 'T', nivelacion: 'P' },
+    origen: { familia: 'F', cerrada: 'P', dims: 'P', vol: 'T', velMax: 'T', tNozMax: 'P', tCamaMax: 'P', extrusor: 'T', nivelacion: 'P' },
     fuentes: [
+      { url: 'https://www.flashforge.com/product-detail/adventurer-5x-series', titulo: 'Flashforge · ficha oficial de la Adventurer 5X', origen: 'F' },
+      { url: 'https://wiki.flashforge.com/en/flashforge/adventurer-5x-series', titulo: 'Flashforge · wiki oficial (Core-XY, tres husillos, IFS)', origen: 'F' },
       { url: 'https://github.com/ghzserg/zmod', titulo: 'zmod · configuración Klipper de la AD5X (recorridos, husillo, temperaturas)', origen: 'T' },
       { url: 'https://gavler.com/products/flashforge-ad5x', titulo: 'Gavler · ficha', origen: 'T' },
     ],
@@ -92,8 +101,11 @@ export const MAQUINAS: Maquina[] = [
     slug: 'bambu-a1',
     marca: 'Bambu Lab',
     modelo: 'A1',
-    familia: 'corexy-abierta',
-    cerrada: false,
+    // «Bed Slinger with CoreXY Speed And Quality»: la página de Bambu la llama bed
+    // slinger, y el catálogo la tenía como CoreXY abierta. La velocidad de 500 mm/s
+    // es real; la cinemática no es CoreXY.
+    familia: 'bed-slinger',
+    cerrada: null,
     color: 0xd8dbe0,
     acento: 0x00ae42,
     precioRef: '~350 $',
@@ -106,7 +118,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Auto',
     sensorFilamento: true,
-    origen: { dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'P', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://bambulab.com/en/a1', titulo: 'Bambu Lab · página de producto de la A1', origen: 'F' },
     ],
@@ -130,7 +142,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Auto',
     sensorFilamento: true,
-    origen: { dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'F', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://bambulab.com/en/p1s', titulo: 'Bambu Lab · página de producto de la P1S', origen: 'F' },
     ],
@@ -154,7 +166,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Mesh + load cell',
     sensorFilamento: true,
-    origen: { dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'F', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://www.prusa3d.com/product/original-prusa-mk4s-3d-printer-6/', titulo: 'Prusa · ficha de la MK4S', origen: 'F' },
     ],
@@ -178,7 +190,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Mesh + load cell',
     sensorFilamento: true,
-    origen: { dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'F', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://www.prusa3d.com/product/prusa-core-one-6/', titulo: 'Prusa · ficha de la CORE One', origen: 'F' },
     ],
@@ -202,7 +214,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '— (LCD 9K)',
     nivelacion: null,
     sensorFilamento: false,
-    origen: { dims: 'P', vol: 'T', velMax: 'T', tNozMax: null, tCamaMax: null, extrusor: null, nivelacion: null },
+    origen: { familia: 'T', cerrada: null, dims: 'P', vol: 'T', velMax: 'T', tNozMax: null, tCamaMax: null, extrusor: null, nivelacion: null },
     fuentes: [
       { url: 'https://gavler.com/products/elegoo-mars-5-ultra', titulo: 'Gavler · ficha', origen: 'T' },
     ],

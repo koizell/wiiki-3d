@@ -23,6 +23,7 @@ export type Compatibilidad =
   | { estado: 'ok' }
   | { estado: 'limite-boquilla'; faltan: number }
   | { estado: 'necesita-camara' }
+  | { estado: 'camara-desconocida' }
   | { estado: 'resina' };
 
 /**
@@ -31,6 +32,25 @@ export type Compatibilidad =
  * El orden de las comprobaciones importa: si es una máquina de resina, ninguna
  * de las otras aplica (no hay boquilla ni cama), y devolver "no viable" sería
  * falso: simplemente no lleva filamento.
+ *
+ * ## Las dos reglas, y lo que NO afirman
+ *
+ * 1. **La boquilla tiene un techo.** Si el filamento pide más grados que la
+ *    boquilla puede dar, la combinación no es viable.
+ *
+ *    Lo que esta regla **no** dice es lo contrario: que quedarse por debajo del
+ *    techo baste. El techo es un límite, no una recomendación. La interfaz habla
+ *    del rango quepublica el fabricante del filamento y del máximo de la ficha, y
+ *    deja la decisión en quien lee.
+ *
+ * 2. **Los materiales que necesitan cámara la necesitan.** ABS y ASA en máquina
+ *    abierta levantan warping.
+ *
+ *    Y aquí está la que estaba mal: **si el cerramiento de la máquina no está
+ *    verificado, la regla no se puede evaluar**. Antes `cerrada` era un booleano
+ *    y `!maquina.cerrada` convertía cualquier máquina sin dato en «abierta», así
+ *    que la regla afirmaba warping sobre una máquina cuyo cerramiento nadie había
+ *    comprobado. Ahora devuelve `camara-desconocida` y la interfaz lo dice.
  */
 export function estadoFilamento(maquina: Maquina, filamento: Filamento | null): Compatibilidad {
   if (maquina.familia === 'resina') return { estado: 'resina' };
@@ -38,6 +58,9 @@ export function estadoFilamento(maquina: Maquina, filamento: Filamento | null): 
   if (maquina.tNozMax !== null && filamento.noz[1] > maquina.tNozMax) {
     return { estado: 'limite-boquilla', faltan: filamento.noz[1] - maquina.tNozMax };
   }
+  // Sin cerramiento verificado no se puede afirmar ni que haga falta cámara ni
+  // que no: se dice que no se sabe.
+  if (maquina.cerrada === null) return { estado: 'camara-desconocida' };
   if (!filamento.abierta && !maquina.cerrada) return { estado: 'necesita-camara' };
   return { estado: 'ok' };
 }
@@ -45,12 +68,15 @@ export function estadoFilamento(maquina: Maquina, filamento: Filamento | null): 
 /**
  * Si esta combinación acabará con las esquinas levantadas.
  *
- * Sólo pasa con material que necesita cámara en máquina abierta. Se usa para
- * decidir si la ilustración dibuja el rizado, y el aviso lo dice antes de
- * imprimir, no después.
+ * Sólo pasa con material que necesita cámara en máquina **comprobada como
+ * abierta**. Si el cerramiento no está verificado, no se dibuja el rizado: sería
+ * anunciar un fallo que no se ha comprobado.
+ *
+ * Se usa para decidir si la ilustración dibuja el rizado, y el aviso lo dice
+ * antes de imprimir, no después.
  */
 export function rizaria(maquina: Maquina, filamento: Filamento | null): boolean {
-  if (!filamento || maquina.cerrada) return false;
+  if (!filamento || maquina.cerrada !== false) return false;
   return !filamento.abierta;
 }
 
@@ -80,7 +106,12 @@ export function avisos(maquina: Maquina, filamento: Filamento | null): string[] 
   if (maquina.tNozMax !== null && filamento.noz[1] > maquina.tNozMax) {
     fuera.push(`${filamento.nombre} pide hasta ${filamento.noz[1]} °C y la boquilla de la ${maquina.modelo} llega a ${maquina.tNozMax} °C.`);
   }
-  if (!filamento.abierta && !maquina.cerrada) {
+  // Cerramiento sin verificar: se dice, no se supone.
+  if (!filamento.abierta && maquina.cerrada === null) {
+    fuera.push(`${filamento.familia} necesita cámara cerrada, y el cerramiento de la ${maquina.modelo} no está verificado: no se puede determinar.`);
+    return fuera;
+  }
+  if (!filamento.abierta && maquina.cerrada === false) {
     fuera.push(`${filamento.familia} necesita cámara cerrada: en la ${maquina.modelo} abierta levanta warping.`);
   }
   return fuera;

@@ -49,10 +49,20 @@ npm run verify:teclado     # ¿las acciones son alcanzables con teclado?
 npm run verify:rutas       # las cuatro rutas x los cuatro tramos de ancho
 npm run verify:overlay     # estado del overlay del Suspense
 npm run verify:shots       # capturas de 768x667 y 768x1024
+npm run verify:wiki        # la wiki: buscador, índice, riel, ancho de línea
+npm run verify:seo         # metas, canónica y sitemap de la exportación
+npm run verify:taller      # los seis estados de la calculadora
+npm run verify:historial   # el historial y los proyectos
+npm run verify:guias       # el motor de guías y la barra «Tu archivo»
+npm run verify:maquinas    # el catálogo contra sus propias reglas
+npm run verify:subida     # la subida: arrastre, varios archivos, coste
+npm run verify:ui          # la auditoría de interfaz, repetible
 ```
 
-`verify:layout`, `verify:teclado` y `verify:rutas` salen con código 1 si alguna
-comprobación falla, así que valen como paso de CI.
+`verify:layout`, `verify:teclado`, `verify:rutas`, `verify:wiki`, `verify:seo`,
+`verify:taller`, `verify:historial`, `verify:guias`, `verify:maquinas`,
+`verify:subida` y `verify:ui` salen con código 1 si alguna comprobación falla, así
+que valen como paso de CI.
 
 ## Qué mide cada script
 
@@ -64,6 +74,12 @@ comprobación falla, así que valen como paso de CI.
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
 | `wiki.mjs` | La wiki: `/wiki`, `/wiki/:slug` y las tres páginas de información. La búsqueda filtra sin recargar y va en la URL, la tabla de contenidos marca la sección activa **al subir y al bajar**, la barra de «dónde estoy» aparece sin empujar el texto, los enlaces cruzados a páginas que no existen salen como texto y no como enlaces rotos, el ancho de línea se mide en caracteres reales en cinco viewports, `prefers-reduced-motion` apaga las tres animaciones y deja el texto visible, y la tabla de campos atados apunta a artículos que existen y declaran ese campo. |
 | `shots.mjs` | Capturas de los dos viewports donde el reparto de altura se nota, en viewport y en página completa. |
+| `taller.mjs` | Los seis estados de `/taller` en los cuatro tramos de ancho, incluido el análisis restaurado del historial. La aritmética con la coma y el punto, los precios inválidos, y que los estados que no saben no enseñen ningún número. |
+| `historial.mjs` | El historial: guardar, abrir, borrar, el aviso de almacenamiento y los proyectos. |
+| `guias.mjs` | El motor de guías: las condiciones, la coherencia de cada guía, el diferencial, las variables, y la barra «Tu archivo». |
+| `maquinas.mjs` | El catálogo contra sus propias reglas: sin slugs repetidos, un campo pendiente sin valor, cerramiento declarado con origen, y la regla sin afirmar lo que no puede saber. **No comprueba que las cifras sean verdaderas**: eso lo decide la fuente cocinada. |
+| `subida-ui.mjs` | La subida por arrastre y por selector: que el arrastre cancele la acción del navegador, que varios archivos se rechacen, y que el G-code llegue al coste. También que se pueda subir desde `/taller` sin salir de la ruta. |
+| `ui.mjs` | La auditoría de interfaz del 14/10/2026, repetible: 11 rutas × 3 anchos con un solo `h1` y sin desbordamiento, las fichas dentro de su tarjeta, los nombres accesibles de las ilustraciones, el contraste calculado de los tokens, `prefers-reduced-motion`, y la mecánica del SVG medida en 7 fracciones del ciclo. |
 
 ## La comprobación de encabezados
 

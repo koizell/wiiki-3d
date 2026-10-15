@@ -2,9 +2,24 @@
  * Verificación del catálogo de máquinas.
  *
  * Sin navegador: importa el catálogo y la lógica en Node y comprueba lo que una
- * captura no enseña. Cada comprobación se ha visto fallar al menos una vez
- * rompiendo el dato a propósito (ver `npm run verify:maquinas:roto` en el
- * README de desarrollo); si no, no está comprobada.
+ * captura no enseña.
+ *
+ * ## Lo que este script comprueba, y lo que no
+ *
+ * Comprueba el catálogo contra sus propias reglas: que no haya slugs repetidos,
+ * que un campo marcado como pendiente no lleve valor, que el cerramiento esté
+ * declarado con origen, que la regla no afirme lo que no puede saber, y que las
+ * combinaciones de la tabla de abajo den el estado esperado.
+ *
+ * **No comprueba que las cifras sean verdaderas.** Que la Ender 3 V3 KE tenga
+ * 300 °C de boquilla lo decide la fuente de `wiki/cooked/`, no este script: aquí
+ * sólo se mira que la ficha y la regla sean coherentes entre sí. Una captura
+ * verde significa «no se contradice», no «está verificado».
+ *
+ * Parte de las comprobaciones se han visto fallar rompiendo el dato a propósito
+ * (las de rasgos, los campos pendientes con valor y el cerramiento sin
+ * verificar). Otras no: su valor está en que avisan si alguien cambia el dato sin
+ * mirar, no en que hayan demostrado servir alguna vez.
  *
  * Uso: npm run verify:maquinas
  */
@@ -40,6 +55,9 @@ for (const m of MAQUINAS) {
   if (m.tNozMax !== null) ok(m.tNozMax > 100, `${m.slug}: boquilla máxima sensata`);
   if (m.familia === 'resina') {
     ok(m.tNozMax === null && m.tCamaMax === null, `${m.slug}: la resina no declara temperaturas de filamento`);
+  } else if (m.origen.tNozMax === 'P') {
+    // Pendiente a propósito: la cifra que había salía de un firmware modificado.
+    ok(m.tNozMax === null && m.tCamaMax === null, `${m.slug}: temperaturas pendientes, sin valor inventado`);
   } else {
     ok(m.tNozMax !== null && m.tCamaMax !== null, `${m.slug}: la FDM declara temperaturas`);
   }
@@ -58,20 +76,27 @@ for (const m of MAQUINAS) {
 const ender = maquinaPorSlug('ender-3-v3-se');
 const ke = maquinaPorSlug('ender-3-v3-ke');
 const a1 = maquinaPorSlug('bambu-a1');
+const mk4s = maquinaPorSlug('prusa-mk4s');
 const p1s = maquinaPorSlug('bambu-p1s');
 const mars = maquinaPorSlug('elegoo-mars-5-ultra');
 const abs = filamentoPorId('abs-gen');
 const pla = filamentoPorId('pla-gen');
 
 ok(estadoFilamento(ender, abs).estado === 'limite-boquilla', 'ABS en la Ender 3 V3 SE (260 °C) es límite de boquilla');
-ok(estadoFilamento(ke, abs).estado === 'necesita-camara', 'ABS en la Ender 3 V3 KE también necesita cámara (es abierta)');
-ok(estadoFilamento(a1, abs).estado === 'necesita-camara', 'ABS en la A1 abierta necesita cámara');
+// Las dos tienen el cerramiento sin verificar: la regla no puede afirmar que
+// haga falta cámara, y antes lo hacía porque `!cerrada` treataba el hueco como
+// «abierta».
+ok(estadoFilamento(ke, abs).estado === 'camara-desconocida', 'ABS en la KE: cerramiento sin verificar, no afirma cámara');
+ok(estadoFilamento(a1, abs).estado === 'camara-desconocida', 'ABS en la A1: cerramiento sin verificado, no afirma cámara');
+ok(estadoFilamento(p1s, abs).estado === 'ok', 'ABS en la P1S cerrada es viable');
+ok(estadoFilamento(mk4s, abs).estado === 'necesita-camara', 'ABS en la MK4S abierta sí necesita cámara (está verificado)');
 ok(estadoFilamento(p1s, abs).estado === 'ok', 'ABS en la P1S cerrada es viable');
 ok(estadoFilamento(mars, pla).estado === 'resina', 'la Mars no evalúa filamento');
 ok(estadoFilamento(ender, null).estado === 'ok', 'sin filamento elegido no hay aviso');
 
 // 5 · el rizado y la velocidad salen de la ficha
-ok(rizaria(ender, abs) === true, 'ABS en máquina abierta riza');
+ok(rizaria(ender, abs) === false, 'ABS en la Ender (cerramiento sin verificar) no dibuja el rizado');
+ok(rizaria(mk4s, abs) === true, 'ABS en la MK4S, abierta y verificada, sí riza');
 ok(rizaria(p1s, abs) === false, 'ABS en máquina cerrada no riza');
 ok(rizaria(ender, pla) === false, 'PLA no riza');
 ok(duracionCiclo(ke) === 24, '500 mm/s → ciclo de 24 s');
@@ -123,6 +148,71 @@ const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral
 for (const m of MAQUINAS) {
   for (const clave of Object.keys(m.rasgos)) {
     ok(RASGOS_DIBUJABLES.includes(clave), `${m.slug}: el rasgo «${clave}» es dibujable`);
+  }
+}
+
+/*
+ * 6b · Un campo con origen P no puede llevar valor
+ *
+ * La ficha tenía dos campos que se contradecían a sí mismos: la AD5X mostraba
+ * «120 °C · PENDIENTE DE FICHAR» y «Auto · PENDIENTE DE FICHAR». Un campo
+ * pendiente que además tiene cifra es una cifra que nadie ha verificado
+ * disfrazada de dato.
+ *
+ * El Hansa caso peor era el techo de boquilla de la AD5X: 350 °C sacados de zmod,
+ * que es un firmware MODIFICADO. Es lo que permite el mod, no la especificación de
+ * fábrica, y con esa cifra el ABS parecía viable en una máquina sin verificar.
+ */
+const CAMPOS_CON_VALOR = ['dims', 'vol', 'velMax', 'tNozMax', 'tCamaMax', 'extrusor', 'nivelacion'];
+for (const m of MAQUINAS) {
+  for (const campo of CAMPOS_CON_VALOR) {
+    const org = m.origen[campo];
+    const valor = m[campo];
+    if (org === 'P') {
+      ok(
+        valor === null || valor === undefined,
+        `${m.slug}.${campo}: origen pendiente sin valor (ahora: ${JSON.stringify(valor)})`
+      );
+    }
+  }
+}
+
+/*
+ * 6c · El cerramiento: o está verificado con origen, o es null.
+ *
+ * `cerrada` es el campo que decide el warping, y era un booleano sin origen.
+ * `!maquina.cerrada` convertía cualquier máquina sin dato en «abierta», así que la
+ * regla afirmaba warping sobre máquinas cuyo cerramiento nadie había comprobado.
+ * Ahora null significa «no verificado» y la interfaz lo dice.
+ */
+for (const m of MAQUINAS) {
+  const org = m.origen.cerrada;
+  if (m.familia === 'resina') {
+    ok(org === null || org === undefined, `${m.slug}: la resina no declara cerramiento`);
+    continue;
+  }
+  if (m.cerrada === null) {
+    ok(org === 'P', `${m.slug}: cerramiento sin verificar marcado como pendiente`);
+  } else {
+    ok(org === 'F' || org === 'T', `${m.slug}: cerramiento ${m.cerrada} declarado con origen (${org})`);
+  }
+}
+
+/*
+ * 6d · La regla no afirma lo que no puede saber.
+ *
+ * Un material que necesita cámara en una máquina cuyo cerramiento no está
+ * verificado no puede dar «necesita cámara»: no se sabe. Y tampoco se dibuja el
+ * rizado, que sería anunciar un fallo no comprobado.
+ */
+for (const m of MAQUINAS) {
+  if (m.familia === 'resina') continue;
+  const estado = estadoFilamento(m, abs);
+  if (m.cerrada === null) {
+    ok(estado.estado !== 'necesita-camara', `${m.slug}: sin cerramiento verificado no afirma que haga falta cámara`);
+    ok(estado.estado === 'ok' || estado.estado === 'camara-desconocida' || estado.estado === 'limite-boquilla',
+       `${m.slug}: ABS da «${estado.estado}», no una afirmación sobre la cámara`);
+    ok(rizaria(m, abs) === false, `${m.slug}: sin cerramiento verificado no dibuja el rizado`);
   }
 }
 

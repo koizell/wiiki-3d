@@ -35,8 +35,15 @@ export interface Maquina {
   marca: string;
   modelo: string;
   familia: Familia;
-  /** Cerrada = con cerramiento (cámara). Determina el warping de ABS/ASA. */
-  cerrada: boolean;
+  /**
+   * Cerrada = con cerramiento (cámara). Determina el warping de ABS/ASA.
+   *
+   * `null` = **no está verificado**. No es `false`: decir que una máquina está
+   * abierta es una afirmación, y sin fuente no se hace. La consecuencia práctica
+   * es que la compatibilidad con materiales que necesitan cámara no se puede
+   * determinar, y la interfaz lo dice en vez de elegir una.
+   */
+  cerrada: boolean | null;
   /** Color de carcaja en la ilustración (hex). */
   color: number;
   /** Color de acento (pantalla, tirador, logos) en la ilustración. */
@@ -63,8 +70,17 @@ export interface Maquina {
    * `null` significa "este campo no aplica a esta máquina" (la resina no tiene
    * temperatura de boquilla), que es distinto de `P` ("aplica y está pendiente")
    * y de no declararlo ("no se ha pensado en este campo").
+   *
+   * `familia` y `cerrada` están aquí **a propósito**: son los dos campos que
+   * deciden la física —la cinemática dibuja la máquina y el cerramiento decide si
+   * un material warpea—, y eran los únicos sin origen declarado. Un booleano sin
+   * fuente es una afirmación disfrazada de dato.
+   *
+   * Regla que `verify:maquinas` comprueba: **un campo con origen `P` no puede
+   * llevar valor**. Llevar los dos es mostrar «120 °C · pendiente de fichar», que
+   * se contradice a sí mismo.
    */
-  origen: Partial<Record<'dims' | 'vol' | 'velMax' | 'tNozMax' | 'tCamaMax' | 'extrusor' | 'nivelacion', OrigenDato | null>>;
+  origen: Partial<Record<'familia' | 'cerrada' | 'dims' | 'vol' | 'velMax' | 'tNozMax' | 'tCamaMax' | 'extrusor' | 'nivelacion', OrigenDato | null>>;
   /** Fuentes que respaldan la ficha. Vacío = todo pendiente. */
   fuentes: { url: string; titulo: string; origen: OrigenDato }[];
   /**

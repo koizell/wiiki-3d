@@ -82,16 +82,18 @@ const CON_ORIGEN = new Set<string>(['dims', 'vol', 'velMax', 'tNozMax', 'tCamaMa
 function Veredicto({ maquina, filamento }: { maquina: Maquina; filamento: ReturnType<typeof filamentoPorId> }) {
   const r = estadoFilamento(maquina, filamento);
   const revisarCamara = maquina.familia !== 'resina' && rizaria(maquina, filamento);
-  const clase = !filamento || r.estado === 'resina' ? 'info' : r.estado === 'ok' ? 'ok' : 'aviso';
+  const clase = !filamento || r.estado === 'resina' || r.estado === 'camara-desconocida' ? 'info' : r.estado === 'ok' ? 'ok' : 'aviso';
   const texto = r.estado === 'resina'
     ? 'Utiliza resina líquida, no filamento.'
     : !filamento
       ? 'Selecciona un filamento para comparar los datos de la ficha.'
-      : r.estado === 'limite-boquilla'
-        ? `Rango indicado para ${filamento.nombre}: ${filamento.noz[0]}–${filamento.noz[1]} °C. Máximo de boquilla de esta ficha: ${maquina.tNozMax} °C. Revisa el perfil recomendado.`
-        : revisarCamara
-          ? 'Revisa las condiciones de cámara que recomienda el perfil de este material.'
-          : `Sin avisos en esta comparación para ${filamento.nombre}. No confirma compatibilidad completa.`;
+      : r.estado === 'camara-desconocida'
+        ? `${filamento.familia} pide cámara cerrada y el cerramiento de esta máquina no está verificado. No se puede determinar con lo que hay.`
+        : r.estado === 'limite-boquilla'
+          ? `Rango indicado para ${filamento.nombre}: ${filamento.noz[0]}–${filamento.noz[1]} °C. Máximo de boquilla de esta ficha: ${maquina.tNozMax} °C. Revisa el perfil recomendado.`
+          : revisarCamara
+            ? 'Revisa las condiciones de cámara que recomienda el perfil de este material.'
+            : `Sin avisos en esta comparación para ${filamento.nombre}. No confirma compatibilidad completa.`;
   return (
     <p className={`maquina-veredicto maquina-veredicto--${clase}`}>
       {texto}
@@ -116,10 +118,12 @@ export default function MaquinasRoute() {
     const estados = MAQUINAS.map((m) => estadoFilamento(m, filamento).estado);
     const bien = estados.filter((e) => e === 'ok').length;
     const mal = estados.filter((e) => e === 'limite-boquilla' || e === 'necesita-camara').length;
+    const dudoso = estados.filter((e) => e === 'camara-desconocida').length;
     const resina = estados.filter((e) => e === 'resina').length;
     return [
       `${filamento.nombre}: ${bien} fichas sin avisos`,
       mal > 0 ? `${mal} por revisar` : null,
+      dudoso > 0 ? `${dudoso} sin cerramiento verificado` : null,
       resina > 0 ? `${resina} de resina (no aplica)` : null,
     ].filter(Boolean).join(' · ') + '.';
   }, [filamento]);
