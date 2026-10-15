@@ -148,10 +148,10 @@ que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 | 5.10 | El inicio explica antes de pedir | ✅ | A 375×667: h1 arriba, propuesta antes del botón, botón y zona enteros en la primera pantalla. `verify:teclado`, `verify:subida` y `verify:ui` (170) en verde. |
 | 5.11 | La guía responde al cambiar una variable | ✅ | Con PLA marcado: «1 de 6 contestadas · 6 acciones que se pueden aplicar ya. Ver las 6 →», y el enlace deja `#recomendación` dentro de la pantalla a 375 px. Recuento anunciado con `role=status`. |
 | 5.12 | El resultado se ve antes en móvil | ✅ | Va con la 5.11: el atajo del recuento salta al resultado sin recorrer la guía. |
-| 5.13 | La ficha no enseña todo de golpe | ⏳ | Fichas dentro de la tarjeta a 320 px (`verify:ui`) |
-| 5.14 | Estados vacíos con salida (Proyectos/Historial) | ⏳ | `verify:ui` + capturas a 375 px |
-| 5.15 | Orientación dentro de `/maquinas` | ⏳ | `verify:ui` + `verify:teclado` |
-| 5.16 | Sin JavaScript, la ficha se lee | ⏳ | `dist/maquinas/index.html` con JS desactivado |
+| 5.13 | La ficha no enseña todo de golpe | ✅ | Cuatro campos clave a la vista (cinemática, volumen, boquilla, cama) y cinco plegados en un desplegable que dice cuántos contiene. Fuentes conservadas. `verify:ui` mide el peor caso. |
+| 5.14 | Estados vacíos con salida (Proyectos/Historial) | ✅ | Los dos llevan «Subir un archivo» y «Empezar por el síntoma». Caja dentro del viewport a 375 px. |
+| 5.15 | Orientación dentro de `/maquinas` | ✅ | La miga pasa a `nav` con `aria-label`, tres niveles y `aria-current="page"`. Sin quinto destino en la barra. |
+| 5.16 | Sin JavaScript, la ficha se lee | ✅ | 8 fichas y 8 SVG en el exportado. El veredicto ya no pide elegir filamento cuando no se puede, y el botón de pausa no se pinta. |
 | 5.17 | La copia dice lo que el dibujo es | ⏳ | Lectura de `/maquinas` a 1440 px tras 5.5 |
 
 **Regla del sprint:** los bloqueos primero (5.4 → 5.8). Ninguna tarjeta se cierra
