@@ -259,7 +259,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
                 <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
                 <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
                 <Route path="/autor" element={<InfoRoute pagina="autor" />} />
-                <Route path="/maquinas" element={<MaquinasRoute />} />
+                <Route path="/maquinas" element={<MaquinasRoute exportEstatico />} />
               </Routes>
             </Pagina>
           </MemoryRouter>

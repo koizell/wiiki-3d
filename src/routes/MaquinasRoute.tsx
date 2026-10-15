@@ -19,12 +19,16 @@ import { estadoFilamento, rizaria } from '../lib/maquinas';
  * máquina —la resina no tiene boquilla— se marcan como «no aplica`, que no es
  * lo mismo que «pendiente».
  *
- * ## Por qué no hay un flag de «modo estático»
+ * ## La exportación estática, y lo que allí no se puede hacer
  *
- * El selector de filamento es estado del componente. En la exportación estática
- * se renderiza sin filamento elegido y sin interacción, igual que
- * las guías exportan su etapa 4 como recetario: **la misma pieza, un estado
- * inicial fijo**. No hace falta una bandera que distinga «estoy exportando».
+ * El HTML exportado lleva las ocho fichas y las ocho ilustraciones completas: se
+ * leen enteras sin JavaScript. Lo que no se puede es **comparar con un
+ * filamento** ni pausar la animación, porque las dos cosas son estado del
+ * componente.
+ *
+ * En ese render el veredicto no pide que se elija un filamento —no hay con qué— y
+ * el botón de pausa no se pinta. Decirlo es la diferencia entre una página que se
+ * lee y una que parece rota.
  */
 
 /** El valor de un campo de ficha, en texto. `null` = la máquina no lo declara. */
@@ -109,14 +113,16 @@ function FilaCampo({ maquina, campo }: { maquina: Maquina; campo: (typeof CAMPOS
 }
 
 /** El veredicto de compatibilidad, en una línea concreta. */
-function Veredicto({ maquina, filamento }: { maquina: Maquina; filamento: ReturnType<typeof filamentoPorId> }) {
+function Veredicto({ maquina, filamento, exportEstatico }: { maquina: Maquina; filamento: ReturnType<typeof filamentoPorId>; exportEstatico: boolean }) {
   const r = estadoFilamento(maquina, filamento);
   const revisarCamara = maquina.familia !== 'resina' && rizaria(maquina, filamento);
   const clase = !filamento || r.estado === 'resina' || r.estado === 'camara-desconocida' ? 'info' : r.estado === 'ok' ? 'ok' : 'aviso';
   const texto = r.estado === 'resina'
     ? 'Utiliza resina líquida, no filamento.'
     : !filamento
-      ? 'Selecciona un filamento para comparar los datos de la ficha.'
+      ? exportEstatico
+        ? 'Ficha completa. Compararla con un filamento necesita JavaScript.'
+        : 'Selecciona un filamento para comparar los datos de la ficha.'
       : r.estado === 'camara-desconocida'
         ? `${filamento.familia} pide cámara cerrada y el cerramiento de esta máquina no está verificado. No se puede determinar con lo que hay.`
         : r.estado === 'limite-boquilla'
@@ -137,7 +143,7 @@ function Veredicto({ maquina, filamento }: { maquina: Maquina; filamento: Return
   );
 }
 
-export default function MaquinasRoute() {
+export default function MaquinasRoute({ exportEstatico = false }: { exportEstatico?: boolean } = {}) {
   const [filId, setFilId] = useState('');
   const [pausadas, setPausadas] = useState(false);
   const filamento = useMemo(() => filamentoPorId(filId), [filId]);
@@ -161,17 +167,34 @@ export default function MaquinasRoute() {
   return (
     <div className={`maquinas${pausadas ? ' maquinas--pausadas' : ''}`}>
       <header className="maquinas-cabecera">
-        <p className="maquinas-migas">
-          <Link to="/wiki">Wiki 3D</Link> · Catálogo
-        </p>
+        {/*
+          La orientación.
+
+          La auditoría del 14/10 lo marcó: en `/maquinas` no queda ningún destino
+          de la barra activo, y la miga era la única pista de dónde se está. Se
+          resuelve por el sitio que ya existe —la miga, que es el patrón de
+          «estoy dentro de una sección»— y se refuerza con el texto de la propia
+          miga, que ahora dice qué es la página sin dejarlo sólo en el `<h1>`.
+
+          No se añade un quinto destino a la barra: son cuatro por decisión del
+          proyecto, y `/maquinas` se alcanza desde Inicio y desde el pie.
+        */}
+        <nav className="maquinas-migas" aria-label="Estás aquí">
+          <Link to="/">Inicio</Link>
+          <span aria-hidden="true">›</span>
+          <Link to="/wiki">Wiki 3D</Link>
+          <span aria-hidden="true">›</span>
+          <span aria-current="page">Catálogo de impresoras</span>
+        </nav>
         <h1>Catálogo de impresoras 3D</h1>
         <p>
           Modelos de impresoras con ilustración y ficha técnica. Cada cifra
           lleva de dónde sale —<strong>fabricante</strong>, <strong>terceros</strong>{' '}
           o <strong>pendiente de fichar</strong>—, y lo que nadie ha verificado se
           muestra como pendiente, no se rellena. Elige un filamento para comparar
-          los datos disponibles. Las ilustraciones son esquemas por familia,
-          no reproducciones exactas de cada modelo ni simulaciones del resultado.
+          los datos disponibles. Las ilustraciones son esquemas por familia con
+          los rasgos que sus fuentes afirman, no reproducciones exactas de cada
+          modelo ni simulaciones del resultado.
         </p>
       </header>
 
@@ -198,16 +221,24 @@ export default function MaquinasRoute() {
             ))}
           </optgroup>
         </select>
-        <button
-          type="button"
-          className="btn-ghost maquinas-movimiento"
-          onClick={() => setPausadas(!pausadas)}
-        >
-          {pausadas ? 'Reanudar animaciones' : 'Pausar animaciones'}
-        </button>
+        {exportEstatico ? null : (
+          <button
+            type="button"
+            className="btn-ghost maquinas-movimiento"
+            onClick={() => setPausadas(!pausadas)}
+          >
+            {pausadas ? 'Reanudar animaciones' : 'Pausar animaciones'}
+          </button>
+        )}
         <p className="maquinas-resumen" role="status">
           {resumen}
         </p>
+        {exportEstatico && (
+          <p className="maquinas-estatico">
+            Comparar con un filamento y pausar la animación necesitan JavaScript.
+            Las fichas y las ilustraciones se leen completas sin él.
+          </p>
+        )}
       </div>
 
       <div className="maquinas-lista">
@@ -219,7 +250,7 @@ export default function MaquinasRoute() {
                 {m.marca} {m.modelo}
               </h2>
               <p className="maquina-precio">{m.precioRef}</p>
-              <Veredicto maquina={m} filamento={filamento} />
+              <Veredicto maquina={m} filamento={filamento} exportEstatico={exportEstatico} />
               <dl className="maquina-campos">
                 {CAMPOS_CLAVE.map((campo) => (
                   <FilaCampo key={campo} maquina={m} campo={campo} />

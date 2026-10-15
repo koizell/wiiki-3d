@@ -82,10 +82,28 @@ export default function ProyectosRoute() {
       )}
 
       {disponible === true && entradas !== null && lista.length === 0 && (
-        <p className="historial-aviso">
-          Todavía no hay nada. Analiza un G-code y aparecerá aquí para ponerle
-          nombre.
-        </p>
+        <div className="historial-aviso historial-vacio">
+          <p>
+            Todavía no hay nada. Analiza un G-code y aparecerá aquí para ponerle
+            nombre.
+          </p>
+          {/*
+            El estado vacío tenía texto pero ninguna salida.
+
+            La auditoría del 14/10 lo marcó: explicaba qué faltaba y no ofrecía
+            cómo resolverlo. Quien llega aquí sin haber subido nada se encuentra
+            con un diagnóstico y ninguna acción. Los dos botones son los dos
+            caminos que la página ya tiene.
+          */}
+          <div className="historial-vacio-acciones">
+            <Link className="btn-primary" to="/">
+              Subir un archivo
+            </Link>
+            <Link className="btn-ghost" to="/wiki">
+              Empezar por el síntoma
+            </Link>
+          </div>
+        </div>
       )}
 
       {proyectos.length > 0 && (

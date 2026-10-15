@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAnalysisActions } from '../state/useAnalysis';
 import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, vaciarHistorial } from '../lib/storage';
@@ -57,9 +58,23 @@ function HistorialRoute() {
       )}
 
       {disponible === true && entradas !== null && entradas.length === 0 && (
-        <p className="historial-aviso">
-          Todavía no hay análisis guardados. Los que analices aparecerán aquí solos.
-        </p>
+        <div className="historial-aviso historial-vacio">
+          <p>
+            Todavía no hay análisis guardados. Los que analices aparecerán aquí solos.
+          </p>
+          {/*
+            Igual que en Proyectos: el aviso decía qué faltaba y no daba ninguna
+            salida. Los dos botones son los caminos que la página ya tiene.
+          */}
+          <div className="historial-vacio-acciones">
+            <Link className="btn-primary" to="/">
+              Subir un archivo
+            </Link>
+            <Link className="btn-ghost" to="/wiki">
+              Empezar por el síntoma
+            </Link>
+          </div>
+        </div>
       )}
 
       {disponible === true && entradas !== null && entradas.length > 0 && (

@@ -393,8 +393,20 @@
   flex-direction: column;
   gap: 2rem;
 }
-.maquinas-migas { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+/* La miga, como barra de orientación: una `nav` con `aria-label`, no un párrafo
+   suelto. El separador es un «›» decorativo. */
+.maquinas-migas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
 .maquinas-migas a { color: var(--accent-text); }
+.maquinas-migas [aria-current='page'] { color: var(--text-primary); font-weight: 600; }
+.maquinas-migas a:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .maquinas-cabecera h1 { font-size: var(--h1); line-height: 1.2; margin-bottom: 0.6rem; letter-spacing: var(--h1-interletraje); }
 .maquinas-cabecera p { color: var(--text-secondary); line-height: 1.65; max-width: 44rem; }
 .maquinas-filamento {
@@ -462,3 +474,12 @@
 }
 .maquina-resto summary:hover,
 .maquina-fuentes summary:hover { color: var(--text-primary); }
+
+/* El aviso de la exportación estática: lo que no se puede hacer sin JavaScript. */
+.maquinas-estatico {
+  margin: 0;
+  flex-basis: 100%;
+  font-size: var(--texto-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
