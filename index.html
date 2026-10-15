@@ -67,23 +67,14 @@
     <meta name="google-adsense-account" content="ca-pub-1976099124866284" />
 
     <!--
-      Medida de audiencia: GA4 con Consent Mode v2.
+      Medida de audiencia: GA4 con Consent Mode v2 (ID real en GA_ID).
 
-      **El ID es un marcador y el snippet no se inyecta con él puesto.** Con
-      `G-XXXXXXXXXX` no se crea el `<script>`, así que mientras no haya una
-      propiedad real la página no llama a Google ni le deja cookies. Cuando
-      exista, se sustituye la constante y ya está; el runbook de los pasos
-      manuales (crear la propiedad, verificar GSC por DNS, enviar el sitemap
-      que `scripts/export-static.mjs` ya genera) está en
-      `docs/medicion-setup.md`.
-
-      **El consentimiento va denegado por defecto, y no es un detalle.** La
-      política de privacidad de este sitio promete que la medida y la
-      publicidad funcionan con consentimiento; cargar GA4 sin esto mediría a
-      todo el mundo sin permiso. Con `analytics_storage` denegado, Google
-      recoge la visita en modo limitado —sin cookies de identificador— hasta
-      que un banner lo desbloquee. Cuando el banner llegue, sólo tiene que
-      llamar a `gtag('consent', 'update', { … })`: nada de aquí se toca.
+      Consentimiento denegado por defecto: sin banner aceptado, Google recoge
+      la visita en modo limitado (sin cookies identificadoras), como promete
+      la politica de privacidad. El banner solo tiene que llamar a
+      gtag('consent', 'update', { ... }); cuando se instale, nada de aqui
+      se toca. El ID es real y el snippet ya se inyecta. Runbook manual en
+      docs/medicion-setup.md.
     -->
     <script>
       const GA_ID = 'G-6W0LKP3ETS';
