@@ -251,16 +251,15 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
             <p>
               Al subir un archivo <strong>G-code</strong>, la aplicación envía sus
               metadatos de impresión —material, temperaturas, altura de capa, tiempo
-              y filamento— a un clasificador para que te dé el diagnóstico de
-              riesgo cuando está configurado el servicio real. En modo de
-              demostración, la clasificación se calcula localmente y no se hace ese envío.
+              y filamento— a un servicio de análisis cuando está configurado el servicio real; en
+              caso contrario, la clasificación se calcula localmente y no se
+              hace ese envío.
             </p>
             <p>
-              Ese envío va primero a un proxy propio y de ahí al servicio de
-              clasificación. Dos cosas conviene que sepas: <strong>el nombre del
-              archivo forma parte de los metadatos y viaja con ellos</strong>, y{' '}
-              <strong>los archivos STL, 3MF y OBJ no generan ninguna llamada</strong>,
-              porque no se analizan.
+              El envío se realiza primero a un servicio intermedio propio y de ahí al
+              servicio de análisis. Dos cosas conviene que sepas: <strong>el
+              nombre del archivo forma parte de los metadatos enviados</strong>, y{' '}
+              <strong>los archivos que no se analizan no generan ninguna llamada</strong>.
             </p>
           </>
         ),
