@@ -142,6 +142,16 @@ export const CAMPOS_FICHA: (keyof Maquina)[] = [
   'familia', 'vol', 'dims', 'velMax', 'tNozMax', 'tCamaMax', 'extrusor', 'nivelacion', 'sensorFilamento',
 ];
 
+/**
+ * Los campos que deciden si un filamento cabe en la máquina, y por tanto los que
+ * se ven sin desplegar nada.
+ *
+ * La auditoría del 14/10 lo pidió: con los nueve campos abiertos, cada ficha
+ * ocupaba una pantalla y había que recorrerlas todas para comparar. Estos cuatro
+ * son los que responden a la pregunta de la página; el resto se pliega.
+ */
+export const CAMPOS_CLAVE: (keyof Maquina)[] = ['familia', 'vol', 'tNozMax', 'tCamaMax'];
+
 /** Texto del origen, para no repetir el mapa en cada componente. */
 export const TEXTO_ORIGEN: Record<OrigenDato, string> = {
   F: 'fabricante',

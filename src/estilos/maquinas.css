@@ -443,9 +443,22 @@
 /* Resumen en vivo del filtro y fuentes desplegables. */
 .maquinas-resumen { margin: 0; font-size: var(--texto-sm); color: var(--text-primary); font-weight: 600; }
 .maquina-fuentes { margin-top: 0.6rem; font-size: var(--texto-sm); }
-.maquina-fuentes summary { cursor: pointer; color: var(--accent-text); font-size: var(--texto-sm); min-height: 44px; padding-block: 0.75rem; }
 .maquina-fuentes ul { margin: 0.4rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; }
 .maquina-fuentes a { color: var(--text-secondary); }
 .maquina-fuentes a:hover { color: var(--accent-text); }
 .maquinas-filamento select:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .maquinas-migas a:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* El resto de la ficha, plegado. Mismo aspecto que el de fuentes: un resumen
+   enfocable que despliega, no un bloque escondido. */
+.maquina-resto { margin-top: 0.4rem; }
+.maquina-resto summary,
+.maquina-fuentes summary {
+  cursor: pointer;
+  color: var(--accent-text);
+  font-size: var(--texto-sm);
+  min-height: 44px;
+  padding-block: 0.75rem;
+}
+.maquina-resto summary:hover,
+.maquina-fuentes summary:hover { color: var(--text-primary); }

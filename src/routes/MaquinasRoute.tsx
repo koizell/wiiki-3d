@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import MaquinaSVG from '../components/MaquinaSVG';
 import { FILAMENTOS, MAQUINAS, filamentoPorId } from '../content/maquinas/catalogo';
-import { CAMPOS_FICHA, TEXTO_ORIGEN } from '../content/maquinas/tipos';
+import { CAMPOS_CLAVE, CAMPOS_FICHA, TEXTO_ORIGEN } from '../content/maquinas/tipos';
 import type { Familia, Maquina } from '../content/maquinas/tipos';
 import { estadoFilamento, rizaria } from '../lib/maquinas';
 
@@ -77,6 +77,36 @@ const ETIQUETA: Partial<Record<keyof Maquina, string>> = {
  * los «fichó» con una fuente, que es justo lo que esta página evita.
  */
 const CON_ORIGEN = new Set<string>(['dims', 'vol', 'velMax', 'tNozMax', 'tCamaMax', 'extrusor', 'nivelacion']);
+
+/**
+ * Una fila de la ficha: etiqueta, valor y de dónde sale.
+ *
+ * Va como componente porque ahora se pinta en dos sitios —los campos clave y el
+ * resto plegado—, y la lógica del origen es la misma en los dos. Con el bucle
+ * inline había que mantenerla sincronizada a mano.
+ */
+function FilaCampo({ maquina, campo }: { maquina: Maquina; campo: (typeof CAMPOS_FICHA)[number] }) {
+  const valor = valorCampo(maquina, campo);
+  const conOrigen = CON_ORIGEN.has(campo);
+  const raw = maquina.origen[campo as keyof Maquina['origen']];
+  // La etiqueta sale del ORIGEN, no del valor: un campo sin fichar (valor null,
+  // origen P) es «pendiente», y uno que no aplica a esta máquina (origen null) es
+  // «no aplica». Antes se miraba el valor y los dos casos salían intercambiados.
+  const origenTexto = raw === null ? 'no aplica' : TEXTO_ORIGEN[raw ?? 'P'];
+  return (
+    <div className="maquina-campo">
+      <dt>{ETIQUETA[campo] ?? campo}</dt>
+      <dd>
+        <span className="maquina-campo-valor">{valor ?? '—'}</span>
+        {conOrigen && (
+          <span className={`maquina-origen maquina-origen--${origenTexto.replace(/\s+/g, '-')}`}>
+            {origenTexto}
+          </span>
+        )}
+      </dd>
+    </div>
+  );
+}
 
 /** El veredicto de compatibilidad, en una línea concreta. */
 function Veredicto({ maquina, filamento }: { maquina: Maquina; filamento: ReturnType<typeof filamentoPorId> }) {
@@ -191,31 +221,30 @@ export default function MaquinasRoute() {
               <p className="maquina-precio">{m.precioRef}</p>
               <Veredicto maquina={m} filamento={filamento} />
               <dl className="maquina-campos">
-                {CAMPOS_FICHA.map((campo) => {
-                  const valor = valorCampo(m, campo);
-                  const conOrigen = CON_ORIGEN.has(campo);
-                  const raw = m.origen[campo as keyof Maquina['origen']];
-                  // La etiqueta sale del ORIGEN, no del valor: un campo sin
-                  // fichar (valor null, origen P) es «pendiente», y uno que no
-                  // aplica a esta máquina (origen null) es «no aplica». Antes se
-                  // miraba el valor y los dos casos salían intercambiados.
-                  const origenTexto =
-                    raw === null ? 'no aplica' : TEXTO_ORIGEN[raw ?? 'P'];
-                  return (
-                    <div className="maquina-campo" key={campo}>
-                      <dt>{ETIQUETA[campo] ?? campo}</dt>
-                      <dd>
-                        <span className="maquina-campo-valor">{valor ?? '—'}</span>
-                        {conOrigen && (
-                          <span className={`maquina-origen maquina-origen--${origenTexto.replace(/\s+/g, '-')}`}>
-                            {origenTexto}
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                  );
-                })}
+                {CAMPOS_CLAVE.map((campo) => (
+                  <FilaCampo key={campo} maquina={m} campo={campo} />
+                ))}
               </dl>
+
+              {/*
+                El resto de la ficha, plegado.
+
+                La auditoría del 14/10 lo marcó: nueve filas por tarjeta, ocho
+                tarjetas, y para comparar dos máquinas había que recorrerlas
+                enteras. Los cuatro campos de arriba son los que responden a la
+                pregunta de la página; estos cinco son contexto.
+
+                No se pierde nada: el `<details>` está abierto por HTML cuando se
+                despliega, y las etiquetas de procedencia siguen dentro.
+              */}
+              <details className="maquina-resto">
+                <summary>Resto de la ficha ({CAMPOS_FICHA.length - CAMPOS_CLAVE.length} campos)</summary>
+                <dl className="maquina-campos">
+                  {CAMPOS_FICHA.filter((c) => !CAMPOS_CLAVE.includes(c)).map((campo) => (
+                    <FilaCampo key={campo} maquina={m} campo={campo} />
+                  ))}
+                </dl>
+              </details>
               <details className="maquina-fuentes">
                 <summary>Fuentes de esta ficha ({m.fuentes.length})</summary>
                 <ul>

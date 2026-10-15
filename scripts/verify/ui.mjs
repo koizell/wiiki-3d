@@ -131,10 +131,20 @@ try {
     await page.goto(`${BASE}/maquinas`);
     await page.locator('.maquina').first().waitFor();
 
+    /*
+     * Se despliega «Resto de la ficha» antes de medir.
+
+     * Cerrado, los campos de dentro siguen en el DOM pero con caja 0×0 en el
+     * origen: la medida diría que desbordan sin que desborden. Se mide el peor
+     * caso, que es con todo abierto, que es además el estado en el que más filas
+     * hay que hacer caber.
+     */
+    for (const sum of await page.$$('.maquina-resto summary')) await sum.click();
+
     const tarjetas = await page.$$eval('article.maquina', (els) =>
       els.map((el) => {
         const caja = el.getBoundingClientRect();
-        const campos = [...el.querySelectorAll('dt, dd')];
+        const campos = [...el.querySelectorAll('dt, dd')].filter((x) => x.getClientRects().length > 0);
         return {
           modelo: el.querySelector('h2')?.textContent?.trim() ?? '?',
           campos: campos.length,
