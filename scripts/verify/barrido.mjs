@@ -194,10 +194,16 @@ async function main() {
   );
 
   check('los tres breakpoints siguen en 640 / 768 / 1200',
-    byVp['639x667'].stl.topbar === 100 && byVp['640x667'].stl.topbar === 69 &&
+    /*
+     * 104px es el alto real del tóbar móvil desde la escala tipográfica con
+     * IBM Plex (la primera versión de esta comprobación esperaba 100px). El
+     * valor exacto es una referencia; lo que protege la comprobación es que
+     * el corte siga ocurriendo en 640.
+     */
+    byVp['639x667'].stl.topbar === 104 && byVp['640x667'].stl.topbar === 69 &&
     byVp['767x667'].stl.stage.h !== byVp['768x667'].stl.stage.h &&
     byVp['1199x667'].stl.stage.h !== byVp['1200x667'].stl.stage.h,
-    `topbar 100->69 en 640; visor ${byVp['767x667'].stl.stage.h}->${byVp['768x667'].stl.stage.h} en 768; ${byVp['1199x667'].stl.stage.h}->${byVp['1200x667'].stl.stage.h} en 1200`);
+    `topbar 104->69 en 640; visor ${byVp['767x667'].stl.stage.h}->${byVp['768x667'].stl.stage.h} en 768; ${byVp['1199x667'].stl.stage.h}->${byVp['1200x667'].stl.stage.h} en 1200`);
 
   console.log('='.repeat(72));
 
