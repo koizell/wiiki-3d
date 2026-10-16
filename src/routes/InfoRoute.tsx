@@ -284,8 +284,10 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         cuerpo: (
           <>
             <p>
-              <strong>Hoy esta aplicación no muestra publicidad</strong> ni carga
-              el script de AdSense.
+              <strong>Hoy esta aplicación no muestra publicidad.</strong> El sitio
+              está en revisión de Google AdSense y ya carga su etiqueta —la que
+              entregaría el aviso de consentimiento y los anuncios—, pero no sirve
+              ningún anuncio mientras la revisión no termine.
             </p>
             <p>
               Está previsto publicitar mediante <strong>Google AdSense</strong>. Si
