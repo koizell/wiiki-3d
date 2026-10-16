@@ -60,34 +60,61 @@
     <meta name="twitter:image" content="https://wiiki-3d.com/og.png" />
     <!--
       Declara la cuenta de AdSense dueña del dominio: es la verificación de
-      propiedad. **No** carga anuncios ni cookies —eso llega después de la
-      aprobación, con el script de anuncios y el banner de consentimiento—.
-      El pub-ID es el mismo que el de `public/ads.txt`, en su variante `ca-pub`.
+      propiedad. El pub-ID es el mismo que el de `public/ads.txt`, en su
+      variante `ca-pub`.
     -->
     <meta name="google-adsense-account" content="ca-pub-1976099124866284" />
+    <!--
+      El aviso europeo de consentimiento («Privacidad y mensajes») necesita que
+      la política de referrer comparta el encabezado `Referer` en peticiones
+      cross-origin. Los navegadores actuales ya usan este mismo valor por
+      defecto; se fija aquí para no depender de ninguno.
+    -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <!--
-      Medida de audiencia: GA4 con Consent Mode v2 (ID real en GA_ID).
+      Consentimiento (Consent Mode v2), denegado por defecto y declarado ANTES
+      de que cargue cualquier etiqueta de Google. Los cuatro parámetros de v2
+      son `ad_storage`, `ad_user_data`, `ad_personalization` y
+      `analytics_storage`.
 
-      Consentimiento denegado por defecto: sin banner aceptado, Google recoge
-      la visita en modo limitado (sin cookies identificadoras), como promete
-      la politica de privacidad. El banner solo tiene que llamar a
-      gtag('consent', 'update', { ... }); cuando se instale, nada de aqui
-      se toca. El ID es real y el snippet ya se inyecta. Runbook manual en
-      docs/medicion-setup.md.
+      Quien actualiza el estado es el aviso europeo, con el Consent Mode
+      activado en su configuración (en advanced mode no exige nada más en la
+      página). El aviso llega solo a visitantes del EEE, Reino Unido y Suiza;
+      fuera de ahí el estado se queda denegado, como promete la política de
+      privacidad.
+    -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        window.dataLayer.push(arguments);
+      }
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500,
+      });
+    </script>
+    <!--
+      Etiqueta de AdSense. Aún no sirve anuncios (el sitio está en revisión),
+      pero es imprescindible desde ya: sin ella Google no puede mostrar el
+      aviso europeo de consentimiento (requisito de «Privacidad y mensajes»).
+    -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1976099124866284"
+      crossorigin="anonymous"
+    ></script>
+
+    <!--
+      Medida de audiencia: GA4 (ID real en GA_ID; el snippet ya se inyecta).
+      Runbook manual en docs/medicion-setup.md.
     -->
     <script>
       const GA_ID = 'G-6W0LKP3ETS';
       if (GA_ID !== 'G-XXXXXXXXXX') {
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          window.dataLayer.push(arguments);
-        }
-        gtag('consent', 'default', {
-          ad_storage: 'denied',
-          analytics_storage: 'denied',
-          wait_for_update: 500,
-        });
         const etiqueta = document.createElement('script');
         etiqueta.async = true;
         etiqueta.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
