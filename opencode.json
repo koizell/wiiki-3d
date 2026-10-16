@@ -1,0 +1,16 @@
+{
+  "mcp": {
+    "servers": {
+      "laya": {
+        "type": "local",
+        "command": [
+          "node",
+          "scripts/laya/mcp-server.mjs"
+        ],
+        "environment": {
+          "LAYA_URL": "http://127.0.0.1:8080"
+        }
+      }
+    }
+  }
+}
