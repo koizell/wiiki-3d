@@ -129,7 +129,7 @@ resultado de la prueba.
 
 ## Sprint 5 — Lo que quedó pendiente en la auditoría ⏳
 
-*Estado: abierto, ninguna tarjeta empezada. Plan completo:
+*Estado: cerrado el 15/10/2026. Todas las tarjetas salvo el 5.5 (cerrada hasta el límite de las fuentes actuales). Plan completo:
 [`plan-mejoras-frontend.md`](plan-mejoras-frontend.md). Este sprint sólo cubre lo
 que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 *dejó pendiente; lo ya corregido no se repite.*
@@ -152,7 +152,8 @@ que* [`auditoria-frontend-2026-10-14.md`](auditoria-frontend-2026-10-14.md)
 | 5.14 | Estados vacíos con salida (Proyectos/Historial) | ✅ | Los dos llevan «Subir un archivo» y «Empezar por el síntoma». Caja dentro del viewport a 375 px. |
 | 5.15 | Orientación dentro de `/maquinas` | ✅ | La miga pasa a `nav` con `aria-label`, tres niveles y `aria-current="page"`. Sin quinto destino en la barra. |
 | 5.16 | Sin JavaScript, la ficha se lee | ✅ | 8 fichas y 8 SVG en el exportado. El veredicto ya no pide elegir filamento cuando no se puede, y el botón de pausa no se pinta. |
-| 5.17 | La copia dice lo que el dibujo es | ✅ | La sección «De dónde sale cada ficha» afirma que la ilustración es «esquema por familia con los rasgos que sus fuentes afirman, no reproducciones exactas de cada modelo ni simulaciones del resultado».. `verify:ui` lee el texto de la página y fallaría si dijera sólo «ilustraciones exactas». |
+| 5.17 | La copia dice lo que el dibujo es | ✅ | La sección «De dónde sale cada ficha» afirma que la ilustración es «esquema por familia con los rasgos que sus fuentes afirman, no reproducciones exactas de cada modelo ni simulaciones del resultado».
+`verify:ui` lee el texto de la página y fallaría si dijera sólo «ilustraciones exactas». |
 
 **Regla del sprint:** los bloqueos primero (5.4 → 5.8). Ninguna tarjeta se cierra
 sin el comando ejecutado y su salida en el mensaje de commit.
