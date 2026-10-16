@@ -1,42 +1,42 @@
 # Puesta en marcha de la medición
 
 > Runbook de los pasos que **sólo puede hacer una persona con las cuentas**.
-> La parte de código está hecha: el snippet de GA4 vive en `index.html` con
-> Consent Mode v2 y el sitemap se genera solo en cada build.
+> La parte de código está hecha: GA4 con Consent Mode v2 y la etiqueta de
+> AdSense viven en `index.html`, y el sitemap se genera solo en cada build.
+> Última revisión: **2026-10-16**.
 
 ## Lo que ya está hecho
 
 | Pieza | Estado |
 |---|---|
-| Snippet de GA4 con `consent` denegado por defecto | En `index.html`. **No se inyecta** mientras `GA_ID` sea `G-XXXXXXXXXX` |
-| `dist/sitemap.xml` con URLs canónicas | Lo genera `scripts/export-static.mjs` en cada build |
+| Consent Mode v2: los cuatro parámetros, `denied` por defecto | En `index.html`, declarados antes de que cargue cualquier etiqueta de Google |
+| Etiqueta de AdSense (`adsbygoogle.js`) | En `index.html`. Sin ella Google no puede entregar el aviso europeo de consentimiento; aún no sirve anuncios |
+| Etiqueta de GA4 (`G-6W0LKP3ETS`) | En `index.html`; recoge en **modo limitado** hasta que haya consentimiento |
+| `dist/sitemap.xml` con URLs canónicas y `lastmod` | Lo genera `scripts/export-static.mjs` en cada build |
 | `dist/robots.txt` con la línea `Sitemap:` | Ya presente |
-| Verificación de propiedad de AdSense | Meta en `index.html` (no mide, sólo verifica) |
+| Verificación de propiedad de AdSense | Meta `google-adsense-account`; pagos completos y `ads.txt` correcto |
+| Search Console | Propiedad de dominio verificada **por CNAME**; sitemap enviado |
 
-## Paso 1 · GA4 (15 min)
+## Paso 1 · GA4 ✅
 
-1. [analytics.google.com](https://analytics.google.com) → **Admin** → *Crear cuenta* y *Crear propiedad*. Categoría: «Ordenadores y electrónica»; zona horaria **Madrid** (los datos se agrupan por día).
-2. En la propiedad: *Flujos de datos* → **Añadir flujo → Web**. URL `https://wiiki-3d.com`, nombre `wiiki-3d.com`.
-3. Copia el **ID de medición** (formato `G-XXXXXXXXXX`).
-4. Sustitúyelo en `index.html`, en la línea `const GA_ID = 'G-XXXXXXXXXX';`.
-5. `npm run build` y publicar. A partir de ahí, GA4 recoge en **modo limitado** (sin cookies identificadoras) hasta que exista el banner.
-6. Comprueba en *Informes → Tiempo real* que entra tu propia visita.
+Hecho. Resumen por si hay que rehacerlo: cuenta y propiedad creadas (categoría
+«Ordenadores y electrónica», zona horaria Madrid), flujo web `wiiki-3d.com`, y el ID
+vive en `index.html` (`const GA_ID = 'G-6W0LKP3ETS'`). Comprobación: *Informes →
+Tiempo real*.
 
-## Paso 2 · Search Console (10 min + propagación DNS)
+## Paso 2 · Search Console ✅
 
-1. [search.google.com/search-console](https://search.google.com/search-console) → **Añadir propiedad** → tipo **Dominio** (`wiiki-3d.com`, sin `https://`).
-2. El método es DNS: en el registrador, un registro **TXT** con nombre `@` y el valor `google-site-verification=…` que te da GSC.
-3. Comprueba que propaga antes de pulsar *Verificar*:
+Hecho, con una particularidad que conviene no tocar:
 
-   ```bash
-   dig wiiki-3d.com TXT +short
-   ```
-
-4. **No borres el TXT nunca**: GSC comprueba la propiedad periódicamente.
-5. *Sitemaps* → añadir `sitemap.xml` → debe quedar en *Correcto*.
-6. *Inspección de URLs* → pide indexación manual de las 10–15 URLs que importan (portada, `/wiki`, las guías que ya existen, `/taller`).
-
-> Método de respaldo, por si el registrador se resiste: propiedad tipo **Prefijo de URL** con la etiqueta `<meta name="google-site-verification">` añadida a `index.html` —sustituible por la misma constante de arriba—.
+1. Propiedad de tipo **Dominio** (`wiiki-3d.com`, sin `https://`).
+2. La verificación de este dominio se apoya en un **CNAME que gestiona Search
+   Console** (`4hs3jubjc3fb` → `gv-ve3w2ce72ka2ka.dv.googlehosted.com`), no en un
+   TXT. **No borrarlo nunca**: GSC recomprueba la propiedad periódicamente.
+   Si algún día hay que rehacerlo a mano, el respaldo clásico sigue siendo un TXT
+   `google-site-verification=…` en `@`.
+3. *Sitemaps*: `sitemap.xml` enviado y en *Correcto*.
+4. *Inspección de URLs*: pedir indexación manual de las URLs que importan cada vez
+   que se publique algo nuevo.
 
 ## Paso 3 · Las primeras cuatro semanas
 
@@ -52,7 +52,7 @@ De la investigación propia (`docs/investigacion-gsc-ga4-2026.md`), el calendari
 ## La regla que conecta esto con el contenido
 
 **Las guías siguientes salen de las consultas reales, no del plan.** El plan
-(`docs/plan-de-contenido.md`) deció el orden con criterio editorial cuando no
+(`docs/plan-de-contenido.md`) decidió el orden con criterio editorial cuando no
 había datos; cuando GSC lleve un mes dando consultas, la pregunta «¿qué guía
 escribimos?» se responde con las búsquedas que ya traen impresiones sin
 clic. Hasta entonces, producir una guía más del plan sigue siendo la mejor
@@ -60,10 +60,24 @@ estimación disponible.
 
 ## Lo que falta y no es automático
 
-- **El banner de consentimiento (CMP).** Hasta que exista, GA4 mide en modo
-  limitado y los anuncios no se sirven. El snippet ya está preparado para que
-  el banner sólo tenga que llamar a
-  `gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted' })`.
+- **El mensaje europeo de consentimiento (CMP).** Se configura a mano en
+  AdSense → «Privacidad y mensajes» (la CMP de Google está en la lista de
+  certificadas y su mensaje soporta TCF v2.3). Solo se muestra a visitantes del
+  EEE, Reino Unido y Suiza; fuera de ahí el estado queda `denied` y la medición
+  sigue en modo limitado. El sitio ya está listo (etiqueta de AdSense + Consent
+  Mode v2): con *advanced mode* —el que se activa en la configuración del
+  mensaje— el aviso actualiza el consentimiento sin tocar la página.
+  Para probarlo desde aquí, con el mensaje ya publicado:
+  `https://wiiki-3d.com/?fc=alwaysshow&fctype=gdpr` (en incógnito; fuerza el
+  aviso aunque la región de quien mira no lo pida). Si algún día se quiere
+  medición completa en Latinoamérica, la vía es un `default` de Consent Mode
+  por región más un matiz en la política de privacidad.
+- **Solicitar la revisión de AdSense.** Cuando el mensaje esté publicado y el
+  repaso final pase: *Confirmo que he resuelto los problemas* + *Solicitar
+  revisión*. **No borrar el sitio ni volver a añadirlo** si se rechaza: se
+  corrige sobre la misma ficha.
+- **DMARC** (no es medición, pero vive en el mismo cuaderno): falta el registro
+  `_dmarc` con `p=none` en el DNS de Name.com.
 - **Recargar la API de Jev** (el clasificador real sigue en modo demo). No
   tiene que ver con la medición, pero el badge DEMO que arreglamos depende de
   ello.

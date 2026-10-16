@@ -7,6 +7,13 @@
 > [benchmark de mercado](investigacion-benchmark-2026.md) ·
 > [Search Console y GA4](investigacion-gsc-ga4-2026.md).
 
+> **Actualización · 2026-10-16.** El trabajo de `dev` está desplegado y la fase 3, en
+> marcha. La ficha de AdSense es anterior (época Blogger) y lleva un **rechazo del
+> 16-sep-2026** («Contenido de poco valor»): **no se borra ni se vuelve a añadir** —se
+> corrige sobre la misma ficha y se espera la fecha del Policy center—. Propiedad
+> verificada, pagos completos, `ads.txt` correcto y CMP de Google elegida; el detalle
+> técnico está en `docs/medicion-setup.md`.
+
 ---
 
 ## El diagnóstico en una frase
@@ -47,7 +54,7 @@ recordado. Los comandos que lo reproducen están al final de cada tabla.
 | Trabajo sin desplegar | **54 commits** en `dev` que no están en `main` | `git rev-list --count main..dev` |
 | Hosting | **GitHub Pages** (`server: GitHub.com`, `x-served-by: cache-…`, IPs `185.199.108-111.153`) | cabeceras |
 | Dominio | propio, `wiiki-3d.com`, HTTPS, `www` también responde | DNS + cabeceras |
-| Registrador / DNS | **Namecheap** (`ns1psw.name.com`), SPF `v=spf1 a mx ~all`, MX de Namecheap, **sin DMARC** | DNS over HTTPS |
+| Registrador / DNS | **Name.com** (`ns1psw.name.com`), SPF `v=spf1 a mx ~all`, MX de Name.com, **sin DMARC** | DNS over HTTPS |
 | Search Console | imposible de confirmar desde aquí; **no hay registro TXT de verificación** | ídem |
 
 ### 1.2 Lo que hay en `dev` (y no está publicado)
@@ -296,7 +303,7 @@ el segundo es el que de verdad puntúa:
 | 2.4 | Acotar el ancho de línea de `.wiki-info` | `src/App.css` | `/privacidad/`, `/contacto/` y `/acerca-de/` bajan de 87 a ≤75 caracteres |
 | 2.5 | **Política de privacidad de verdad** | `src/routes/InfoRoute.tsx` | Cláusula literal de cookies de terceros + enlace a [How Google uses data](https://www.google.com/policies/privacy/partners/) + responsable, base legal, derechos RGPD, conservación, transferencias, CMP |
 | 2.6 | `/cookies/` propia, enlazada desde el pie | nueva | Existe y describe cada cookie cuando exista |
-| 2.7 | DMARC | DNS de Namecheap | `_dmarc` con política `p=none` y `rua`, y el correo de contacto probado con recepción real |
+| 2.7 | DMARC | DNS de Name.com | `_dmarc` con política `p=none` y `rua`, y el correo de contacto probado con recepción real |
 | 2.8 | **Search Console** por DNS (propiedad de dominio) | DNS + GSC | Verificada; sitemap enviado; 5 rutas inspeccionadas |
 | 2.9 | Analítica **sin cookies** (Cloudflare Web Analytics o Plausible) | nueva | Mide el 100 % del tráfico y **no** necesita banner |
 | 2.10 | Suite completa antes de cada despliegue | `npm run lint`, `build`, `verify:*` | Todo en verde sobre `dist` recién construido |
@@ -321,6 +328,18 @@ publicado**.
 | 3.4 | Consent Mode v2 con los cuatro parámetros, `denied` por defecto | Sin tocar el banner, ninguna cookie; al aceptar, pasa a `granted` sin recargar |
 | 3.5 | **Mapa de anuncios** antes de colocar el primero | Ver la tabla de abajo |
 | 3.6 | Solicitar la revisión | Sólo cuando 3.1–3.5 estén verificados en producción. **No borrar ni volver a añadir el sitio** si se rechaza: se corrige y se espera la fecha del Policy center |
+
+**Estado · 2026-10-16.** 3.1 y 3.2 hechos y comprobados en producción (propiedad
+verificada por meta, datos de pago completos, `ads.txt` servido con el `pub-` real).
+En 3.3 se eligió la **CMP de Google**: está en la lista de certificadas y su mensaje
+europeo soporta TCF v2.3; solo se muestra a visitantes del EEE, Reino Unido y Suiza.
+La parte de sitio de 3.3–3.4 ya está desplegada: la etiqueta de AdSense (la que
+entrega el aviso) y los cuatro parámetros de Consent Mode v2 en `denied`; con
+*advanced mode* el aviso actualiza el consentimiento sin código adicional. **Falta
+publicar el mensaje europeo en «Privacidad y mensajes»**. Fuera del EEE no hay aviso
+y el estado sigue denegado (medición limitada); si más adelante se quiere medición
+completa en Latinoamérica, la vía es un `default` por región. 3.6 queda para el
+repaso final.
 
 **Mapa de anuncios (3.5).** Las reglas de *site behavior* prohíben solapar navegación o
 acciones, tapar contenido y confundirse con el menú. Y hay pantallas donde **no** se
@@ -395,21 +414,22 @@ Sin estas cinco respuestas, P1 no puede empezar:
 
 **Para poder solicitar AdSense:**
 
-- [ ] `main` desplegado y las 18 rutas responden 200 con contenido sin JavaScript.
-- [ ] `robots.txt` con la directiva `Sitemap:` sin comentar, y `sitemap.xml` con `lastmod`.
-- [ ] Ninguna guía exporta cero acciones.
-- [ ] Las 9 guías muestran autor y fecha, y `/autor/` existe.
-- [ ] La home tiene contenido estático real (≥600 palabras) y enlaza las 9 guías.
-- [ ] `/taller/` es una página de contenido, no un hueco.
-- [ ] Política de privacidad con las cláusulas de terceros, cookies y RGPD.
-- [ ] `ads.txt` en la raíz, propiedad verificada, datos de pago completos.
-- [ ] CMP certificada con TCF v2.3 y Consent Mode v2 en `denied` por defecto.
-- [ ] `npm run lint`, `npm run build` y **todos** los `verify:*` en verde.
-- [ ] Mapa de anuncios escrito antes de colocar el primer anuncio.
+- [x] `main` desplegado y las rutas del sitemap responden 200 con contenido sin JavaScript (18/18 el 2026-10-16).
+- [x] `robots.txt` con la directiva `Sitemap:` sin comentar, y `sitemap.xml` con `lastmod`.
+- [x] Ninguna guía exporta cero acciones.
+- [x] Las guías muestran autor y fecha, y `/autor/` existe.
+- [x] La home tiene contenido estático real (≥600 palabras) y enlaza las guías.
+- [x] `/taller/` es una página de contenido, no un hueco (~740 palabras).
+- [x] Política de privacidad con las cláusulas de terceros, cookies y RGPD.
+- [x] `ads.txt` en la raíz, propiedad verificada, datos de pago completos.
+- [x] Consent Mode v2 (`denied` por defecto) con los cuatro parámetros.
+- [ ] CMP certificada con TCF v2.3: la CMP de Google está elegida y el sitio preparado; falta publicar el mensaje europeo.
+- [x] `npm run lint`, `npm run build` y los `verify:*` en verde (2026-10-16: los doce de UI y contenido, sin `maquinas` —otra sesión— ni `fuentes` —crawl largo—).
+- [x] Mapa de anuncios escrito antes de colocar el primer anuncio.
 
 **Para que «atraiga»:**
 
-- [ ] Search Console verificada, sitemap enviado y 5 rutas inspeccionadas.
+- [x] Search Console verificada y sitemap enviado (la inspección manual de URLs se repite con cada tanda nueva).
 - [ ] Analítica sin cookies midiendo el 100 % del tráfico.
 - [ ] 4 guías por encima de 1.500 palabras, con tabla de parámetros y ≥6 fuentes.
 - [ ] Al menos 10 imágenes propias (fotos de fallos) además de los SVG.
