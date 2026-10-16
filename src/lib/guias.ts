@@ -12,6 +12,7 @@
  * más difícil de encontrar y el más fácil de tener.
  */
 import { adhesion } from '../content/guias/adhesion-primera-capa.ts';
+import { flowRate } from '../content/guias/flow-rate.ts';
 import { alturaCapa } from '../content/guias/altura-capa.ts';
 import { enclosureYWarping } from '../content/guias/enclosure-y-warping.ts';
 import { material } from '../content/guias/material.ts';
@@ -59,7 +60,7 @@ import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/g
  * El coste es que hay que añadir una línea al escribir una guía. Se acepta: es
  * una línea, y a cambio el orden dice algo.
  */
-export const GUIAS: Guia[] = [alturaCapa, slicer, warping, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, adhesion, material, voladizosSoportes];
+export const GUIAS: Guia[] = [alturaCapa, slicer, warping, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, adhesion, material, voladizosSoportes, flowRate];
 
 const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
 
