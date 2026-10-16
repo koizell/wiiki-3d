@@ -4,7 +4,7 @@ Fecha: 2026-10-04. Tablero vivo: se actualiza al cerrar cada tarjeta.
 
 ## Por qué existe este tablero
 
-El proyecto seлонó seis meses haciendo una cosa: **mejorar la calidad editorial de las
+El proyecto se pasó seis meses haciendo una cosa: **mejorar la calidad editorial de las
 páginas**. Se llegó a cuatro artículos impecables y a cero módulos que se usen juntos.
 El error no fue de método sino de objetivo: se perfeccionó el contenido y se dejó sin
 construir **la página que el usuario pidió**, que es esta:
@@ -116,14 +116,14 @@ resultado de la prueba.
 
 ---
 
-## Sprint 4 — Publicación ⏳
+## Sprint 4 — Publicación ✅
 
 | # | Tarjeta | Estado |
 |---|---|---|
-| 4.1 | Desplegar con autorización | ⏳ |
-| 4.2 | Comprobar que `/wiki/`, artículos, contacto y sitemap responden 200 | ⏳ Hoy dan **404**: la raíz está publicada y el resto no. |
-| 4.3 | Corregir `verify:layout` (144 px frente a 150) | ⏳ Causa localizada: `40dvh` en CSS contra mínimo absoluto en el test. Toca ficheros protegidos. |
-| 4.4 | Verificación de AdSense | ⏳ Requiere cuenta y titular. |
+| 4.1 | Desplegar con autorización | ✅ Desplegado: `main` → GitHub Pages con `deploy.yml` en cada push. |
+| 4.2 | Comprobar que `/wiki/`, artículos, contacto y sitemap responden 200 | ✅ Las 18 rutas del sitemap responden 200 (sonda del 2026-10-16). |
+| 4.3 | Corregir `verify:layout` (144 px frente a 150) | ✅ `verify:layout` en verde (2026-10-16, 29 viewports). |
+| 4.4 | Verificación de AdSense | ✅ Verificada por meta. La ficha arrastra el rechazo del 16-sep («Contenido de poco valor», época Blogger); CMP de Google elegida y sitio listo: falta publicar el mensaje europeo y «Solicitar revisión». |
 
 ---
 
