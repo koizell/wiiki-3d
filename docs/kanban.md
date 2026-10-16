@@ -123,7 +123,7 @@ resultado de la prueba.
 | 4.1 | Desplegar con autorización | ✅ Desplegado: `main` → GitHub Pages con `deploy.yml` en cada push. |
 | 4.2 | Comprobar que `/wiki/`, artículos, contacto y sitemap responden 200 | ✅ Las 18 rutas del sitemap responden 200 (sonda del 2026-10-16). |
 | 4.3 | Corregir `verify:layout` (144 px frente a 150) | ✅ `verify:layout` en verde (2026-10-16, 29 viewports). |
-| 4.4 | Verificación de AdSense | ✅ Verificada por meta. La ficha arrastra el rechazo del 16-sep («Contenido de poco valor», época Blogger); CMP de Google elegida y sitio listo: falta publicar el mensaje europeo y «Solicitar revisión». |
+| 4.4 | Verificación de AdSense | ✅ Verificada por meta. La ficha arrastra el rechazo del 16-sep («Contenido de poco valor»); CMP de Google elegida y sitio listo: falta publicar el mensaje europeo y «Solicitar revisión». |
 
 ---
 

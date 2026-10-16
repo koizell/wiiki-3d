@@ -8,7 +8,7 @@
 > [Search Console y GA4](investigacion-gsc-ga4-2026.md).
 
 > **Actualización · 2026-10-16.** El trabajo de `dev` está desplegado y la fase 3, en
-> marcha. La ficha de AdSense es anterior (época Blogger) y lleva un **rechazo del
+> marcha. La ficha lleva un **rechazo del
 > 16-sep-2026** («Contenido de poco valor»): **no se borra ni se vuelve a añadir** —se
 > corrige sobre la misma ficha y se espera la fecha del Policy center—. Propiedad
 > verificada, pagos completos, `ads.txt` correcto y CMP de Google elegida; el detalle
