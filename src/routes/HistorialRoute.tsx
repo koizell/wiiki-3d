@@ -5,6 +5,7 @@ import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, vaciarHistorial } from '../lib/storage';
 import { Confirmacion } from '../components/Dialogos';
 import { formatarFecha, riesgoClase } from '../lib/formato';
+import { textoMaterial, riesgoDelMaterial } from '../lib/materiales';
 
 /**
  * El historial completo: todas las entradas guardadas, con borrar una y vaciar
@@ -99,13 +100,13 @@ function HistorialRoute() {
                 >
                   <span className="historial-nombre">{e.filename}</span>
                   <span className="historial-meta">
-                    {formatarFecha(e.fecha)} · {e.metadata.material} ·{' '}
+                    {formatarFecha(e.fecha)} · {textoMaterial(e.metadata.material)} ·{' '}
                     <span
                       className={`historial-riesgo historial-riesgo--${riesgoClase(
-                        e.classification.riskLevel
+                        riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)
                       )}`}
                     >
-                      {e.classification.riskLevel}
+                      {riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)}
                     </span>
                   </span>
                 </button>

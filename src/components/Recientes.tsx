@@ -2,6 +2,7 @@ import { useAnalysis } from '../state/useAnalysis';
 import { useAnalysisActions } from '../state/useAnalysis';
 import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { Link } from 'react-router';
+import { textoMaterial, riesgoDelMaterial } from '../lib/materiales';
 
 /**
  * Los últimos análisis, con un enlace al historial completo.
@@ -68,7 +69,7 @@ export function Recientes() {
             >
               <span className="recientes-nombre">{e.filename}</span>
               <span className="recientes-meta">
-                {e.metadata.material} · {e.classification.riskLevel}
+                {textoMaterial(e.metadata.material)} · {riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)}
               </span>
             </button>
           </li>

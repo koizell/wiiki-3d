@@ -5,6 +5,7 @@ import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, nombrarAnalisis, type EntradaHistorial } from '../lib/storage';
 import { Confirmacion, DialogoNombre } from '../components/Dialogos';
 import { formatarFecha, formatoBytes, riesgoClase } from '../lib/formato';
+import { textoMaterial, riesgoDelMaterial } from '../lib/materiales';
 
 /**
  * Proyectos: los análisis guardados con nombre propio.
@@ -127,13 +128,13 @@ export default function ProyectosRoute() {
                 >
                   <span className="historial-nombre">{e.nombre}</span>
                   <span className="historial-meta">
-                    {e.filename} · {e.metadata.material} ·{' '}
+                    {e.filename} · {textoMaterial(e.metadata.material)} ·{' '}
                     <span
                       className={`historial-riesgo historial-riesgo--${riesgoClase(
-                        e.classification.riskLevel
+                        riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)
                       )}`}
                     >
-                      {e.classification.riskLevel}
+                      {riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)}
                     </span>
                   </span>
                 </button>
@@ -178,13 +179,13 @@ export default function ProyectosRoute() {
                 >
                   <span className="historial-nombre">{e.filename}</span>
                   <span className="historial-meta">
-                    {formatarFecha(e.fecha)} · {e.metadata.material} ·{' '}
+                    {formatarFecha(e.fecha)} · {textoMaterial(e.metadata.material)} ·{' '}
                     <span
                       className={`historial-riesgo historial-riesgo--${riesgoClase(
-                        e.classification.riskLevel
+                        riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)
                       )}`}
                     >
-                      {e.classification.riskLevel}
+                      {riesgoDelMaterial(e.metadata.material, e.classification.riskLevel)}
                     </span>
                   </span>
                 </button>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ArticuloDeCampo } from '../lib/wiki-campos';
 import { etiquetaSlicer, formatoWarping } from '../lib/tu-archivo';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
+import { materialUnico, textoMaterial } from '../lib/materiales';
 
 /**
  * AnalysisPanel — muestra el diagnóstico técnico de la pieza que está
@@ -111,6 +112,7 @@ function AnalysisPanel({
   modoClasificacion,
 }: AnalysisPanelProps) {
   const demo = modoClasificacion === 'demo';
+  const materialAmbiguo = metadata !== null && !materialUnico(metadata.material);
   if (status === 'parsing' || status === 'classifying') {
     return (
       <p className="panel-loading" role="status" aria-live="polite">
@@ -140,7 +142,7 @@ function AnalysisPanel({
 
   // Estado idle o un `done` a medias (Jev aún no ha respondido): sin datos que
   // pintar, se muestra el mensaje de invitación a subir un archivo.
-  if (status === 'idle' || !metadata || !classification) {
+  if (status === 'idle' || !metadata || (!classification && !materialAmbiguo)) {
     return (
       <div className="panel-empty">
         <p>Sube un archivo para ver el análisis técnico automático.</p>
@@ -150,17 +152,25 @@ function AnalysisPanel({
 
   return (
     <div className="panel-body">
-      {demo && (
+      {materialAmbiguo && (
+        <p className="panel-multimaterial" role="status">
+          <strong>No evaluable: varios materiales declarados.</strong> La cabecera no identifica
+          qué ranuras se usan. Se conservan los datos leídos, pero no se calcula un riesgo único.
+          Reexporta el G-code con el material utilizado para obtener una estimación.
+          Sin clasificación, esta lectura no se guarda como un análisis nuevo en el historial.
+        </p>
+      )}
+      {demo && !materialAmbiguo && (
         <p className="panel-demo-nota">
           Estimación local de demostración, calculada en tu navegador sin consultar ningún servicio.
           El índice de 0 a 100 no es una probabilidad de fallo validada y no garantiza que la pieza
           se imprima bien. No comprueba la geometría ni verifica si necesita soportes.
         </p>
       )}
-      <div className="panel-recommendation">
+      {!materialAmbiguo && classification && <div className="panel-recommendation">
         <strong className="panel-recommendation-title">{demo ? 'Orientación de demostración' : 'Recomendación'}</strong>
         <p>{classification.recommendation}</p>
-      </div>
+      </div>}
       <section>
         <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
@@ -176,7 +186,7 @@ function AnalysisPanel({
             `verify:wiki` lo comprueba ahora contra `CAMPOS_WIKI`, para que no haya
             que acordarse.
           */}
-          <DataRow label="Material" value={metadata.material} campo="material" explicar={explicar} />
+          <DataRow label="Material" value={textoMaterial(metadata.material)} campo="material" explicar={explicar} />
           {/*
             La fila del slicer va justo debajo del material, y es a propósito: es
             el programa que escribió el valor de al lado. `slicer` es obligatorio
@@ -225,7 +235,7 @@ function AnalysisPanel({
         </dl>
       </section>
 
-      <section>
+      {!materialAmbiguo && classification && <section>
         <h3 className="panel-section-title">{demo ? 'Estimación local (demo)' : 'Diagnóstico de Jev'}</h3>
         <dl className="panel-data">
           <div className="panel-data-row">
@@ -245,7 +255,7 @@ function AnalysisPanel({
           />
           <DataRow label="Soportes" value={demo ? 'No verificados' : classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
         </dl>
-      </section>
+      </section>}
 
     </div>
   );

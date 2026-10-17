@@ -3,6 +3,7 @@ import { useAnalysis } from '../state/useAnalysis';
 import { enlazados, leerTuArchivo } from '../lib/tu-archivo';
 import { MODO_CLASIFICACION } from '../services/JevService';
 import type { Guia } from '../content/guias/tipos';
+import { materialUnico } from '../lib/materiales';
 
 /**
  * La barra «Tu archivo»: lo que el G-code dice, y dónde lo explica esta guía.
@@ -45,8 +46,9 @@ export default function TuArchivo({ guia }: { guia: Guia }) {
   if (!metadata || lectura.datos.length === 0) return null;
 
   const conEnlaces = enlazados(lectura);
+  const materialAmbiguo = !materialUnico(metadata.material);
   const conDemo =
-    MODO_CLASIFICACION === 'demo' && lectura.datos.some((d) => d.origen === 'panel' && d.valor !== null);
+    !materialAmbiguo && MODO_CLASIFICACION === 'demo' && lectura.datos.some((d) => d.origen === 'panel' && d.valor !== null);
 
   return (
     <section className="tu-archivo" aria-labelledby="tu-archivo-titulo">
@@ -141,6 +143,7 @@ export default function TuArchivo({ guia }: { guia: Guia }) {
           validada ni garantiza el resultado de la impresión.
         </p>
       )}
+      {materialAmbiguo && <p className="tu-archivo-nota">La cabecera declara varios materiales: no hay una valoración única. Elige manualmente el material que usas en esta pieza.</p>}
       {conEnlaces > 0 && (
         <p className="tu-archivo-pista">Pulsa un dato para ver dónde lo explica esta guía.</p>
       )}

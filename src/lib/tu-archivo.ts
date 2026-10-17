@@ -6,6 +6,7 @@
  * en el bundle por este fichero.
  */
 import type { Guia } from '../content/guias/tipos.ts';
+import { materialUnico, textoMaterial } from './materiales.ts';
 import type { JevClassification, ProjectMetadata, SlicerKind } from '../services/types.ts';
 
 /**
@@ -182,7 +183,7 @@ const CAMPOS: Record<string, DefinicionCampo> = {
      * tampoco tiene esa opción—, y por eso el texto de la barra no promete que
      * la guía lo cubra.
      */
-    valor: (m) => (m?.material ? m.material : null),
+    valor: (m) => (m?.material ? textoMaterial(m.material) : null),
   },
   slicer: {
     etiqueta: 'Slicer',
@@ -324,6 +325,7 @@ export function leerTuArchivo(
   modoClasificacion: 'demo' | 'real' = 'real'
 ): LecturaTuArchivo {
   if (!metadata) return { datos: [], conValor: 0, delPanel: 0 };
+  if (!materialUnico(metadata.material)) classification = null;
 
   const anclas = anclasDeCampos(guia);
   const datos: DatoTuArchivo[] = [];

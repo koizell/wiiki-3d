@@ -1,4 +1,5 @@
 import type { JevClassification, ProjectMetadata, RiskLevel } from './types';
+import { materialUnico } from '../lib/materiales';
 
 /*
  * ============================================================================
@@ -498,6 +499,9 @@ function toNeedsSupport(value: unknown): boolean {
 export async function classifyWithJev(
   metadata: ProjectMetadata
 ): Promise<JevClassification> {
+  const material = materialUnico(metadata.material);
+  if (!material) throw new Error('La cabecera declara varios materiales o ninguno: no se puede calcular una valoración única.');
+  metadata = { ...metadata, material };
   // Ruta de mock: sin red y sin depender de que Jev esté en pie.
   if (USE_MOCK) {
     await wait(MOCK_LATENCY_MS);

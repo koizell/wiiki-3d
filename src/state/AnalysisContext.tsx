@@ -5,6 +5,7 @@ import { classifyWithJev } from '../services/JevService';
 import type { JevClassification, ProjectMetadata } from '../services/types';
 import { detectFileType, toErrorMessage, type FileType } from '../lib/files';
 import { guardarAnalisis } from '../lib/storage';
+import { materialUnico } from '../lib/materiales';
 import { ActionsContext, StateContext, type EntradaRestaurable } from './contexts';
 
 /**
@@ -87,7 +88,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     setFile(null);
     setFileType(tipo);
     setMetadata(meta);
-    setClassification(clasif);
+    setClassification(materialUnico(meta.material) ? clasif : null);
     setAnalysisError(null);
     setAnalysisStatus('done');
   };
@@ -110,6 +111,11 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
         const parsedMetadata = await parseGcode(file);
         if (controller.signal.aborted) return;
         setMetadata(parsedMetadata);
+
+        if (!materialUnico(parsedMetadata.material)) {
+          setAnalysisStatus('done');
+          return;
+        }
 
         setAnalysisStatus('classifying');
         const jevResult = await classifyWithJev(parsedMetadata);

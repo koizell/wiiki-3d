@@ -39,6 +39,7 @@ import { orientacionResistencia } from '../content/guias/orientacion-resistencia
 import { rellenoPatrones } from '../content/guias/relleno-patrones.ts';
 import { paredesYPerimetros } from '../content/guias/paredes-y-perimetros.ts';
 import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/guias/tipos.ts';
+import { materialUnico } from './materiales.ts';
 
 /**
  * El registro de guías y el motor que las hace funcionar.
@@ -181,7 +182,7 @@ export function precontestar(
   const elegidas: Record<string, string> = {};
   if (!metadata) return elegidas;
 
-  const material = metadata.material?.toLowerCase() ?? '';
+  const material = materialUnico(metadata.material ?? '')?.toLowerCase() ?? '';
   /*
    * El orden importa por dos razones distintas, y las dos han dado un fallo.
    *
