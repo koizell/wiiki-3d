@@ -138,7 +138,7 @@ export interface Conocimiento {
   cuando?: Condicion;
   /** La cifra destacada, si el tema tiene una. */
   cifra?: { valor: string; nota: string };
-  /** La cita exacta. Corta: es la prueba, no un adorno. */
+  /** La cita exacta. `fuente` es la atribución textual, NO una URL; los enlaces están en `Guia.fuentes`. */
   cita?: { texto: string; fuente: string };
   /**
    * Un enlace a otra guía desde dentro de la tarjeta.

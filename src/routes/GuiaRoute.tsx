@@ -205,7 +205,7 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
 
       <FueraDeAlcance guia={guia} />
 
-      <section className="guia-fuentes">
+      <section className="guia-fuentes" id="fuentes">
         <h2 className="etapa-titulo">De dónde sale esto</h2>
         <p className="guia-fuentes-nota">
           Las {guia.fuentes.length} fuentes que respaldan esta guía. Cada cifra y
@@ -528,9 +528,8 @@ function EtapaConocimiento({
                 <blockquote className="tarjeta-cita">
                   <p>{t.cita.texto}</p>
                   <cite>
-                    <a href={t.cita.fuente} target="_blank" rel="noopener noreferrer">
-                      {anfitrion(t.cita.fuente)}
-                    </a>
+                    {t.cita.fuente}{' · '}
+                    <a href="#fuentes">Ver fuentes de la guía</a>
                   </cite>
                 </blockquote>
               )}
@@ -816,13 +815,4 @@ function EnlaceGuia({ guia, etiqueta }: { guia: string; etiqueta: string }) {
       <span aria-hidden="true"> →</span>
     </Link>
   );
-}
-
-/** El anfitrión de una URL, sin la ruta. */
-function anfitrion(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
 }

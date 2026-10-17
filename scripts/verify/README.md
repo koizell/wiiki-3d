@@ -55,6 +55,7 @@ npm run verify:taller      # los seis estados de la calculadora
 npm run verify:historial   # el historial y los proyectos
 npm run verify:guias       # el motor de guías y la barra «Tu archivo»
 npm run verify:esquema     # piloto visual de torre de temperatura, con y sin JS
+npm run verify:enlaces     # atribuciones, bibliografía y destinos internos con/sin JS
 npm run verify:maquinas    # el catálogo contra sus propias reglas
 npm run verify:subida     # la subida: arrastre, varios archivos, coste
 npm run verify:ui          # la auditoría de interfaz, repetible
@@ -93,6 +94,7 @@ que valen como paso de CI.
 |---|---|
 | `barrido.mjs` | 29 viewports × 3 estados (vacío, STL, G-code). Alto del visor, alto del canvas WebGL, proporción, tamaño del modelo en pantalla, quién scrollea, si algo se recorta, alto del `.top-bar`, errores de consola. Cinco aserciones. |
 | `teclado.mjs` | Si el input de fichero y los items de navegación están en el orden de tabulación. Recorre el orden real con `Tab`. |
+| `enlaces.mjs` | Páginas del sitemap más Historial y Proyectos, con/sin JS: atribuciones visibles preservadas, enlace a bibliografía y clic real, URLs originales de fuentes, rutas internas HTTP 200 y anclas existentes. `BASE_URL` permite repetirlo en producción. Bloquea recursos externos durante la prueba; no comprueba la disponibilidad de las fuentes externas. |
 | `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. Más la jerarquía de encabezados, en **cinco** casos: las cuatro rutas más `/` con un archivo cargado. |
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
 | `wiki.mjs` | La wiki: `/wiki`, `/wiki/:slug` y las tres páginas de información. La búsqueda filtra sin recargar y va en la URL, la tabla de contenidos marca la sección activa **al subir y al bajar**, la barra de «dónde estoy» aparece sin empujar el texto, los enlaces cruzados a páginas que no existen salen como texto y no como enlaces rotos, el ancho de línea se mide en caracteres reales en cinco viewports, `prefers-reduced-motion` apaga las tres animaciones y deja el texto visible, y la tabla de campos atados apunta a artículos que existen y declaran ese campo. |
