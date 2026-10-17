@@ -247,6 +247,11 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
 
       {children}
 
+      <nav className="inicio-accesos" aria-label="Otras formas de empezar">
+        <Link to="/wiki"><strong>¿Tu pieza ha salido mal?</strong><span>Busca el síntoma y qué revisar →</span></Link>
+        <Link to="/maquinas"><strong>Conoce tu impresora</strong><span>Consulta modelos y filamentos →</span></Link>
+      </nav>
+
       {/*
         Lo de la wiki, que antes estaba en la cabecera. Va aquí, justo detrás de la
         zona de subida: en el navegador la subida va en este sitio y en el HTML

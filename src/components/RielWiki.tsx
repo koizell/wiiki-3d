@@ -22,8 +22,8 @@ import { useGuiaEstado } from '../state/useGuia';
  *    que ha dado, cuántas acciones se han desbloqueado, y la salida a la guía que
  *    toca. Es la interconexión del sitio hecha columna.
  *
- * Y en las rutas donde no hay nada que poner —`/taller`, `/contacto`, `/privacidad`—
- * la columna no se oculta: se queda con la navegación de las guías, que siempre sirve.
+ * El shell lo monta sólo al leer una guía. Ofrece el diagnóstico y tres salidas
+ * relacionadas; el índice completo se alcanza mediante un enlace.
  *
  * ## Por qué lee el estado global y no props
  *
@@ -38,7 +38,11 @@ export default function RielWiki() {
   const { elegidas } = useGuiaEstado();
 
   const enGuia = guia !== null;
-  const otras = GUIAS.filter((g) => g.slug !== slug);
+  // Prioriza las salidas del diferencial, no una segunda copia del índice completo.
+  const salidas = new Set([guia?.diferencial.siNo?.guia]);
+  const otras = GUIAS.filter((g) => g.slug !== slug)
+    .sort((a, b) => Number(salidas.has(b.slug)) - Number(salidas.has(a.slug)))
+    .slice(0, 3);
 
   return (
     <div className="riel">
@@ -60,7 +64,7 @@ export default function RielWiki() {
           {enGuia ? 'Otras guías' : 'Guía'}
         </h3>
         <ul className="riel-lista">
-          {(enGuia ? otras : GUIAS).map((g) => (
+          {otras.map((g) => (
             <li key={g.slug}>
               <Link
                 className={`riel-enlace${g.slug === slug ? ' riel-enlace--activa' : ''}`}
@@ -72,6 +76,7 @@ export default function RielWiki() {
             </li>
           ))}
         </ul>
+        <Link className="riel-indice" to="/wiki">Ver todos los síntomas →</Link>
       </section>
 
       {enGuia && Object.keys(elegidas).length > 0 && (

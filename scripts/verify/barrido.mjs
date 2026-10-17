@@ -58,6 +58,10 @@ async function main() {
       viewport: { width: w, height: h },
       colorScheme: 'dark',
     });
+    // No mezclar una regresión de layout con respuestas variables de publicidad/telemetría.
+    await context.route(/^https?:\/\//, route => new URL(route.request().url()).origin === new URL(BASE).origin
+      ? route.continue()
+      : route.fulfill({ status: 200, contentType: route.request().resourceType() === 'script' ? 'application/javascript' : 'text/plain', body: '' }));
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e).slice(0, 80)));
@@ -84,7 +88,7 @@ async function main() {
     await page.waitForTimeout(1200); // la ruta mock de Jev tarda 600ms
     const gcode = await page.evaluate(probePage);
 
-    rows.push({ w, h, tramo: tramoDe(w), vacio, stl, gcode, errors: errors.length });
+    rows.push({ w, h, tramo: tramoDe(w), vacio, stl, gcode, errors: errors.length, errorMessages: errors });
     await context.close();
   }
   await browser.close();
@@ -193,17 +197,20 @@ async function main() {
         : `src/App.css fija el suelo en ${suelo[1]}px y aquí el umbral es ${MIN_VIEWER}px: o suben los dos o bajan los dos`
   );
 
-  check('los tres breakpoints siguen en 640 / 768 / 1200',
+  check('cabecera compacta y cortes de distribución en 640 / 768 / 1200',
     /*
-     * 104px es el alto real del tóbar móvil desde la escala tipográfica con
-     * IBM Plex (la primera versión de esta comprobación esperaba 100px). El
-     * valor exacto es una referencia; lo que protege la comprobación es que
-     * el corte siga ocurriendo en 640.
+     * La cabecera móvil ahora es una fila para dejar visible la subida.
+     * Se exige espacio para los controles (>=44 px) y altura compacta (<=69),
+     * no conservar los 104 px de la composición antigua de dos filas.
+     * El corte de 640 conserva los 69 px de tableta; los de 768/1200
+     * siguen comprobándose mediante el reparto real del visor.
      */
-    byVp['639x667'].stl.topbar === 104 && byVp['640x667'].stl.topbar === 69 &&
+    byVp['639x667'].stl.topbar >= 44 && byVp['639x667'].stl.topbar <= 69 &&
+    byVp['640x667'].stl.topbar === 69 &&
+    byVp['639x667'].stl.topbar !== byVp['640x667'].stl.topbar &&
     byVp['767x667'].stl.stage.h !== byVp['768x667'].stl.stage.h &&
     byVp['1199x667'].stl.stage.h !== byVp['1200x667'].stl.stage.h,
-    `topbar 104->69 en 640; visor ${byVp['767x667'].stl.stage.h}->${byVp['768x667'].stl.stage.h} en 768; ${byVp['1199x667'].stl.stage.h}->${byVp['1200x667'].stl.stage.h} en 1200`);
+    `topbar ${byVp['639x667'].stl.topbar}->${byVp['640x667'].stl.topbar} en 640; visor ${byVp['767x667'].stl.stage.h}->${byVp['768x667'].stl.stage.h} en 768; ${byVp['1199x667'].stl.stage.h}->${byVp['1200x667'].stl.stage.h} en 1200`);
 
   console.log('='.repeat(72));
 

@@ -93,6 +93,12 @@ ok(estadoFilamento(mk4s, abs).estado === 'necesita-camara', 'ABS en la MK4S abie
 ok(estadoFilamento(p1s, abs).estado === 'ok', 'ABS en la P1S cerrada es viable');
 ok(estadoFilamento(mars, pla).estado === 'resina', 'la Mars no evalúa filamento');
 ok(estadoFilamento(ender, null).estado === 'ok', 'sin filamento elegido no hay aviso');
+for (const filamento of FILAMENTOS.filter(f => f.abierta && f.noz[1] <= ke.tNozMax)) {
+  for (const cerrada of [null, false, true]) {
+    ok(estadoFilamento({ ...ke, cerrada }, filamento).estado === 'ok',
+      `${filamento.nombre}: no exige cámara con cerramiento ${cerrada}`);
+  }
+}
 
 // 5 · el rizado y la velocidad salen de la ficha
 ok(rizaria(ender, abs) === false, 'ABS en la Ender (cerramiento sin verificar) no dibuja el rizado');

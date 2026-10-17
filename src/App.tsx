@@ -1,4 +1,5 @@
 import './App.css';
+import './estilos/ux-tareas.css';
 import { Suspense, lazy } from 'react';
 import {
   BrowserRouter,
@@ -79,7 +80,6 @@ const ProyectosRoute = lazy(() => import('./routes/ProyectosRoute'));
  * que cambia a mitad de uso se lee como un fallo. Lo que decide es qué información
  * pertenece a la vista, y esa decisión no cambia sola.
  */
-const RUTAS_ANALISIS = [/^\/$/, /^\/historial$/];
 
 /**
  * Las rutas cuyo texto no cabe en la caja central y por tanto se desplazan.
@@ -105,10 +105,8 @@ const RUTAS_ANALISIS = [/^\/$/, /^\/historial$/];
  * geometría. Una ruta que se desplazara a sí misma tendría que saber a qué altura
  * está la barra superior.
  *
- * `/taller` **no** está, y no por descuido: medido, cabe entero en los cinco
- * estados y en los cuatro tramos (`npm run verify:taller`). Cuando se añada una
- * herramienta que no quepa, la misma pregunta hay que responder midiendo, no
- * suponiendo: un formulario corto dentro de `.canvas-area` se recorta sin aviso.
+ * Taller y biblioteca también pueden crecer: coste, errores y entradas
+ * almacenadas deben seguir siendo alcanzables en ventanas bajas.
  */
 const RUTAS_DESPLAZABLES = [
   /^\/$/,
@@ -118,6 +116,9 @@ const RUTAS_DESPLAZABLES = [
   /^\/privacidad$/,
   /^\/autor$/,
   /^\/maquinas$/,
+  /^\/taller$/,
+  /^\/historial$/,
+  /^\/proyectos$/,
 ];
 
 
@@ -139,12 +140,9 @@ const RUTAS_DESPLAZABLES = [
  * eso es media pantalla, y durante casi toda la sesión de quien lee la guía no hay
  * ningún archivo cargado.
  *
- * Ahora la columna decide con `RUTAS_ANALISIS`. Donde el análisis es el sujeto va
- * el panel. Donde no, va `RielWiki`, que pinta el estado del diagnóstico de la
- * guía que se está leyendo: cuántas acciones se han desbloqueado, qué variables
- * faltan, y la salida a la otra guía. En las rutas de contenido sin guía —contacto,
- * privacidad, acerca de— el riel muestra igualmente la navegación entre guías, que
- * siempre sirve y es lo que uno esperaría en el margen de una página de esas.
+ * Ahora la columna acompaña sólo al visor STL/3MF y a las guías. El resultado
+ * G-code vive en el área principal de UploadRoute. Las demás rutas no añaden
+ * un lateral sin relación con su tarea.
  *
  * Y el panel de análisis sigue enlazando a la guía: dice «riesgo de warping, 35 %»
  * y el enlace de debajo lleva a la guía que explica ese 35 %. Esa es la
@@ -155,11 +153,13 @@ function AppShell() {
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
   const { pathname } = useLocation();
   const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(pathname));
-  const conPanel = RUTAS_ANALISIS.some((r) => r.test(pathname));
+  const conPanel = pathname === '/' && (fileType === 'stl' || fileType === '3mf');
+  const conRiel = /^\/wiki\/[^/]+\/?$/.test(pathname);
+  const sinLateral = !conPanel && !conRiel;
 
   return (
     <>
-      <div className={`app-container${desplazable ? ' app-container--columna' : ''}`}>
+      <div className={`app-container${desplazable ? ' app-container--columna' : ''}${sinLateral ? ' app-container--sin-lateral' : ''}`}>
         <header className="top-bar">
           <div className="logo">
             <span className="logo-icon">◈</span>
@@ -173,7 +173,7 @@ function AppShell() {
               ref={fileInputRef}
               id="file-upload"
               type="file"
-              accept=".stl,.3mf,.gcode,.gco,.obj"
+              accept=".stl,.3mf,.gcode,.gco"
               style={{ display: 'none' }}
               onChange={(event) => {
                 const selected = event.target.files?.[0];
@@ -242,14 +242,10 @@ function AppShell() {
               porque un `Suspense` por ruta duplicaría el mismo `fallback` cinco
               veces y habría que mantenerlos iguales.
 
-              El `fallback` va vacío a propósito. `verify:rutas` exige que haya
-              exactamente un `h1` visible en `.canvas-area`, y un marcador del tipo
-              «Cargando…» con un encabezado dentro lo rompería durante el primer
-              fotograma de cada entrada a la wiki. Con el `fallback` vacío no hay
-              nada que comprobar hasta que el chunk llega, que es lo que tarda unos
-              milisegundos en local y algo más con la red.
+              Un párrafo de estado informa de la espera sin inventar otro h1.
+              La clave por ruta hace visible el estado de la nueva navegación.
             */}
-            <Suspense fallback={null}>
+            <Suspense key={pathname} fallback={<p className="ruta-cargando" role="status">Cargando página…</p>}>
               <Outlet />
             </Suspense>
           </main>
@@ -264,12 +260,10 @@ function AppShell() {
             contenido: donde el análisis es el sujeto va el panel, y donde no va el
             riel de la wiki, que en esas rutas siempre tiene algo que enseñar.
 
-            Lo que **no** se hace es ocultar la columna cuando no hay archivo
-            cargado. Sería más inteligente y daría un layout que salta en mitad de
-            una sesión, que es peor que una columna con contenido. Ver
-            `RUTAS_ANALISIS`.
+            La columna sólo se monta cuando acompaña al visor o a una guía;
+            formularios y páginas de lectura disponen de su propio ancho.
           */}
-          <aside className="sidebar-right">
+          {!sinLateral && <aside className="sidebar-right">
             {conPanel ? (
               <>
                 <div className="panel-header">
@@ -318,7 +312,7 @@ function AppShell() {
             ) : (
               <RielWiki />
             )}
-          </aside>
+          </aside>}
         </div>
       </div>
 

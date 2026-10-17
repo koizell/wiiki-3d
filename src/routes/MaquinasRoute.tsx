@@ -187,6 +187,9 @@ export default function MaquinasRoute({ exportEstatico = false }: { exportEstati
           <span aria-current="page">Catálogo de impresoras</span>
         </nav>
         <h1>Catálogo de impresoras 3D</h1>
+        <p>{MAQUINAS.length} modelos: consulta su ficha y compara los datos con un filamento.</p>
+        <details className="maquinas-alcance">
+          <summary>Alcance de los datos y los dibujos</summary>
         <p>
           Modelos de impresoras con ilustración y ficha técnica. Cada cifra
           lleva de dónde sale —<strong>fabricante</strong>, <strong>terceros</strong>{' '}
@@ -196,6 +199,7 @@ export default function MaquinasRoute({ exportEstatico = false }: { exportEstati
           los rasgos que sus fuentes afirman, no reproducciones exactas de cada
           modelo ni simulaciones del resultado.
         </p>
+        </details>
       </header>
 
       <div className="maquinas-filamento">

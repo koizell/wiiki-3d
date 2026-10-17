@@ -59,6 +59,28 @@ npm run verify:subida     # la subida: arrastre, varios archivos, coste
 npm run verify:ui          # la auditoría de interfaz, repetible
 ```
 
+### Regresiones de UI centrada en tareas
+
+```bash
+VITE_JEV_USE_MOCK=true npm run build
+node scripts/verify/ux-tareas.mjs
+# Con un preview propio ya abierto:
+BASE_URL=http://127.0.0.1:5288 node scripts/verify/preview-base.mjs
+```
+
+`ux-tareas.mjs` usa el puerto 5287 cuando abre su propio preview y bloquea
+peticiones externas. Comprueba subida visible sobre la barra móvil, análisis
+principal, recorrido de guías, agrupación, coste, avisos y controles del visor.
+La geometría se compara sin texto ni foco superpuestos, para no confundir un
+cambio de etiqueta con un zoom real. También reproduce G-code → STL con
+Recientes y exige ancho completo y controles fuera del lienzo.
+`silueta.mjs` compara los bordes del fixture azul con tolerancia de un píxel de
+antialiasing: no confunde ruido mínimo de sombreado con un movimiento real.
+
+`BASE_URL` tiene prioridad en los helpers compartidos y en Historial. Si se
+proporciona, `detener()` no cierra ese servidor. `preview-base.mjs` comprueba
+ambas garantías para evitar medir o cerrar el servidor de otra sesión.
+
 `verify:layout`, `verify:teclado`, `verify:rutas`, `verify:wiki`, `verify:seo`,
 `verify:taller`, `verify:historial`, `verify:guias`, `verify:maquinas`,
 `verify:subida` y `verify:ui` salen con código 1 si alguna comprobación falla, así
@@ -80,6 +102,8 @@ que valen como paso de CI.
 | `maquinas.mjs` | El catálogo contra sus propias reglas: sin slugs repetidos, un campo pendiente sin valor, cerramiento declarado con origen, y la regla sin afirmar lo que no puede saber. **No comprueba que las cifras sean verdaderas**: eso lo decide la fuente cocinada. |
 | `subida-ui.mjs` | La subida por arrastre y por selector: que el arrastre cancele la acción del navegador, que varios archivos se rechacen, y que el G-code llegue al coste. También que se pueda subir desde `/taller` sin salir de la ruta. |
 | `ui.mjs` | La auditoría de interfaz del 14/10/2026, repetible: 11 rutas × 3 anchos con un solo `h1` y sin desbordamiento, las fichas dentro de su tarjeta, los nombres accesibles de las ilustraciones, el contraste calculado de los tokens, `prefers-reduced-motion`, y la mecánica del SVG medida en 7 fracciones del ciclo. |
+| `ux-tareas.mjs` | Las 14 regresiones de tareas, incluido acceso a variables de escritorio y llegada real a anclas tras lazy loading; se puede seleccionar `--grupo=entrada`, `guias` o `herramientas`. |
+| `preview-base.mjs` | El servidor indicado por `BASE_URL` se utiliza y sigue vivo después de `detener()`. |
 
 ## La comprobación de encabezados
 

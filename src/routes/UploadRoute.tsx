@@ -3,6 +3,8 @@ import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
 import Inicio from "../components/Inicio";
+import SeccionAnalisis from "../components/SeccionAnalisis";
+import ControlesVisor from "../components/ControlesVisor";
 
 /**
  * El visor 3D se carga bajo demanda, y desde aquí.
@@ -82,13 +84,8 @@ function UploadRoute() {
             X
           </button>
         </div>
-        <div className="canvas-placeholder">
-          <p className="canvas-error">
-            Este análisis viene del historial y no se guarda el archivo, así que
-            el visor 3D no se puede abrir. Los metadatos y el diagnóstico están
-            en el panel de la derecha.
-          </p>
-        </div>
+        <SeccionAnalisis />
+        <p className="archivo-nota">Este análisis viene del historial: no se guarda el archivo, así que el visor 3D no se puede abrir.</p>
         <AvisoAlmacenamiento />
         <Recientes />
       </>
@@ -140,8 +137,7 @@ function UploadRoute() {
     <div className="upload-icon" aria-hidden="true">⬆</div>
     <h2>{arrastrando ? 'Suelta el archivo para abrirlo' : 'Sube tu archivo'}</h2>
     <p>
-      <strong>G-code</strong> (Cura, PrusaSlicer, BambuStudio): lee material,
-      temperaturas, gramos y tiempo, y dice qué le pasa a esa pieza.
+               <strong>G-code:</strong> consulta material, temperaturas, gramos y tiempo.
     </p>
     <p>
       <strong>STL o 3MF</strong>: visor 3D. No se analiza: no lleva datos de
@@ -166,7 +162,7 @@ function UploadRoute() {
 
   return (
     <>
-      <div className="viewer-container">
+       <div className={showGcodeNotice ? 'analisis-trabajo' : 'viewer-container'}>
         <div className="file-info">
           {/*
           El nombre del archivo es el <h1> de esta vista, y no un `h2` con otro
@@ -209,21 +205,22 @@ function UploadRoute() {
           no ruido. */}
         <Suspense
           fallback={
+            <>
             <div className="viewer-3d-container">
               <div className="viewer-overlay">Cargando visor 3D...</div>
             </div>
+            <ControlesVisor disabled mensaje="Preparando el visor…" />
+            </>
           }
         >
-          {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} />}
+          {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} onChooseFile={openFilePicker} />}
         </Suspense>
 
         {showGcodeNotice && (
-          <div className="canvas-placeholder">
-            <p>
-              Los archivos G-code no se renderizan en 3D todavía. Puedes ver su
-              análisis técnico en el panel de Jev.
-            </p>
-          </div>
+          <>
+            <SeccionAnalisis />
+            <p className="archivo-nota">El G-code se analiza; su trayectoria no se muestra en 3D.</p>
+          </>
         )}
 
         {showUnsupported && (
@@ -231,6 +228,7 @@ function UploadRoute() {
             <p className="canvas-error">
               {unsupportedFileMessage(fileType, file.name)}
             </p>
+            <button type="button" className="btn-primary" onClick={openFilePicker}>Elegir otro archivo</button>
           </div>
         )}
       </div>
