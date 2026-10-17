@@ -79,6 +79,39 @@ comprobar('con dos claves, basta con que una falle para que no cumpla', () => {
   assert.equal(seCumple(c, { chapa: 'cool' }), false, 'material sin contestar');
 });
 
+console.log('\n=== Torre de temperatura: ajustes acotados al material ===\n');
+
+const torre = guiaPorSlug('torre-temperatura');
+assert.ok(torre, 'la guía de torre de temperatura está registrada');
+
+for (const material of ['abs', 'petg', 'tpu', 'otro']) {
+  comprobar(`torre: ${material} no recibe la refrigeración ni la cama del ejemplo PLA`, () => {
+    const respuestas = { material, slicer: 'cura', uso: 'general' };
+    const acciones = reglasQueSalen(torre, respuestas);
+    const tarjetas = conocimientoVisible(torre, respuestas);
+    for (const item of [...acciones, ...tarjetas]) {
+      const texto = [item.accion, item.valor, item.porque, item.cuerpo].filter(Boolean).join(' ');
+      assert.doesNotMatch(texto, /\b100\s*%|\b60\s*°C/, `${material}: ${item.id} aplica valores de PLA`);
+    }
+  });
+
+  comprobar(`torre: Cura con ${material} no prescribe la secuencia térmica de PLA`, () => {
+    const acciones = reglasQueSalen(torre, { material, slicer: 'cura' });
+    for (const regla of acciones) {
+      assert.doesNotMatch(
+        `${regla.accion} ${regla.valor ?? ''}`,
+        /215\s*°C|210\s*°C|205\s*°C/,
+        `${material}: ${regla.id} prescribe temperaturas del ejemplo PLA`
+      );
+    }
+  });
+}
+
+comprobar('torre: PLA conserva su ejemplo de refrigeración, sin extenderlo a otros materiales', () => {
+  const acciones = reglasQueSalen(torre, { material: 'pla', slicer: 'cura' });
+  assert.ok(acciones.some((r) => /100\s*%/.test(`${r.accion} ${r.valor ?? ''}`)));
+});
+
 console.log('\n=== Coherencia de cada guía ===\n');
 
 for (const guia of GUIAS) {
