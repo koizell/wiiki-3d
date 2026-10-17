@@ -71,6 +71,16 @@ red y la integración publicitaria real no forman parte de esta evidencia. La
 revisión independiente solicitó cambios por dos Important; ambos quedaron
 cubiertos por regresiones y correcciones. No se encargó una segunda revisión.
 
+## Grupo B cerrado (contenido y datos)
+
+- `pantallaTactil` retirado del catálogo, tipos y tests: sin fuente que lo afirme ni representación en el SVG.
+- AD5X: temperaturas 300/110 °C desde ficha oficial (antes pendiente por confusión con zmod).
+- A1, P1S, MK4S: dimensiones rellenadas desde fuentes oficiales.
+- Mars 5 Ultra: cerramiento, volumen y velocidad marcados como pendientes (sin fuente archivada).
+- MaquinaSVG: `null` se describe como "desconocido", no como "abierta".
+- Revisor independiente: APROBADO (revision-2), 0 bloqueantes.
+- Reglas térmicas: coherentes con el material cocinado (anotado como no bloqueante).
+
 ## Límites
 
 - Laya no decide la calidad del diseño ni las prioridades: no superó los controles de la auditoría.
