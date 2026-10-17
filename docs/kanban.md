@@ -1,6 +1,15 @@
 # Kanban de wiiki-3d
 
-Fecha: 2026-10-04. Tablero vivo: se actualiza al cerrar cada tarjeta.
+Actualizado: 2026-10-17. Tablero vivo: se actualiza al cerrar cada tarjeta.
+
+### Estado contrastado el 17 de octubre
+
+- **28 guías registradas**, incluida `torre-temperatura`, aprobada en `wiki/reviews/torre-temperatura-revision-2.md`. No volver a crear `piezas-curvadas-z`: ya está registrada y versionada. El recuento local no acredita por sí solo el despliegue en producción.
+- `build`, `verify:guias` **791/791**, `verify:wiki` **204/204**, `verify:seo` **397/397**, `verify:historial` **114/114** y `verify:rutas` pasan (código 0). Las pruebas técnicas **no acreditan la veracidad del contenido**: la primera revisión editorial de la torre rechazó 12 hallazgos, corregidos mediante cocinero → redactor → revisor. Se conservan ambos informes y nueve regresiones nuevas de material.
+- **GSC verificado y sitemap enviado; CMP confirmada por el propietario.** No se vuelven a listar como pendientes sin evidencia nueva. La revisión de AdSense no está solicitada y requiere autorización posterior al repaso final.
+- **Laya/VPS aplazado.** La clasificación pública sigue en demo; no se toma como siguiente paso recargar Jev por defecto.
+- Las imágenes editoriales siguen pendientes de integración. No se considera demostrado que su ausencia impida AdSense. El recuento de texto visible de las guías no se sustituye por palabras o bytes del TypeScript.
+- Avisos sin resolver en este bloque: `lint` termina con 0 errores y 3 advertencias preexistentes en copias de Three de `.superpowers/brainstorm/`; el build avisa de chunks superiores a 500 kB. No se modificaron esas copias ni se relajaron umbrales.
 
 ## Por qué existe este tablero
 
@@ -98,7 +107,7 @@ resultado de la prueba.
 
 | # | Tarjeta | Estado | Detalle |
 |---|---|---|---|
-| 2.1 | Clasificación real en producción | ⏳ | **El fallo de base está resuelto** (`0ec1f90`): sin variable, el clasificador va en demo, así que desarrollo y GitHub Pages coinciden. Queda la decisión del propietario: la API de Jev no tiene crédito, y el día que lo tenga hay que poner `VITE_JEV_USE_MOCK=false` y `VITE_JEV_PROXY_URL` en el flujo de Pages. |
+| 2.1 | Clasificación real en producción | ⏸ Aplazada | La web sigue en demo. El flujo de Pages ya admite `JEV_USE_MOCK` y `JEV_PROXY_URL` (`182878b`). Laya local y su adaptador se probaron, pero desplegar la API en VPS está aplazado hasta terminar la web; no se da por activada en producción. Véase `plan-laya.md`. |
 | 2.2 | El veredicto lleva a la sección, no al artículo | ✅ | El panel enlaza a `/wiki/<slug>#<ancla>`, no a la cabecera: `warpingRisk` y `riskLevel` caen en `#c-riesgo`, y `bedTemp` en `#v-material`. La ancla vive en `CAMPOS_WIKI` y `verify:wiki` la compara con la que declara la guía (`126/126`), así que renombrar la tarjeta sin tocar el panel falla. |
 | 2.3 | Comparar tu valor con el de la fuente | ✅ | Con un G-code cargado, la acción que da un intervalo de cama dice dónde cae tu valor: «Tu cama: 50 °C · objetivo 35–45 °C · 5 °C por encima». El intervalo va en `rango` (números) junto al `valor` (texto); `verify:guias` avisa si los dos se separan (`146/146`) y `verify:wiki` comprueba que la posición marcada es la que calcula el motor (`130/130`). |
 | 2.4 | Taller recibe los gramos del G-code | ✅ Ya ocurre. Falta QA: hoy no se puede pasar de la barra al artículo que explica ese campo. | Ya ocurre: `/taller/` abre con los gramos extraídos. FaltaQA: hoy no se puede pasar de la barra al artículo que explica ese campo. |
@@ -109,10 +118,10 @@ resultado de la prueba.
 
 | # | Tarjeta | Estado |
 |---|---|---|
-| 3.1 | `/proyectos/` deja de ser una pantalla vacía | ⏳ |
-| 3.2 | Un proyecto agrupa análisis guardados | ⏳ |
-| 3.3 | Abrir un proyecto lleva a su análisis | ⏳ |
-| 3.4 | Historial y proyectos sin cuentas ni nube | ⏳ |
+| 3.1 | `/proyectos/` deja de ser una pantalla vacía | ✅ `verify:historial` (17-oct, 114/114, código 0): ofrece el análisis para nombrarlo, muestra el nombre y el almacenamiento usado. |
+| 3.2 | Un proyecto agrupa análisis guardados | ⏳ Alcance por revisar: hoy un proyecto es un análisis nombrado. La prueba acredita nombrarlo y devolverlo al historial, no agrupar varios análisis. |
+| 3.3 | Abrir un proyecto lleva a su análisis | ✅ Corregida la navegación ausente desde Proyectos e Historial. Regresión vista fallar antes del arreglo; `verify:historial` 114/114 comprueba apertura tras recargar, archivo asociado, material/diagnóstico y ausencia de duplicados. |
+| 3.4 | Historial y proyectos sin cuentas ni nube | ✅ Persistencia local y estados sin IndexedDB comprobados por `verify:historial` (17-oct, 114/114, código 0). No implica sincronización ni conservación del archivo original. |
 
 ---
 
@@ -123,11 +132,11 @@ resultado de la prueba.
 | 4.1 | Desplegar con autorización | ✅ Desplegado: `main` → GitHub Pages con `deploy.yml` en cada push. |
 | 4.2 | Comprobar que `/wiki/`, artículos, contacto y sitemap responden 200 | ✅ Las 18 rutas del sitemap responden 200 (sonda del 2026-10-16). |
 | 4.3 | Corregir `verify:layout` (144 px frente a 150) | ✅ `verify:layout` en verde (2026-10-16, 29 viewports). |
-| 4.4 | Verificación de AdSense | ✅ Verificada por meta. La ficha arrastra el rechazo del 16-sep («Contenido de poco valor»); CMP de Google elegida y sitio listo: falta publicar el mensaje europeo y «Solicitar revisión». |
+| 4.4 | Verificación de AdSense | ✅ Propiedad verificada por meta. CMP de Google confirmada por el propietario; no se vuelve a pedir crear/publicar el mensaje. Pendiente el repaso final del sitio y autorización para solicitar revisión; la propiedad verificada no significa aprobación de anuncios. |
 
 ---
 
-## Sprint 5 — Lo que quedó pendiente en la auditoría ⏳
+## Sprint 5 — Lo que quedó pendiente en la auditoría ✅
 
 *Estado: cerrado el 15/10/2026. Todas las tarjetas salvo el 5.5 (cerrada hasta el límite de las fuentes actuales). Plan completo:
 [`plan-mejoras-frontend.md`](plan-mejoras-frontend.md). Este sprint sólo cubre lo
@@ -172,8 +181,8 @@ prioridad la marca lo que desbloquea la wiki interactiva, no lo que se lee bien 
 | 3 | `material` | ✅ Guía escrita y aprobada (`material-revision-2`); 4 fuentes nuevas; campo `material` del panel; dibujo `rugosidad` |
 | 4 | `altura-capa` | ✅ Guía escrita y aprobada (`altura-capa-revision-2`); 4 fuentes nuevas; campo `layerHeight`; dibujo `capas` |
 | 5 | `temperatura-hotend` | ✅ Guía escrita y aprobada (`temperatura-hotend-revision-2`); campo `hotendTemp`; dibujo `hotend` |
-| 6 | `capas-desplazadas` | Pendiente |
-| 7 | `flow-rate` | Pendiente |
+| 6 | `capas-desplazadas` | ✅ Versionada y registrada; comprobaciones generales actuales en verde. |
+| 7 | `flow-rate` | ✅ Versionada y registrada; comprobaciones generales actuales en verde. |
 | 8 | `voladizos-y-soportes` | ✅ Guía escrita y aprobada (`voladizos-y-soportes-revision-2`); 3 fuentes nuevas; campos `hasOverhangs` y `overhangAngle`; dibujo `voladizo` |
 
 Los artículos con `campo` reservado son los que hacen que la barra «Tu archivo» tenga
