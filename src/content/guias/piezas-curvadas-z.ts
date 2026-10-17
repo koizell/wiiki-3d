@@ -107,6 +107,17 @@ export const piezasCurvadasZ: Guia = {
       },
     },
     {
+      id: 'altura-variables',
+      titulo: 'Variables de altura de capa en el slicer',
+      cuerpo:
+        'La altura de capa define el grosor vertical de cada capa y afecta tanto a la calidad como a la velocidad. En OrcaSlicer se ajusta con las variables layer_height e initial_layer_print_height.',
+      cita: {
+        texto:
+          'La altura de capa define el grosor vertical de cada capa y afecta tanto a la calidad como a la velocidad. Variables `layer_height`, `initial_layer_print_height` (Float).',
+        fuente: 'OrcaSlicer Wiki - Layer Height',
+      },
+    },
+    {
       id: 'por-debajo-20',
       titulo: 'Por debajo del 20 %: inconsistencias de flujo',
       cuando: { altura: 'fina' },
@@ -324,6 +335,16 @@ export const piezasCurvadasZ: Guia = {
       porque:
         'Si el cabezal se mueve demasiado rápido, los motores pueden no seguir el ritmo y el resto de la impresión queda desalineado.',
       alcance: 'Ajustar "Default Printing Speed" (con extrusión) y "X/Y Axis Movement Speed" (sin extrusión).',
+      cuando: { desplazamiento: 'si' },
+      fuente: 'Simplify3D Print Quality Troubleshooting',
+    },
+    {
+      id: 'desplazamiento-aceleracion',
+      accion: 'Baja la aceleración en el firmware',
+      porque:
+        'Una aceleración y desaceleración más gradual evita que los motores pierdan la posición deseada.',
+      alcance:
+        'Sugerencia de Simplify3D para desalineación; no da un valor numérico concreto.',
       cuando: { desplazamiento: 'si' },
       fuente: 'Simplify3D Print Quality Troubleshooting',
     },
