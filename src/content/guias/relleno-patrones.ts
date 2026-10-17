@@ -1,0 +1,573 @@
+import type { Guia } from './tipos.ts';
+import { AUTOR } from './autor.ts';
+
+export const rellenoPatrones: Guia = {
+  slug: 'relleno-patrones',
+  titulo: 'Relleno: patrones, densidad y resistencia',
+  resumen: 'Cómo elegir patrón y densidad de relleno según el material y el uso, y qué cambiar cuando el relleno es débil, pesado o deja marcas en la superficie.',
+  sintoma: 'Pieza frágil, pesada o lenta por el relleno, o superficie con huecos o abultamientos',
+  dibujo: 'slicer',
+  entrada:
+    'El relleno es la estructura interna de la pieza: aporta resistencia y soporte, y se ajusta para equilibrar material, tiempo y resistencia. Esta guía separa el problema del relleno del de orientación y del de separación entre capas, y dice qué patrón y qué densidad usar según el material y el uso, además de qué cambiar cuando el relleno es débil, pesado o deja marcas en la superficie.',
+  autor: AUTOR,
+  actualizado: '2026-10-17',
+  minutos: 6,
+  campos: [],
+  diferencial: {
+    contra: 'orientación y resistencia',
+    contraCorto: 'orientación',
+    comprobaciones: [
+      {
+        id: 'fallo',
+        mira: '¿La pieza es débil en todas las direcciones o sólo perpendicular a las capas (eje Z)?',
+        si: 'Débil en todas las direcciones: el relleno o el material son el problema, no sólo la orientación.',
+        no: 'Débil sólo en Z: es anisotropía por orientación, no un problema de relleno.',
+      },
+      {
+        id: 'peso',
+        mira: '¿La pieza es más pesada o más lenta de lo esperado para su tamaño?',
+        si: 'Sí: la densidad o el patrón consumen más material o tiempo de lo necesario.',
+        no: 'No: el problema no está en el relleno, mira orientación o material.',
+      },
+      {
+        id: 'superficie',
+        mira: '¿La superficie superior muestra huecos, abultamientos o falta de soporte interno?',
+        si: 'Sí: la densidad es demasiado baja (huecos) o demasiado alta (tensiones al enfriar).',
+        no: 'La superficie es correcta: el problema está en otro sitio.',
+      },
+    ],
+    siNo: { guia: 'orientacion-resistencia', etiqueta: 'Orientación y resistencia' },
+  },
+  variables: [
+    {
+      id: 'material',
+      etiqueta: 'Material',
+      para: 'Los rangos de densidad recomendados y la tolerancia térmica dependen del material.',
+      necesaria: true,
+      opciones: [
+        { id: 'pla', etiqueta: 'PLA', detalle: 'Rígido, frágil' },
+        { id: 'petg', etiqueta: 'PETG', detalle: 'Tenaz, flexible' },
+        { id: 'abs', etiqueta: 'ABS o ASA', detalle: 'Tolerancia térmica alta' },
+        { id: 'pa', etiqueta: 'PA / Nylon', detalle: 'Impacto, higroscópico' },
+        { id: 'cf', etiqueta: 'PLA/PETG con fibra de carbono', detalle: 'Rígido con menos densidad' },
+      ],
+    },
+    {
+      id: 'uso',
+      etiqueta: 'Uso de la pieza',
+      para: 'Decide qué patrón priorizar: resistencia, velocidad o flexibilidad.',
+      necesaria: true,
+      opciones: [
+        { id: 'estructural', etiqueta: 'Estructural', detalle: 'Soporta carga' },
+        { id: 'prototipo', etiqueta: 'Prototipo', detalle: 'Rápido, no funcional' },
+        { id: 'decorativo', etiqueta: 'Decorativo', detalle: 'Aspecto, mínimo material' },
+        { id: 'flexible', etiqueta: 'Flexible', detalle: 'Curvas, flexión controlada' },
+      ],
+    },
+    {
+      id: 'problema',
+      etiqueta: 'Problema observado',
+      para: 'Decide qué acción concreta aplicar: patrón débil, exceso de peso o defectos de superficie.',
+      opciones: [
+        { id: 'fragil', etiqueta: 'Relleno débil o hiloso', detalle: 'Falta de resistencia' },
+        { id: 'pesado', etiqueta: 'Pesado o lento', detalle: 'Exceso de material/tiempo' },
+        { id: 'superficie', etiqueta: 'Superficie con huecos o abultamientos', detalle: 'Densidad mal ajustada' },
+        { id: 'ninguno', etiqueta: 'Ninguno, optimizar', detalle: 'Ajuste fino' },
+      ],
+    },
+    {
+      id: 'paredes',
+      etiqueta: 'Número de paredes (perímetros)',
+      para: 'Dos perímetros extra suelen aportar más resistencia que subir el relleno de 20 % a 30 %.',
+      opciones: [
+        { id: 'pocas', etiqueta: '2 o menos', detalle: 'Pocas paredes' },
+        { id: 'suficientes', etiqueta: '3 o más', detalle: 'Paredes suficientes' },
+      ],
+    },
+    {
+      id: 'densidad',
+      etiqueta: 'Densidad actual',
+      para: 'Por encima o por debajo del rango recomendado causa defectos de superficie o falta de resistencia.',
+      opciones: [
+        { id: 'baja', etiqueta: 'Baja (<20 %)', detalle: 'Poco material' },
+        { id: 'media', etiqueta: 'Media (20–40 %)', detalle: 'Rango habitual' },
+        { id: 'alta', etiqueta: 'Alta (>40 %)', detalle: 'Mucho material' },
+      ],
+    },
+  ],
+  conocimiento: [
+    {
+      id: 'que-es-relleno',
+      titulo: 'Qué es el relleno',
+      cuerpo:
+        'El relleno es la estructura interna de la pieza impresa: aporta resistencia y soporte, y se ajusta para equilibrar uso de material, tiempo de impresión y resistencia. La densidad se expresa como porcentaje del volumen total de relleno, del 0 % (hueco) al 100 % (sólido).',
+      cita: { texto: 'El relleno es la estructura interna de la pieza impresa, aporta resistencia y soporte, y se ajusta para equilibrar uso de material, tiempo de impresión y resistencia de la pieza.', fuente: 'OrcaSlicer Wiki - Infill' },
+    },
+    {
+      id: 'densidad-pla',
+      titulo: 'Densidad recomendada: PLA',
+      cuando: { material: 'pla' },
+      cuerpo:
+        'Para piezas rígidas en PLA, densidades entre 20 % y 30 % suelen bastar. El PLA es fácil de imprimir pero frágil y se ablanda ≈ 60 °C.',
+      cifra: { valor: '20–30 %', nota: 'PLA rígido; asume 2–3 perímetros y patrón orientado a resistencia (Ultimaker)' },
+      cita: { texto: 'PLA: 20–30 % para piezas rígidas. Fácil de imprimir; frágil; se ablanda ≈ 60 °C.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'densidad-petg',
+      titulo: 'Densidad recomendada: PETG',
+      cuando: { material: 'petg' },
+      cuerpo:
+        'PETG es tenaz y ligeramente flexible; resiste al calor ≈ 80 °C. Densidades entre 25 % y 40 % son el rango habitual.',
+      cifra: { valor: '25–40 %', nota: 'PETG; asume 2–3 perímetros y patrón orientado a resistencia (Ultimaker)' },
+      cita: { texto: 'PETG: 25–40 %. Tenaz, ligeramente flexible; resistente al calor ≈ 80 °C.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'densidad-abs',
+      titulo: 'Densidad recomendada: ABS',
+      cuando: { material: 'abs' },
+      cuerpo:
+        'ABS tiene mayor tolerancia térmica (≈ 95 °C) y necesita cámara cerrada para evitar warping. Densidades entre 30 % y 50 %.',
+      cifra: { valor: '30–50 %', nota: 'ABS; asume 2–3 perímetros y patrón orientado a resistencia (Ultimaker)' },
+      cita: { texto: 'ABS: 30–50 %. Mayor tolerancia térmica (≈ 95 °C); necesita cámara cerrada para evitar warping.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'densidad-pa',
+      titulo: 'Densidad recomendada: Nylon',
+      cuando: { material: 'pa' },
+      cuerpo:
+        'Nylon (PA-12/PA-6) tiene excelente resistencia al impacto y es higroscópico: secar antes de imprimir. Densidades entre 35 % y 50 %.',
+      cifra: { valor: '35–50 %', nota: 'Nylon; asume 2–3 perímetros y patrón orientado a resistencia (Ultimaker)' },
+      cita: { texto: 'Nylon (PA-12/PA-6): 35–50 %. Excelente resistencia al impacto; higroscópico, secar antes de imprimir.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'densidad-cf',
+      titulo: 'Densidad recomendada: fibra de carbono',
+      cuando: { material: 'cf' },
+      cuerpo:
+        'PLA/PETG rellenos de fibra de carbono permiten bajar la densidad porque las fibras refuerzan la rigidez: entre 15 % y 25 %.',
+      cifra: { valor: '15–25 %', nota: 'PLA/PETG-CF; asume 2–3 perímetros y patrón orientado a resistencia (Ultimaker)' },
+      cita: { texto: 'PLA/PETG rellenos de fibra de carbono: 15–25 %. Las fibras refuerzan la rigidez, permitiendo bajar la densidad.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'paredes-vs-relleno',
+      titulo: 'Las paredes mandan, el relleno respalda',
+      cuerpo:
+        'No ignores el número de paredes: dos perímetros extra suelen aportar más resistencia que subir el relleno de 20 % a 30 %. Las paredes son el camino de carga principal; el relleno es el respaldo. Es una regla práctica de una sola fuente, sin datos de ensayo adjuntos.',
+      cita: { texto: 'No ignorar el número de paredes: dos perímetros extra suelen aportar más resistencia que subir el relleno de 20 % a 30 %. Las paredes son el camino de carga principal; el relleno es el respaldo.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'solapamiento',
+      titulo: 'Solapamiento relleno-pared',
+      cuerpo:
+        'El porcentaje de solapamiento del relleno con las paredes controla el enlace entre estructura interna y perímetro; la mayoría de usos se benefician de 10 %–25 %, según material y condiciones.',
+      cifra: { valor: '10–25 %', nota: 'Solapamiento relleno-pared, según material y condiciones (Ultimaker)' },
+      cita: { texto: 'El porcentaje de solapamiento del relleno con las paredes controla el enlace entre estructura interna y perímetro; la mayoría de usos se benefician de 10 %–25 %, según material y condiciones.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'superficies',
+      titulo: 'Densidad y superficie',
+      cuando: { problema: 'superficie' },
+      cuerpo:
+        'Superficies bajas pueden mostrar imperfecciones con densidad baja (falta de soporte interno) y abultamientos con densidad alta (tensiones internas al enfriar).',
+      cita: { texto: 'Superficies bajas pueden mostrar imperfecciones con densidad baja (falta de soporte interno) y abultamientos con densidad alta (tensiones internas al enfriar).', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'anisotropia',
+      titulo: 'Resistencia en X-Y frente a Z',
+      cuerpo:
+        'Los patrones se valoran por resistencia en dos direcciones, horizontal (plano X-Y) y vertical (eje Z), porque la resistencia en Z depende de la adhesión entre capas.',
+      cita: { texto: 'Los patrones se valoran por resistencia en dos direcciones: horizontal (plano X-Y) y vertical (eje Z).', fuente: 'OrcaSlicer Wiki - Patterns' },
+    },
+    {
+      id: 'patrones-estructurales',
+      titulo: 'Patrones para fuerza estructural',
+      cuando: { uso: 'estructural' },
+      cuerpo:
+        'Para fuerza estructural: Cubic (rejilla 3D uniforme), Gyroid (igual en todas las direcciones, distribuye tensiones) y Tri-hexagon (combina compresión y tracción).',
+      cita: { texto: 'Para fuerza estructural: Cubic (rejilla 3D uniforme), Gyroid (igual en todas las direcciones, distribuye tensiones) y Tri-hexagon (combina compresión y tracción).', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'patrones-velocidad',
+      titulo: 'Patrones para velocidad',
+      cuando: { uso: 'prototipo' },
+      cuerpo:
+        'Para velocidad: Lines/rectilinear (geometría simple, trayectorias largas) y Zigzag (continuo, menos retracción); Lightning para prototipos no funcionales.',
+      cita: { texto: 'Para velocidad: Lines/rectilinear (geometría simple, trayectorias largas) y Zigzag (continuo, menos retracción); Lightning para prototipos no funcionales.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'gyroid',
+      titulo: 'Gyroid',
+      cuerpo:
+        'Gyroid: resistencia igual en todas las direcciones; no se cruza consigo mismo en una capa; permite rellenar con resina u otro líquido; distribuye la contracción a lo largo de sus líneas curvas, ayudando a reducir warping (afirmación de una sola fuente, OrcaSlicer); más lento de laminar por los puntos de las curvas. Matiz entre fuentes: Prusa lo describe como relativamente rápido y ahorrador de material, mientras OrcaSlicer lo valora con tiempo alto y material normal; las descripciones son cualitativas y los ratings dependen del laminador, del modelo y de la densidad.',
+      cita: { texto: 'Gyroid: resistencia igual en todas las direcciones; no se cruza consigo mismo en una capa; permite rellenar con resina u otro líquido; distribuye la contracción a lo largo de sus líneas curvas, ayudando a reducir warping; más lento de laminar por los puntos de las curvas.', fuente: 'OrcaSlicer Wiki - Patterns, Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'honeycomb',
+      titulo: 'Honeycomb',
+      cuerpo:
+        'Honeycomb: alta resistencia; consume aprox. 25 % más de material que otros patrones y el tiempo puede ser el doble (cifra de una sola fuente, Prusa).',
+      cifra: { valor: '~25 % más', nota: 'Material extra frente a otros patrones; cifra de una sola fuente (Prusa)' },
+      cita: { texto: 'Honeycomb consume aprox. 25 % más de material que otros patrones y el tiempo puede ser el doble.', fuente: 'Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'adaptive-cubic',
+      titulo: 'Adaptive Cubic',
+      cuando: { problema: 'pesado' },
+      cuerpo:
+        'Adaptive Cubic es más denso cerca de las paredes y más hueco en el centro: ahorra material y tiempo manteniendo resistencia; ideal para piezas grandes. Consumo de material aprox. 1/4 menos que rectilinear (cifra de una sola fuente, Prusa).',
+      cita: { texto: 'Adaptive Cubic: más denso cerca de las paredes, más hueco en el centro; ahorra material y tiempo manteniendo resistencia; ideal para piezas grandes. Consumo de material aprox. 1/4 menos que rectilinear.', fuente: 'Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'weak-infill',
+      titulo: 'Relleno débil o hiloso',
+      cuando: { problema: 'fragil' },
+      cuerpo:
+        'Causas típicas: patrón débil, velocidad de relleno demasiado alta (sub-extrusión) o ancho de extrusión insuficiente. Soluciones: cambiar de patrón (Grid, Triangular y Solid Honeycomb son fuertes; Rectilinear y Fast Honeycomb sacrifican resistencia por velocidad), bajar la velocidad (ej. de 3600 mm/min a la mitad) o aumentar el ancho de extrusión del relleno (ej. 200 %).',
+      cita: { texto: 'Relleno débil o hiloso: causas típicas: patrón débil, velocidad de relleno demasiado alta (sub-extrusión), ancho de extrusión insuficiente. Soluciones: cambiar de patrón (Grid, Triangular, Solid Honeycomb son fuertes; Rectilinear y Fast Honeycomb sacrifican resistencia por velocidad), bajar la velocidad (ej. de 3600 mm/min a la mitad), aumentar el ancho de extrusión del relleno (ej. 200 %).', fuente: 'Simplify3D - Weak Infill' },
+    },
+    {
+      id: 'multiline',
+      titulo: 'Fill Multiline',
+      cuerpo:
+        'Fill Multiline genera el patrón seleccionado con hasta 10 líneas de extrusión paralelas por trayectoria, preservando la densidad definida y el uso total de material. Puede mejorar la resistencia y la velocidad sin aumentar material.',
+      cita: { texto: 'Fill Multiline permite generar el patrón seleccionado con hasta 10 líneas de extrusión paralelas por trayectoria, preservando la densidad definida y el uso total de material.', fuente: 'OrcaSlicer Wiki - Infill' },
+    },
+    {
+      id: 'adaptive-infill',
+      titulo: 'Relleno adaptativo (TPMS)',
+      cuando: { problema: 'pesado' },
+      cuerpo:
+        'Gyroid, TPMS-D y TPMS-FK pueden graduar la densidad dentro del objeto: celdas finas junto a paredes y superficies superior/inferior, más espaciadas hacia el centro, ahorrando material y tiempo.',
+      cita: { texto: 'Gyroid, TPMS-D y TPMS-FK pueden graduar la densidad dentro del objeto: celdas finas junto a paredes y superficies superior/inferior, más espaciadas hacia el centro, ahorrando material y tiempo.', fuente: 'OrcaSlicer Wiki - Patterns' },
+    },
+    {
+      id: 'smooth-factor',
+      titulo: 'Smooth Factor',
+      cuerpo:
+        'Smooth Factor redondea las esquinas del relleno disperso con curvas Bézier quínticas: 0 % mantiene esquinas afiladas, 100 % las curvas máximas. Reduce vibración, ringing y contracción del plástico en los giros. Sólo ciertos patrones.',
+      cita: { texto: 'Smooth Factor: redondea las esquinas del relleno disperso con curvas Bézier quínticas; 0 % mantiene esquinas afiladas, 100 % las curvas máximas; reduce vibración, ringing y contracción del plástico en los giros. Solo ciertos patrones.', fuente: 'OrcaSlicer Wiki - Infill' },
+    },
+    {
+      id: 'extra-solid-infill',
+      titulo: 'Extra solid infill',
+      cuando: { problema: 'fragil' },
+      cuerpo:
+        'Extra solid infill inserta capas sólidas en posiciones específicas para reforzar puntos críticos sin cambiar la densidad dispersa (formatos intervalo N, N#K o lista explícita de capas).',
+      cita: { texto: 'Extra solid infill: insertar capas sólidas en posiciones específicas para reforzar puntos críticos sin cambiar la densidad dispersa (formatos intervalo N, N#K o lista explícita de capas).', fuente: 'OrcaSlicer Wiki - Infill' },
+    },
+    {
+      id: 'concentric',
+      titulo: 'Concentric',
+      cuando: { uso: 'flexible' },
+      cuerpo:
+        'Concentric sigue los contornos del perímetro: bueno para cilindros y curvas, proporciona flexibilidad controlada (Ultimaker). Ideal para 100 % de relleno o piezas flexibles; alto uso de material (OrcaSlicer, sin corroboración de Prusa).',
+      cita: { texto: 'Concentric: sigue los contornos del perímetro; bueno para cilindros/curvas; proporciona flexibilidad controlada.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'lightning',
+      titulo: 'Lightning',
+      cuando: { uso: 'prototipo' },
+      cuerpo:
+        'Lightning: consumo ultra-bajo y tiempo extra-bajo, resistencia baja. Para prototipos rápidos y piezas no estructurales; basado en Cura.',
+      cita: { texto: 'Lightning: consumo ultra-bajo y tiempo extra-bajo; resistencia baja; para prototipos rápidos y piezas no estructurales; basado en Cura.', fuente: 'OrcaSlicer Wiki - Patterns, Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'rectilinear-100',
+      titulo: 'Rectilinear al 100 %',
+      cuando: { densidad: 'alta' },
+      cuerpo:
+        'Rectilinear es el único patrón recomendado para 100 % de relleno; PrusaSlicer cambia automáticamente a rectilinear al poner 100 %. El auto-cambio es un comportamiento documentado por PrusaSlicer, no generalizable a otros laminadores.',
+      cita: { texto: 'Rectilinear es el único recomendado para 100 % de relleno; al poner 100 %, PrusaSlicer cambia automáticamente el patrón a rectilinear.', fuente: 'Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'grid-cruces',
+      titulo: 'Grid y acumulación en cruces',
+      cuerpo:
+        'Grid imprime dos conjuntos de líneas perpendiculares en cada capa: fuerte en X-Y y Z, pero el material se acumula en los cruces y puede generar ruido o fallo de impresión.',
+      cita: { texto: 'Grid se imprime en ambas direcciones en cada capa; acumula material donde se cruzan; más sólido y mejor adhesión entre capas, pero ruido o fallo por golpear los cruces.', fuente: 'Prusa KB - Infill patterns' },
+    },
+    {
+      id: 'checklist',
+      titulo: 'Checklist antes de imprimir',
+      cuando: { problema: 'ninguno' },
+      cuerpo:
+        'Antes de tocar el relleno: boquilla ≥ 0,4 mm (o ajustar ancho de línea), multiplicador de flujo calibrado con cubo de pared única, feature mínimo ≥ 1,2× diámetro de boquilla, nivelación de cama y altura de primera capa verificadas, filamento seco (PETG, ABS, nylon), perfil de ventilador acorde al material, firmware y laminador actualizados.',
+      cita: { texto: 'Checklist previo: boquilla ≥ 0,4 mm (o ajustar ancho de línea), multiplicador de flujo calibrado con cubo de pared única, feature mínimo ≥ 1,2× diámetro de boquilla, nivelación de cama y altura de primera capa verificadas, filamento seco (PETG, ABS, nylon), perfil de ventilador acorde al material, firmware y laminador actualizados.', fuente: 'Ultimaker - Infill density' },
+    },
+    {
+      id: 'metodologia',
+      titulo: 'Cómo se miden los ratings',
+      cuerpo:
+        'Los ratings son la media de un cubo de 100 mm, un 3DBenchy y el Stanford bunny, laminados a 5, 15, 30 y 50 % de densidad de relleno disperso sin paredes ni capas superior/inferior. Las estimaciones son guía estándar y no serán iguales para todos los modelos (documentado solo por OrcaSlicer).',
+      cita: { texto: 'Los ratings son la media de un cubo de 100 mm, un 3DBenchy y el Stanford bunny, laminados a 5, 15, 30 y 50 % de densidad de relleno disperso sin paredes ni capas superior/inferior.', fuente: 'OrcaSlicer Wiki - Patterns' },
+    },
+    {
+      id: 'variable-infill',
+      titulo: 'Variable infill density',
+      cuerpo:
+        'Variable infill density permite distintas regiones de la misma pieza con distintas densidades, concentrando material donde hay tensión.',
+      cita: { texto: 'Variable infill density: distintas regiones de la misma pieza con distintas densidades, concentrando material donde hay tensión.', fuente: 'Ultimaker - Infill density' },
+    },
+  ],
+  reglas: [
+    {
+      id: 'densidad-pla',
+      accion: 'Pon la densidad de relleno entre 20 % y 30 %',
+      valor: '20–30 %',
+      porque: 'Para piezas rígidas en PLA, densidades entre 20 % y 30 % ofrecen buena relación resistencia/peso con tiempos y material razonables.',
+      cuando: { material: 'pla' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'PLA rígido; asume 2–3 perímetros y patrón orientado a resistencia. Cifra de una sola fuente (Ultimaker), sin ensayos adjuntos.',
+    },
+    {
+      id: 'densidad-petg',
+      accion: 'Pon la densidad de relleno entre 25 % y 40 %',
+      valor: '25–40 %',
+      porque: 'PETG es tenaz y resistente al calor ≈ 80 °C; densidades entre 25 % y 40 % son el rango habitual.',
+      cuando: { material: 'petg' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'PETG; asume 2–3 perímetros y patrón orientado a resistencia. Cifra de una sola fuente (Ultimaker).',
+    },
+    {
+      id: 'densidad-abs',
+      accion: 'Pon la densidad de relleno entre 30 % y 50 %',
+      valor: '30–50 %',
+      porque: 'ABS tiene mayor tolerancia térmica (≈ 95 °C) y necesita cámara cerrada; densidades entre 30 % y 50 %.',
+      cuando: { material: 'abs' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'ABS; asume 2–3 perímetros y patrón orientado a resistencia. Cifra de una sola fuente (Ultimaker).',
+    },
+    {
+      id: 'densidad-pa',
+      accion: 'Pon la densidad de relleno entre 35 % y 50 %',
+      valor: '35–50 %',
+      porque: 'Nylon tiene excelente resistencia al impacto y es higroscópico; secar antes de imprimir. Densidades entre 35 % y 50 %.',
+      cuando: { material: 'pa' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Nylon; asume 2–3 perímetros y patrón orientado a resistencia. Cifra de una sola fuente (Ultimaker).',
+    },
+    {
+      id: 'densidad-cf',
+      accion: 'Pon la densidad de relleno entre 15 % y 25 %',
+      valor: '15–25 %',
+      porque: 'Las fibras de carbono refuerzan la rigidez, permitiendo bajar la densidad frente a PLA/PETG base.',
+      cuando: { material: 'cf' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'PLA/PETG-CF; asume 2–3 perímetros y patrón orientado a resistencia. Cifra de una sola fuente (Ultimaker).',
+    },
+    {
+      id: 'patron-estructural',
+      accion: 'Elige Cubic, Gyroid o Tri-hexagon',
+      porque: 'Para fuerza estructural: Cubic (rejilla 3D uniforme), Gyroid (igual en todas las direcciones) y Tri-hexagon (combina compresión y tracción).',
+      cuando: { uso: 'estructural' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Recomendación de patrón por uso; la resistencia real depende del modelo y la densidad.',
+    },
+    {
+      id: 'patron-prototipo',
+      accion: 'Elige Lightning para prototipos no funcionales',
+      porque: 'Lightning tiene consumo ultra-bajo y tiempo extra-bajo, pero resistencia baja: sólo para prototipos rápidos y piezas no estructurales.',
+      cuando: { uso: 'prototipo' },
+      fuente: 'OrcaSlicer Wiki - Patterns, Ultimaker - Infill density, Prusa KB - Infill patterns',
+      alcance: 'Lightning no sirve para piezas funcionales; si la pieza va a soportar carga, usar Cubic/Gyroid/Tri-hexagon.',
+    },
+    {
+      id: 'patron-velocidad',
+      accion: 'Elige Rectilinear o Zigzag para imprimir rápido',
+      porque: 'Rectilinear y Zigzag son rápidos y eficientes en material; Zigzag es continuo y reduce retracciones.',
+      cuando: { uso: 'prototipo' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Entre patrones estructurales, rectilinear/line son rápidos; si se admite poca resistencia, Lightning es más rápido pero no funcional (matiz entre Ultimaker y OrcaSlicer).',
+    },
+    {
+      id: 'patron-flexible',
+      accion: 'Elige Concentric para piezas flexibles o cilíndricas',
+      porque: 'Concentric sigue los contornos del perímetro y proporciona flexibilidad controlada; ideal para piezas flexibles o 100 % de relleno.',
+      cuando: { uso: 'flexible' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Alto uso de material; no recomendado si se busca ahorro.',
+    },
+    {
+      id: 'patron-decorativo',
+      accion: 'Usa relleno mínimo o Lightning',
+      porque: 'Un jarrón decorativo funciona con relleno mínimo; Lightning tiene el menor consumo y tiempo.',
+      cuando: { uso: 'decorativo' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Sólo para piezas no estructurales; no aporta resistencia mecánica.',
+    },
+    {
+      id: 'paredes-primero',
+      accion: 'Añade dos perímetros extra antes de subir el relleno',
+      porque: 'Dos perímetros extra suelen aportar más resistencia que subir el relleno de 20 % a 30 %; las paredes son el camino de carga principal.',
+      cuando: { paredes: 'pocas' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Regla práctica de una sola fuente (Ultimaker), sin datos de ensayo adjuntos.',
+    },
+    {
+      id: 'solapamiento',
+      accion: 'Pon el solapamiento relleno-pared entre 10 % y 25 %',
+      valor: '10–25 %',
+      porque: 'El solapamiento controla el enlace entre estructura interna y perímetro; la mayoría de usos se benefician de 10 %–25 %.',
+      cuando: { problema: ['fragil', 'pesado', 'superficie', 'ninguno'] },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Según material y condiciones; ~10–15 % minimiza sobre-extrusión y acumulación (OrcaSlicer).',
+    },
+    {
+      id: 'cambia-patron-fuerte',
+      accion: 'Cambia el patrón a Grid, Triangular o Solid Honeycomb',
+      porque: 'Patrones fuertes (Grid, Triangular, Solid Honeycomb) añaden resistencia donde Rectilinear o Fast Honeycomb la sacrifican por velocidad.',
+      cuando: { problema: 'fragil' },
+      fuente: 'Simplify3D - Weak Infill',
+      alcance: 'Simplify3D lista estos patrones como fuertes; la elección final depende del modelo.',
+    },
+    {
+      id: 'baja-velocidad-relleno',
+      accion: 'Baja la velocidad de relleno a la mitad',
+      valor: 'mitad (ej. 3600→1800 mm/min)',
+      porque: 'Velocidad de relleno demasiado alta causa sub-extrusión y relleno hiloso; bajarla da tiempo para extruir bien.',
+      cuando: { problema: 'fragil' },
+      fuente: 'Simplify3D - Weak Infill',
+      alcance: 'Ejemplo de Simplify3D (3600 mm/min a la mitad); no es una cifra universal.',
+    },
+    {
+      id: 'sube-ancho-relleno',
+      accion: 'Sube el ancho de extrusión del relleno al 200 %',
+      valor: '200 %',
+      porque: 'Ancho de extrusión insuficiente deja el relleno débil; aumentarlo engrosa las líneas de relleno.',
+      cuando: { problema: 'fragil' },
+      fuente: 'Simplify3D - Weak Infill',
+      alcance: 'Ejemplo de Simplify3D; depende de la boquilla y del material.',
+    },
+    {
+      id: 'multiline-refuerzo',
+      accion: 'Activa Fill Multiline (hasta 10 líneas)',
+      porque: 'Fill Multiline puede mejorar la resistencia y la velocidad sin aumentar el uso de material.',
+      cuando: { problema: 'fragil' },
+      fuente: 'OrcaSlicer Wiki - Infill',
+      alcance: 'Hasta 10 líneas paralelas; preserva la densidad y el material total.',
+    },
+    {
+      id: 'extra-solid-infill',
+      accion: 'Inserta capas sólidas en los puntos críticos',
+      porque: 'Extra solid infill refuerza puntos críticos sin cambiar la densidad dispersa.',
+      cuando: { problema: 'fragil' },
+      fuente: 'OrcaSlicer Wiki - Infill',
+      alcance: 'Formatos intervalo N, N#K o lista explícita de capas.',
+    },
+    {
+      id: 'sube-densidad-superficie',
+      accion: 'Sube la densidad de relleno',
+      porque: 'Densidad baja deja falta de soporte interno y muestra imperfecciones en la superficie superior.',
+      cuando: { problema: 'superficie', densidad: 'baja' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Aplica cuando la superficie muestra huecos por falta de soporte interno.',
+    },
+    {
+      id: 'baja-densidad-superficie',
+      accion: 'Baja la densidad de relleno',
+      porque: 'Densidad alta genera tensiones internas al enfriar y abultamientos en la superficie.',
+      cuando: { problema: 'superficie', densidad: 'alta' },
+      fuente: 'Ultimaker - Infill density',
+      alcance: 'Aplica cuando la superficie muestra abultamientos por tensiones.',
+    },
+    {
+      id: 'adaptive-cubic-pesado',
+      accion: 'Usa Adaptive Cubic para piezas grandes',
+      porque: 'Adaptive Cubic es más denso cerca de las paredes y hueco en el centro: ahorra material y tiempo manteniendo resistencia.',
+      cuando: { problema: 'pesado' },
+      fuente: 'OrcaSlicer Wiki - Patterns, Prusa KB - Infill patterns',
+      alcance: 'Consumo aprox. 1/4 menos que rectilinear (cifra de una sola fuente, Prusa); ideal para piezas grandes.',
+    },
+    {
+      id: 'adaptive-infill-pesado',
+      accion: 'Activa el relleno adaptativo (Gyroid/TPMS)',
+      porque: 'Gradúa la densidad: celdas finas en superficie y espaciadas en el centro, ahorrando material y tiempo.',
+      cuando: { problema: 'pesado' },
+      fuente: 'OrcaSlicer Wiki - Patterns',
+      alcance: 'Gyroid, TPMS-D y TPMS-FK; modos disabled, distance_warp, smooth_blend, stepped_shells, lobes, normal_x/y/z.',
+    },
+    {
+      id: 'gyroid-optimized',
+      accion: 'Activa Gyroid Optimized a baja densidad',
+      valor: '~30 % o menos',
+      porque: 'Tensa la onda del gyroid a lo largo de Z a baja densidad, acortando la columna vertical efectiva y mejorando la resistencia a pandeo por compresión en Z; sin efecto a ~30 % de densidad o más.',
+      cuando: { problema: 'pesado', densidad: 'baja' },
+      fuente: 'OrcaSlicer Wiki - Patterns',
+      alcance: 'Umbral ~30 % de una sola fuente (OrcaSlicer), sin corroborar; conserva el consumo de filamento.',
+    },
+    {
+      id: 'gyroid-resina',
+      accion: 'Usa Gyroid si vas a rellenar con resina o líquido',
+      porque: 'Gyroid no se auto-intersecta en una misma capa y su estructura interconectada permite rellenar con resina u otro líquido.',
+      cuando: { uso: 'estructural' },
+      fuente: 'OrcaSlicer Wiki - Patterns',
+      alcance: 'Afirmación corroborada por Prusa y OrcaSlicer para la no auto-intersección.',
+    },
+    {
+      id: 'rectilinear-100',
+      accion: 'Usa Rectilinear para relleno al 100 %',
+      valor: '100 %',
+      porque: 'Rectilinear es el único patrón recomendado para 100 % de relleno; PrusaSlicer cambia automáticamente a rectilinear al poner 100 %.',
+      cuando: { densidad: 'alta' },
+      fuente: 'Prusa KB - Infill patterns',
+      alcance: 'Comportamiento documentado por PrusaSlicer; no generalizable a otros laminadores.',
+    },
+    {
+      id: 'smooth-factor-regla',
+      accion: 'Sube el Smooth Factor para reducir ringing',
+      porque: 'Smooth Factor redondea las esquinas del relleno con curvas Bézier quínticas y reduce vibración, ringing y contracción en los giros.',
+      cuando: { problema: ['fragil', 'superficie'] },
+      fuente: 'OrcaSlicer Wiki - Infill',
+      alcance: 'Sólo ciertos patrones; 0 % mantiene esquinas afiladas, 100 % las curvas máximas.',
+    },
+  ],
+  fueraDeAlcance: [
+    {
+      sintoma: 'Las capas se abren o delaminan',
+      porQue: 'Es separación entre capas, no un problema de relleno.',
+      guia: 'separaciones-entre-capas',
+    },
+    {
+      sintoma: 'La pieza es débil sólo en el eje Z',
+      porQue: 'Es anisotropía por orientación, no un problema de relleno.',
+      guia: 'orientacion-resistencia',
+    },
+    {
+      sintoma: 'Las esquinas se levantan de la cama',
+      porQue: 'Es warping por contracción térmica, no un problema de relleno.',
+      guia: 'warping-pla',
+    },
+  ],
+  fuentes: [
+    {
+      url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill',
+      quien: 'OrcaSlicer Wiki - Infill',
+      que: 'Relleno disperso: densidad, multiline, overlap, solid infill, smooth factor.',
+    },
+    {
+      url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_patterns',
+      quien: 'OrcaSlicer Wiki - Patterns',
+      que: 'Patrones, anisotropía X-Y/Z, ratings, adaptativo, tiempo de capa.',
+    },
+    {
+      url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_patterns_quick_reference',
+      quien: 'OrcaSlicer Wiki - Quick Reference',
+      que: 'Tabla comparativa de patrones y metodología de pruebas.',
+    },
+    {
+      url: 'https://ultimaker.com/learn/3d-printing-infill-density-optimizing-strength-and-speed/',
+      quien: 'Ultimaker - Infill density',
+      que: 'Densidad por material, paredes, solapamiento, superficies, elección por pieza.',
+    },
+    {
+      url: 'https://www.simplify3d.com/resources/print-quality-troubleshooting/weak-infill/',
+      quien: 'Simplify3D - Weak Infill',
+      que: 'Relleno débil: causas y soluciones (patrón, velocidad, ancho).',
+    },
+    {
+      url: 'https://help.prusa3d.com/article/infill-patterns_177130',
+      quien: 'Prusa KB - Infill patterns',
+      que: 'Descripciones de patrones, rectilinear vs grid, honeycomb, multiline.',
+    },
+  ],
+};
