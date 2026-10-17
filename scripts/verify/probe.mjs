@@ -254,6 +254,7 @@ export async function startPreview(port = 4173) {
  * uno vivo —el de otra sesión, o uno levantado a mano— no hace nada.
  */
 export async function arrancarPreview(port = 4173) {
+  if (process.env.BASE_URL) return { base: process.env.BASE_URL, detener: () => {} };
   const host = `http://127.0.0.1:${port}`;
   if (await vivo(host)) return { base: host, detener: () => {} };
 
