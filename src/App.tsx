@@ -1,6 +1,6 @@
 import './App.css';
 import './estilos/ux-tareas.css';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useLayoutEffect } from 'react';
 import {
   BrowserRouter,
   Link,
@@ -151,11 +151,15 @@ const RUTAS_DESPLAZABLES = [
 function AppShell() {
   const { fileType, metadata, classification, status, error } = useAnalysis();
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(pathname));
   const conPanel = pathname === '/' && (fileType === 'stl' || fileType === '3mf');
   const conRiel = /^\/wiki\/[^/]+\/?$/.test(pathname);
   const sinLateral = !conPanel && !conRiel;
+
+  useLayoutEffect(() => {
+    if (!hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname, hash, sinLateral]);
 
   return (
     <>

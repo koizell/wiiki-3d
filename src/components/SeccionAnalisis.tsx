@@ -19,7 +19,7 @@ export default function SeccionAnalisis() {
       <AnalysisPanel status={status} metadata={metadata} classification={classification}
         modoClasificacion={MODO_CLASIFICACION}
         error={error} fileType={fileType ?? undefined} explicar={articuloParaCampo} />
-      {metadata && classification && (
+      {metadata && status === 'done' && (
         <p className="analisis-siguiente"><Link className="boton boton--ruta" to="/taller">Calcular el coste de filamento →</Link></p>
       )}
     </section>

@@ -66,7 +66,7 @@ try {
     await probar('enlace del análisis lleva a la variable de la guía, no sólo a su URL', async p => {
       await p.locator('#file-upload').setInputFiles(GCODE_FIXTURE);
       await p.locator('.panel-body').waitFor();
-      await p.locator('.panel-explicar').first().click();
+      await p.locator('.panel-metadatos a[href="/wiki/material#v-material"]').click();
       await p.locator('#v-material').waitFor();
       await p.waitForFunction(() => {
         const y = document.getElementById('v-material').getBoundingClientRect().top;

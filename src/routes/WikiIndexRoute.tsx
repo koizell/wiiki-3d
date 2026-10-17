@@ -4,6 +4,7 @@ import DibujoSintoma from '../components/DibujoSintoma';
 import { GUIAS } from '../lib/guias';
 import { useAnalysis } from '../state/useAnalysis';
 import type { Guia } from '../content/guias/tipos';
+import { textoMaterial } from '../lib/materiales';
 
 // Agrupación de navegación, no diagnóstico ni orden de frecuencia.
 const GRUPOS = [
@@ -39,6 +40,7 @@ const GRUPOS = [
  * problemas, no páginas.
  */
 export default function WikiIndexRoute() {
+  const { metadata } = useAnalysis();
   const [params, setParams] = useSearchParams();
   const consulta = params.get('q') ?? '';
   const resultados = useMemo(() => {
@@ -89,6 +91,13 @@ export default function WikiIndexRoute() {
         </p>
       </div>
 
+      {metadata && (
+        <p className="wiki-archivo">
+          Archivo actual: <strong>{metadata.filename}</strong>. Materiales declarados:{' '}
+          <strong>{textoMaterial(metadata.material)}</strong>. No son un filtro del catálogo.
+        </p>
+      )}
+
       {resultados.length === 0 ? (
         <p className="wiki-vacio">
           Ninguna guía coincide con <strong>{consulta}</strong>. Prueba con una palabra
@@ -136,14 +145,6 @@ export default function WikiIndexRoute() {
  * ratón pasan por la misma forma.
  */
 function TarjetaSintoma({ guia }: { guia: Guia }) {
-  const { metadata } = useAnalysis();
-  /*
-   * El badge de material es la interconexión con el analizador: si hay un G-code
-   * cargado, la tarjeta dice «PLA» sin que nadie lo escriba, porque es el material
-   * que el panel acaba de leer del archivo.
-   */
-  const material = metadata?.material;
-
   return (
     <Link className="sintoma" to={`/wiki/${guia.slug}`}>
       <div className="sintoma-dibujo">
@@ -155,7 +156,6 @@ function TarjetaSintoma({ guia }: { guia: Guia }) {
         <p className="sintoma-resumen">{guia.resumen}</p>
         <p className="sintoma-pie">
           <span className="insignia">{guia.minutos} min</span>
-          {material && <span className="insignia insignia--acento">{material}</span>}
           <span className="sintoma-flecha" aria-hidden="true">
             →
           </span>

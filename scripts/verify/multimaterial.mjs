@@ -49,6 +49,8 @@ try {
   await context.route('**/*', (r) => new URL(r.request().url()).origin === new URL(servidor.base).origin ? r.continue() : r.abort());
   const page = await context.newPage();
   await page.goto(servidor.base, { waitUntil: 'networkidle' });
+  await page.setInputFiles('#file-upload', 'test-fixtures/Argentina T-shirt medal_PLA_2m56s.gcode');
+  await page.locator('.recientes-boton').waitFor();
   const original = await readFile('test-fixtures/Argentina T-shirt medal_PLA_2m56s.gcode', 'utf8');
   assert.match(original, /^; filament_type = .+$/m);
   const contenido = original.replace(/^; filament_type = .+$/m, `; filament_type = ${metadata.material}`);
@@ -60,6 +62,20 @@ try {
     assert.match(texto, /220 °C/);
     assert.doesNotMatch(texto, /15\/100|Configuración correcta|BAJO/);
   });
+  const guardadas = await page.evaluate(async () => {
+    const request = indexedDB.open('wiiki-3d', 1);
+    const db = await new Promise((resolve, reject) => { request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+    const filas = await new Promise((resolve, reject) => {
+      const r = db.transaction('analisis', 'readonly').objectStore('analisis').getAll();
+      r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error);
+    });
+    db.close();
+    return filas.map((f) => f.filename);
+  });
+  comprobar('una lectura mixta tras un archivo válido no guarda una clasificación anterior', () => {
+    assert.deepEqual(guardadas, ['Argentina T-shirt medal_PLA_2m56s.gcode']);
+  });
+  assert.equal(await page.locator('.analisis-siguiente a[href="/taller"]').count(), 1, 'el coste sigue disponible aunque no haya clasificación');
   await page.getByRole('link', { name: 'Wiki 3D', exact: true }).first().click();
   await page.locator('.sintoma').first().waitFor();
   await page.locator('.sintoma[href="/wiki/warping-pla"]').click();
@@ -81,22 +97,23 @@ try {
     db.close();
   }, { metadata, anterior });
   await page.goto(servidor.base, { waitUntil: 'networkidle' });
-  await page.locator('.recientes-boton').waitFor();
-  const reciente = await page.locator('.recientes-meta').innerText();
+  await page.locator('.recientes-boton').filter({ hasText: 'varios.gcode' }).waitFor();
+  const reciente = await page.locator('.recientes-boton').filter({ hasText: 'varios.gcode' }).locator('.recientes-meta').innerText();
   comprobar('Recientes no presenta el riesgo bajo de una entrada mixta antigua', () => {
     assert.match(reciente, /No evaluable/);
     assert.doesNotMatch(reciente, /Bajo|PLA;ABS/);
   });
   for (const ruta of ['/historial', '/proyectos']) {
     await page.goto(servidor.base + ruta, { waitUntil: 'networkidle' });
-    await page.locator('.historial-riesgo').waitFor();
-    const riesgo = page.locator('.historial-riesgo');
+    const fila = page.locator('.historial-fila').filter({ hasText: ruta === '/proyectos' ? 'Mixto antiguo' : 'varios.gcode' });
+    const riesgo = fila.locator('.historial-riesgo');
+    await riesgo.waitFor();
     const texto = await riesgo.innerText(), clase = await riesgo.getAttribute('class');
     comprobar(`${ruta}: la clasificación antigua mixta se muestra sin falsa valoración`, () => {
       assert.equal(texto, 'No evaluable');
       assert.doesNotMatch(clase, /--bajo/);
     });
-    await page.locator('.historial-abrir').click();
+    await fila.locator('.historial-abrir').click();
     await page.locator('.panel-multimaterial').waitFor();
     assert.doesNotMatch(await page.locator('.analisis-principal').innerText(), /15\/100|Configuración correcta/);
   }

@@ -34,13 +34,20 @@
 .inicio-accesos a:hover { border-color: var(--accent-text); }
 .inicio-accesos a:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
-.app-container--sin-lateral { grid-template-areas: 'header' 'main'; grid-template-rows: auto 1fr; }
+/* Lectura: scroll del documento y pie en el flujo; visor/carril mantienen su shell. */
+.app-container--sin-lateral {
+  grid-template-areas: 'header' 'main';
+  grid-template-rows: auto 1fr;
+  height: auto;
+  min-height: 100dvh;
+}
 .app-container--sin-lateral .canvas-area {
+  min-width: 0;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
   gap: 1.5rem;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .analisis-trabajo,
@@ -54,9 +61,12 @@
 }
 .analisis-principal .panel-header { position: static; }
 .analisis-principal .panel-header h2 { font-size: 1.2rem; }
-.analisis-principal .panel-body { display: grid; gap: 1.5rem; overflow: visible; padding: 0; }
+.analisis-principal .panel-body { display: flex; flex-direction: column; gap: 1.25rem; overflow: visible; padding: 0; }
 .analisis-principal .panel-recommendation { margin: 0; grid-column: 1 / -1; }
 .analisis-principal .panel-section-title { margin-top: 0; }
+.analisis-principal .panel-estimacion .panel-data,
+.analisis-principal .panel-metadatos .panel-data { display: grid; gap: 0.5rem 1.5rem; }
+.analisis-principal .panel-data-row { min-width: 0; }
 .analisis-siguiente { margin-top: 1.5rem; }
 .archivo-nota { max-width: 56rem; margin-inline: auto; color: var(--text-secondary); font-size: var(--texto-sm); line-height: 1.6; }
 .canvas-placeholder:has(.canvas-error) { flex-direction: column; gap: 1rem; min-height: 12rem; }
@@ -87,6 +97,20 @@
 .ruta-cargando { padding: 1.5rem; color: var(--text-secondary); }
 
 /* Un índice agrupado y escaneable, sin ocultar guías ni inventar popularidad. */
+.wiki-index { max-width: 76rem; margin-inline: auto; }
+.wiki-index-intro { max-width: 65ch; }
+.wiki-grupo .wiki-sintomas { grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+.wiki-grupo .sintoma { height: 100%; }
+.wiki-archivo {
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  color: var(--text-secondary);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
 .wiki-grupos { display: flex; flex-direction: column; gap: 2rem; }
 .wiki-grupo h2 { font-size: 1.15rem; margin-bottom: 1rem; }
 .wiki-grupo h2 span { color: var(--text-secondary); font-size: var(--texto-sm); font-weight: 400; margin-left: 0.5rem; }
@@ -140,8 +164,16 @@
   .app-container--sin-lateral {
     grid-template-areas: 'nav header' 'nav main';
     grid-template-columns: 220px minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
   }
-  .analisis-principal .panel-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app-container--sin-lateral .sidebar-left { position: sticky; top: 0; align-self: start; height: 100dvh; }
+  .analisis-principal .panel-estimacion .panel-data { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .analisis-principal .panel-metadatos .panel-data { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analisis-principal .panel-data-row { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .analisis-principal .panel-data-value { text-align: left; align-items: flex-start; }
   .viewer-container .viewer-3d-container { min-height: 150px; }
+}
+
+@media (min-width: 1200px) {
+  .analisis-principal .panel-metadatos .panel-data { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

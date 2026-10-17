@@ -23,6 +23,7 @@
     "verify:enlaces": "node scripts/verify/enlaces.mjs",
     "verify:demo": "node scripts/verify/demo.mjs",
     "verify:multimaterial": "node scripts/verify/multimaterial.mjs",
+    "verify:composicion": "node scripts/verify/composicion.mjs",
     "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs",
     "verify:subida": "node scripts/verify/subida-ui.mjs",
     "verify:ui": "node scripts/verify/ui.mjs"

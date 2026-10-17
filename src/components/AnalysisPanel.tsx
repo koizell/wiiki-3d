@@ -162,16 +162,36 @@ function AnalysisPanel({
       )}
       {demo && !materialAmbiguo && (
         <p className="panel-demo-nota">
-          Estimación local de demostración, calculada en tu navegador sin consultar ningún servicio.
-          El índice de 0 a 100 no es una probabilidad de fallo validada y no garantiza que la pieza
-          se imprima bien. No comprueba la geometría ni verifica si necesita soportes.
+          Demo local: el índice no es una probabilidad de fallo validada. No comprueba la geometría
+          ni los soportes y no garantiza el resultado. Se calcula en tu navegador, sin consultar un servicio.
         </p>
       )}
       {!materialAmbiguo && classification && <div className="panel-recommendation">
         <strong className="panel-recommendation-title">{demo ? 'Orientación de demostración' : 'Recomendación'}</strong>
         <p>{classification.recommendation}</p>
       </div>}
-      <section>
+      {!materialAmbiguo && classification && <section className="panel-estimacion">
+        <h3 className="panel-section-title">{demo ? 'Estimación local (demo)' : 'Diagnóstico de Jev'}</h3>
+        <dl className="panel-data">
+          <div className="panel-data-row">
+            <dt className="panel-data-key">{demo ? 'Nivel orientativo' : 'Nivel de riesgo'}</dt>
+            <dd className="panel-data-value">
+              <span className={`risk-badge ${RISK_CLASS[classification.riskLevel]}`}>
+                {classification.riskLevel}
+              </span>
+              {explicar?.('riskLevel') && <Explicar articulo={explicar('riskLevel')!} />}
+            </dd>
+          </div>
+          <DataRow
+            label={demo ? 'Índice de warping (demo)' : 'Riesgo de warping'}
+            value={formatoWarping(classification.warpingRisk, modoClasificacion)}
+            campo="warpingRisk"
+            explicar={explicar}
+          />
+          <DataRow label="Soportes" value={demo ? 'No verificados' : classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
+        </dl>
+      </section>}
+      <section className="panel-metadatos">
         <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
           {/*
@@ -234,28 +254,6 @@ function AnalysisPanel({
           />
         </dl>
       </section>
-
-      {!materialAmbiguo && classification && <section>
-        <h3 className="panel-section-title">{demo ? 'Estimación local (demo)' : 'Diagnóstico de Jev'}</h3>
-        <dl className="panel-data">
-          <div className="panel-data-row">
-            <dt className="panel-data-key">{demo ? 'Nivel orientativo' : 'Nivel de riesgo'}</dt>
-            <dd className="panel-data-value">
-              <span className={`risk-badge ${RISK_CLASS[classification.riskLevel]}`}>
-                {classification.riskLevel}
-              </span>
-              {explicar?.('riskLevel') && <Explicar articulo={explicar('riskLevel')!} />}
-            </dd>
-          </div>
-          <DataRow
-            label={demo ? 'Índice de warping (demo)' : 'Riesgo de warping'}
-            value={formatoWarping(classification.warpingRisk, modoClasificacion)}
-            campo="warpingRisk"
-            explicar={explicar}
-          />
-          <DataRow label="Soportes" value={demo ? 'No verificados' : classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
-        </dl>
-      </section>}
 
     </div>
   );

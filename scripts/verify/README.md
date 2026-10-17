@@ -57,6 +57,8 @@ npm run verify:guias       # el motor de guías y la barra «Tu archivo»
 npm run verify:esquema     # piloto visual de torre de temperatura, con y sin JS
 npm run verify:enlaces     # atribuciones, bibliografía y destinos internos con/sin JS
 npm run verify:demo        # presentación demo/real y recorrido hasta la guía
+npm run verify:multimaterial # listas de materiales sin falsas valoraciones ni guardados
+npm run verify:composicion # catálogo, resumen, metadatos y scroll en cinco anchos
 npm run verify:maquinas    # el catálogo contra sus propias reglas
 npm run verify:subida     # la subida: arrastre, varios archivos, coste
 npm run verify:ui          # la auditoría de interfaz, repetible
@@ -97,6 +99,8 @@ que valen como paso de CI.
 | `teclado.mjs` | Si el input de fichero y los items de navegación están en el orden de tabulación. Recorre el orden real con `Tab`. |
 | `enlaces.mjs` | Páginas del sitemap más Historial y Proyectos, con/sin JS: atribuciones visibles preservadas, enlace a bibliografía y clic real, URLs originales de fuentes, rutas internas HTTP 200 y anclas existentes. `BASE_URL` permite repetirlo en producción. Bloquea recursos externos durante la prueba; no comprueba la disponibilidad de las fuentes externas. |
 | `demo.mjs` | SSR de los modos demo y real, carga, índice frente a porcentaje, límites 0/100 y soportes positivos/negativos. Navegador móvil/escritorio: portada, archivo real de prueba, panel, barra de la guía y Acerca de. Bloquea servicios externos, comprueba metadatos y ausencia de errores JS, y guarda capturas en `out/`. Requiere un build demo (`VITE_JEV_USE_MOCK=true npm run build`); `BASE_URL` permite probar el despliegue demo publicado. |
+| `multimaterial.mjs` | Servicio, preselección, barra y panel: no evaluar una lista mixta como un material único; conservar metadatos y acceso a coste. G-code real con cabecera modificada y restauración de entradas antiguas: no publicar riesgo falso ni guardar la clasificación del archivo anterior. Usa un perfil aislado y datos de prueba. Requiere build demo; admite `BASE_URL`. |
+| `composicion.mjs` | 375/768/1024/1536/1920 px: catálogo centrado y 1/2/3 columnas, contexto del archivo una sola vez, scroll de documento, pie accesible, navegación desde el fondo y anclas de guías. Resumen encima de los diez metadatos, con altura limitada y grid adaptable. Capturas en `out/`. Requiere build demo; admite `BASE_URL`. |
 | `rutas.mjs` | Las cuatro rutas × los cuatro tramos de ancho (375, 700, 900, 1280). En cada uno: los cuatro enlaces son `<a href>` focables, el recorrido con `Tab` los alcanza en orden, `Enter` navega, `aria-current="page"` está en el enlace de la ruta activa y sólo en él, y el enlace activo tiene foco visible por dentro de su fondo. Más la jerarquía de encabezados, en **cinco** casos: las cuatro rutas más `/` con un archivo cargado. |
 | `overlay.mjs` | Si el overlay del `Suspense` tiene un ancestro posicionado o se ancla al viewport. |
 | `wiki.mjs` | La wiki: `/wiki`, `/wiki/:slug` y las tres páginas de información. La búsqueda filtra sin recargar y va en la URL, la tabla de contenidos marca la sección activa **al subir y al bajar**, la barra de «dónde estoy» aparece sin empujar el texto, los enlaces cruzados a páginas que no existen salen como texto y no como enlaces rotos, el ancho de línea se mide en caracteres reales en cinco viewports, `prefers-reduced-motion` apaga las tres animaciones y deja el texto visible, y la tabla de campos atados apunta a artículos que existen y declaran ese campo. |
