@@ -101,7 +101,8 @@ export const piezasCurvadasZ: Guia = {
         'La altura de capa define cuánto detalle tiene la pieza en el eje Z. Usar alturas menores da acabado de superficie más suave, líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
       cifra: { valor: '20 %–80 %', nota: 'del diámetro de boquilla, rango óptimo' },
       cita: {
-        texto: 'Usar alturas de capa menores aumenta el tiempo de impresión pero da: acabado de superficie más suave, líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
+        texto:
+          'Usar capas más pequeñas aumenta el tiempo de impresión pero da: acabado de superficie más suave, líneas de capa menos visibles, mayor detalle en curvas y mejor rendimiento en voladizos.',
         fuente: 'OrcaSlicer Wiki - Layer Height',
       },
     },
@@ -110,9 +111,10 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Por debajo del 20 %: inconsistencias de flujo',
       cuando: { altura: 'fina' },
       cuerpo:
-        'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones «escama de pez», especialmente a altas velocidades. Bajar más no siempre mejora la curva.',
+        'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones "fish scale", especialmente a altas velocidades.',
       cita: {
-        texto: 'Por debajo del 20 %: pueden aparecer inconsistencias de flujo y patrones "escama de pez", especialmente a altas velocidades.',
+        texto:
+          'Por debajo del 20 %: inconsistencias de flujo y patrones "fish scale", especialmente a altas velocidades.',
         fuente: 'OrcaSlicer Wiki - Layer Height',
       },
     },
@@ -121,7 +123,7 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Por encima del 80 %: riesgo de adhesión entre capas',
       cuando: { altura: 'gruesa' },
       cuerpo:
-        'Por encima del 80 % del diámetro de boquilla hay mayor riesgo de problemas de adhesión entre capas y reducción de calidad de impresión. Las curvas pierden detalle y la pieza puede delaminar.',
+        'Por encima del 80 % del diámetro de boquilla hay mayor riesgo de problemas de adhesión entre capas y reducción de calidad de impresión.',
       cita: {
         texto: 'Por encima del 80 %: mayor riesgo de problemas de adhesión entre capas y reducción de calidad de impresión.',
         fuente: 'OrcaSlicer Wiki - Layer Height',
@@ -131,9 +133,10 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-que-es',
       titulo: 'Z contouring (ZAA) suaviza curvas superiores',
       cuerpo:
-        'Z contouring reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para seguir mejor la superficie original del modelo, sin cambiar la altura de capa nominal del resto de la pieza.',
+        'Z contouring reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para que el toolpath siga mejor la superficie del modelo.',
       cita: {
-        texto: 'Z contouring (ZAA) reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para seguir mejor la superficie original del modelo, sin cambiar la altura de capa nominal del resto de la pieza.',
+        texto:
+          'Z Contouring (ZAA) reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para que el toolpath siga mejor la superficie del modelo.',
         fuente: 'OrcaSlicer Wiki - Z Contouring',
       },
     },
@@ -143,7 +146,8 @@ export const piezasCurvadasZ: Guia = {
       cuerpo:
         'La implementación actual apunta a superficies curvas o pendientes orientadas hacia arriba (top-facing). Las curvas orientadas hacia abajo o invertidas no se gestionan. Por eso la orientación de la curva decide si Z contouring sirve o no.',
       cita: {
-        texto: 'La implementación actual apunta a superficies curvas o pendientes orientadas hacia arriba (top-facing). Las curvas orientadas hacia abajo o invertidas no se gestionan.',
+        texto:
+          'La implementación actual sólo maneja superficies curvas/pendientes superiores; curvas hacia abajo o boca abajo no se manejan.',
         fuente: 'OrcaSlicer Wiki - Z Contouring',
       },
     },
@@ -155,7 +159,8 @@ export const piezasCurvadasZ: Guia = {
         'Reduce la altura de los perímetros de superficie superior para ajustarse mejor al borde del modelo en pendientes más pronunciadas que ese ángulo; afecta a perímetros internos y externos. Poner 0 para desactivar.',
       cifra: { valor: '35°', nota: 'valor por defecto, punto de partida razonable' },
       cita: {
-        texto: 'El valor por defecto de 35 grados es un punto de partida razonable.',
+        texto:
+          'Minimize wall height angle: default 35 grados; reduce la altura de perímetros de superficie superior para que coincidan mejor con el borde del modelo en pendientes más pronunciadas que ese ángulo.',
         fuente: 'OrcaSlicer Wiki - Z Contouring',
       },
     },
@@ -164,20 +169,22 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Minimum z height',
       cuando: { zContouring: 'activado' },
       cuerpo:
-        'Valores menores permiten un contouring más fuerte pero dejan menos grosor mínimo de capa; valores mayores mueven el plano de corte hacia arriba, los recorridos nunca se bajan por debajo de él, el infill de superficie superior puede subir hasta esa cantidad por encima de la altura nominal y las paredes nunca se suben.',
+        'Valores menores permiten un contouring más fuerte pero dejan menos grosor mínimo de capa.',
       cita: {
-        texto: '"Minimum z height": valores menores permiten un contouring más fuerte pero dejan menos grosor mínimo de capa; valores mayores mueven el plano de corte hacia arriba (a esa distancia por encima del fondo de la capa), los recorridos nunca se bajan por debajo de él, el infill de superficie superior puede subir hasta esa cantidad por encima de la altura nominal y las paredes nunca se suben.',
+        texto:
+          'Minimum z height: controla la altura mínima de capa permitida para toolpaths contorneados; valores más bajos permiten contouring más fuerte pero dejan menos grosor de capa mínimo.',
         fuente: 'OrcaSlicer Wiki - Z Contouring',
       },
     },
     {
       id: 'z-contouring-fill',
-      titulo: 'Don\'t alternate fill direction',
+      titulo: "Don't alternate fill direction",
       cuando: { zContouring: 'activado' },
       cuerpo:
         'Mantiene la dirección de relleno consistente de capa a capa; ayuda a un patrón de superficie más consistente en superficies superiores curvas. Sólo tiene efecto cuando Z contouring está habilitado para esa región.',
       cita: {
-        texto: '"Don\'t alternate fill direction": mantiene la dirección de relleno consistente de capa a capa; ayuda a un patrón de superficie más consistente en superficies superiores curvas. Sólo tiene efecto cuando Z contouring está habilitado para esa región.',
+        texto:
+          "Don't alternate fill direction: mantener la dirección de relleno consistente capa a capa produce un patrón de superficie más consistente en superficies curvas superiores; sólo tiene efecto cuando Z contouring está habilitado para esa región.",
         fuente: 'OrcaSlicer Wiki - Z Contouring',
       },
     },
@@ -187,7 +194,8 @@ export const piezasCurvadasZ: Guia = {
       cuerpo:
         'Las alturas de capa menores permiten voladizos más pronunciados al reducir la distancia no soportada entre capas; las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
       cita: {
-        texto: 'Las alturas de capa menores permiten voladizos más pronunciados al reducir la distancia no soportada entre capas; las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
+        texto:
+          'Capas más pequeñas permiten voladizos más pronunciados (reducen la distancia no soportada entre capas); capas más grandes aumentan ese gap y provocan más sagging.',
         fuente: 'OrcaSlicer Wiki - Layer Height',
       },
     },
@@ -198,7 +206,7 @@ export const piezasCurvadasZ: Guia = {
         'La altura de primera capa controla el grosor de la capa inicial; una primera capa más gruesa mejora la adhesión a la cama y compensa imperfecciones de la superficie de construcción. Recomendado 0,25 mm para boquilla de 0,4 mm, máximo 65 % del diámetro de boquilla.',
       cifra: { valor: '0,25 mm', nota: 'boquilla de 0,4 mm (62,5 % del diámetro)' },
       cita: {
-        texto: 'Recomendado: 0.25 mm para boquilla de 0.4 mm (62.5 % del diámetro de boquilla).',
+        texto: 'Recomendado: 0,25 mm para boquilla de 0,4 mm (62,5 % del diámetro de boquilla).',
         fuente: 'OrcaSlicer Wiki - Layer Height',
       },
     },
@@ -209,30 +217,31 @@ export const piezasCurvadasZ: Guia = {
       cuerpo:
         'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal; si algo se desvía, la impresión sigue como si nada. Si el cabezal se mueve demasiado rápido, los motores pueden no seguir el ritmo (se oye un clic al fallar la posición) y el resto de la impresión queda desalineado.',
       cita: {
-        texto: 'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal; si algo se desvía, la impresión sigue como si nada.',
+        texto:
+          'La mayoría de impresoras usan control en lazo abierto: no hay feedback de la posición real del cabezal.',
         fuente: 'Simplify3D Print Quality Troubleshooting',
       },
     },
   ],
   reglas: [
     {
-      id: 'altura-fina',
+      id: 'altura-gruesa',
       accion: 'Baja la altura de capa al mínimo del rango para ganar detalle en curvas',
       valor: '20 % del diámetro de boquilla',
       porque:
-        'A menor altura, mayor resolución vertical y menos escalones visibles en la superficie curva.',
+        'A mayor altura, menos capas y menor tiempo, pero las curvas pierden detalle y el acabado es más rugoso.',
       alcance: 'Rango óptimo 20 %–80 % del diámetro de boquilla (OrcaSlicer). El mínimo mejora detalle y voladizos.',
-      cuando: { altura: 'fina' },
+      cuando: { altura: 'gruesa' },
       fuente: 'OrcaSlicer Wiki - Layer Height',
     },
     {
-      id: 'altura-gruesa',
-      accion: 'Acepta capas más visibles a cambio de tiempo',
-      valor: 'hasta el 80 % del diámetro',
+      id: 'altura-minimo',
+      accion: 'No bajes por debajo del 20 % del diámetro de boquilla',
+      valor: '20 % mínimo',
       porque:
-        'A mayor altura, menos capas y menor tiempo, pero las curvas pierden detalle y el acabado es más rugoso.',
+        'Por debajo del 20 % aparecen inconsistencias de flujo y patrones "fish scale", especialmente a altas velocidades.',
       alcance: 'Rango óptimo 20 %–80 % del diámetro de boquilla (OrcaSlicer).',
-      cuando: { altura: 'gruesa' },
+      cuando: { altura: 'fina' },
       fuente: 'OrcaSlicer Wiki - Layer Height',
     },
     {
@@ -294,7 +303,7 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-min-z',
       accion: "Ajusta 'Minimum z height' según la fuerza de contouring deseada",
       porque:
-        'Valores menores permiten contouring más fuerte pero dejan menos grosor mínimo de capa; valores mayores mueven el plano de corte hacia arriba.',
+        'Valores menores permiten contouring más fuerte pero dejan menos grosor mínimo de capa.',
       alcance: 'Afecta a recorridos, infill de superficie superior y paredes.',
       cuando: { zContouring: 'activado' },
       fuente: 'OrcaSlicer Wiki - Z Contouring',
@@ -319,20 +328,12 @@ export const piezasCurvadasZ: Guia = {
       fuente: 'Simplify3D Print Quality Troubleshooting',
     },
     {
-      id: 'desplazamiento-aceleracion',
-      accion: 'Baja la aceleración en el firmware',
-      porque:
-        'Una aceleración/desaceleración más gradual evita que los motores pierdan posición en los cambios de dirección.',
-      alcance: 'Bajar la aceleración en el firmware, no en el slicer.',
-      cuando: { desplazamiento: 'si' },
-      fuente: 'Simplify3D Print Quality Troubleshooting',
-    },
-    {
       id: 'desplazamiento-correas',
       accion: 'Revisa la tensión de las correas',
       porque:
         'Las correas de goma se estiran con el tiempo; tensión demasiado floja hace que patine sobre la polea, demasiado apretada genera fricción excesiva.',
-      alcance: 'Ideal: algo tensa, sin exceso.',
+      alcance:
+        'Demasiado floja: el belt patina sobre la polea. Demasiado apretada: fricción excesiva en los rodamientos.',
       cuando: { desplazamiento: 'si' },
       fuente: 'Simplify3D Print Quality Troubleshooting',
     },
