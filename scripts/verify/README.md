@@ -54,6 +54,7 @@ npm run verify:seo         # metas, canónica y sitemap de la exportación
 npm run verify:taller      # los seis estados de la calculadora
 npm run verify:historial   # el historial y los proyectos
 npm run verify:guias       # el motor de guías y la barra «Tu archivo»
+npm run verify:esquema     # piloto visual de torre de temperatura, con y sin JS
 npm run verify:maquinas    # el catálogo contra sus propias reglas
 npm run verify:subida     # la subida: arrastre, varios archivos, coste
 npm run verify:ui          # la auditoría de interfaz, repetible
@@ -99,6 +100,7 @@ que valen como paso de CI.
 | `taller.mjs` | Los seis estados de `/taller` en los cuatro tramos de ancho, incluido el análisis restaurado del historial. La aritmética con la coma y el punto, los precios inválidos, y que los estados que no saben no enseñen ningún número. |
 | `historial.mjs` | El historial: guardar, abrir, borrar, el aviso de almacenamiento y los proyectos. |
 | `guias.mjs` | El motor de guías: las condiciones, la coherencia de cada guía, el diferencial, las variables, y la barra «Tu archivo». |
+| `esquema-torre.mjs` | Sólo `torre-temperatura`: tres SVG cargados con alt y dimensiones, etiquetas HTML enlazadas a sus tarjetas y alcance no experimental; 320/375/768/1440 px, con y sin JavaScript, sin desbordamiento. También comprueba cambio de variables/guía y lectura al bloquear los SVG. Las otras guías no descargan las imágenes del piloto. Guarda capturas móvil/escritorio en `out/`. |
 | `maquinas.mjs` | El catálogo contra sus propias reglas: sin slugs repetidos, un campo pendiente sin valor, cerramiento declarado con origen, y la regla sin afirmar lo que no puede saber. **No comprueba que las cifras sean verdaderas**: eso lo decide la fuente cocinada. |
 | `subida-ui.mjs` | La subida por arrastre y por selector: que el arrastre cancele la acción del navegador, que varios archivos se rechacen, y que el G-code llegue al coste. También que se pueda subir desde `/taller` sin salir de la ruta. |
 | `ui.mjs` | La auditoría de interfaz del 14/10/2026, repetible: 11 rutas × 3 anchos con un solo `h1` y sin desbordamiento, las fichas dentro de su tarjeta, los nombres accesibles de las ilustraciones, el contraste calculado de los tokens, `prefers-reduced-motion`, y la mecánica del SVG medida en 7 fracciones del ciclo. |

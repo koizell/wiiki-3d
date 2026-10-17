@@ -1,0 +1,11 @@
+{
+  "slug": "torre-temperatura",
+  "tipo": "esquema-explicativo",
+  "origen": "SVG dibujado explícitamente; no generado por un modelo de imágenes",
+  "diseño": "Opción B aprobada: puenteado, hilos y capas; etiquetas y descripciones en HTML, no incrustadas en la imagen.",
+  "archivos": ["puenteado.svg", "hilos.svg", "capas.svg"],
+  "dimensiones": { "ancho": 200, "alto": 200 },
+  "contexto": "Tarjetas puenteado, stringing y adhesion-capas de la guía torre-temperatura, contrastadas en wiki/reviews/torre-temperatura-revision-2.md.",
+  "alcance": "Ilustra detalles a comparar, no demuestra una causa, una temperatura ni resistencia mecánica. No es fotografía ni resultado de ensayo.",
+  "paleta": ["#0f1115", "#161a20", "#2563eb", "#60a5fa", "#e8ecf1"]
+}

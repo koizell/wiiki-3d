@@ -8,7 +8,8 @@ Actualizado: 2026-10-17. Tablero vivo: se actualiza al cerrar cada tarjeta.
 - `build`, `verify:guias` **791/791**, `verify:wiki` **204/204**, `verify:seo` **397/397**, `verify:historial` **114/114** y `verify:rutas` pasan (código 0). Las pruebas técnicas **no acreditan la veracidad del contenido**: la primera revisión editorial de la torre rechazó 12 hallazgos, corregidos mediante cocinero → redactor → revisor. Se conservan ambos informes y nueve regresiones nuevas de material.
 - **GSC verificado y sitemap enviado; CMP confirmada por el propietario.** No se vuelven a listar como pendientes sin evidencia nueva. La revisión de AdSense no está solicitada y requiere autorización posterior al repaso final.
 - **Laya/VPS aplazado.** La clasificación pública sigue en demo; no se toma como siguiente paso recargar Jev por defecto.
-- Las imágenes editoriales siguen pendientes de integración. No se considera demostrado que su ausencia impida AdSense. El recuento de texto visible de las guías no se sustituye por palabras o bytes del TypeScript.
+- Primer piloto visual: esquema SVG de puenteado, hilos y capas **sólo en `torre-temperatura`**, junto a su explicación y con etiquetas HTML. `verify:esquema` pasa 44/44: móvil/escritorio, sin JS, carga de imágenes, enlaces, aislamiento de otras guías y lectura si las imágenes fallan. No hay portadas nuevas ni extensión automática al resto de guías. El despliegue se comprueba aparte.
+- Las demás imágenes editoriales y el recuento de texto visible siguen pendientes. No se considera demostrado que la ausencia de imágenes impida AdSense; palabras o bytes del TypeScript no equivalen a texto visible.
 - Avisos sin resolver en este bloque: `lint` termina con 0 errores y 3 advertencias preexistentes en copias de Three de `.superpowers/brainstorm/`; el build avisa de chunks superiores a 500 kB. No se modificaron esas copias ni se relajaron umbrales.
 
 ## Por qué existe este tablero

@@ -1,0 +1,75 @@
+/* El piloto también se exporta a HTML: este CSS se importa desde main.tsx. */
+.esquema-torre {
+  container-type: inline-size;
+  margin: 1rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  max-width: 100%;
+}
+
+.esquema-torre figcaption strong {
+  color: var(--text-primary);
+  font-size: var(--texto-md);
+}
+
+.esquema-torre p {
+  color: var(--text-secondary);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.esquema-torre figcaption p {
+  margin: 0.25rem 0 1rem;
+  max-width: 65ch;
+}
+
+.esquema-torre__detalles {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.esquema-torre__detalles li {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.esquema-torre img {
+  display: block;
+  width: 100%;
+  max-width: 10rem;
+  height: auto;
+  border-radius: var(--radio-md);
+}
+
+.esquema-torre a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.esquema-torre a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+@container (min-width: 30rem) {
+  .esquema-torre__detalles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .esquema-torre__detalles li {
+    display: block;
+  }
+}

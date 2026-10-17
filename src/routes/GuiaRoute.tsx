@@ -4,6 +4,7 @@ import DibujoSintoma from '../components/DibujoSintoma';
 import DiagnosticoGuia from '../components/DiagnosticoGuia';
 import { Negrita } from '../components/Negrita';
 import TuArchivo from '../components/TuArchivo';
+import EsquemaTorreTemperatura from '../components/EsquemaTorreTemperatura';
 import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
 import { actualizarSeo, seoGuia } from '../lib/seo';
 import { fechaLarga } from '../lib/formato';
@@ -520,6 +521,9 @@ function EtapaConocimiento({
               <p className="tarjeta-cuerpo">
                 <Negrita>{t.cuerpo}</Negrita>
               </p>
+              {guia.slug === 'torre-temperatura' && t.id === 'puenteado' && (
+                <EsquemaTorreTemperatura />
+              )}
               {t.cita && (
                 <blockquote className="tarjeta-cita">
                   <p>{t.cita.texto}</p>
