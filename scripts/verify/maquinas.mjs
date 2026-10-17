@@ -49,7 +49,7 @@ ok(maquinaPorSlug('no-existe') === null, 'un slug desconocido devuelve null');
 for (const m of MAQUINAS) {
   ok(typeof m.marca === 'string' && m.marca.length > 0, `${m.slug}: tiene marca`);
   ok(['bed-slinger', 'corexy-cerrada', 'corexy-abierta', 'resina'].includes(m.familia), `${m.slug}: familia válida (${m.familia})`);
-  ok(m.vol.every((n) => n > 0), `${m.slug}: volumen positivo`);
+  if (m.vol !== null) ok(m.vol.every((n) => n > 0), `${m.slug}: volumen positivo`);
   ok(m.fuentes.length > 0, `${m.slug}: tiene al menos una fuente`);
   if (m.velMax !== null) ok(m.velMax > 0, `${m.slug}: velocidad positiva`);
   if (m.tNozMax !== null) ok(m.tNozMax > 100, `${m.slug}: boquilla máxima sensata`);
@@ -150,7 +150,7 @@ for (const [a, b, motivo] of [
 
 // Los rasgos declarados tienen que ser rasgos que la ilustración sabe dibujar:
 // una clave inventada sería un rasgo que no se pinta y que la ficha promete.
-const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral', 'filtroCarbon', 'ifsBobinas', 'zTriple', 'pantallaTactil'];
+const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral', 'filtroCarbon', 'ifsBobinas', 'zTriple'];
 for (const m of MAQUINAS) {
   for (const clave of Object.keys(m.rasgos)) {
     ok(RASGOS_DIBUJABLES.includes(clave), `${m.slug}: el rasgo «${clave}» es dibujable`);

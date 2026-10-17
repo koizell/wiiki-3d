@@ -61,16 +61,16 @@ export const MAQUINAS: Maquina[] = [
       { url: 'https://makerspecs.com/en/compare/creality-ender-3-v3-ke-vs-creality-ender-3-v3-se/', titulo: 'MakerSpecs · comparativa KE vs SE', origen: 'T' },
       { url: 'https://store.creality.com/blogs/all/ender-3-v3-se-vs-ke', titulo: 'Creality · SE vs KE (blog del fabricante)', origen: 'F' },
     ],
-    rasgos: { ventiladoresDobles: true, carrilLinealX: true, pantallaTactil: true },
+    rasgos: { ventiladoresDobles: true, carrilLinealX: true },
   },
   {
     slug: 'ad5x',
     marca: 'Flashforge',
     modelo: 'AD5X',
-    // Core-XY sí está afirmado (wiki oficial de Flashforge). El cerramiento NO: se
-    // vende como kit de accesorio, y de ahí no se sigue que la máquina salga
-    // abierta de fábrica. La familia dice «cerrada» porque el cerramiento es su
-    // modo completo, pero `cerrada` se queda sin verificar.
+    // Core-XY afirmado por la wiki oficial de Flashforge. El cerramiento NO está
+    // afirmado: se vende como kit de accesorio y el material cocinado lo deja sin
+    // verificar. La familia es corexy-cerrada por el modo completo, pero `cerrada`
+    // se queda null y el origen de familia pasa a P hasta tener fuente.
     familia: 'corexy-cerrada',
     cerrada: null,
     color: 0x2b2f38,
@@ -79,23 +79,22 @@ export const MAQUINAS: Maquina[] = [
     dims: null,
     vol: [220, 220, 220],
     velMax: 600,
-    // 350 °C salía de zmod, que es un firmware MODIFICADO: es lo que permite el
-    // mod, no la especificación de fábrica. Con esa cifra el ABS parecía viable en
-    // una máquina cuya temperatura de boquilla no está verificada. Queda pendiente.
-    tNozMax: null,
-    tCamaMax: null,
-    extrusor: 'Directo',
+    // 300 °C y 110 °C salen de la ficha oficial de Flashforge (Max Extruder Temp
+    // y Max Bed Temp). Los 350 °C de zmod (firmware modificado) no son de fábrica.
+    tNozMax: 300,
+    tCamaMax: 110,
+    extrusor: null,
     boquilla: '0,4 mm',
     nivelacion: null,
     sensorFilamento: true,
-    origen: { familia: 'F', cerrada: 'P', dims: 'P', vol: 'T', velMax: 'T', tNozMax: 'P', tCamaMax: 'P', extrusor: 'T', nivelacion: 'P' },
+    origen: { familia: 'P', cerrada: 'P', dims: 'P', vol: 'T', velMax: 'T', tNozMax: 'F', tCamaMax: 'F', extrusor: 'P', nivelacion: 'P' },
     fuentes: [
       { url: 'https://www.flashforge.com/product-detail/adventurer-5x-series', titulo: 'Flashforge · ficha oficial de la Adventurer 5X', origen: 'F' },
       { url: 'https://wiki.flashforge.com/en/flashforge/adventurer-5x-series', titulo: 'Flashforge · wiki oficial (Core-XY, tres husillos, IFS)', origen: 'F' },
       { url: 'https://github.com/ghzserg/zmod', titulo: 'zmod · configuración Klipper de la AD5X (recorridos, husillo, temperaturas)', origen: 'T' },
       { url: 'https://gavler.com/products/flashforge-ad5x', titulo: 'Gavler · ficha', origen: 'T' },
     ],
-    rasgos: { ifsBobinas: 4, zTriple: true, pantallaTactil: true },
+    rasgos: { ifsBobinas: 4, zTriple: true },
   },
   {
     slug: 'bambu-a1',
@@ -109,7 +108,7 @@ export const MAQUINAS: Maquina[] = [
     color: 0xd8dbe0,
     acento: 0x00ae42,
     precioRef: '~350 $',
-    dims: null,
+    dims: [465, 410, 430],
     vol: [256, 256, 256],
     velMax: 500,
     tNozMax: 300,
@@ -118,11 +117,12 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Auto',
     sensorFilamento: true,
-    origen: { familia: 'F', cerrada: 'P', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'P', dims: 'F', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://bambulab.com/en/a1', titulo: 'Bambu Lab · página de producto de la A1', origen: 'F' },
+      { url: 'https://bambulab.com/en/a1/tech-specs', titulo: 'Bambu Lab · especificaciones técnicas de la A1', origen: 'F' },
     ],
-    rasgos: { pantallaTactil: true },
+    rasgos: {},
   },
   {
     slug: 'bambu-p1s',
@@ -133,7 +133,7 @@ export const MAQUINAS: Maquina[] = [
     color: 0x1b1e24,
     acento: 0x00ae42,
     precioRef: '399 $',
-    dims: null,
+    dims: [389, 389, 458],
     vol: [256, 256, 256],
     velMax: 500,
     tNozMax: 300,
@@ -142,7 +142,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Auto',
     sensorFilamento: true,
-    origen: { familia: 'F', cerrada: 'F', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'F', dims: 'F', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://bambulab.com/en/p1s', titulo: 'Bambu Lab · página de producto de la P1S', origen: 'F' },
     ],
@@ -157,7 +157,7 @@ export const MAQUINAS: Maquina[] = [
     color: 0x3c4149,
     acento: 0xf26b21,
     precioRef: '~800 $',
-    dims: null,
+    dims: [500, 550, 400],
     vol: [250, 210, 220],
     velMax: 500,
     tNozMax: 300,
@@ -166,7 +166,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '0,4 mm',
     nivelacion: 'Mesh + load cell',
     sensorFilamento: true,
-    origen: { familia: 'F', cerrada: 'F', dims: 'P', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
+    origen: { familia: 'F', cerrada: 'F', dims: 'F', vol: 'F', velMax: 'F', tNozMax: 'F', tCamaMax: 'F', extrusor: 'F', nivelacion: 'F' },
     fuentes: [
       { url: 'https://www.prusa3d.com/product/original-prusa-mk4s-3d-printer-6/', titulo: 'Prusa · ficha de la MK4S', origen: 'F' },
     ],
@@ -201,12 +201,12 @@ export const MAQUINAS: Maquina[] = [
     marca: 'Elegoo',
     modelo: 'Mars 5 Ultra',
     familia: 'resina',
-    cerrada: true,
+    cerrada: null,
     color: 0x1b1e24,
     acento: 0xf07c1f,
     precioRef: '300 $',
     dims: null,
-    vol: [153, 77, 165],
+    vol: null,
     velMax: null,
     tNozMax: null,
     tCamaMax: null,
@@ -214,7 +214,7 @@ export const MAQUINAS: Maquina[] = [
     boquilla: '— (LCD 9K)',
     nivelacion: null,
     sensorFilamento: false,
-    origen: { familia: 'T', cerrada: null, dims: 'P', vol: 'T', velMax: 'T', tNozMax: null, tCamaMax: null, extrusor: null, nivelacion: null },
+    origen: { familia: 'T', cerrada: null, dims: 'P', vol: 'P', velMax: null, tNozMax: null, tCamaMax: null, extrusor: null, nivelacion: null },
     fuentes: [
       { url: 'https://gavler.com/products/elegoo-mars-5-ultra', titulo: 'Gavler · ficha', origen: 'T' },
     ],
