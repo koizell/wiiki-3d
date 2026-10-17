@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAnalysisActions } from '../state/useAnalysis';
 import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, nombrarAnalisis, type EntradaHistorial } from '../lib/storage';
@@ -36,12 +36,18 @@ import { formatarFecha, formatoBytes, riesgoClase } from '../lib/formato';
  * responder «¿cuánto ocupa esto?», no para prometer un número exacto.
  */
 export default function ProyectosRoute() {
+  const navigate = useNavigate();
   const disponible = useAlmacenamiento();
   const { restaurarAnalisis } = useAnalysisActions();
   const { entradas, recargar } = useHistorial(disponible === true);
 
   const [renombrando, setRenombrando] = useState<EntradaHistorial | null>(null);
   const [porBorrar, setPorBorrar] = useState<EntradaHistorial | null>(null);
+
+  const abrir = (entrada: EntradaHistorial) => {
+    restaurarAnalisis(entrada);
+    navigate('/');
+  };
 
   const lista = entradas ?? [];
   const proyectos = lista.filter((e) => e.nombre);
@@ -117,7 +123,7 @@ export default function ProyectosRoute() {
                 <button
                   type="button"
                   className="historial-abrir"
-                  onClick={() => restaurarAnalisis(e)}
+                  onClick={() => abrir(e)}
                 >
                   <span className="historial-nombre">{e.nombre}</span>
                   <span className="historial-meta">
@@ -168,7 +174,7 @@ export default function ProyectosRoute() {
                 <button
                   type="button"
                   className="historial-abrir"
-                  onClick={() => restaurarAnalisis(e)}
+                  onClick={() => abrir(e)}
                 >
                   <span className="historial-nombre">{e.filename}</span>
                   <span className="historial-meta">

@@ -976,6 +976,34 @@ try {
       .catch(() => '');
     comprobar(nombre === 'Pieza de prueba', `proyectos: se ve el nombre puesto (sale: «${nombre}»)`);
 
+    // Recargar borra el análisis en memoria: abrir debe restaurarlo de IndexedDB,
+    // no limitarse a mostrar el que seguía cargado después de subir el archivo.
+    await page.reload();
+    await page.waitForSelector('.historial-abrir');
+    const antesDeAbrirProyecto = await contarEntradas(page);
+    await page.getByRole('button', { name: /Pieza de prueba/ }).click();
+    await page.waitForSelector('.archivo-nota', { timeout: 10000 });
+    comprobar(new URL(page.url()).pathname === '/', 'proyectos: abrir el proyecto nombrado lleva al análisis');
+    const archivoRestaurado = await page.locator('.file-info').innerText();
+    comprobar(archivoRestaurado.includes(NOMBRE_GCODE), 'proyectos: restaura el archivo asociado, no el nombre del proyecto como archivo');
+    const panelRestaurado = await page.locator('.panel-body').innerText();
+    comprobar(/PLA/.test(panelRestaurado) && /Moderado/i.test(panelRestaurado), 'proyectos: restaura material y diagnóstico guardados');
+    comprobar(
+      (await contarEntradas(page)) === antesDeAbrirProyecto,
+      'proyectos: abrir el proyecto no duplica su análisis'
+    );
+    await page.goto(`${BASE}/proyectos`);
+    await page.waitForSelector('.historial-fila .btn-ghost');
+
+    // El mismo análisis debe abrirse también desde el historial completo.
+    await page.goto(`${BASE}/historial`);
+    await page.waitForSelector('.historial-abrir');
+    await page.locator('.historial-abrir').first().click();
+    await page.waitForSelector('.archivo-nota', { timeout: 10000 });
+    comprobar(new URL(page.url()).pathname === '/', 'historial: abrir una entrada lleva al análisis');
+    await page.goto(`${BASE}/proyectos`);
+    await page.waitForSelector('.historial-fila .btn-ghost');
+
     // Y el nombre vacío lo devuelve al historial: «sin nombre» es una sola cosa.
     await page.click('.historial-fila .btn-ghost');
     await page.waitForSelector('[role="dialog"]');

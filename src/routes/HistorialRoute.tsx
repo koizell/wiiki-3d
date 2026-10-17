@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAnalysisActions } from '../state/useAnalysis';
 import { useAlmacenamiento, useHistorial } from '../state/useHistorial';
 import { borrarAnalisis, vaciarHistorial } from '../lib/storage';
@@ -19,6 +19,7 @@ import { formatarFecha, riesgoClase } from '../lib/formato';
  * vaciar es la única operación de la app que no se puede deshacer.
  */
 function HistorialRoute() {
+  const navigate = useNavigate();
   const disponible = useAlmacenamiento();
   const { restaurarAnalisis } = useAnalysisActions();
   const { entradas, recargar } = useHistorial(disponible === true);
@@ -91,7 +92,10 @@ function HistorialRoute() {
                 <button
                   type="button"
                   className="historial-abrir"
-                  onClick={() => restaurarAnalisis(e)}
+                  onClick={() => {
+                    restaurarAnalisis(e);
+                    navigate('/');
+                  }}
                 >
                   <span className="historial-nombre">{e.filename}</span>
                   <span className="historial-meta">
