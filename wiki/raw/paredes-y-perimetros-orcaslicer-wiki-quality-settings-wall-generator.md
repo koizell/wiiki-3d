@@ -1,0 +1,146 @@
+---
+titulo: "Wall Generator | OrcaSlicer Wiki"
+url: https://github.com/OrcaSlicer/OrcaSlicer/wiki/quality_settings_wall_generator
+sitio: github.com/OrcaSlicer
+tipo: oficial
+capturado: 2026-10-17
+autor: OrcaSlicerBot
+idioma: en
+---
+
+# Wall Generator
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_generator`.
+[Type](option_type#choice): `Choice`.
+[Options](option_type#choice): `classic, arachne`.
+[CLI Example](cli_mode#setting-overrides): `--wall-generator=classic`.
+The Wall Generator defines how the outer and inner walls (perimeters) of the model are printed.
+
+- [Classic](#classic)
+- [Arachne](#arachne)
+  - [Wall transitioning threshold angle](#wall-transitioning-threshold-angle)
+  - [Wall transitioning filter margin](#wall-transitioning-filter-margin)
+  - [Wall transitioning length](#wall-transitioning-length)
+  - [Wall distribution count](#wall-distribution-count)
+  - [Minimum wall width](#minimum-wall-width)
+    - [First layer minimum wall width](#first-layer-minimum-wall-width)
+  - [Minimum feature size](#minimum-feature-size)
+  - [Minimum wall length](#minimum-wall-length)
+  - [Maximum wall resolution](#maximum-wall-resolution)
+  - [Maximum wall deviation](#maximum-wall-deviation)
+
+## Classic
+
+The Classic wall generator is a simple and reliable method used in many slicers. It creates as many walls as possible (limited by [Wall Loops](strength_settings_walls#wall-loops)) by extruding along the model's perimeter using the defined [Line Width](quality_settings_line_width). This method does not vary extrusion width and is ideal for fast, predictable slicing.
+
+![wallgenerator-classic](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/WallGenerator/wallgenerator-classic.png?raw=true)
+
+## Arachne
+
+The Arachne wall generator dynamically adjusts extrusion width to follow the shape of the model more closely. This allows better handling of thin features and smooth transitions between wall counts.
+
+![wallgenerator-arachne](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/WallGenerator/wallgenerator-arachne.png?raw=true)
+
+Note
+
+[A Framework for Adaptive Width Control of Dense Contour-Parallel Toolpaths in Fused Deposition Modeling](https://www.sciencedirect.com/science/article/pii/S0010448520301007?via%3Dihub)
+
+### Wall transitioning threshold angle
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_transition_angle`.
+[Type](option_type#integer-float-percentage): `Float`.
+[CLI Example](cli_mode#setting-overrides): `--wall-transition-angle=1`.
+Defines the maximum wedge angle (in degrees) at which the algorithm creates a transition between an even and odd number of walls. If a wedge shape exceeds this angle, no extra center wall will be added. Lowering this value reduces the number and length of center walls but may leave gaps or over-extrude.
+
+### Wall transitioning filter margin
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_transition_filter_deviation`.
+[Type](option_type#integer-float-percentage): `Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--wall-transition-filter-deviation=20%`.
+Prevents rapid switching between more or fewer walls by defining a tolerance range around the minimum wall width. The extrusion width will stay within the range:
+
+$$ \left[ \text{Minimum Wall Width} - \text{Margin},\ 2 \times \text{Minimum Wall Width} + \text{Margin} \right] $$
+
+Higher values reduce transitions, travel moves, and extrusion starts/stops, but may increase extrusion variability and introduce print quality issues. Expressed as a percentage of nozzle diameter.
+
+### Wall transitioning length
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_transition_length`.
+[Type](option_type#integer-float-percentage): `Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--wall-transition-length=20%`.
+When the number of walls changes as the part becomes thinner, this sets the length allotted to split or join the wall segments. Expressed as a percentage of nozzle diameter.
+
+### Wall distribution count
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_distribution_count`.
+[Type](option_type#integer-float-percentage): `Integer`.
+[CLI Example](cli_mode#setting-overrides): `--wall-distribution-count=1`.
+Sets how many walls (counted from the center) the width variation is spread over. Lower values constrain variation to the innermost walls, keeping outer walls consistent for best surface quality.
+
+### Minimum wall width
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `min_bead_width`.
+[Type](option_type#integer-float-percentage): `Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--min-bead-width=20%`.
+Defines the width of the wall that replaces thin features (those above the [Minimum feature size](#minimum-feature-size)). If the feature is thicker than this value, the wall will match its width. Expressed as a percentage of nozzle diameter.
+
+#### First layer minimum wall width
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `initial_layer_min_bead_width`.
+[Type](option_type#integer-float-percentage): `Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--initial-layer-min-bead-width=20%`.
+Specifies the minimum wall width for the first layer. It is recommended to match the nozzle diameter to improve adhesion and ensure stable base walls.
+
+### Minimum feature size
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `min_feature_size`.
+[Type](option_type#integer-float-percentage): `Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--min-feature-size=20%`.
+Minimum width required for a model feature to be printed. Features below this value are skipped; features above it but thinner than the [Minimum Wall Width](#minimum-wall-width) are widened to match it. Expressed as a percentage of nozzle diameter.
+
+### Minimum wall length
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `min_length_factor`.
+[Type](option_type#integer-float-percentage): `Float`.
+[CLI Example](cli_mode#setting-overrides): `--min-length-factor=1`.
+Avoids very short or isolated wall segments that add unnecessary time.
+Increasing this value removes short unconnected walls, **improving efficiency**.
+
+Note
+
+Top and bottom surfaces are not affected by this setting to avoid visual artifacts. Use the [One wall threshold](quality_settings_wall_and_surfaces#threshold) to adjust how aggressively OrcaSlicer considers a region a top surface. That option only appears when this setting exceeds 0.5, or if single-wall top surfaces are enabled.
+
+### Maximum wall resolution
+
+[Mode](option_mode): `Expert`.
+[Variable](built_in_placeholders_variables): `wall_maximum_resolution`.
+[Type](option_type#integer-float-percentage): `Float`.
+[CLI Example](cli_mode#setting-overrides): `--wall-maximum-resolution=1`.
+Controls the smallest wall segment length (in mm) that Arachne keeps during wall path simplification. Lower values preserve more small segments and curved detail, which can improve surface quality, but increase G-code size and motion complexity. Higher values simplify paths more aggressively, producing cleaner and smaller G-code at the cost of geometric fidelity.
+
+### Maximum wall deviation
+
+[Mode](option_mode): `Expert`.
+[Variable](built_in_placeholders_variables): `wall_maximum_deviation`.
+[Type](option_type#integer-float-percentage): `Float`.
+[CLI Example](cli_mode#setting-overrides): `--wall-maximum-deviation=1`.
+Defines the maximum allowed geometric error (in mm) when simplifying wall paths. Increasing this value allows stronger simplification (smaller G-code and fewer tiny moves), but can reduce wall accuracy. Decreasing this value keeps walls closer to the original geometry, but retains more segments. If this setting conflicts with [Maximum wall resolution](#maximum-wall-resolution), this deviation limit takes precedence.
+
+## Notas del recolector
+
+- Fuente oficial de OrcaSlicer (wiki de GitHub). Página "Wall Generator": generador clásico vs Arachne.
+- Classic: número fijo de paredes a lo largo del perímetro con ancho de línea constante; rápido y predecible.
+- Arachne: ajusta el ancho de extrusión dinámicamente para seguir mejor la geometría; mejor manejo de detalles finos y transiciones entre número de paredes. Referencia un paper (adaptive width control).
+- Parámetros de transición de paredes (umbral de ángulo, margen de filtro, longitud de transición, distribución), ancho mínimo de pared (general y primera capa), tamaño mínimo de feature, longitud mínima de pared, resolución y desviación máximas.
+- Idioma original: inglés. No traducido.
+- Imágenes referenciadas por URL, no descargadas.
+path: wiki/raw/paredes-y-perimetros-orcaslicer-wiki-quality-settings-wall-generator.md

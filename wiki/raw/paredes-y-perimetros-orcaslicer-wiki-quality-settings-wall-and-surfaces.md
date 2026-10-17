@@ -1,0 +1,254 @@
+---
+titulo: "Wall and surfaces | OrcaSlicer Wiki"
+url: https://github.com/OrcaSlicer/OrcaSlicer/wiki/quality_settings_wall_and_surfaces
+sitio: github.com/OrcaSlicer
+tipo: oficial
+capturado: 2026-10-17
+autor: OrcaSlicerBot
+idioma: en
+---
+
+# Wall and surfaces
+
+- [Walls printing order](#walls-printing-order)
+  - [Inner/Outer](#innerouter)
+  - [Inner/Outer/Inner](#innerouterinner)
+  - [Outer/Inner](#outerinner)
+  - [Narrow walls](#narrow-walls)
+  - [Print infill first](#print-infill-first)
+- [Wall loop direction](#wall-loop-direction)
+- [Surface flow ratio](#surface-flow-ratio)
+- [Only one wall](#only-one-wall)
+  - [Threshold](#threshold)
+- [Avoid crossing walls](#avoid-crossing-walls)
+  - [Max detour length](#max-detour-length)
+- [Small area flow compensation](#small-area-flow-compensation)
+  - [Flow Compensation Model](#flow-compensation-model)
+
+## Walls printing order
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_sequence`.
+[Type](option_type#choice): `Choice`.
+[Options](option_type#choice): `inner wall/outer wall, outer wall/inner wall, inner-outer-inner wall`.
+[CLI Example](cli_mode#setting-overrides): `--wall-sequence="inner wall/outer wall"`.
+Print sequence of the internal (inner) and external (outer) walls.
+The order applies to each side of a wall on its own: the walls around a hole follow it just like the walls around the contour.
+
+Note
+
+Under an [Outer](others_settings_brim#outer), [Outer and Inner](others_settings_brim#outer-and-inner) or [Leading edge only](others_settings_brim#leading-edge-only) brim, the first layer prints its outer walls first whatever this setting, so the brim runs straight on into the outer wall.
+[Auto](others_settings_brim#auto), [Mouse Ears](others_settings_brim#mouse-ears) and [Painted](others_settings_brim#painted) brims may leave the outer walls bare, so they keep this order.
+
+### Inner/Outer
+
+Use Inner/Outer for best overhangs. This is because the overhanging walls can adhere to a neighboring perimeter while printing. However, this option results in slightly reduced surface quality as the external perimeter is deformed by being squashed to the internal perimeter.
+
+![inner-outer](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/inner-outer.gif?raw=true)
+
+### Inner/Outer/Inner
+
+Use Inner/Outer/Inner for the best external surface finish and dimensional accuracy as the external wall is printed undisturbed from an internal perimeter. However, overhang performance will reduce as there is no internal perimeter to print the external wall against. This option requires a minimum of 3 walls to be effective as it prints the internal walls from the 3rd perimeter onwards first, then the external perimeter and, finally, the first internal perimeter. This option is recommended over the Outer/Inner option in most cases.
+
+![inner-outer-inner](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/inner-outer-inner.gif?raw=true)
+
+- The first layer is printed [Inner/Outer](#innerouter).
+- Where a side has fewer than 3 walls there is nothing to print first, so that side is printed [Outer/Inner](#outerinner).
+- A wall too narrow for an inner wall on each side prints the hole first, see [Narrow walls](#narrow-walls).
+
+### Outer/Inner
+
+Use Outer/Inner for the same external wall quality and dimensional accuracy benefits of [Inner/Outer/Inner](#innerouterinner) option. However, the Z seams will appear less consistent as the first extrusion of a new layer starts on a visible surface.
+
+![outer-inner](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/outer-inner.gif?raw=true)
+
+### Narrow walls
+
+When a wall is too narrow for the walls of both its sides, like the wall of a thin tube, the contour and the hole share the room between them:
+
+- **2 lines**: only the outer walls of the contour and the hole fit, touching each other. The hole's outer wall is printed first so the contour's leans on it, unless the order is [Outer/Inner](#outerinner).
+- **3 lines**: the two outer walls and one line between them. [Arachne](quality_settings_wall_generator#arachne) prints that line as an inner wall shared by both sides, and it follows the wall order like any other inner wall. [Inner/Outer/Inner](#innerouterinner) has no 3rd wall to print first, so it prints the hole's outer wall, then the contour's, then the line between them.
+
+For example, a tube with 0.5mm walls and 3 wall loops, with Arachne:
+
+| Tube wall | Lines | Inner/Outer | Outer/Inner | Inner/Outer/Inner, after the first layer |
+| --- | --- | --- | --- | --- |
+| 1mm | 2 | hole, contour | contour, hole | hole, contour |
+| 1.5mm | 3 | middle, contour, hole | contour, hole, middle | hole, contour, middle |
+| 2mm | 4 | each side inner, outer | each side outer, inner | each side outer, inner |
+
+[Classic](quality_settings_wall_generator#classic) fills the middle of a 3 line wall with [gap fill](strength_settings_infill#apply-gap-fill) instead, printed after both outer walls, which keep the 2 line order.
+
+### Print infill first
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `is_infill_first`.
+[Type](option_type#boolean): `Boolean`.
+[CLI Example](cli_mode#setting-overrides): `--is-infill-first=1`.
+When this option is enabled, the [infill](strength_settings_infill) and [top/bottom shells](strength_settings_top_bottom_shells) are printed first, followed by the walls. The first layer always prints the walls first, for better bed adhesion. This can be useful for some overhangs where the infill can support the walls.
+
+![infill-first](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/infill-first.gif?raw=true)
+
+**However**, the infill will slightly push out the printed walls where it is attached to them, resulting in a worse external surface finish. It can also cause the infill to shine through the external surfaces of the part.
+
+![infill-ghosting](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/infill-ghosting.png?raw=true)
+
+When using this option, it is recommended to use the [Precise Wall](quality_settings_precision#precise-wall), [Inner/Outer/Inner](#innerouterinner) wall printing order or reduce [Infill/Wall Overlap](strength_settings_infill#infill-wall-overlap) to avoid the infill pushing out the external wall.
+
+## Wall loop direction
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `wall_direction`.
+[Type](option_type#choice): `Choice`.
+[Options](option_type#choice): `ccw, cw`.
+[CLI Example](cli_mode#setting-overrides): `--wall-direction=ccw`.
+The direction in which the **contour** wall loops are extruded when looking down from the top.
+Holes are printed in the opposite direction to the contour to maintain alignment with layers whose contour polygons are incomplete and change direction, also partially forming the contour of a hole. A hole whose outer wall touches the contour's with nothing between them, like a [narrow wall](#narrow-walls) 2 lines wide, runs with the contour instead, so both walls are laid side by side in the same direction. Check [PR 12669](https://github.com/OrcaSlicer/OrcaSlicer/pull/12669) for more details about reversing hole direction.
+
+The usage of [Reverse on even](quality_settings_overhangs#reverse-on-even) will reverse wall direction based on this setting.
+
+Note
+
+This option will be disabled if spiral vase mode is enabled.
+
+## Surface flow ratio
+
+[Mode](option_mode): `Advanced`.
+[Variables](built_in_placeholders_variables): `print_flow_ratio`, `top_solid_infill_flow_ratio`, `bottom_solid_infill_flow_ratio`, `set_other_flow_ratios`, `first_layer_flow_ratio`, `outer_wall_flow_ratio`, `inner_wall_flow_ratio`, `overhang_flow_ratio`, `sparse_infill_flow_ratio`, `internal_solid_infill_flow_ratio`, `gap_fill_flow_ratio`, `support_flow_ratio`, `support_interface_flow_ratio`.
+[Type](option_type#integer-float-percentage): `Float` — every variable above except `set_other_flow_ratios`, which is a [Boolean](option_type#boolean) enable toggle for all the others (`--set-other-flow-ratios=1`).
+[CLI Example](cli_mode#setting-overrides): `--print-flow-ratio=1` (same pattern for the other Float variables above).
+The Flow ratio (`print_flow_ratio`) scales all extrusion flow of the object proportionally.
+
+The top and bottom surface flow ratios affect the amount of material for [top or bottom solid infill](strength_settings_top_bottom_shells). You can decrease them slightly to get a smoother surface finish.
+The actual top or bottom surface flow used is calculated by multiplying this value by the [filament flow ratio](material_flow_ratio_and_pressure_advance#flow-ratio), and if set, the object's flow ratio.
+
+Other flow ratios, such as ratios for the first layer (does not affect brims and skirts), outer and inner walls, overhang perimeters, sparse infill, internal solid infill, gap fill, support, and support interfaces, can also be adjusted after enabling the "Set other flow ratios" option.
+
+Tip
+
+Before using a value other than 1, it is recommended to [calibrate the flow ratio](flow_ratio_calib) to ensure that the flow ratio is set correctly for your printer and filament.
+
+## Only one wall
+
+[Mode](option_mode): `Simple`.
+[Variables](built_in_placeholders_variables): `only_one_wall_first_layer`, `only_one_wall_top`.
+[Type](option_type#boolean): `Boolean`.
+[CLI Example](cli_mode#setting-overrides): `--only-one-wall-first-layer=1` (same pattern for the other variables above).
+Use only one wall on flat surfaces, to give more space to the [top infill pattern](strength_settings_top_bottom_shells#surface-pattern). Especially useful in small features, like letters, where the top surface is very small and [concentric pattern](strength_settings_patterns#concentric) from walls would not cover it properly.
+
+![only-one-wall](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/only-one-wall.gif?raw=true)
+
+Each option needs the shell it acts on, so they are only available when the matching [Shell Layers](strength_settings_top_bottom_shells#shell-layers) is greater than 0: without a top shell there is no top surface for the top option to act on, and the same applies to the first layer and the bottom shell.
+
+Tip
+
+See [Surface Expansion and Only One Wall](strength_settings_top_bottom_shells#surface-expansion-and-only-one-wall) for how the inner walls are handled over an expanded top surface when using more than one wall.
+
+### Threshold
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `min_width_top_surface`.
+[Type](option_type#integer-float-percentage): `Float or Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--min-width-top-surface=20%`.
+If a top surface has to be printed and it's partially covered by another layer, it won't be considered as a top layer where its width is below this value. This can be useful to keep *Only one wall on top surfaces* from triggering on surfaces that should be covered only by walls.
+This value can be in mm or a % of the inner wall line width.
+
+![only-one-wall-threshold](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/only-one-wall-threshold.png?raw=true)
+
+Warning
+
+If enabled, artifacts can be created if you have some thin features on the next layer, like letters. Set this setting to 0 to remove these artifacts.
+
+## Avoid crossing walls
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `reduce_crossing_wall`.
+[Type](option_type#boolean): `Boolean`.
+[CLI Example](cli_mode#setting-overrides): `--reduce-crossing-wall=1`.
+This option instructs the slicer to avoid crossing perimeters (walls) during travel moves.
+Instead of traveling directly through a wall, the print head will detour around it, which can significantly reduce surface defects and stringing.
+
+While this increases print time slightly, the improvement in print quality, especially with materials prone to stringing like **PETG** or **TPU**, often justifies the trade-off.
+Highly recommended for detailed or aesthetic prints.
+
+![avoid-crossing-walls](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/avoid-crossing-walls.png?raw=true)
+
+### Max detour length
+
+[Mode](option_mode): `Advanced`.
+[Variable](built_in_placeholders_variables): `max_travel_detour_distance`.
+[Type](option_type#integer-float-percentage): `Float or Percentage`.
+[CLI Example](cli_mode#setting-overrides): `--max-travel-detour-distance=20%`.
+Defines the maximum distance the printer is allowed to detour to avoid crossing a wall. Can be set as:
+
+- **Absolute value in millimeters:** exactly how far the detour can extend (e.g., `5mm`).
+- **Percentage** of the direct travel path (e.g., `50%`).
+- **0** disables the **limit** and allows detours of **any length**.
+
+Use this setting to balance print time and wall quality: longer detours mean fewer wall crossings but slower prints.
+
+## Small area flow compensation
+
+[Mode](option_mode): `Advanced`.
+[Variables](built_in_placeholders_variables): `small_area_infill_flow_compensation`, `small_area_infill_flow_compensation_model`.
+[Type](option_type): `small_area_infill_flow_compensation` (Boolean), `small_area_infill_flow_compensation_model` (Text list).
+[CLI Example](cli_mode#setting-overrides): `--small-area-infill-flow-compensation=1` (`small_area_infill_flow_compensation` shown; other variables above follow their own type).
+Enables adaptive flow control for small infill areas. This feature helps address extrusion problems that often occur in small regions of solid infill, such as the tops of narrow letters or fine features.
+In these cases, standard extrusion flow may be too much for the available space, leading to over-extrusion or poor surface quality.
+
+![flow-compensation-model](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/flow-compensation-model.png?raw=true)
+
+It works by dynamically adjusting the extrusion flow based on the length of the extrusion path, ensuring more precise material deposition in small spaces.
+
+The compensation only applies to internal solid infill, top surfaces and first layer bottom surfaces, and only when that surface uses the [Rectilinear](strength_settings_patterns#rectilinear), [Aligned Rectilinear](strength_settings_patterns#aligned-rectilinear), [Monotonic](strength_settings_patterns#monotonic) or [Monotonic line](strength_settings_patterns#monotonic-line) pattern.
+
+This is a native implementation of @Alexander-T-Moss's [Small Area Flow Compensation](https://github.com/Alexander-T-Moss/Small-Area-Flow-Comp).
+
+### Flow Compensation Model
+
+The model uses a list of Extrusion Length and Flow Correction Factor value pairs. Each pair defines how much flow should be used for a specific Extrusion Length.
+For values between the listed points, the flow follows a smooth curve through them (PCHIP interpolation), which never overshoots the listed values.
+
+![flow-compensation-model-graph](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/Wall-Order/flow-compensation-model-graph.png?raw=true)
+
+For example, for the following model:
+
+| Extrusion Length | Flow Correction Factor |
+| --- | --- |
+| 0 | 0 |
+| 0.2 | 0.4444 |
+| 0.4 | 0.6145 |
+| 0.6 | 0.7059 |
+| 0.8 | 0.7619 |
+| 1.5 | 0.8571 |
+| 2 | 0.8889 |
+| 3 | 0.9231 |
+| 5 | 0.952 |
+| 10 | 1 |
+
+You should write it as:
+
+```
+0,0;
+0.2,0.4444;
+0.4,0.6145;
+0.6,0.7059;
+0.8,0.7619;
+1.5,0.8571;
+2,0.8889;
+3,0.9231;
+5,0.9520;
+10,1;
+```
+
+## Notas del recolector
+
+- Fuente oficial de OrcaSlicer (wiki de GitHub). Página "Wall and surfaces": orden de impresión de paredes, paredes estrechas, una sola pared, evitar cruces.
+- `wall_sequence`: orden Inner/Outer (mejor voladizo), Inner/Outer/Inner (mejor acabado superficial y precisión dimensional, mínimo 3 paredes), Outer/Inner (igual calidad superficial pero costuras Z menos consistentes).
+- Paredes estrechas: con 2 líneas se imprimen las dos paredes exteriores tocándose; con 3, Arachne comparte una pared interior.
+- `is_infill_first`: imprime relleno y cáscaras antes que paredes (útil para voladizos); empeora acabado superficial (ghosting).
+- `only_one_wall_first_layer`/`only_one_wall_top`: una sola pared en superficies planas para dar espacio al patrón de relleno superior.
+- `reduce_crossing_wall`: evita cruzar paredes en movimientos de viaje; reduce defectos superficiales y stringing (PETG/TPU); aumenta tiempo de impresión.
+- Idioma original: inglés. No traducido.
+- Imágenes referenciadas por URL, no descargadas.
+path: wiki/raw/paredes-y-perimetros-orcaslicer-wiki-quality-settings-wall-and-surfaces.md
