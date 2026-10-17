@@ -1,0 +1,597 @@
+---
+titulo: "Infill | OrcaSlicer Wiki"
+url: https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill
+sitio: github.com/OrcaSlicer
+tipo: oficial
+capturado: 2026-10-17
+autor: OrcaSlicerBot
+idioma: en
+---
+
+# Infill
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#infill)
+
+Infill is the internal structure of a 3D print, providing strength and support. It can be adjusted to balance material usage, print time, and part strength.
+
+- [Sparse infill density](#sparse-infill-density)
+
+- [Fill Multiline](#fill-multiline)
+
+  - [Use cases](#use-cases)
+
+  - [Strategy](#strategy)
+
+    - [Classic Strategy](#classic-strategy)
+
+    - [Non-Crossing Strategy](#non-crossing-strategy)
+
+- [Direction and Rotation](#direction-and-rotation)
+
+  - [Direction](#direction)
+
+  - [Rotation](#rotation)
+
+  - [Symmetric infill Y axis](#symmetric-infill-y-axis)
+
+- [Infill Wall Overlap](#infill-wall-overlap)
+
+- [Apply gap fill](#apply-gap-fill)
+
+- [Filter out tiny gaps](#filter-out-tiny-gaps)
+
+- [Anchor](#anchor)
+
+- [Internal Solid Infill](#internal-solid-infill)
+
+- [Extra Solid Infill](#extra-solid-infill)
+
+  - [Interval Pattern](#interval-pattern)
+
+  - [Explicit Layer List](#explicit-layer-list)
+
+- [Sparse Infill Pattern](#sparse-infill-pattern)
+
+- [Sparse Infill Smooth Factor](#sparse-infill-smooth-factor)
+
+  - [Supported patterns](#supported-patterns)
+
+  - [Corners left sharp](#corners-left-sharp)
+
+- [Top-Bottom Direction](#top-bottom-direction)
+
+- [Separated Infills](#separated-infills)
+
+- [Credits](#credits)
+
+## Sparse infill density
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#sparse-infill-density)
+
+[Mode](option_mode): `Simple`.  
+[Variable](built_in_placeholders_variables): `sparse_infill_density`.  
+[Type](option_type#integer-float-percentage): `Percentage`.  
+[CLI Example](cli_mode#setting-overrides): `--sparse-infill-density=20%`.  
+Infill density determines the amount of material used to fill the interior of a 3D print. It is usually expressed as a percentage, with 100% being completely solid.
+
+- Higher density increases
+
+  - Strength
+
+  - Material usage
+
+  - Print time.
+
+Note
+
+Density is usually calculated as a percentage of the total infill volume, not the total print volume.  
+Nevertheless, **not all patterns interpret density the same way**, so the actual material usage may vary.  
+You can see each pattern's material usage in the [Patterns section](strength_settings_patterns).
+
+## Fill Multiline
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#fill-multiline)
+
+[Mode](option_mode): `Simple`.  
+[Variable](built_in_placeholders_variables): `fill_multiline`.  
+[Type](option_type#integer-float-percentage): `Integer`.  
+[CLI Example](cli_mode#setting-overrides): `--fill-multiline=1`.  
+This setting allows the selected [infill pattern](#sparse-infill-pattern) to be generated using up to 10 parallel extrusion lines per path, while preserving both the defined [infill density](#sparse-infill-density) and the overall material usage.
+
+To check which patterns support multiline infill, see the Patterns Quick Reference table in the [Infill Patterns Wiki List](strength_settings_patterns_quick_reference) or each pattern's specifics in the [Patterns section](strength_settings_patterns).
+
+![multiline-infill](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/multiline-infill.png?raw=true)
+
+Note
+
+Orca's approach is different from other slicers that simply multiply the number of lines and material usage, generating a denser infill than expected.  
+Orca Slicer keeps the cross-section constant for the set density.
+
+| Infill Density % | Infill Lines | Orca Density | Other Slicers Density |
+| --- | --- | --- | --- |
+| 10% | 2 | 10% | 20% |
+| 25% | 2 | 25% | 50% |
+| 40% | 2 | 40% | 80% |
+| 10% | 3 | 10% | 30% |
+| 25% | 3 | 25% | 75% |
+| 40% | 3 | 40% | 100% |
+| 10% | 5 | 10% | 50% |
+| 25% | 5 | 25% | 100% |
+| 40% | 5 | 40% | 100% |
+
+### Use cases
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#use-cases)
+
+- Increasing the number of lines (e.g., 2 or 3) can **improve part strength** and **print speed** without increasing material usage.
+
+- **Fire-retardant applications:** Some flame-resistant materials (like PolyMax PC-FR) require a minimum printed wall/infill thickness—often 1.5–3 mm—to comply with standards. Since infill contributes to overall part thickness, using multiple lines helps achieve the necessary thickness without switching to a large nozzle or printing with 100% infill. This is especially useful for high-temperature materials like PC, which are prone to warping when fully solid.
+
+- Creating **aesthetic** infill patterns (like [Grid](strength_settings_patterns#grid) or [Honeycomb](strength_settings_patterns#honeycomb)) with multiple line widths—without relying on CAD modeling or being limited to a single extrusion width.
+
+- Increasing stability for weak infill patterns like [Lightning](strength_settings_patterns#lightning).
+
+- Printing gears and other mechanisms, because multiline infill transfers torque better.
+
+![infill-multiline-aesthetic](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-multiline-aesthetic.gif?raw=true)
+
+### Strategy
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#strategy)
+
+The way multiple lines are generated depends on the selected infill pattern.  
+The following describes possible strategies for infill generation.
+
+#### Classic Strategy
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#classic-strategy)
+
+For most self-intersecting infills (e.g. [Quarter Cubic](strength_settings_patterns#quarter-cubic)) multiline will generate closed loops to avoid overlapping lines. This may lead to some increased print time.
+
+In this example of a pattern of crossing lines and the [Gyroid](strength_settings_patterns#gyroid) pattern, you can see (in purple) the closed loops generated to avoid overlapping lines.
+
+![infill-multiline-closed-loops](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-multiline-closed-loops.png?raw=true)
+
+#### Non-Crossing Strategy
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#non-crossing-strategy)
+
+[Grid](strength_settings_patterns#grid), [Triangles](strength_settings_patterns#triangles), [Tri-hexagon](strength_settings_patterns#tri-hexagon), [Cubic](strength_settings_patterns#cubic), [Adaptive Cubic](strength_settings_patterns#adaptive-cubic) & [Support Cubic](strength_settings_patterns#support-cubic) patterns use a Non-crossing multiline strategy. For these infill patterns, an alternative approach is used, generating trapezoidal trajectories designed to avoid self-intersections of the infill lines. In each layer, the pattern rotates to ensure isotropic strength.  
+This strategy improves printing times by avoiding closed loops in favor of continuous printing paths.  
+[3D Honeycomb](strength_settings_patterns#3d-honeycomb) is also non-crossing: it draws its multiline copies itself as parallel waves that never cross.
+
+Important
+
+NEW FEATURE: **Non-Crossing Cubic, Adaptive Cubic and Support Cubic**  
+Available in: [Nightly builds](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds) or Releases greater than **2\.4.2**.
+
+- [Cubic](strength_settings_patterns#cubic) paths follow the same lines as its single-line pattern, so they still shift with the layer height: most layers look like [Tri-hexagon](strength_settings_patterns#tri-hexagon), and the layers where the three line directions meet look like [Triangles](strength_settings_patterns#triangles).
+
+- [Adaptive Cubic](strength_settings_patterns#adaptive-cubic) and [Support Cubic](strength_settings_patterns#support-cubic) paths follow their lines of every cube size. Where a finer line ends on a coarser one, its path stops against the path of the coarser line.
+
+![infill-multiline-non-crossing](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-multiline-non-crossing.gif?raw=true)
+
+## Direction and Rotation
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#direction-and-rotation)
+
+These settings control the orientation of the sparse and solid infill lines to optimize strength and material usage.
+
+### Direction
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#direction)
+
+[Mode](option_mode): `Advanced`.  
+[Variables](built_in_placeholders_variables): `infill_direction`, `solid_infill_direction`.  
+[Type](option_type#integer-float-percentage): `Float`.  
+[CLI Example](cli_mode#setting-overrides): `--infill-direction=1` (same pattern for the other variables above).  
+Controls the direction of the infill lines to optimize or strengthen the print.
+
+[Adaptive Cubic](strength_settings_patterns#adaptive-cubic) and [Support Cubic](strength_settings_patterns#support-cubic) do not support rotation, so the sparse infill direction and the sparse infill [rotation template](#rotation) are disabled for them. The solid infill direction and rotation template are not affected.
+
+![fill-direction](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/fill-direction.png?raw=true)
+
+Tip
+
+Enable [Align directions to model](strength_settings_advanced#align-directions-to-model) to make this direction follow the model's orientation on the build plate.
+
+### Rotation
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#rotation)
+
+This parameter sets the sparse (or solid) infill direction for each layer according to the specified template. When a template is set, the matching [Direction](#direction) setting is ignored.  
+The template is a comma-separated list of angles in degrees.
+
+For example:
+
+```
+0,90
+```
+
+![fill-rotation](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/fill-rotation.png?raw=true)
+
+The first layer uses 0°, the second uses 90°, and the pattern repeats for subsequent layers.
+
+Other examples:
+
+```
+0,45,90
+```
+
+```
+0,60,120,180
+```
+
+Note
+
+If there are more layers than angles, the sequence repeats.
+
+Tip
+
+You can use [Template Metalanguage for infill rotation](strength_settings_infill_rotation_template_metalanguage) to create more complex patterns.
+
+Important
+
+Not all sparse [patterns](strength_settings_patterns) support rotation.
+
+### Symmetric infill Y axis
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#symmetric-infill-y-axis)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `symmetric_infill_y_axis`.  
+[Type](option_type#boolean): `Boolean`.  
+[CLI Example](cli_mode#setting-overrides): `--symmetric-infill-y-axis=1`.  
+When enabled, the infill pattern is mirrored about an axis parallel to the Y axis that passes through the center of the object. This can help achieve more uniform strength distribution in certain geometries.
+
+Important
+
+This setting is only available for the [Zig Zag](strength_settings_patterns#zig-zag), [Cross Zag](strength_settings_patterns#cross-zag) and [Locked Zag](strength_settings_patterns#locked-zag) patterns.
+
+You can apply this setting with multiple objects or using modifiers to control infill orientation for different parts of your print.  
+For example, you might want to mirror the infill pattern of symmetric components, like airplane wings or boat hulls, to enhance their structural integrity without needing a 45° rotation.
+
+![symmetric_infill_y_axis](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/symmetric_infill_y_axis.png?raw=true)
+
+## Infill Wall Overlap
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#infill-wall-overlap)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `infill_wall_overlap`.  
+[Type](option_type#integer-float-percentage): `Percentage`.  
+[CLI Example](cli_mode#setting-overrides): `--infill-wall-overlap=20%`.  
+Infill area is enlarged slightly to overlap with wall for better bonding. The percentage value is approximately relative to the inner wall line width. More precisely, it is relative to half the inner wall line spacing plus half the internal solid infill line spacing with the [Classic](quality_settings_wall_generator#classic) wall generator, and to the inner wall line spacing with [Arachne](quality_settings_wall_generator#arachne) (the outer wall line spacing in both cases where only one wall is printed). Set this value to ~10-15% to minimize potential over-extrusion and accumulation of material resulting in rough surfaces.
+
+- **Infill Wall Overlap Off**
+
+![InfillWallOverlapOff](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/InfillWallOverlapOff.svg?raw=true)
+
+- **Infill Wall Overlap On**
+
+![InfillWallOverlapOn](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/InfillWallOverlapOn.svg?raw=true)
+
+## Apply gap fill
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#apply-gap-fill)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `gap_fill_target`.  
+[Type](option_type#choice): `Choice`.  
+[Options](option_type#choice): `everywhere, topbottom, nowhere`.  
+[CLI Example](cli_mode#setting-overrides): `--gap-fill-target=everywhere`.  
+Enables gap fill for the selected solid surfaces.  
+The minimum gap length that will be filled can be controlled with the [Filter out tiny gaps](#filter-out-tiny-gaps) option.
+
+1. **Everywhere:** Applies gap fill to top, bottom and internal solid surfaces for maximum strength.
+
+2. **Top and bottom surfaces:** Applies gap fill to top and bottom surfaces only, balancing print speed, reducing potential over-extrusion in the solid infill and making sure the top and bottom surfaces have no pinhole gaps.
+
+3. **Nowhere:** Disables gap fill for all solid infill areas.
+
+Note that if using the [classic perimeter generator](quality_settings_wall_generator#classic), gap fill may also be generated between perimeters, if a full width line cannot fit between them. That perimeter gap fill is not controlled by this setting.
+
+If you would like all gap fill, including the classic perimeter generated one, removed, set the Filter out tiny gaps value to a large number, like 999999\.
+
+However, this is not advised, as gap fill between perimeters contributes to the model's strength. For models where excessive gap fill is generated between perimeters, a better option would be to switch to the [Arachne wall generator](quality_settings_wall_generator#arachne) and use this option to control whether the cosmetic top and bottom surface gap fill is generated.
+
+## Filter out tiny gaps
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#filter-out-tiny-gaps)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `filter_out_gap_fill`.  
+[Type](option_type#integer-float-percentage): `Float`.  
+[CLI Example](cli_mode#setting-overrides): `--filter-out-gap-fill=1`.  
+Don't print gap fill with a length smaller than the specified threshold (in mm).  
+This setting applies to top, bottom and solid infill and, if using the [classic perimeter generator](quality_settings_wall_generator#classic), to wall gap fill.
+
+## Anchor
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#anchor)
+
+[Mode](option_mode): `Advanced`.  
+[Variables](built_in_placeholders_variables): `infill_anchor_max`, `infill_anchor`.  
+[Type](option_type#integer-float-percentage): `Float or Percentage`.  
+[CLI Example](cli_mode#setting-overrides): `--infill-anchor-max=20%` (same pattern for the other variables above).  
+Connect an infill line to an internal perimeter with a short segment of an additional perimeter. If expressed as a percentage (example: 15%), it is calculated over the infill extrusion width. OrcaSlicer tries to connect two close infill lines to a short perimeter segment. If no such perimeter segment shorter than the Maximum length of the infill anchor is found, the infill line is connected to a perimeter segment at just one side and the length of the perimeter segment taken is limited to the Sparse infill anchor length, but no longer than the Maximum length of the infill anchor. If the Maximum length of the infill anchor is set to 0, the old algorithm for infill connection is used, which should create the same result as 1000 & 0\.
+
+[Concentric](strength_settings_patterns#concentric) loops follow the outline of the infill area instead of ending at the walls, so there is nothing to anchor and both settings are hidden for that pattern.  
+With the [Line](strength_settings_patterns#line) pattern both settings are disabled, and the Sparse infill anchor length is also disabled whenever the Maximum length of the infill anchor is `0`.
+
+- **Anchor Off**
+
+![InfillAnchorOff](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/InfillAnchorOff.png?raw=true)
+
+- **Anchor On**
+
+![InfillAnchorOn](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/InfillAnchorOn.png?raw=true)
+
+## Internal Solid Infill
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#internal-solid-infill)
+
+[Mode](option_mode): `Simple`.  
+[Variable](built_in_placeholders_variables): `internal_solid_infill_pattern`.  
+[Type](option_type#choice): `Choice`.  
+[Options](option_type#choice): `monotonic, monotonicline, rectilinear, alignedrectilinear, concentric, spiralinset, hilbertcurve, archimedeanchords, octagramspiral`.  
+[CLI Example](cli_mode#setting-overrides): `--internal-solid-infill-pattern=monotonic`.  
+Line pattern of internal solid infill. If [Detect narrow internal solid infill](strength_settings_advanced#detect-narrow-internal-solid-infill) is enabled, the [Concentric pattern](strength_settings_patterns#concentric) will be used for small areas.
+
+## Extra Solid Infill
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#extra-solid-infill)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `extra_solid_infills`.  
+[Type](option_type#text): `Text`.  
+[CLI Example](cli_mode#setting-overrides): `--extra-solid-infills=value`.  
+Insert extra solid infills at specific layers to add strength at critical points in your print. This feature allows you to strategically reinforce your part without changing the overall sparse infill density.
+
+![extra-solid-infill](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/extra-solid-infill.gif?raw=true)
+
+The pattern supports two formats:
+
+### Interval Pattern
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#interval-pattern)
+
+- **Simple interval**: `N` \- Insert 1 solid layer every N layers, equal to `N#1`
+
+- **Multiple layers**: `N#K` \- Insert K consecutive solid layers every N layers
+
+- **Optional K**: `N#` \- Shorthand for `N#1`
+
+Examples:
+
+```
+5 or 5#1    # Insert 1 solid layer every 5 layers
+5#          # Same as 5#1
+10#2        # Insert 2 consecutive solid layers every 10 layers
+```
+
+### Explicit Layer List
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#explicit-layer-list)
+
+Specify exact layer numbers (1-based) using comma-separated values. Each entry may be a single layer `N` or a range `N#K` to insert K consecutive solid layers starting at layer N:
+
+```
+1,7,9       # Insert solid layers at layers 1, 7, and 9
+5,15,25     # Insert solid layers at layers 5, 15, and 25
+5,9#2,18    # Insert at 5; at 9 and 10 (because #2); and at 18
+```
+
+Note
+
+- Layer numbers are 1-based (first layer is layer 1)
+
+- `#K` is optional in both interval and explicit list entries (`N#` equals `N#1`)
+
+- Solid infill replaces the sparse infill only on the selected layers; all other layers keep the normal sparse infill pattern
+
+Tip
+
+Use this feature to:
+
+- Add strength at stress concentration points
+
+- Reinforce mounting holes or attachment points
+
+- Create internal structure for functional parts
+
+- Add periodic reinforcement for tall prints
+
+- Insert a single solid layer at a specific height by using an explicit list with a leading 0, which will be ignored because layer indices are 1-based. Example: `0,15` inserts a solid layer only at layer 15\.
+
+Warning
+
+Layers that include solid infill can take significantly longer than surrounding layers. This time differential may lead to z-banding-like bulges. Consider adjusting cooling or speeds if you observe artifacts.
+
+## Sparse Infill Pattern
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#sparse-infill-pattern)
+
+[Mode](option_mode): `Simple`.  
+[Variable](built_in_placeholders_variables): `sparse_infill_pattern`.  
+[Type](option_type#choice): `Choice`.  
+[Options](option_type#choice): `rectilinear, alignedrectilinear, zigzag, crosszag, lockedzag, line, grid, triangles, tri-hexagon, cubic, adaptivecubic, quartercubic, supportcubic, lightning, honeycomb, 3dhoneycomb, lateral-honeycomb, lateral-lattice, crosshatch, tpmsd, tpmsfk, gyroid, concentric, hilbertcurve, archimedeanchords, octagramspiral`.  
+[CLI Example](cli_mode#setting-overrides): `--sparse-infill-pattern=rectilinear`.
+
+Tip
+
+See [Infill Patterns Wiki List](strength_settings_patterns) with **detailed specifications**, including their strengths and weaknesses.
+
+## Sparse Infill Smooth Factor
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#sparse-infill-smooth-factor)
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `sparse_infill_smooth_factor`.  
+[Type](option_type#integer-float-percentage): `Percentage`.  
+[CLI Example](cli_mode#setting-overrides): `--sparse-infill-smooth-factor=20%`.
+
+Important
+
+NEW FEATURE: **Sparse infill smooth factor**  
+Available in: [Nightly builds](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds) or Releases greater than **2\.4.2**.
+
+Rounds the corners of the sparse infill path, replacing each sharp direction change with a quintic Bézier curve that joins the two straight legs meeting at it.  
+`0%` keeps the original sharp path, while `100%` produces the largest possible curves between adjacent infill lines. A curve never consumes more than half of the shorter leg on each side of a corner, so the curves of two neighboring corners meet at most at the midpoint of the segment they share and never overlap.
+
+Note
+
+Unlike a simple rounded corner (an arc with constant curvature), a quintic Bézier curve eases into and out of the turn gradually, starting and ending straight. This lets the nozzle change direction smoothly instead of snapping into a curve, which is what actually cuts down on vibration and ringing, compared to a plain round-over.
+
+Smoothing the corners reduces plastic shrinkage at each turn and helps keep the nozzle from scratching the infill during travel moves made with little or no Z-hop. It also lets the toolhead keep more of its speed through the turns instead of decelerating into every corner.
+
+Example with the [Octagram Spiral](strength_settings_patterns#octagram-spiral) pattern:
+
+- **0%:** the original sharp path.
+
+![infill-smooth-factor-0](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-smooth-factor-0.png?raw=true)
+
+- **50%:** each curve reaches a quarter of the shorter leg on both sides of the corner.
+
+![infill-smooth-factor-50](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-smooth-factor-50.png?raw=true)
+
+- **100%:** the curves of two neighboring corners meet at the midpoint of the segment they share, leaving no straight section between them.
+
+![infill-smooth-factor-100](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/infill-smooth-factor-100.png?raw=true)
+
+### Supported patterns
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#supported-patterns)
+
+The setting only affects **sparse infill**, and only the [patterns](strength_settings_patterns) that implement it. It is hidden in the GUI when the selected pattern is not one of them.
+
+- [Hilbert Curve](strength_settings_patterns#hilbert-curve)
+
+- [Octagram Spiral](strength_settings_patterns#octagram-spiral)
+
+- [Lightning](strength_settings_patterns#lightning)
+
+- [Honeycomb](strength_settings_patterns#honeycomb)
+
+- [3D Honeycomb](strength_settings_patterns#3d-honeycomb)
+
+- [Concentric](strength_settings_patterns#concentric)
+
+- [Cross Hatch](strength_settings_patterns#cross-hatch)
+
+- With [Fill Multiline](#fill-multiline) set to more than one line only:
+
+  - [Grid](strength_settings_patterns#grid)
+
+  - [Triangles](strength_settings_patterns#triangles)
+
+  - [Tri-hexagon](strength_settings_patterns#tri-hexagon)
+
+  - [Cubic](strength_settings_patterns#cubic)
+
+Note
+
+[Grid](strength_settings_patterns#grid), [Triangles](strength_settings_patterns#triangles), [Tri-hexagon](strength_settings_patterns#tri-hexagon) and [Cubic](strength_settings_patterns#cubic) are only rounded in their trapezoidal, [Non-Crossing](#non-crossing-strategy) form, which needs more than one line per infill wall. With a single line they are plain crossing lines with no corner to round.
+
+### Corners left sharp
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#corners-left-sharp)
+
+Not every vertex of a supported pattern can be rounded, so some parts of the path stay as they are:
+
+- **Hairpins.** A turn that doubles back on itself (a direction change sharper than about 154 degrees) would collapse into a degenerate loop instead of a curve, so it is left sharp. This is what keeps the tips of the [Lightning](strength_settings_patterns#lightning) branches pointed.
+
+- **Straight layers.** Layers where a pattern degenerates into straight lines have no corner to round — the flat layers of [3D Honeycomb](strength_settings_patterns#3d-honeycomb), the repeat layers of [Cross Hatch](strength_settings_patterns#cross-hatch) and the straight base lines of the [Triangles](strength_settings_patterns#triangles) family.
+
+- **[Concentric](strength_settings_patterns#concentric) corners that would leave the fill region.** Its loops are offsets of the region rather than a path clipped to it, and rounding always cuts toward the inside of the turn. Around a hole, at a concave feature or across a thin region that cut falls outside the fill and would put the extrusion over a wall, so those corners keep their original shape. The reach is also capped at half the distance between two loops, since a loop is as long as the object rather than as long as one cell of a pattern.
+
+- **[Lightning](strength_settings_patterns#lightning) turns are capped as well.** Cutting a corner moves the whole branch, so the reach is limited to half the distance between two branches — or, with [Fill Multiline](#fill-multiline), to half the printed branch width, which keeps the outlines drawn around merging branches from breaking up into separate loops.
+
+## Top-Bottom Direction
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#top-bottom-direction)
+
+[Mode](option_mode): `Simple`.  
+[Variables](built_in_placeholders_variables): `top_layer_direction`, `bottom_layer_direction`.  
+[Type](option_type#integer-float-percentage): `Float`.  
+[CLI Example](cli_mode#setting-overrides): `--top-layer-direction=1` (same pattern for the other variables above).
+
+Important
+
+NEW FEATURE: **Top/Bottom layer direction**  
+Available in: [Nightly builds](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds) or Releases greater than **2\.4.2**.
+
+Fixed angle (in degrees) for the top and bottom surface lines.  
+![top-direction](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/directions/top-direction.png?raw=true)
+
+The top angle also applies to ironing lines.  
+Set to `-1` to follow the default solid infill [direction](#direction).
+
+## Separated Infills
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#separated-infills)
+
+[Mode](option_mode): `Expert`.  
+[Variable](built_in_placeholders_variables): `separated_infills`.  
+[Type](option_type#boolean): `Boolean`.  
+[CLI Example](cli_mode#setting-overrides): `--separated-infills=1`.
+
+Important
+
+NEW FEATURE: **Separated infills**  
+Available in: [Nightly builds](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds) or Releases greater than **2\.4.2**.
+
+Centers the internal infill of each part on itself, as if it were sliced on its own, instead of on the whole assembly.  
+By default the entire assembly is treated as a single whole, so a centered or rotated infill pattern is referenced to one common center and rotates around it. When enabled, each part is centered on its own full 3D bounding box — producing the same pattern you would get by slicing that part on its own.
+
+![separated-infills](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/separated-infills.png?raw=true)
+
+Parts are grouped by their real geometry when deciding what shares a center:
+
+- **Touching or overlapping parts** are treated as one body and share a single center.
+
+- **Separate parts** with disjoint projections — including distinct 3D objects — each get their own center.
+
+- **Disconnected islands within a single mesh** are centered separately.
+
+- **Interleaved parts that never touch** (chains) each get an independent center.
+
+Useful when an assembly groups several objects that should each keep a consistent, self-centered infill.
+
+Note
+
+The main disadvantage is that, for complex and large slices, centering each part independently can increase slicing time.
+
+Applies to sparse infill, internal solid infill and bridges. Top and bottom surfaces are not affected; see [Center Surface Pattern On](strength_settings_top_bottom_shells#center-surface-pattern-on) for those.  
+The option is shown for the [sparse infill patterns](strength_settings_patterns) it can center:
+
+- **Line and grid patterns:** Rectilinear, Aligned Rectilinear, Zig Zag, Cross Zag, Locked Zag, Line, Grid, Triangles, Tri-hexagon, Cubic, Quarter Cubic, Lateral Lattice, Lateral Honeycomb, Hilbert Curve, Archimedean Chords and Octagram Spiral are phased through each part's bounding-box center, and [rotated](#rotation) infill turns around it.
+
+- **Patterns laid out from the object origin:** [Honeycomb](strength_settings_patterns#honeycomb), [3D Honeycomb](strength_settings_patterns#3d-honeycomb), [Cross Hatch](strength_settings_patterns#cross-hatch), [Gyroid](strength_settings_patterns#gyroid), [TPMS-D](strength_settings_patterns#tpms-d) and [TPMS-FK](strength_settings_patterns#tpms-fk) are moved onto each part's bounding-box center.
+
+[Adaptive Cubic](strength_settings_patterns#adaptive-cubic) and [Support Cubic](strength_settings_patterns#support-cubic) always fill each part on its own, with cubes refined only near that part's surfaces, so the option is not shown for them.  
+[Lightning](strength_settings_patterns#lightning) is generated for the whole object and is unaffected, and [Concentric](strength_settings_patterns#concentric) already follows the outline of each part.
+
+- **Separated Infills Off:** the assembly is treated as a single whole, so the infill of every object is referenced to one common center.
+
+![separated_infills_off](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/separated_infills_off.png?raw=true)
+
+- **Separated Infills On:** each object in the assembly gets its own self-centered infill pattern.
+
+![separated_infills_on](https://github.com/OrcaSlicer/OrcaSlicer_WIKI/raw/main/images/fill/separated_infills_on.png?raw=true)
+
+## Credits
+
+[](https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill#credits)
+
+- **[Fill Multiline](#fill-multiline) implementation** \- [@RF47](https://github.com/RF47)
+
+- **Wiki page:** [IanAlexis](https://github.com/IanAlexis).
+
+## Notas del recolector
+
+- Fuente oficial de OrcaSlicer (wiki de GitHub). Página "Infill" con parámetros de relleno: densidad, multiline, dirección/rotación, overlap con paredes, gap fill, anchor, solid infill interno/extra, patrón de relleno, smooth factor, top-bottom direction, separated infills.
+- Texto extraído del Markdown renderizado de la wiki; se han omitido la navegación de GitHub y el pie de página.
+- El original incluye imágenes referenciadas por URL.
+- Idioma original: inglés. No traducido.
+path: wiki/raw/relleno-patrones-orcaslicer-wiki-strength-settings-infill.md
