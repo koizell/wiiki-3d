@@ -61,8 +61,8 @@ import type { SeoPagina } from './seo';
  * única que no aparecía.
  *
  * La salida es `exportEstatico`: la misma etapa, contada como recetario completo
- * agrupado por la variable que lo desbloquea. Misma información, forma distinta, y
- * sin necesidad de estado. Ver `accionesPosibles` en `lib/guias.ts`.
+ * con todas las condiciones junto a cada acción. Misma información, forma distinta, y
+ * sin necesidad de estado. Cada regla aparece una vez con sus condiciones completas.
  *
  * El flag se pasa **a la ruta** y no se lee de un contexto a propósito: es una
  * propiedad del render —se está exportando o no— y no un estado de la aplicación.

@@ -15,7 +15,7 @@ import { startPreview } from './probe.mjs';
  * que usa la web es la del registro. Leerla de otro sitio comprobaría una lista
  * paralela, que es un segundo sitio que puede desfasarse.
  */
-const { GUIAS, accionesPosibles, conocimientoVisible, variablesEnOrden } = await import('../../src/lib/guias.ts');
+const { GUIAS, conocimientoVisible } = await import('../../src/lib/guias.ts');
 
 const raiz = new URL('../../', import.meta.url).pathname;
 const dist = join(raiz, 'dist');
@@ -60,6 +60,10 @@ function palabrasDe(html) {
 
 const browser = await chromium.launch();
 try {
+  comprobar('despegue-a-mitad: no repetir una acción por cada variable', () => {
+    const html = readFileSync(join(dist, 'wiki/despegue-a-mitad/index.html'), 'utf8');
+    assert.equal((html.match(/class="accion"/g) ?? []).length, GUIAS.find((g) => g.slug === 'despegue-a-mitad').reglas.length);
+  });
   const sin = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
   const titulos = new Set();
   for (const ruta of rutas) {
@@ -179,10 +183,9 @@ try {
        * vuelva, y ninguna se conforma con «hay algo de texto ahí»:
        *
        * 1. **El recuento exacto** contra el motor, no contra el HTML de ayer: si una
-       *    regla nueva no llega a la exportación, el número deja de cuadrar. Una
-       *    regla con condición sale una vez por cada variable que la condiciona, y
-       *    por eso el esperado se calcula con `accionesPosibles`, que es la misma
-       *    función que usa el componente.
+       *    regla nueva no llega a la exportación o se duplica, el número deja de
+       *    cuadrar. Se compara con el registro, no con un helper de agrupación que
+       *    pudiera repetir el mismo defecto del renderizador.
        * 2. **Un suelo de palabras** por guía, medido sobre el texto visible. Es tosco
        *    y por eso va acompañado de lo demás, pero es lo único que cae si alguien
        *    revierte el render sin tocar ninguna etiqueta con nombre.
@@ -190,10 +193,7 @@ try {
        *    desaparece, el atajo apunta a un sitio que no existe y la comprobación de
        *    anclas de `verify:wiki` no lo ve, porque sólo mira la etapa 2.
        */
-      const esperadas = (() => {
-        const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
-        return sinCondicion.length + bloque.reduce((n, b) => n + b.reglas.length, 0);
-      })();
+      const esperadas = guia.reglas.length;
 
       comprobar(`${ruta}: la etapa 4 publica todas sus acciones sin JavaScript`, () => {
         const enHtml = (html.match(/class="accion"/g) ?? []).length;
@@ -219,18 +219,36 @@ try {
         assert.equal(fuentesEnAcciones, esperadas, `${fuentesEnAcciones} fuentes para ${esperadas} acciones`);
       });
 
-      comprobar(`${ruta}: el recetario enseña qué desbloquea cada bloque`, () => {
-        const bloques = (html.match(/class="recetario-bloque"/g) ?? []).length;
-        const encabezados = (html.match(/class="recetario-desbloquea"/g) ?? []).length;
-        assert.equal(bloques, encabezados, `${bloques} bloques y ${encabezados} encabezados`);
-        const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
-        const esperados = bloque.length + (sinCondicion.length > 0 ? 1 : 0);
-        assert.equal(bloques, esperados, `${bloques} bloques en el HTML y ${esperados} en el motor`);
-        for (const { variable } of bloque) {
-          assert.ok(
-            html.includes(`<strong>${variable.etiqueta.toLowerCase()}</strong>`),
-            `ningún bloque dice que se desbloquea declarando «${variable.etiqueta}»`
-          );
+      const acciones = await page.locator('#recomendacion .accion').evaluateAll((items) => items.map((el) => ({
+        id: el.getAttribute('data-regla'),
+        titulo: el.querySelector('h3')?.textContent,
+        valor: el.querySelector('.accion-valor')?.textContent ?? null,
+        porque: el.querySelector('.accion-porque')?.textContent,
+        alcance: el.querySelector('.accion-alcance')?.textContent ?? null,
+        fuente: el.querySelector('.accion-fuente')?.textContent,
+        condiciones: el.querySelector('.accion-condiciones')?.textContent,
+      })));
+      comprobar(`${ruta}: cada regla sale una sola vez, completa y en orden`, () => {
+        assert.deepEqual(acciones.map((a) => a.id), guia.reglas.map((r) => r.id));
+        const sinNegrita = (s) => s.replaceAll('**', '');
+        for (const [i, regla] of guia.reglas.entries()) {
+          const accion = acciones[i];
+          assert.equal(accion.titulo, regla.accion);
+          assert.equal(accion.valor, regla.valor ?? null);
+          assert.equal(accion.porque, sinNegrita(regla.porque));
+          assert.equal(accion.alcance, regla.alcance ? sinNegrita(regla.alcance) : null);
+          assert.equal(accion.fuente, regla.fuente);
+          const condiciones = Object.entries(regla.cuando ?? {});
+          if (!condiciones.length) assert.match(accion.condiciones, /se aplica siempre/i);
+          else {
+            assert.match(accion.condiciones, /todas estas condiciones/i);
+            for (const [id, valores] of condiciones) {
+              const variable = guia.variables.find((v) => v.id === id);
+              const etiquetas = (Array.isArray(valores) ? valores : [valores])
+                .map((valor) => variable.opciones.find((o) => o.id === valor).etiqueta);
+              assert.ok(accion.condiciones.includes(`${variable.etiqueta}: ${etiquetas.join(' o ')}`), `${regla.id}: condición incompleta`);
+            }
+          }
         }
       });
 

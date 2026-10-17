@@ -1222,6 +1222,16 @@ body {
   margin-bottom: 0.35rem;
 }
 
+.panel-demo-nota {
+  grid-column: 1 / -1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  color: var(--text-primary);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+}
+
 /* ==========================================================================
    Breakpoints
    --------------------------------------------------------------------------
@@ -3759,6 +3769,19 @@ body {
   font-size: 0.8rem;
   line-height: 1.5;
   color: var(--text-secondary);
+}
+
+.accion-condiciones {
+  margin: 0.75rem 0;
+  color: var(--text-secondary);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.accion-condiciones ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
 }
 
 .accion-fuente {

@@ -73,8 +73,9 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
             <p>
               wiiki-3d analiza archivos G-code y te dice qué lleva dentro: material,
               temperaturas, altura de capa, cuánto filamento consume y cuánto
-              tarda. A eso añade un diagnóstico de riesgo —warping, soportes— y un
-              visor 3D para los archivos que no tienen metadatos.
+              tarda. A eso añade una orientación sobre el montaje y un visor 3D.
+              La demostración local usa un índice heurístico: no es una probabilidad de
+              fallo validada, no verifica la necesidad de soportes ni garantiza el resultado.
             </p>
             <p>
               La lectura del archivo ocurre en tu navegador. El archivo completo
@@ -88,10 +89,11 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         titulo: 'Qué hace con tu archivo',
         cuerpo: (
           <p>
-            Al leer un G-code, wiiki-3d extrae los metadatos y envía <strong>sólo
-            esos metadatos</strong> a un servicio de clasificación para que te dé el
-            diagnóstico de riesgo. El archivo entero no se envía, pero{' '}
-            <strong>el nombre del archivo sí forma parte del envío</strong>. Las
+            Al leer un G-code, wiiki-3d extrae los metadatos. En demostración local
+            no los envía a un clasificador. En modo real envía <strong>sólo esos
+            metadatos</strong> al servicio de clasificación configurado. El archivo
+            entero no se envía, pero <strong>el nombre del archivo sí forma parte
+            del envío en modo real</strong>. Las
             STL y los 3MF no se analizan y no generan ninguna llamada. Está
             detallado en la <Link to="/privacidad">política de privacidad</Link>.
           </p>
@@ -112,8 +114,9 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
               Después tú declaras tu montaje: material, chapa, tamaño, dónde está la
               impresora. Y la guía se estrecha con cada respuesta. Las cifras que no
               apliquen a lo que has marcado desaparecen, y la lista de acciones sale
-              con el número concreto y la fuente de donde sale. Si el panel dice
-              «Riesgo de warping, 35 %», la guía que explica ese 35 % está a un clic.
+              con el número concreto y la fuente de donde sale. Los enlaces del panel
+              explican los factores de impresión, no validan el índice de la demo como
+              probabilidad de fallo.
             </p>
             <p>
               Cada guía termina con lo que <strong>no</strong> resuelve, y con las

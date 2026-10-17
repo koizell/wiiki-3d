@@ -9,7 +9,6 @@ import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
 import { actualizarSeo, seoGuia } from '../lib/seo';
 import { fechaLarga } from '../lib/formato';
 import {
-  accionesPosibles,
   compararValor,
   conocimientoVisible,
   guiaPorSlug,
@@ -52,9 +51,9 @@ import type { ProjectMetadata } from '../services/types';
  *
  * En la segunda no hay estado que calcular, y sin respuestas la etapa 4 salía vacía:
  * ocho de las nueve guías publicaban «Qué cambiar» con cero acciones. Con esta
- * bandera, la etapa 4 publica el recetario completo agrupado por la variable que lo
+ * bandera, la etapa 4 publica el recetario completo con todas las condiciones que lo
  * desbloquea, que es la misma información en la única forma en que se puede contar
- * sin respuestas. Ver `accionesPosibles` en `src/lib/guias.ts`.
+ * sin respuestas. Cada regla aparece una sola vez.
  */
 export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?: boolean } = {}) {
   const { slug } = useParams();
@@ -564,7 +563,7 @@ function EtapaConocimiento({
  * ## Los dos modos
  *
  * `guia` llega con valor **sólo** en la exportación estática, y entonces esta etapa
- * publica el recetario completo agrupado por la variable que lo desbloquea, en vez
+ * publica el recetario completo con las condiciones de cada acción, en vez
  * de la lista filtrada por las respuestas —que en ese render no existen—. En el
  * navegador `guia` es `null` y se pinta la lista calculada, que es el
  * comportamiento de siempre.
@@ -640,7 +639,7 @@ function EtapaRecomendacion({
 }
 
 /**
- * Etapa 4 en la exportación estática: el recetario completo, agrupado.
+ * Etapa 4 sin JavaScript: una acción por regla, con todas sus condiciones juntas.
  *
  * Lleva su propio `id="recomendacion"` porque el atajo de la etapa 2 apunta ahí, y
  * el `<h2>` es el mismo número y el mismo título que en el modo interactivo: el
@@ -651,9 +650,6 @@ function EtapaRecomendacion({
  * caso es un subconjunto. Con él, sabe que marcar es estrechar.
  */
 function Recetario({ guia }: { guia: Guia }) {
-  const { sinCondicion, bloque } = accionesPosibles(guia, variablesEnOrden(guia));
-  const totalCondicionadas = bloque.reduce((n, b) => n + b.reglas.length, 0);
-
   return (
     <section className="etapa etapa--recomendacion" id="recomendacion">
       <h2 className="etapa-titulo">
@@ -662,47 +658,50 @@ function Recetario({ guia }: { guia: Guia }) {
 
       <p className="etapa-intro">
         Estas son las {guia.reglas.length} acciones que esta guía puede llegar a
-        recomendar, con lo que desbloquea cada una. Marca tu montaje arriba y la lista
+        recomendar, cada una una sola vez y con todas sus condiciones. Marca tu montaje arriba y la lista
         se estrecha: quedan sólo las que aplican a tu caso, con{' '}
         <strong>tu</strong> cifra.
       </p>
 
-      {sinCondicion.length > 0 && (
-        <div className="recetario-bloque">
-          <p className="recetario-desbloquea">Se aplican siempre</p>
-          <ol className="acciones">
-            {sinCondicion.map((r, i) => (
-              <AccionEstatica key={r.id} regla={r} orden={i + 1} />
-            ))}
-          </ol>
-        </div>
-      )}
+      <ol className="acciones">
+        {guia.reglas.map((regla, i) => (
+          <AccionEstatica key={regla.id} regla={regla} orden={i + 1} guia={guia} />
+        ))}
+      </ol>
 
-      {bloque.map(({ variable, reglas }) => (
-        <div className="recetario-bloque" key={variable.id}>
-          <p className="recetario-desbloquea">
-            Si declaras <strong>{variable.etiqueta.toLowerCase()}</strong>
-            {variable.necesaria ? ' (necesaria)' : ''}
-          </p>
-          <ol className="acciones">
-            {reglas.map((r, i) => (
-              <AccionEstatica key={r.id} regla={r} orden={i + 1} />
-            ))}
-          </ol>
-        </div>
-      ))}
-
-      {bloque.length === 0 && totalCondicionadas === 0 && sinCondicion.length === 0 && (
+      {guia.reglas.length === 0 && (
         <p className="etapa-vacia">Esta guía no tiene acciones: explica, no recomienda.</p>
       )}
     </section>
   );
 }
 
-/** Una acción del recetario estático. Sin índice de lista: el orden se repite. */
-function AccionEstatica({ regla, orden }: { regla: Regla; orden: number }) {
+/** Las variables se combinan con Y; las opciones de una misma variable, con O. */
+function CondicionesAccion({ regla, guia }: { regla: Regla; guia: Guia }) {
+  const condiciones = Object.entries(regla.cuando ?? {});
   return (
-    <li className="accion">
+    <div className="accion-condiciones">
+      {condiciones.length === 0 ? <p>Se aplica siempre.</p> : (
+        <>
+          <p>Se aplica si se cumplen todas estas condiciones:</p>
+          <ul>
+            {condiciones.map(([id, valores]) => {
+              const variable = guia.variables.find((v) => v.id === id)!;
+              const etiquetas = (Array.isArray(valores) ? valores : [valores])
+                .map((valor) => variable.opciones.find((o) => o.id === valor)!.etiqueta);
+              return <li key={id}><strong>{variable.etiqueta}:</strong> {etiquetas.join(' o ')}</li>;
+            })}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Una sola aparición de cada regla, en el orden editorial de la guía. */
+function AccionEstatica({ regla, orden, guia }: { regla: Regla; orden: number; guia: Guia }) {
+  return (
+    <li className="accion" data-regla={regla.id}>
       <div className="accion-cabeza">
         <span className="accion-orden" aria-hidden="true">
           {orden}
@@ -712,6 +711,7 @@ function AccionEstatica({ regla, orden }: { regla: Regla; orden: number }) {
           {regla.valor && <p className="accion-valor">{regla.valor}</p>}
         </div>
       </div>
+      <CondicionesAccion regla={regla} guia={guia} />
       <p className="accion-porque">
         <Negrita>{regla.porque}</Negrita>
       </p>

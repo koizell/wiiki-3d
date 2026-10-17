@@ -150,6 +150,12 @@ export function etiquetaSlicer(kind: SlicerKind | undefined): string | undefined
   return kind ? SLICER_LABEL[kind] ?? kind : undefined;
 }
 
+/** La demo es un índice heurístico, nunca una probabilidad de fallo validada. */
+export function formatoWarping(ratio: number, modo: 'demo' | 'real'): string {
+  const numero = Math.round(ratio * 100);
+  return modo === 'demo' ? `${numero}/100` : `${numero} %`;
+}
+
 /**
  * Los campos de los dos contratos de datos, con su etiqueta y su formato.
  *
@@ -314,7 +320,8 @@ export function anclasDeCampos(guia: Guia): Record<string, string> {
 export function leerTuArchivo(
   guia: Guia,
   metadata: ProjectMetadata | null,
-  classification: JevClassification | null
+  classification: JevClassification | null,
+  modoClasificacion: 'demo' | 'real' = 'real'
 ): LecturaTuArchivo {
   if (!metadata) return { datos: [], conValor: 0, delPanel: 0 };
 
@@ -325,8 +332,11 @@ export function leerTuArchivo(
     const definicion = CAMPOS[campo];
     datos.push({
       campo,
-      etiqueta: definicion?.etiqueta ?? campo,
-      valor: definicion ? definicion.valor(metadata, classification) : null,
+      etiqueta: campo === 'warpingRisk' && modoClasificacion === 'demo'
+        ? 'Índice de warping (demo)' : definicion?.etiqueta ?? campo,
+      valor: campo === 'warpingRisk' && classification
+        ? formatoWarping(classification.warpingRisk, modoClasificacion)
+        : definicion ? definicion.valor(metadata, classification) : null,
       ancla: anclas[campo] ?? null,
       origen: definicion?.origen ?? 'archivo',
     });

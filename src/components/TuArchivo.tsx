@@ -38,7 +38,7 @@ export default function TuArchivo({ guia }: { guia: Guia }) {
   const { metadata, classification } = useAnalysis();
 
   const lectura = useMemo(
-    () => leerTuArchivo(guia, metadata, classification),
+    () => leerTuArchivo(guia, metadata, classification, MODO_CLASIFICACION),
     [guia, metadata, classification]
   );
 
@@ -137,7 +137,8 @@ export default function TuArchivo({ guia }: { guia: Guia }) {
       {conDemo && (
         <p className="tu-archivo-nota tu-archivo-nota--demo">
           El veredicto es una estimación de demostración: se calcula en tu navegador y no se
-          envía nada a ningún servicio.
+          envía nada a ningún servicio. El índice de 0 a 100 no es una probabilidad de fallo
+          validada ni garantiza el resultado de la impresión.
         </p>
       )}
       {conEnlaces > 0 && (

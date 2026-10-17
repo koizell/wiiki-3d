@@ -354,10 +354,11 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
             </p>
           </li>
           <li>
-            <h3>Estima el riesgo</h3>
+            <h3>Ofrece una orientación</h3>
             <p>
-              Con esos datos calcula el riesgo de warping y de voladizos problemáticos, y
-              te dice qué campo del archivo ha pesado en cada caso.
+              En modo de demostración calcula un índice local orientativo: no es una
+              probabilidad de fallo validada ni verifica si la geometría necesita soportes.
+              En modo real consulta el servicio de clasificación configurado.
             </p>
           </li>
           <li>

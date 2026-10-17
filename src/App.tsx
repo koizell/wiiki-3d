@@ -296,6 +296,7 @@ function AppShell() {
                   </Link>
                 </div>
                 <AnalysisPanel
+                  modoClasificacion={MODO_CLASIFICACION}
                   status={status}
                   metadata={metadata}
                   classification={classification}

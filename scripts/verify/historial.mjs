@@ -743,8 +743,11 @@ try {
     // En minúsculas-insensible, porque el panel pinta el nivel en mayúsculas por
     // `text-transform` y comparar sin tener en cuenta el estilo hace fallar la
     // comprobación por el motivo equivocado.
-    const tieneDiagnostico = panelMayus.includes('DIAGN');
-    comprobar(tieneDiagnostico, 'y el diagnóstico de Jev');
+    const esDemo = await page.locator('.badge-modo-demo').count() > 0;
+    const tieneDiagnostico = esDemo
+      ? panelMayus.includes('ESTIMACIÓN LOCAL (DEMO)') && panelMayus.includes('NO ES UNA PROBABILIDAD') && !panelMayus.includes('JEV')
+      : panelMayus.includes('DIAGNÓSTICO DE JEV');
+    comprobar(tieneDiagnostico, 'y la clasificación restaurada identifica su modo sin atribuir la demo a Jev');
 
     const niveles = ['Bajo', 'Moderado', 'Alto', 'Crítico'];
     const nivel = niveles.find((n) => panelMayus.includes(mayus(n)));

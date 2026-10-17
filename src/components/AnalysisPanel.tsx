@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ArticuloDeCampo } from '../lib/wiki-campos';
-import { etiquetaSlicer } from '../lib/tu-archivo';
+import { etiquetaSlicer, formatoWarping } from '../lib/tu-archivo';
 import type { JevClassification, ProjectMetadata, RiskLevel } from '../services/types';
 
 /**
@@ -43,6 +43,7 @@ export type AnalysisStatus =
 type AnalysisFileType = 'stl' | 'gcode' | '3mf' | 'obj' | 'unknown';
 
 interface AnalysisPanelProps {
+  modoClasificacion: 'demo' | 'real';
   status: AnalysisStatus;
   metadata: ProjectMetadata | null;
   classification: JevClassification | null;
@@ -107,11 +108,13 @@ function AnalysisPanel({
   error,
   fileType,
   explicar,
+  modoClasificacion,
 }: AnalysisPanelProps) {
+  const demo = modoClasificacion === 'demo';
   if (status === 'parsing' || status === 'classifying') {
     return (
       <p className="panel-loading" role="status" aria-live="polite">
-        {LOADING_MESSAGE[status]}
+        {status === 'classifying' && demo ? 'Calculando estimación local de demostración...' : LOADING_MESSAGE[status]}
       </p>
     );
   }
@@ -147,8 +150,15 @@ function AnalysisPanel({
 
   return (
     <div className="panel-body">
+      {demo && (
+        <p className="panel-demo-nota">
+          Estimación local de demostración, calculada en tu navegador sin consultar ningún servicio.
+          El índice de 0 a 100 no es una probabilidad de fallo validada y no garantiza que la pieza
+          se imprima bien. No comprueba la geometría ni verifica si necesita soportes.
+        </p>
+      )}
       <div className="panel-recommendation">
-        <strong className="panel-recommendation-title">Recomendación</strong>
+        <strong className="panel-recommendation-title">{demo ? 'Orientación de demostración' : 'Recomendación'}</strong>
         <p>{classification.recommendation}</p>
       </div>
       <section>
@@ -216,10 +226,10 @@ function AnalysisPanel({
       </section>
 
       <section>
-        <h3 className="panel-section-title">Diagnóstico de Jev</h3>
+        <h3 className="panel-section-title">{demo ? 'Estimación local (demo)' : 'Diagnóstico de Jev'}</h3>
         <dl className="panel-data">
           <div className="panel-data-row">
-            <dt className="panel-data-key">Nivel de riesgo</dt>
+            <dt className="panel-data-key">{demo ? 'Nivel orientativo' : 'Nivel de riesgo'}</dt>
             <dd className="panel-data-value">
               <span className={`risk-badge ${RISK_CLASS[classification.riskLevel]}`}>
                 {classification.riskLevel}
@@ -228,12 +238,12 @@ function AnalysisPanel({
             </dd>
           </div>
           <DataRow
-            label="Riesgo de warping"
-            value={formatPercent(classification.warpingRisk)}
+            label={demo ? 'Índice de warping (demo)' : 'Riesgo de warping'}
+            value={formatoWarping(classification.warpingRisk, modoClasificacion)}
             campo="warpingRisk"
             explicar={explicar}
           />
-          <DataRow label="Soportes" value={classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
+          <DataRow label="Soportes" value={demo ? 'No verificados' : classification.needsSupport ? 'Necesarios' : 'No necesarios'} />
         </dl>
       </section>
 
@@ -364,11 +374,6 @@ function formatDegrees(value: number | undefined): string | undefined {
 function formatYesNo(value: boolean | undefined): string | undefined {
   if (value === undefined) return undefined;
   return value ? 'Sí' : 'No';
-}
-
-/** `0.35` -> `"35 %"`. */
-function formatPercent(ratio: number): string {
-  return `${Math.round(ratio * 100)} %`;
 }
 
 export default AnalysisPanel;
