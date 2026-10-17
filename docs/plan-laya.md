@@ -83,10 +83,11 @@ envoltura** (el cliente lee `data.answers`; Laya devuelve `answers` en la raíz)
 
 1. **Contenido y monetización (WSL2/CI):** Laya local decide/enruta/valora
    borradores y temas. Coste cero para el visitante.
-2. **Clasificador en vivo:** como Laya es wire-compatible con Jev, apuntar el
-   servicio a un servidor Laya es casi un cambio de variable (el adaptador ya lo
-   cierra). En **producción** (GitHub Pages) no hay servidor: se mantiene
-   **demo/Jev** hasta decidir el paso 3 en la app.
+2. **Clasificador en vivo → Laya en un VPS (API).** Decidido (2026-10-16): el
+   veredicto del panel lo dará **Laya alojado en un VPS barato** en modo API, con
+   el **Worker de Cloudflare del repo** delante (oculta la clave, añade CORS y
+   permite cambiar de upstream sin tocar el cliente). El visitante nunca habla
+   con el VPS. Mientras no exista el VPS, producción sigue en **demo/Jev**.
 3. **Navegador (opcional, propuesta):** cargar Laya **bajo demanda**, nunca al
    abrir la página.
 
@@ -104,10 +105,20 @@ envoltura** (el cliente lee `data.answers`; Laya devuelve `answers` en la raíz)
 
 - De dónde sale el `model.onnx` en producción (HF vs CDN propio vs modelo
   reducido).
-- Si el clasificador en vivo de la app migra de Jev a Laya en el navegador, o se
-  queda como está y Laya sólo se usa en local/build.
+- Proveedor y tamaño del VPS (RAM: el modelo son 324 MB INT8; ≥2 GB es una
+  estimación, no medida).
 - Fine-tuning de Laya con datos propios (el repo tiene el pipeline de contenido
   como fuente de datos etiquetados).
+
+### VPS — piezas a construir cuando haya servidor
+
+- **`worker/src/index.ts`**: cambiar el upstream a la URL del VPS y **envolver**
+  la respuesta de Laya en `{ data: { answers } }` (la lógica ya está en
+  `scripts/laya/classify-adapter.mjs`).
+- **VPS**: `laya-system-one` con `--api-key` y descarga por inactividad
+  (`LAYA_IDLE_UNLOAD_SECONDS`), más `Dockerfile`/unidad `systemd`.
+- **Cliente**: casi nada (`JevService` ya manda el payload correcto a `/classify`).
+- **Privacidad**: el análisis pasaría a un servidor propio; matizar la cláusula.
 
 ---
 
