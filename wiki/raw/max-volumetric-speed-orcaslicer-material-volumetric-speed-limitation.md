@@ -1,0 +1,44 @@
+---
+titulo: "Material Volumetric Speed Limitation"
+url: https://github.com/OrcaSlicer/OrcaSlicer/wiki/material_volumetric_speed_limitation
+sitio: github.com/OrcaSlicer
+tipo: oficial
+capturado: 2026-10-17
+autor: OrcaSlicer
+idioma: en
+---
+
+# Material Volumetric Speed Limitation
+
+Each material profile includes a **maximum volumetric speed** setting, which limits your [print speed](speed_settings_other_layers_speed) to prevent issues like nozzle clogs, under-extrusion, or poor layer adhesion.
+
+Tip
+
+Calibrating the maximum volumetric speed for each filament you use is highly recommended. Refer to the [Max Volumetric Speed (FlowRate) Calibration](volumetric_speed_calib) guide for detailed instructions on how to perform this calibration.
+
+## Adaptive volumetric speed
+
+[Mode](option_mode): `Developer`.  
+[Variable](built_in_placeholders_variables): `filament_adaptive_volumetric_speed`.  
+[Type](option_type#list-types): `Boolean list`.  
+[CLI Example](cli_mode#setting-overrides): `--filament-adaptive-volumetric-speed=1`.
+
+Warning
+
+Experimental and incomplete feature imported from BBS.  
+Functional for some profiles that already have the variable saved.
+
+When enabled, the extrusion flow is limited by the smaller of the fitted value (calculated from line width and layer height) and the user-defined maximum flow. When disabled, only the user-defined maximum flow is applied.
+
+## Max volumetric speed
+
+[Mode](option_mode): `Advanced`.  
+[Variable](built_in_placeholders_variables): `filament_max_volumetric_speed`.  
+[Type](option_type#list-types): `Float list`.  
+[CLI Example](cli_mode#setting-overrides): `--filament-max-volumetric-speed=1`.  
+This setting is the volume of filament that can be melted and extruded per second. Printing speed is limited by max volumetric speed, in case of too high and unreasonable speed setting. This value cannot be zero.
+
+## Notas del recolector
+
+- Página oficial de la wiki de OrcaSlicer. Contiene la definición de `filament_max_volumetric_speed`, el modo (Advanced), el tipo (Float list) y la advertencia de que no puede ser cero. Incluye también la feature experimental "adaptive volumetric speed".
+- La navegación lateral y el pie de página de GitHub se han omitido porque no son contenido del artículo.
