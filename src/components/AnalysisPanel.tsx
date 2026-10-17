@@ -147,6 +147,10 @@ function AnalysisPanel({
 
   return (
     <div className="panel-body">
+      <div className="panel-recommendation">
+        <strong className="panel-recommendation-title">Recomendación</strong>
+        <p>{classification.recommendation}</p>
+      </div>
       <section>
         <h3 className="panel-section-title">Metadatos de impresión</h3>
         <dl className="panel-data">
@@ -233,10 +237,6 @@ function AnalysisPanel({
         </dl>
       </section>
 
-      <div className="panel-recommendation">
-        <strong className="panel-recommendation-title">Recomendación</strong>
-        <p>{classification.recommendation}</p>
-      </div>
     </div>
   );
 }

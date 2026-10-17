@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import DibujoSintoma from '../components/DibujoSintoma';
 import DiagnosticoGuia from '../components/DiagnosticoGuia';
 import { Negrita } from '../components/Negrita';
@@ -57,6 +57,7 @@ import type { ProjectMetadata } from '../services/types';
  */
 export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?: boolean } = {}) {
   const { slug } = useParams();
+  const { hash } = useLocation();
   const guia = guiaPorSlug(slug);
   const { metadata } = useAnalysis();
 
@@ -124,6 +125,14 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
     );
   }, [guia, slug]);
 
+  // La guía puede llegar después del hash por lazy loading. Esperar al montaje,
+  // no dejar el destino sólo en la URL y a dos pantallas de distancia.
+  useEffect(() => {
+    if (!hash || !guia) return;
+    const frame = requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' }));
+    return () => cancelAnimationFrame(frame);
+  }, [hash, guia]);
+
   const alternar = alternarVariable;
 
   const reglas = useMemo(() => (guia ? reglasQueSalen(guia, elegidas) : []), [guia, elegidas]);
@@ -156,6 +165,13 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
   return (
     <div className="guia" key={guia.slug}>
       <Cabecera guia={guia} />
+
+      <nav className="guia-recorrido" aria-label="Recorrido de la guía">
+        <a href="#diagnostico">1 · Diagnóstico</a>
+        <a href="#montaje">2 · Montaje</a>
+        <a href="#conocimiento">3 · Conocimiento</a>
+        <a href="#recomendacion">4 · Acciones</a>
+      </nav>
 
       {/*
         La barra de los datos del archivo va entre la cabecera y el diferencial, y
@@ -230,7 +246,10 @@ function Cabecera({ guia }: { guia: Guia }) {
           longitudes, y los badges de abajo siguen siendo el cierre de la
           cabecera.
         */}
-        <p className="guia-entrada">{guia.entrada}</p>
+        <details className="guia-contexto">
+          <summary>Entender el problema antes de empezar</summary>
+          <p className="guia-entrada">{guia.entrada}</p>
+        </details>
         <p className="guia-cabecera-meta">
           <span className="insignia">{guia.minutos} min</span>
           {guia.campos && guia.campos.length > 0 && (
@@ -262,7 +281,7 @@ function Cabecera({ guia }: { guia: Guia }) {
  */
 function EtapaDiferencial({ guia }: { guia: Guia }) {
   return (
-    <section className="etapa etapa--diferencial">
+    <section className="etapa etapa--diferencial" id="diagnostico">
       {/*
         El título dice «descártalo como X» y no «comprueba que es Y».
         Es la misma información en las dos direcciones, pero llega distinta. «Comprueba
@@ -279,9 +298,8 @@ function EtapaDiferencial({ guia }: { guia: Guia }) {
         {guia.diferencial.contraCorto ?? guia.diferencial.contra}
       </h2>
       <p className="etapa-intro">
-        Lo que más se confunde con esto es {guia.diferencial.contra}. Estas son las
-        preguntas que lo distinguen, y todas se responden mirando la pieza, sin
-        cambiar un solo ajuste.
+        Compara lo que ves en la pieza antes de cambiar ajustes. Si no coincide,
+        usa la salida a la otra guía.
       </p>
 
       <div className="diferencial">
@@ -342,7 +360,7 @@ function EtapaVariables({
   const contestadas = guia.variables.filter((v) => elegidas[v.id] !== undefined).length;
 
   return (
-    <section className="etapa etapa--variables">
+    <section className="etapa etapa--variables" id="montaje">
       <h2 className="etapa-titulo">
         <span className="etapa-num">2</span> Tu montaje
       </h2>
@@ -471,7 +489,7 @@ function EtapaConocimiento({
   alternar: (variable: string, opcion: string) => void;
 }) {
   return (
-    <section className="etapa etapa--conocimiento">
+    <section className="etapa etapa--conocimiento" id="conocimiento">
       <h2 className="etapa-titulo">
         <span className="etapa-num">3</span> Lo que necesitas saber
       </h2>

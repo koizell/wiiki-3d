@@ -58,9 +58,8 @@ export function estadoFilamento(maquina: Maquina, filamento: Filamento | null): 
   if (maquina.tNozMax !== null && filamento.noz[1] > maquina.tNozMax) {
     return { estado: 'limite-boquilla', faltan: filamento.noz[1] - maquina.tNozMax };
   }
-  // Sin cerramiento verificado no se puede afirmar ni que haga falta cámara ni
-  // que no: se dice que no se sabe.
-  if (maquina.cerrada === null) return { estado: 'camara-desconocida' };
+  // El cerramiento sólo condiciona los materiales que no admiten máquina abierta.
+  if (!filamento.abierta && maquina.cerrada === null) return { estado: 'camara-desconocida' };
   if (!filamento.abierta && !maquina.cerrada) return { estado: 'necesita-camara' };
   return { estado: 'ok' };
 }

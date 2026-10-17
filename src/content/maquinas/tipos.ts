@@ -53,7 +53,7 @@ export interface Maquina {
   /** Dimensiones exteriores en cm. `null` = pendiente de fichar. */
   dims: [number, number, number] | null;
   /** Volumen útil en mm (X × Y × Z). */
-  vol: [number, number, number];
+  vol: [number, number, number] | null;
   /** Velocidad máxima declarada en mm/s. `null` = no aplica (resina) o pendiente. */
   velMax: number | null;
   /** Temperatura máxima de boquilla en °C. `null` = no aplica (resina). */
@@ -119,7 +119,9 @@ export interface RasgosDibujo {
   /** Tres husillos en Z, en vez de uno. */
   zTriple?: boolean;
   /** Pantalla táctil, en vez de botonera con pantalla pequeña. */
-  pantallaTactil?: boolean;
+  // Rasgo retirado: ninguna fuente afirma la posición de la pantalla y la
+  // ilustración no la dibuja. Si se añade en el futuro, necesita fuente
+  // cocinada y un rasgo visible en MaquinaSVG.
 }
 
 /** Un filamento: genérico por familia, o de marca con perfil propio. */

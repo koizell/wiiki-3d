@@ -306,7 +306,7 @@ try {
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     await exponerContador(page);
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await vaciarDesdeLaPagina(page);
     await page.reload();
     await page.waitForSelector('.upload-zone');
@@ -432,15 +432,21 @@ try {
       const page = await browser.newPage({
         viewport: { width: tramo.width, height: tramo.height },
       });
-      await page.goto('http://127.0.0.1:4173/');
+      await page.goto(`${BASE}/`);
       await subirYAnalizar(page);
       const hay = marcarSiAparece(await page.$('.recientes-fila'));
       comprobar(!!hay, `${tramo.nombre} · estado con historial: se ve el reciente en /`);
 
-      comprobarAusencia(
-        (await page.$eval('.canvas-area', (el) => el.scrollHeight - el.clientHeight)) <= 0,
-        `${tramo.nombre} · estado con historial: la caja no recorta`
-      );
+      // El resultado G-code es ahora el contenido principal y puede desplazarse.
+      // Probar acceso real al reciente, no prohibir el scroll que lo hace posible.
+      await page.locator('.recientes-fila').first().scrollIntoViewIfNeeded();
+      const alcanzable = await page.locator('.recientes-fila').first().evaluate(el => {
+        const r = el.getBoundingClientRect();
+        const area = el.closest('main').getBoundingClientRect();
+        return r.top >= Math.max(0, area.top) && r.bottom <= Math.min(innerHeight, area.bottom)
+          && el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+      });
+      comprobarAusencia(alcanzable, `${tramo.nombre} · estado con historial: el reciente es alcanzable sin recorte`);
 
       // Este tramo acaba de demostrar que la lista existe, así que ahora la de
       // «sin historial» sí es una comprobación y no una tautología.
@@ -461,7 +467,7 @@ try {
       const page = await browser.newPage({
         viewport: { width: tramo.width, height: tramo.height },
       });
-      await page.goto('http://127.0.0.1:4173/');
+      await page.goto(`${BASE}/`);
       await vaciarDesdeLaPagina(page);
       await page.reload();
       await page.waitForSelector('.upload-zone');
@@ -471,7 +477,7 @@ try {
         `${tramo.nombre} · estado sin historial: / no pinta lista`
       );
 
-      await page.goto('http://127.0.0.1:4173/historial');
+      await page.goto(`${BASE}/historial`);
       await page.waitForSelector('.historial', { timeout: 8000 });
       const texto = (await page.$eval('.historial', (el) => el.innerText))
         .replace(/\s+/g, ' ')
@@ -502,7 +508,7 @@ try {
         delete window.indexedDB;
       });
 
-      await page.goto('http://127.0.0.1:4173/');
+      await page.goto(`${BASE}/`);
       await page.waitForSelector('.upload-zone');
       await page.waitForTimeout(600);
 
@@ -538,7 +544,7 @@ try {
         `${tramo.nombre} · sin IndexedDB: el análisis termina igualmente (panel: ${textoPanel.slice(0, 60)})`
       );
 
-      await page.goto('http://127.0.0.1:4173/historial');
+      await page.goto(`${BASE}/historial`);
       await page.waitForSelector('.historial', { timeout: 8000 });
       const avisoHist = await page.$('.historial-aviso');
       comprobar(!!avisoHist, `${tramo.nombre} · sin IndexedDB: /historial también avisa`);
@@ -551,7 +557,7 @@ try {
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     await exponerContador(page);
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await vaciarDesdeLaPagina(page);
     await page.reload();
     await page.waitForSelector('.upload-zone');
@@ -560,7 +566,7 @@ try {
     // filas, no subidas: es lo que dice el bloque.
     await llegarAEntradas(page, 3);
 
-    await page.goto('http://127.0.0.1:4173/historial');
+    await page.goto(`${BASE}/historial`);
     await page.waitForSelector('.historial-fila', { timeout: 10000 });
     await page.waitForTimeout(400);
 
@@ -665,7 +671,7 @@ try {
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     await exponerContador(page);
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await vaciarDesdeLaPagina(page);
     await page.reload();
     await page.waitForSelector('.upload-zone');
@@ -756,7 +762,7 @@ try {
     );
 
     // --- 3 · El aviso de que el visor no vuelve sin el archivo ---
-    const aviso = await page.$eval('.canvas-error', (el) => el.innerText).catch(() => '');
+    const aviso = await page.$eval('.archivo-nota', (el) => el.innerText).catch(() => '');
     const textoAviso = aviso.replace(/\s+/g, ' ').trim();
     comprobar(
       textoAviso.includes('no se guarda el archivo'),
@@ -773,7 +779,7 @@ try {
 
     // --- Abrir no duplica la entrada ---
     const antesDeAbrir = await contarEntradas(page);
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await page.waitForSelector('.recientes-boton', { timeout: 10000 });
     await page.click('.recientes-boton');
     await page.waitForTimeout(1200);
@@ -784,7 +790,7 @@ try {
     );
 
     // --- 4 · Un nombre larguísimo se ROMPE, no se recorta ---
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await vaciarDesdeLaPagina(page);
     await page.reload();
     await page.waitForSelector('.upload-zone');
@@ -921,10 +927,10 @@ try {
   // nombre vacío lo devuelva al historial, y que el diálogo sea usable con teclado.
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     await subirYAnalizar(page);
 
-    await page.goto('http://127.0.0.1:4173/proyectos');
+    await page.goto(`${BASE}/proyectos`);
     await page.waitForSelector('.historial-fila', { timeout: 10000 });
 
     const subtitulos = () =>
@@ -987,7 +993,7 @@ try {
   // --- La barra inferior sigue con cuatro destinos ---
   {
     const page = await browser.newPage({ viewport: { width: 375, height: 667 } });
-    await page.goto('http://127.0.0.1:4173/');
+    await page.goto(`${BASE}/`);
     // `.nav-item` y no una clase propia de la barra: es la clase que usan los
     // cuatro destinos de siempre, en las dos disposiciones. Inventar un nombre
     // para la barra aquí sería comprobar que existe un selector que sólo existe

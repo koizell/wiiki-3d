@@ -5,6 +5,13 @@ import { GUIAS } from '../lib/guias';
 import { useAnalysis } from '../state/useAnalysis';
 import type { Guia } from '../content/guias/tipos';
 
+// Agrupación de navegación, no diagnóstico ni orden de frecuencia.
+const GRUPOS = [
+  { titulo: 'Base y primera capa', slugs: ['adhesion-primera-capa', 'malla-de-cama', 'placas', 'temperatura-cama', 'elephant-foot', 'brim-y-skirt'] },
+  { titulo: 'Fallos durante la impresión', slugs: ['warping-pla', 'ventilador-warping', 'piezas-grandes-grietas', 'esquinas-petg', 'despegue-a-mitad', 'enclosure-y-warping', 'separaciones-entre-capas', 'capas-desplazadas'] },
+  { titulo: 'Material, ajustes y acabado', slugs: [] as string[] },
+];
+
 /**
  * El índice de la wiki, y ya no es un índice: es la pregunta de entrada.
  *
@@ -88,13 +95,21 @@ export default function WikiIndexRoute() {
           suelta: «esquinas», «capas», «cama».
         </p>
       ) : (
-        <ul className="wiki-sintomas">
-          {resultados.map((g, i) => (
-            <li key={g.slug} style={{ '--i': i } as React.CSSProperties}>
-              <TarjetaSintoma guia={g} />
-            </li>
-          ))}
-        </ul>
+        <div className="wiki-grupos">
+          {GRUPOS.map((grupo, index) => {
+            const guias = resultados.filter(g => index === 2
+              ? !GRUPOS.slice(0, 2).some(otro => otro.slugs.includes(g.slug))
+              : grupo.slugs.includes(g.slug));
+            return guias.length > 0 && (
+              <section className="wiki-grupo" key={grupo.titulo}>
+                <h2>{grupo.titulo} <span>{guias.length}</span></h2>
+                <ul className="wiki-sintomas">
+                  {guias.map(g => <li key={g.slug}><TarjetaSintoma guia={g} /></li>)}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
       )}
 
       {resultados.length > 1 && (
@@ -135,7 +150,7 @@ function TarjetaSintoma({ guia }: { guia: Guia }) {
         <DibujoSintoma dibujo={guia.dibujo} grande />
       </div>
       <div className="sintoma-texto">
-        <h2 className="sintoma-titulo">{guia.sintoma}</h2>
+        <h3 className="sintoma-titulo">{guia.sintoma}</h3>
         <p className="sintoma-guia">{guia.titulo}</p>
         <p className="sintoma-resumen">{guia.resumen}</p>
         <p className="sintoma-pie">

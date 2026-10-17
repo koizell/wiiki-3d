@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalysis, useAnalysisActions } from '../state/useAnalysis';
-import { conComa, lineaCalculo, validarPrecio } from '../lib/coste';
+import { conComa, costeEuros, lineaCalculo, validarPrecio } from '../lib/coste';
 
 /**
  * Taller: cuánto cuesta una pieza.
@@ -134,8 +134,13 @@ function TallerRoute() {
             // La aritmética entera, con las tres cifras a la vista. Es el
             // criterio de aceptación del diseño, y a simple vista se puede
             // comprobar que está bien sin leer nada más.
-            <p className="taller-resultado">{lineaCalculo(gramos, precioLeido.precioKg)}</p>
+            <div className="taller-resumen-coste">
+              <p>Coste de filamento</p>
+              <output className="taller-total" htmlFor={campoId} aria-live="polite">{conComa(costeEuros(gramos, precioLeido.precioKg))} €</output>
+              <p className="taller-resultado">{lineaCalculo(gramos, precioLeido.precioKg)}</p>
+            </div>
           )}
+          <p className="taller-limites">Sólo filamento: no incluye electricidad, máquina ni mano de obra.</p>
         </div>
       )}
 

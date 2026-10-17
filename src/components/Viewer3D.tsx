@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import ControlesVisor from './ControlesVisor';
 
 /**
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
@@ -13,6 +14,7 @@ export type ViewerFormat = 'stl' | '3mf';
 interface Viewer3DProps {
   file: File;
   fileType: ViewerFormat;
+  onChooseFile?: () => void;
 }
 
 /** Margen extra al encuadrar, para que el modelo no toque los bordes del visor. */
@@ -36,10 +38,12 @@ const LOAD_ERROR_MESSAGE: Record<ViewerFormat, string> = {
  */
 const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mostrar.';
 
-function Viewer3D({ file, fileType }: Viewer3DProps) {
+function Viewer3D({ file, fileType, onChooseFile }: Viewer3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const comandos = useRef<{ encuadrar: () => void; zoom: (factor: number) => void; girar: () => void } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [vista, setVista] = useState('Arrastra para girar; también puedes usar los botones.');
 
   useEffect(() => {
     const currentMount = mountRef.current;
@@ -64,6 +68,8 @@ function Viewer3D({ file, fileType }: Viewer3DProps) {
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     currentMount.appendChild(renderer.domElement);
+    renderer.domElement.setAttribute('role', 'img');
+    renderer.domElement.setAttribute('aria-label', `Vista 3D del archivo ${fileType.toUpperCase()} ${file.name}`);
 
     // 2. Luces
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -116,6 +122,22 @@ function Viewer3D({ file, fileType }: Viewer3DProps) {
         // en milímetros.
         if (fileType === '3mf') frameCamera(camera, controls, model);
 
+        comandos.current = {
+          encuadrar: () => frameCamera(camera, controls, model),
+          zoom: (factor) => {
+            const offset = camera.position.clone().sub(controls.target);
+            const distancia = THREE.MathUtils.clamp(offset.length() * factor, 1, camera.far * 0.8);
+            camera.position.copy(controls.target).add(offset.setLength(distancia));
+            controls.update();
+          },
+          girar: () => {
+            const offset = camera.position.clone().sub(controls.target);
+            offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 6);
+            camera.position.copy(controls.target).add(offset);
+            controls.update();
+          },
+        };
+
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -146,6 +168,7 @@ function Viewer3D({ file, fileType }: Viewer3DProps) {
     // Limpieza al desmontar
     return () => {
       cancelled = true;
+      comandos.current = null;
       if (reader.readyState === FileReader.LOADING) reader.abort();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
@@ -158,10 +181,18 @@ function Viewer3D({ file, fileType }: Viewer3DProps) {
   }, [file, fileType]);
 
   return (
+    <>
     <div className="viewer-3d-container" ref={mountRef}>
       {loading && <div className="viewer-overlay">Cargando modelo 3D...</div>}
-      {error && <div className="viewer-overlay error">{error}</div>}
+      {error && <div className="viewer-overlay error" role="alert"><p>{error}</p>{onChooseFile && <button type="button" className="btn-primary" onClick={onChooseFile}>Elegir otro archivo</button>}</div>}
     </div>
+    <ControlesVisor disabled={loading || !!error}
+      mensaje={loading ? 'Preparando el visor…' : error ? 'Puedes elegir otro archivo para continuar.' : vista}
+      onAcercar={() => { comandos.current?.zoom(0.8); setVista('Vista ampliada.'); }}
+      onAlejar={() => { comandos.current?.zoom(1.25); setVista('Vista alejada.'); }}
+      onGirar={() => { comandos.current?.girar(); setVista('Modelo girado 30 grados.'); }}
+      onEncuadrar={() => { comandos.current?.encuadrar(); setVista('Modelo encuadrado.'); }} />
+    </>
   );
 }
 

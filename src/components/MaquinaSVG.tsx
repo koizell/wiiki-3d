@@ -225,30 +225,30 @@ function VistaBedSlinger({ rizar, rasgos }: { rizar: boolean; rasgos: RasgosDibu
 }
 
 /** CoreXY: cabezal fijo arriba, cama subiendo por husillos, hub de filamento. */
-function VistaCoreXY({ rizar, abierta, rasgos }: { rizar: boolean; abierta: boolean; rasgos: RasgosDibujo }): ReactElement {
+function VistaCoreXY({ rizar, abierta, rasgos }: { rizar: boolean; abierta?: boolean; rasgos: RasgosDibujo }): ReactElement {
   return (
     <>
       <ExtrusionH x={44} y={40} w={392} />
       <ExtrusionV x={44} y={48} h={236} />
       <ExtrusionV x={424} y={48} h={236} />
-      {abierta ? null : (
+      {abierta === false ? (
         <>
           <rect className="panel" x={34} y={56} width={10} height={222} />
           <Rejilla x={34} y={56} h={222} />
           <rect className="panel" x={436} y={56} width={10} height={222} />
           <Rejilla x={436} y={56} h={222} />
         </>
-      )}
+      ) : null}
       <rect className="est" x={34} y={278} width={412} height={20} rx={3} />
 
-      {abierta ? null : (
+      {abierta === false ? (
         <>
           <rect className="est" x={62} y={54} width={8} height={228} />
           <rect className="est" x={410} y={54} width={8} height={228} />
           <rect className="cristal" x={70} y={58} width={340} height={220} />
           <rect className="metal" x={398} y={120} width={26} height={4} rx={2} />
         </>
-      )}
+      ) : null}
 
       {/* husillos con su rosca girando; las tuercas van en la cama */}
       <line className="metal" x1={140} y1={96} x2={140} y2={268} strokeWidth={5} />
@@ -437,7 +437,9 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
       ? `${maquina.marca} ${maquina.modelo}: tanque de resina, LCD en el fondo y plataforma que sube capa a capa`
       : maquina.familia === 'bed-slinger'
         ? `${maquina.marca} ${maquina.modelo}: armazón, pórtico con cabezal, cama deslizante y bobina`
-        : `${maquina.marca} ${maquina.modelo}: CoreXY ${maquina.cerrada ? 'cerrada con puerta de cristal' : 'abierta'}, husillos y cama que sube`;
+        : maquina.cerrada === null
+          ? `${maquina.marca} ${maquina.modelo}: CoreXY, husillos y cama que sube (cerramiento sin verificar)`
+          : `${maquina.marca} ${maquina.modelo}: CoreXY ${maquina.cerrada ? 'cerrada con puerta de cristal' : 'abierta'}, husillos y cama que sube`;
   const rizar = rizaria(maquina, filamento);
   const ciclo = duracionCiclo(maquina);
   const v = (maquina.velMax ?? 150) / 500;
@@ -468,7 +470,7 @@ export default function MaquinaSVG({ maquina, filamento, className }: Props) {
         ) : maquina.familia === 'bed-slinger' ? (
           <VistaBedSlinger rizar={rizar} rasgos={maquina.rasgos} />
         ) : (
-          <VistaCoreXY rizar={rizar} abierta={!maquina.cerrada} rasgos={maquina.rasgos} />
+          <VistaCoreXY rizar={rizar} abierta={maquina.cerrada === null ? undefined : !maquina.cerrada} rasgos={maquina.rasgos} />
         )}
       </g>
     </svg>

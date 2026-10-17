@@ -160,6 +160,10 @@ function comprobar(nombre, ok, detalle = '') {
 
 async function abrir(navegador, ancho, alto, ruta, opciones = {}) {
   const ctx = await navegador.newContext({ viewport: { width: ancho, height: alto }, ...opciones });
+  // Esta suite mide UI local, no anuncios/telemetría remotos. No ejecuta scripts de terceros.
+  await ctx.route(/^https?:\/\//, route => new URL(route.request().url()).origin === new URL(BASE).origin
+    ? route.continue()
+    : route.fulfill({ status: 200, contentType: route.request().resourceType() === 'script' ? 'application/javascript' : 'text/plain', body: '' }));
   const page = await ctx.newPage();
   const errores = [];
   page.on('pageerror', (e) => errores.push(String(e)));
@@ -596,11 +600,15 @@ try {
           panel: !!derecha?.querySelector('.panel-header'),
           invitacion: derecha?.textContent?.includes('Sube un archivo para ver el análisis') ?? false,
           enlacesGuia: derecha?.querySelectorAll('a[href^="/wiki/"]').length ?? 0,
+          sinLateral: derecha === null,
+          principal: !!document.querySelector('main h1'),
         };
       });
       comprobar(
-        `${ruta}: la columna derecha no invita a subir un archivo y sí enlaza a las guías`,
-        !riel.invitacion && (riel.riel || riel.panel) && riel.enlacesGuia > 0,
+        `${ruta}: lateral contextual sólo al leer una guía, sin panel muerto`,
+        ruta === `/wiki/${SLUG}`
+          ? !riel.invitacion && riel.riel && !riel.panel && riel.enlacesGuia === 3
+          : riel.principal && riel.sinLateral,
         `riel=${riel.riel} panel=${riel.panel} ${riel.ancho}px · ${riel.enlacesGuia} enlaces a guías`
       );
       await ctx.close();
@@ -611,10 +619,12 @@ try {
       const panel = await page.evaluate(() => ({
         titulo: document.querySelector('.sidebar-right h2')?.textContent ?? '',
         riel: !!document.querySelector('.sidebar-right .riel'),
+        sinLateral: !document.querySelector('.sidebar-right'),
+        principal: !!document.querySelector('main h1'),
       }));
       comprobar(
-        `${ruta}: aquí sí está el panel de análisis`,
-        panel.titulo.includes('Panel') && !panel.riel,
+        `${ruta}: sin archivo no añade un panel de análisis vacío`,
+        panel.principal && panel.sinLateral && !panel.riel,
         `"${panel.titulo}"`
       );
       await ctx.close();
@@ -1020,7 +1030,7 @@ try {
     const primero = destinos[0];
     const anclaLlega = await (async () => {
       await page.locator('.panel-explicar').first().click();
-      await page.waitForTimeout(200);
+      await page.locator(`#${primero.ancla}`).waitFor({ state: 'attached' });
       return page.url().includes(`#${primero.ancla}`) && (await page.locator(`#${primero.ancla}`).count()) === 1;
     })();
     comprobar('y al pulsarlo el ancla existe en la página', anclaLlega, `${primero.href} -> ${page.url()}`);

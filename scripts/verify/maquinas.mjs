@@ -49,7 +49,7 @@ ok(maquinaPorSlug('no-existe') === null, 'un slug desconocido devuelve null');
 for (const m of MAQUINAS) {
   ok(typeof m.marca === 'string' && m.marca.length > 0, `${m.slug}: tiene marca`);
   ok(['bed-slinger', 'corexy-cerrada', 'corexy-abierta', 'resina'].includes(m.familia), `${m.slug}: familia válida (${m.familia})`);
-  ok(m.vol.every((n) => n > 0), `${m.slug}: volumen positivo`);
+  if (m.vol !== null) ok(m.vol.every((n) => n > 0), `${m.slug}: volumen positivo`);
   ok(m.fuentes.length > 0, `${m.slug}: tiene al menos una fuente`);
   if (m.velMax !== null) ok(m.velMax > 0, `${m.slug}: velocidad positiva`);
   if (m.tNozMax !== null) ok(m.tNozMax > 100, `${m.slug}: boquilla máxima sensata`);
@@ -93,6 +93,12 @@ ok(estadoFilamento(mk4s, abs).estado === 'necesita-camara', 'ABS en la MK4S abie
 ok(estadoFilamento(p1s, abs).estado === 'ok', 'ABS en la P1S cerrada es viable');
 ok(estadoFilamento(mars, pla).estado === 'resina', 'la Mars no evalúa filamento');
 ok(estadoFilamento(ender, null).estado === 'ok', 'sin filamento elegido no hay aviso');
+for (const filamento of FILAMENTOS.filter(f => f.abierta && f.noz[1] <= ke.tNozMax)) {
+  for (const cerrada of [null, false, true]) {
+    ok(estadoFilamento({ ...ke, cerrada }, filamento).estado === 'ok',
+      `${filamento.nombre}: no exige cámara con cerramiento ${cerrada}`);
+  }
+}
 
 // 5 · el rizado y la velocidad salen de la ficha
 ok(rizaria(ender, abs) === false, 'ABS en la Ender (cerramiento sin verificar) no dibuja el rizado');
@@ -144,7 +150,7 @@ for (const [a, b, motivo] of [
 
 // Los rasgos declarados tienen que ser rasgos que la ilustración sabe dibujar:
 // una clave inventada sería un rasgo que no se pinta y que la ficha promete.
-const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral', 'filtroCarbon', 'ifsBobinas', 'zTriple', 'pantallaTactil'];
+const RASGOS_DIBUJABLES = ['ventiladoresDobles', 'carrilLinealX', 'bobinaLateral', 'filtroCarbon', 'ifsBobinas', 'zTriple'];
 for (const m of MAQUINAS) {
   for (const clave of Object.keys(m.rasgos)) {
     ok(RASGOS_DIBUJABLES.includes(clave), `${m.slug}: el rasgo «${clave}» es dibujable`);
