@@ -9,7 +9,8 @@ Actualizado: 2026-10-19. Tablero vivo: se actualiza al cerrar cada tarjeta.
 - **Cifras medidas** (`scripts/verify/investigacion/cifras-revision.mjs`): 39 rutas, 29 guías, **84.471 palabras visibles**, 178 enlaces de fuente, **503 acciones**, 0 guías por debajo de 800 palabras, 0 guías con 0 acciones, 22 de 29 por encima de 1.500, 0 unidades de anuncio, 0 iframes. Informe: [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md).
 - **Dos casillas del DoD estaban marcadas como hechas y no lo estaban:** `/taller/` tiene **249 palabras**, no 741, y `/acerca-de/` tiene 323, no ~600. Corregido en [`plan-adsense.md`](plan-adsense.md) §6.
 - **Lo único que queda para poder solicitar la revisión** es el **mensaje europeo de la CMP**, publicado en la cuenta de AdSense: es una acción del titular, y el sitio ya está listo. Prueba: `https://wiiki-3d.com/?fc=alwaysshow&fctype=gdpr`.
-- **Laya deja de ser un adorno:** las decisiones que/ha tomado están en [`laya-decisiones.md`](laya-decisiones.md), con su probabilidad y su confianza, y con la regla escrita que manda cuando Laya se equivoca. Lo medido: la pregunta «¿puede publicarse ya?» contesta «no» al contenido (que no espera a nadie) y «sí» a los anuncios (que sí esperan), y la confianza no salva el error: el ítem con `conf` 0,624 estaba equivocado.
+- **Laya deja de ser un adorno:** las decisiones que/ha tomado están en [`laya-decisiones.md`](laya-decisiones.md), con su probabilidad y su confianza, y con la regla escrita que manda cuando Laya se equivoca. Lo medido en la segunda pasada: **siete de siete respuestas descartadas**, y la de más confianza de la tabla (0,819) era falsa. La regla del plan 60 §3.2 se corrigió por eso: **la confianza decide si se lee, no si se decide**.
+- **C1 · Lote 1, guía 1 de 3: `secar-filamento` publicada.** 4.910 palabras visibles, 6 fuentes, 26 acciones. Revisor **APROBADO** en la segunda vuelta; la primera fue RECHAZADA con 2 bloqueantes (una cita entrecomillada que no existía en ninguna fuente, y una afirmación falsa —«la tabla de Prusa no cubre el PC»— que **nació en el material cocinado** y volvió por la misma puerta). 30 guías y 89.477 palabras visibles en el sitio. La matriz es calculada: material × dispositivo × símbolo devuelven una celda exacta, y el 55 °C que **no** es una temperatura de secado se explica en vez de publicarse.
 
 ### Estado contrastado el 17 de octubre
 
@@ -242,8 +243,8 @@ tiene su ciclo en el plan 60:
 
 | Qué | Estado | Ciclo |
 |---|---|---|
-| Escribir 2–3 guías nuevas con el pipeline de 4 agentes | 9 subclusters y 40 temas planificados en el plan 50-guias; el siguiente lote sale de las consultas de GSC cuando las haya | **C1** |
-| Llevar las 4 guías cortas por encima de 1.500 palabras (`temperatura-hotend` 1.079, `material` 1.306, `altura-capa` 1.368, `separaciones-entre-capas` 1.456) | Material cocinado de sobra: 176 ficheros en `wiki/raw/` y 151.737 palabras en `wiki/cooked/` | **C2** |
+| Escribir 2–3 guías nuevas con el pipeline de 4 agentes | **1 de 3 hecha**: `secar-filamento` (4.910 palabras, 6 fuentes, 26 acciones, revisor APROBADO). Siguen `tpu-flexible` y `z-seam`, que son las dos que quedan del lote 1. Hay 9 subclusters y 40 temas planificados en el plan 50-guias; a partir del tercer lote los temas los eligen las consultas de GSC | **C1** |
+| Llevar las 4 guías cortas por encima de 1.500 palabras (`temperatura-hotend` 1.079, `material` 1.306, `altura-capa` 1.368, `separaciones-entre-capas` 1.456) | Material cocinado de sobra: 176 ficheros en `wiki/raw/` y 151.737 palabras en `wiki/cooked/`, de las que se publican 89.477 | **C2** |
 | Imágenes: portada en cada guía, 6–8 con diagrama, y fotos propias | Hoy hay **3 imágenes en todo el sitio**, las tres del piloto de `torre-temperatura` | **C3** |
 
 ---

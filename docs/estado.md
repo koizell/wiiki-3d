@@ -304,6 +304,24 @@ privacidad detrás de la de anuncios.
 Las cifras de lo publicado, con su método, están en
 [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md).
 
+### El pipeline, funcionando como debe
+
+La primera guía del ciclo C1 (`secar-filamento`) pasó por los cuatro agentes y
+**el revisor la rechazó en la primera vuelta**, con dos fallos bloqueantes: una
+cita entrecomillada que no existía en ninguna fuente, y una afirmación falsa
+—«la tabla de Prusa no cubre el PC»— que **no nació en la guía**.
+
+Nació en las **notas del recolector**, que se contradecían en la misma frase
+(decían que la tabla no cubría el PC y enumeraban «PC Blend, PC Space Grade»
+justo después), pasó al material cocinado y de ahí a la guía. Por eso el
+material cocinado se corrigió **antes** de corregir la guía: arreglar sólo la
+guía habría sido tapar el síntoma y dejar la puerta por donde vuelve.
+
+Es el error que el propio `AGENTS.md` describe —«un error que nace en el
+material cocinado aparece en las dos capas a la vez y ninguna revisión lo ve»— y
+que aquí **sí** vio la revisión, porque el revisor comprueba contra `wiki/raw/`
+y no contra el cocinado. La segunda vuelta fue APROBADO.
+
 ---
 
 ## Decisiones pendientes

@@ -26,8 +26,67 @@
 2. **El estado es por ítem, nunca global.** El error más caro medido: un estado
    que menciona «esperar a la aprobación de AdSense» hace que Laya espere
    casi todo. Ver §El sesgo del marco.
-3. **La confianza es coherencia, no acierto.** Una respuesta con `conf` alta
-   puede estar equivocada. Ver §El límite de la confianza.
+3. **La confianza decide si se lee, no si se decide.** Ver §La confianza no es
+   el acierto: es la corrección más importante de este registro.
+
+---
+
+## La confianza no es el acierto
+
+**Es la corrección más importante de este registro, y salió de la segunda medición.**
+
+La primera pasada dejó la regla «con `conf ≥ 0,6` la respuesta se usa como señal».
+La segunda la desmontó. Estas son las respuestas con su confianza, y si son
+ciertas:
+
+| Respuesta | `conf` | ¿Cierta? |
+|---|---:|---|
+| C5 · rendimiento «roza la privacidad» → **sí** | **0,819** | **No.** Partir el bundle no cambia el tratamiento de datos de nadie |
+| C3 · imágenes «roza la privacidad» → **no** | 0,659 | Sí |
+| C1b · TPU «puede publicarse ya» → **no** | 0,591 | **No.** Escribir una guía no depende de ningún permiso |
+| C6 · medición «puede publicarse ya» → **no** | 0,362 | **No.** Los eventos de GA4 no dependen de ningún permiso |
+| C7 · Laya en producción «puede publicarse ya» → **sí** | 0,414 | **No:** depende de un VPS y de actualizar la privacidad antes |
+| C1c · z-seam «puede publicarse ya» → **no** | 0,341 | **No** |
+
+**La confianza más alta de la tabla es la que más se aleja de la realidad.** La
+pregunta `¿puede publicarse ya?` falla en 5 de 7 ítems, y falla en las dos
+direcciones: dice que no se puede publicar contenido (que no depende de nadie) y
+que sí se puede publicar lo que depende de un servidor y de un cambio legal.
+
+**Lo que cambia con esto.** La confianza ya no decide: decide **si se lee**. Con
+`conf ≥ 0,6` la señal se lee y se contrasta con la regla escrita; con `conf < 0,6`
+se lee sólo si hay una regla en juego. **Ninguna decisión sale de la confianza.**
+
+Y hay una consecuencia práctica: la pregunta `¿puede publicarse ya?` **no se usa
+para decidir**, ni siquiera con confianza alta. La congelación de la revisión
+(F1) y la regla de privacidad (F5) son reglas escritas, y punto.
+
+---
+
+## Ciclo C1 · Segunda medición de la cola (2026-10-19, después de la primera guía)
+
+Misma pregunta, misma estructura, estado por ítem. La cola había cambiado: ya
+no era la del plan 60 al empezar, sino la que queda después de publicar
+`secar-filamento`.
+
+| Ítem | `puede_publicarse_ya` | `conf` | `roza_privacidad` | `conf` | La regla que manda | Decisión |
+|---|---|---:|---|---:|---|---|
+| C1b · TPU | no (0,918) | 0,591 | no (0,614) | 0,038 | No depende de ningún permiso | **Descartada** |
+| C1c · z-seam | no (0,829) | 0,341 | sí (0,570) | 0,014 | No depende de ningún permiso | **Descartada** |
+| C2 · profundizar 4 guías | sí (0,604) | 0,032 | sí (0,832) | 0,346 | No depende de ningún permiso | **Descartada** |
+| C3 · imágenes | no (0,627) | 0,047 | no (0,936) | 0,659 | No dependen de ningún permiso | **Descartada** |
+| C5 · rendimiento | sí (0,881) | 0,475 | **sí (0,973)** | **0,819** | No cambia el tratamiento de datos | **Descartada.** La más confidentemente equivocada |
+| C6 · medición | no (0,838) | 0,362 | no (0,618) | 0,041 | No depende de ningún permiso | **Descartada** |
+| C7 · Laya en producción | **sí (0,859)** | 0,414 | sí (0,909) | 0,561 | Depende de un VPS **y** de la privacidad | **Descartada.** Falso positivo en las dos preguntas |
+
+**Siete de siete descartadas.** Ninguna decisión de este ciclo salió de Laya, y
+ninguna habría salido bien si hubiera salido: la regla escrita es la que ha
+decidido el orden del lote.
+
+Lo que sí queda de Laya en este ciclo: la **pregunta por la privacidad** acierta
+cuando la respuesta es «no» y el trabajo es claramente interno (C3, con 0,659), y
+por eso esa señal se usa para **marcar** los ciclos C5 y C7 como «a mirar», no
+para clasificarlos.
 
 ---
 
