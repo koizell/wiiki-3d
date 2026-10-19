@@ -210,7 +210,7 @@ for (const mutacion of MUTACIONES) {
     let salida = '';
     let codigo = 0;
     try {
-      salida = execFileSync(process.execPath, [script], { env: { ...process.env, ...entorno }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+      salida = execFileSync(process.execPath, ['--experimental-strip-types', script], { env: { ...process.env, ...entorno }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     } catch (error) {
       codigo = error.status ?? 1;
       salida = `${error.stdout ?? ''}${error.stderr ?? ''}`;
@@ -234,7 +234,7 @@ for (const mutacion of MUTACIONES) {
   try {
     const distCopia = join(temporal, 'dist');
     cpSync(distReal, distCopia, { recursive: true });
-    execFileSync(process.execPath, [script], { env: { ...process.env, DIST_DIR: distCopia }, encoding: 'utf8' });
+    execFileSync(process.execPath, ['--experimental-strip-types', script], { env: { ...process.env, DIST_DIR: distCopia }, encoding: 'utf8' });
     pruebas++;
     console.log('OK sin romper nada, el script pasa');
   } finally {

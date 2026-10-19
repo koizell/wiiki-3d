@@ -273,6 +273,39 @@ ya pasó revisión. Queda anotado para que lo haga el pipeline.
 
 ---
 
+## La revisión de AdSense: lo que se rompió por no mirarlo
+
+**`/wiki/stringing/` devolvía 404 en producción** hasta el 19 de octubre de 2026.
+
+La guía `stringing` se escribió, se revisó y se commitó (`ff9944d`), pero **su
+línea de registro en `src/lib/guias.ts` no entró en ese commit**. Sin esa línea
+la guía no se exporta: no hay página, no hay enlace, y el sitemap no la
+menciona. El sitemap de producción tenía 36 URLs en vez de 37.
+
+Lo interesante es por qué **ninguna de las 17 comprobaciones que había lo
+pilló**: todas miraban lo que estaba publicado, y lo que estaba publicado era
+consistente consigo mismo. Una guía que no se publica no rompe nada de lo que
+las demás comprobaciones miran. Faltaba una comprobación que mirara **el
+registro contra el disco**, y contra lo exportado.
+
+Esa comprobación es la primera de `npm run verify:revision`, que además
+convierte la lista de congelación del plan 60 §2.1 en código: falla si aparece
+una unidad de anuncio, un `<iframe>`, una guía escrita sin publicar, una
+página indexable fuera del sitemap, una página con `noindex` dentro, si la
+política de privacidad deja de decir la verdad del día, o si la cadena de
+AdSense se rompe (ads.txt, meta, etiqueta, Consent Mode v2 y su orden).
+
+Y hay una segunda cosa que sólo se ve al romper el sitio a propósito, que es
+como se ha comprobado cada una de las 16 comprobaciones
+(`npm run verify:revision-selftest`, 17/17): **el script paraba en el primer
+error**, y eso escondía la comprobación más importante de la política de
+privacidad detrás de la de anuncios.
+
+Las cifras de lo publicado, con su método, están en
+[`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md).
+
+---
+
 ## Decisiones pendientes
 
 Sólo las abiertas. Las resueltas están en el documento de historias, marcadas
@@ -416,6 +449,8 @@ npm run verify:seo        # HTML estático, canonical y lectura sin JavaScript. 
 npm run verify:taller     # los cinco estados de la calculadora. 180
 npm run verify:historial  # el historial y sus tres vistas. 102
 npm run verify:overlay    # el overlay del visor
+npm run verify:revision   # la revisión de AdSense: la congelación, en código. 16 de 16
+npm run verify:revision-selftest  # cada comprobación de la anterior, rota a propósito. 17 de 17
 ```
 
 Los nueve salen con código 1 si algo falla. Los de navegador levantan su propio
