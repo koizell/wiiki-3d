@@ -13,6 +13,13 @@
 > corrige sobre la misma ficha y se espera la fecha del Policy center—. Propiedad
 > verificada, pagos completos, `ads.txt` correcto y CMP de Google elegida; el detalle
 > técnico está en `docs/medicion-setup.md`.
+>
+> **Actualización · 2026-10-19.** La solicitud de revisión está abierta. El sitio
+> tiene 39 rutas y 29 guías; el plan 60 §2.1 congela lo que no se puede tocar
+> mientras la revisión está en marcha, y esa congelación está **en código**
+> (`npm run verify:revision`). El estado medido, con las cifras y sus
+> correcciones, está en [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md)
+> y en el DoD de §6, que se ha revisado contra la realidad.
 
 ---
 
@@ -412,28 +419,36 @@ Sin estas cinco respuestas, P1 no puede empezar:
 
 ## 6 · Definition of Done
 
+> **Revisado el 2026-10-19** contra el estado real medido, no de memoria. Las
+> cifras salen de `scripts/verify/investigacion/cifras-revision.mjs` y del
+> informe [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md).
+> **Dos casillas de esta lista estaban marcadas como hechas y no lo estaban**:
+> `/taller/` no tiene 741 palabras sino **249**, y las 18 rutas del sitemap son
+> ahora 39. Lo que se corrige aquí, se corrige marcado.
+
 **Para poder solicitar AdSense:**
 
-- [x] `main` desplegado y las rutas del sitemap responden 200 con contenido sin JavaScript (18/18 el 2026-10-16).
+- [x] `main` desplegado y las rutas del sitemap responden 200 con contenido sin JavaScript (**39 rutas**, 2026-10-19).
 - [x] `robots.txt` con la directiva `Sitemap:` sin comentar, y `sitemap.xml` con `lastmod`.
-- [x] Ninguna guía exporta cero acciones.
+- [x] Ninguna guía exporta cero acciones (**503 acciones en 29 guías**).
 - [x] Las guías muestran autor y fecha, y `/autor/` existe.
-- [x] La home tiene contenido estático real (≥600 palabras) y enlaza las guías.
-- [x] `/taller/` es una página de contenido, no un hueco (~740 palabras).
-- [x] Política de privacidad con las cláusulas de terceros, cookies y RGPD.
+- [x] La home tiene contenido estático real (**1.755 palabras**) y enlaza las guías.
+- [ ] `/taller/` es una página de contenido, no un hueco: **tiene 249 palabras, no las ~740 que decía esta lista**. Es la página más corta del sitio y el activo que más puede conseguir enlaces. Pendiente del ciclo C2.
+- [x] Política de privacidad con las cláusulas de terceros, cookies y RGPD (859 palabras; la divulgación literal de cookies de terceros está en una misma frase).
 - [x] `ads.txt` en la raíz, propiedad verificada, datos de pago completos.
-- [x] Consent Mode v2 (`denied` por defecto) con los cuatro parámetros.
-- [ ] CMP certificada con TCF v2.3: la CMP de Google está elegida y el sitio preparado; falta publicar el mensaje europeo.
-- [x] `npm run lint`, `npm run build` y los `verify:*` en verde (2026-10-16: los doce de UI y contenido, sin `maquinas` —otra sesión— ni `fuentes` —crawl largo—).
+- [x] Consent Mode v2 (`denied` por defecto) con los cuatro parámetros, declarado **antes** que la etiqueta.
+- [ ] CMP certificada con TCF v2.3: la CMP de Google está elegida y el sitio preparado; falta publicar el mensaje europeo. **Es lo único que queda, y es una acción del titular de la cuenta.**
+- [x] `npm run lint`, `npm run build` y los `verify:*` en verde (2026-10-19: 17 comprobaciones, **las 17 en verde**, más `verify:revision`).
 - [x] Mapa de anuncios escrito antes de colocar el primer anuncio.
+- [x] **La congelación está en código**: `npm run verify:revision` falla si aparece una unidad de anuncio, un iframe, una guía escrita sin publicar, una página fuera del sitemap, si la privacidad deja de decir la verdad o si la cadena de AdSense se rompe. Cada comprobación se ha visto fallar (`verify:revision-selftest`, 17/17).
 
 **Para que «atraiga»:**
 
-- [x] Search Console verificada y sitemap enviado (la inspección manual de URLs se repite con cada tanda nueva).
-- [ ] Analítica sin cookies midiendo el 100 % del tráfico.
-- [ ] 4 guías por encima de 1.500 palabras, con tabla de parámetros y ≥6 fuentes.
-- [ ] Al menos 10 imágenes propias (fotos de fallos) además de los SVG.
-- [ ] Eventos de retención midiendo profundidad, guía terminada y uso del taller.
+- [x] Search Console verificada (por CNAME) y sitemap enviado (la inspección manual de URLs se repite con cada tanda nueva).
+- [ ] Analítica sin cookies midiendo el 100 % del tráfico. **Pendiente de decisión**: GA4 con Consent Mode v2 en `denied` ya está montado y mide en modo limitado; añadir una segunda etiqueta sin cookies se decide en el ciclo C6, no antes.
+- [ ] 4 guías por encima de 1.500 palabras, con tabla de parámetros y ≥6 fuentes. **22 de 29 la superan**; las cuatro que faltan son `temperatura-hotend` (1.079), `material` (1.306), `altura-capa` (1.368) y `separaciones-entre-capas` (1.456). Es el objetivo del ciclo C2.
+- [ ] Al menos 10 imágenes propias (fotos de fallos) además de los SVG. **Hoy hay 3 imágenes en todo el sitio**, las tres del piloto de `torre-temperatura`.
+- [ ] Eventos de retención midiendo profundidad, guía terminada y uso del taller. Ciclo C6.
 
 ---
 

@@ -31,6 +31,7 @@ import { temperaturaHotend } from '../content/guias/temperatura-hotend.ts';
 import { torreTemperatura } from '../content/guias/torre-temperatura.ts';
 import { voladizosSoportes } from '../content/guias/voladizos-y-soportes.ts';
 import { warping } from '../content/guias/warping.ts';
+import { stringing } from '../content/guias/stringing.ts';
 import { ventiladorWarping } from '../content/guias/ventilador-warping.ts';
 import { piezasGrandesGrietas } from '../content/guias/piezas-grandes-grietas.ts';
 import { esquinasPetg } from '../content/guias/esquinas-petg.ts';
@@ -76,7 +77,7 @@ import { materialUnico } from './materiales.ts';
  * El coste es que hay que añadir una línea al escribir una guía. Se acepta: es
  * una línea, y a cambio el orden dice algo.
  */
-export const GUIAS: Guia[] = [alturaCapa, slicer, warping, ventiladorWarping, piezasGrandesGrietas, esquinasPetg, despegueAMitad, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, torreTemperatura, adhesion, material, voladizosSoportes, flowRate, maxVolumetricSpeed, brimYSkirt, elephantFoot, placas, mallaDeCama, agujerosOvalados, toleranciasYEncaje, piezasCurvadasZ, orientacionResistencia, rellenoPatrones, paredesYPerimetros];const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
+export const GUIAS: Guia[] = [alturaCapa, slicer, warping, stringing, ventiladorWarping, piezasGrandesGrietas, esquinasPetg, despegueAMitad, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, torreTemperatura, adhesion, material, voladizosSoportes, flowRate, maxVolumetricSpeed, brimYSkirt, elephantFoot, placas, mallaDeCama, agujerosOvalados, toleranciasYEncaje, piezasCurvadasZ, orientacionResistencia, rellenoPatrones, paredesYPerimetros];const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
 
 /** Una guía por su slug, o `null`. */
 export function guiaPorSlug(slug: string | undefined): Guia | null {

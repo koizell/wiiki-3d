@@ -39,6 +39,13 @@ jobs:
           VITE_JEV_PROXY_URL: ${{ vars.JEV_PROXY_URL || secrets.JEV_PROXY_URL || 'https://wiiki-3d-jev-proxy.wiiki3d-site.workers.dev' }}
           VITE_JEV_USE_MOCK: ${{ vars.JEV_USE_MOCK || secrets.JEV_USE_MOCK || 'true' }}
 
+      # La revisión de AdSense está abierta: esto no es un capricho, es la
+      # razón por la que `/wiki/stringing/` llegó a producción con un 404. Una
+      # guía escrita y no registrada no rompe el build —compila igual— pero
+      # desaparece del sitio. Tarda un segundo y no necesita navegador.
+      - name: Blindaje de la revisión
+        run: npm run verify:revision
+
       - name: Configurar Pages
         uses: actions/configure-pages@v5
 

@@ -1,6 +1,15 @@
 # Kanban de wiiki-3d
 
-Actualizado: 2026-10-17. Tablero vivo: se actualiza al cerrar cada tarjeta.
+Actualizado: 2026-10-19. Tablero vivo: se actualiza al cerrar cada tarjeta.
+
+### Estado contrastado el 19 de octubre
+
+- **La solicitud de revisión de AdSense está abierta.** El plan 60 (§2.1) congela ocho cosas que no se tocan hasta la aprobación, y **la congelación está en código**: `npm run verify:revision` falla si aparece una unidad de anuncio, un iframe, una guía escrita sin publicar, una página fuera del sitemap, si la privacidad deja de decir la verdad del día o si la cadena de AdSense se rompe. Las 16 comprobaciones en verde y **cada una se ha visto fallar** (`verify:revision-selftest`, 17/17).
+- **Defecto encontrado y corregido:** `/wiki/stringing/` devolvía **404 en producción**. La guía se escribió y se commitó, pero su línea de registro en `src/lib/guias.ts` no entró en el commit, así que no se exportaba: no había página, no había enlace y el sitemap tenía 36 URLs en vez de 37. Ninguna de las 17 comprobaciones que había lo detectó, y es que todas miraban lo publicado, que era consistente consigo mismo. Corregido en `1ff10c2`; la comprobación que faltaba —el registro contra el disco— es ahora la primera de `verify:revision`.
+- **Cifras medidas** (`scripts/verify/investigacion/cifras-revision.mjs`): 39 rutas, 29 guías, **84.471 palabras visibles**, 178 enlaces de fuente, **503 acciones**, 0 guías por debajo de 800 palabras, 0 guías con 0 acciones, 22 de 29 por encima de 1.500, 0 unidades de anuncio, 0 iframes. Informe: [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md).
+- **Dos casillas del DoD estaban marcadas como hechas y no lo estaban:** `/taller/` tiene **249 palabras**, no 741, y `/acerca-de/` tiene 323, no ~600. Corregido en [`plan-adsense.md`](plan-adsense.md) §6.
+- **Lo único que queda para poder solicitar la revisión** es el **mensaje europeo de la CMP**, publicado en la cuenta de AdSense: es una acción del titular, y el sitio ya está listo. Prueba: `https://wiiki-3d.com/?fc=alwaysshow&fctype=gdpr`.
+- **Laya deja de ser un adorno:** las decisiones que/ha tomado están en [`laya-decisiones.md`](laya-decisiones.md), con su probabilidad y su confianza, y con la regla escrita que manda cuando Laya se equivoca. Lo medido: la pregunta «¿puede publicarse ya?» contesta «no» al contenido (que no espera a nadie) y «sí» a los anuncios (que sí esperan), y la confianza no salva el error: el ítem con `conf` 0,624 estaba equivocado.
 
 ### Estado contrastado el 17 de octubre
 
@@ -173,6 +182,39 @@ sin el comando ejecutado y su salida en el mensaje de commit.
 
 ---
 
+## Sprint 6 — La revisión no se rompe por descuido ✅
+
+*Objetivo: que la solicitud de AdSense, que ya está abierta, no se caiga por un
+cambio tonto. La congelación del plan 60 §2.1 son ocho puntos que dependían de
+que nadie se acordara; ahora son código.*
+
+| # | Tarjeta | Estado | Prueba que la cierra |
+|---|---|---|---|
+| 6.1 | La congelación es ejecutable | ✅ | `npm run verify:revision` → **16/16**, código 0. Falla si aparece una unidad de anuncio, un `<iframe>`, una guía escrita sin publicar, una página indexable fuera del sitemap, una página con `noindex` dentro, si la privacidad deja de decir la verdad del día o si la cadena de AdSense se rompe (ads.txt, meta, etiqueta, Consent Mode v2 y su orden). |
+| 6.2 | Cada comprobación se ve fallar | ✅ | `npm run verify:revision-selftest` → **17/17 mutaciones detectadas**. Cada comprobación se rompe a propósito sobre una copia de `dist/` en `/tmp` y se exige que el script se dé cuenta. |
+| 6.3 | Ninguna guía escrita queda sin publicar | ✅ | La comprobación compara el registro (`src/lib/guias.ts`) con el disco (`src/content/guias/`) y con lo exportado. **Pilló el 404 de `stringing`**, que ninguna de las 17 comprobaciones anteriores vio. |
+| 6.4 | El sitio publicado responde | ✅ | Sonda HTTP del 2026-10-19: **28 de 28 rutas en 200** (antes del despliegue de este ciclo; la 29ª es `stringing`). Repetida tras el despliegue. |
+| 6.5 | El informe de la revisión, con cifras medidas | ✅ | [`revision-adsense-2026-10-19.md`](revision-adsense-2026-10-19.md), con el método de [`cifras-revision.mjs`](cifras-revision.mjs) para que las cifras se puedan repetir. |
+| 6.6 | El DoD del plan de AdSense, corregido contra la realidad | ✅ | [`plan-adsense.md`](plan-adsense.md) §6 revisado: dos casillas que estaban marcadas como hechas y no lo estaban (`/taller/` con 249 palabras, no 741; `/acerca-de/` con 323, no ~600). |
+| 6.7 | Las decisiones de Laya quedan registradas | ✅ | [`laya-decisiones.md`](laya-decisiones.md): la re-clasificación de la cola con `p`, `conf` y la regla que manda, y lo que se descartó. |
+| 6.8 | El mensaje europeo de la CMP | ⏸ **Pendiente del titular de la cuenta** | Publicar en AdSense → «Privacidad y mensajes», con *advanced mode*. El sitio ya está listo: etiqueta de AdSense + Consent Mode v2 en `denied`. Prueba: `?fc=alwaysshow&fctype=gdpr` en incógnito. |
+
+**Dos cosas que sólo aparecieron al romper el sitio a propósito**, y que están
+escritas porque son el tipo de fallo que no se ve en una captura:
+
+1. **El script paraba en el primer error.** Al meter una unidad de anuncio, se
+   paraba en «ninguna unidad de anuncio» y nunca llegaba a «la privacidad
+   coincide con lo que el sitio muestra», que es justo la comprobación que
+   avisa de que la política y el sitio han divergido. Ahora se ejecutan todas y
+   se informa de todas.
+2. **La divulgación de cookies de terceros se comprobaba por vecindad**, y eso
+   daba por buena una página que sólo decía «los datos no se venden a
+   terceros» al lado de un párrafo que hablaba de cookies de analítica. Ahora
+   se exige que la divulgación esté **en una misma frase**, con «terceros» antes
+   del verbo y el verbo antes de «cookies».
+
+---
+
 ## Backlog de contenido
 
 El contenido **no se escribe a mano**: lo produce el pipeline con fuentes reales. La
@@ -193,13 +235,24 @@ Los artículos con `campo` reservado son los que hacen que la barra «Tu archivo
 enlaces. Sin ellos, el artículo se lee pero no conecta: por eso van primero los que
 tienen campo.
 
+**Dónde está el backlog hoy (2026-10-19).** Esta tabla era el backlog de los
+ocho primeros artículos y ya no lo es: hay **29 guías** publicadas, todas con su
+revisión en `wiki/reviews/`. Lo que queda por delante son tres cosas, y cada una
+tiene su ciclo en el plan 60:
+
+| Qué | Estado | Ciclo |
+|---|---|---|
+| Escribir 2–3 guías nuevas con el pipeline de 4 agentes | 9 subclusters y 40 temas planificados en el plan 50-guias; el siguiente lote sale de las consultas de GSC cuando las haya | **C1** |
+| Llevar las 4 guías cortas por encima de 1.500 palabras (`temperatura-hotend` 1.079, `material` 1.306, `altura-capa` 1.368, `separaciones-entre-capas` 1.456) | Material cocinado de sobra: 176 ficheros en `wiki/raw/` y 151.737 palabras en `wiki/cooked/` | **C2** |
+| Imágenes: portada en cada guía, 6–8 con diagrama, y fotos propias | Hoy hay **3 imágenes en todo el sitio**, las tres del piloto de `torre-temperatura` | **C3** |
+
 ---
 
 ## Deuda conocida
 
 | Deuda | Por qué no se toca |
 |---|---|
-| `verify:layout` falla a 640×360 | Arreglarlo toca CSS protegido o el script de verificación. Bajar el umbral para que salga verde sería mentir. |
-| El renderizador no anida énfasis (`*x **y** z*` sale todo en cursiva) | Tocar el parser a mitad de la ingesta de contenido es el peor momento. Comprobado que **ningún artículo actual** lo sufre. |
+| ~~`verify:layout` falla a 640×360~~ | **Cerrada el 2026-10-16** (tarjeta 4.3) y comprobada hoy: las 7 comprobaciones pasan. Se queda aquí el rastro, no la deuda. |
+| El renderizador no anida énfasis (`*x **y** z*` sale todo en cursiva) | Tocar el parser a mitad de la ingesta de contenido es el peor momento. **Comprobado el 2026-10-19: ninguna de las 40 páginas exportadas tiene énfasis anidado**, así que no lo sufre ningún contenido publicado. |
 | `wiki/raw/` se versiona y las condiciones de uso de los dominios no están revisadas | `wiki/policy/sources.json` lo declara. Es una decisión del propietario, no del agente. |
 | `termsReviewed: false` y `rightsEvidenceUrl: null` | Igual: el registro lo dice en vez de fingir que está resuelto. |
