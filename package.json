@@ -26,7 +26,9 @@
     "verify:composicion": "node scripts/verify/composicion.mjs",
     "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs",
     "verify:subida": "node scripts/verify/subida-ui.mjs",
-    "verify:ui": "node scripts/verify/ui.mjs"
+    "verify:ui": "node scripts/verify/ui.mjs",
+    "verify:revision": "node scripts/verify/revision.mjs",
+    "verify:revision-selftest": "node scripts/verify/revision-selftest.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",

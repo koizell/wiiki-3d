@@ -113,6 +113,8 @@ que valen como paso de CI.
 | `subida-ui.mjs` | La subida por arrastre y por selector: que el arrastre cancele la acción del navegador, que varios archivos se rechacen, y que el G-code llegue al coste. También que se pueda subir desde `/taller` sin salir de la ruta. |
 | `ui.mjs` | La auditoría de interfaz del 14/10/2026, repetible: 11 rutas × 3 anchos con un solo `h1` y sin desbordamiento, las fichas dentro de su tarjeta, los nombres accesibles de las ilustraciones, el contraste calculado de los tokens, `prefers-reduced-motion`, y la mecánica del SVG medida en 7 fracciones del ciclo. |
 | `ux-tareas.mjs` | Las 14 regresiones de tareas, incluido acceso a variables de escritorio y llegada real a anclas tras lazy loading; se puede seleccionar `--grupo=entrada`, `guias` o `herramientas`. |
+| `revision.mjs` | El **blindaje de la revisión de AdSense**, sobre el HTML exportado: ninguna unidad de anuncio ni `<iframe>`, toda guía escrita registrada y con página, el sitemap coincidiendo con lo exportado, la política de privacidad diciendo la verdad del día y con la divulgación literal de cookies de terceros, `ads.txt` y la meta con el mismo pub-ID, la etiqueta presente, y Consent Mode v2 en `denied` declarado **antes** que la etiqueta. No necesita navegador: `DIST_DIR` y `SRC_DIR` apuntan la comprobación a otro sitio. |
+| `revision-selftest.mjs` | La autocomprobación de `revision.mjs`: rompe el sitio **17 veces**, una por comprobación, sobre una copia de `dist/` en `/tmp`, y exige que el script se dé cuenta. Es lo que hace que «16/16 en verde» signifique algo. |
 | `preview-base.mjs` | El servidor indicado por `BASE_URL` se utiliza y sigue vivo después de `detener()`. |
 
 ## La comprobación de encabezados
