@@ -1,8 +1,31 @@
 # Diseño: identidad visual, UI/UX y movimiento de wiiki-3d
 
 Fecha: 2026-10-08
-Estado: propuesto, pendiente de revisión
+Estado: propuesto, pendiente de revisión — **aplicado por partes**
 Origen: sesión de brainstorming con el autor del proyecto
+
+> **Estado de aplicación (2026-10-19).** La spec se está aplicando **por
+> partes**, ruta a ruta, y no de una vez: tocar las cuatro rutas a la vez rompe
+> media suite de comprobaciones, y el trabajo que se rompe no se ve.
+>
+> | Parte | Estado |
+> |---|---|
+> | §3 · Tipografía (IBM Plex Sans + Mono, autoalojadas) | ✅ Hecha |
+> | §3 · Tokens del motivo de plano y del movimiento | ✅ Hechos (`--plano-rejilla`, `--plano-paso`, `--plano-linea`, `--plano-esquina`, `--dur-*`, `--curva-*`) |
+> | §5 · Rejilla, marcas de esquina, numeración `01 ·` | ✅ Hechos **en la portada**, con la frontera respetada: la rejilla no aparece en el cuerpo de lectura de las guías |
+> | §7.1 · El lienzo deja de centrar | ✅ Hecho |
+> | §7.2 · Cabecera de plano por ruta (`01 · INICIO` + estado) | ✅ En la portada; **pendiente** en Taller, Wiki 3D y Proyectos |
+> | §7.3 · Resultados como *readouts* | ⏳ Pendiente |
+> | §7.4 · Ningún bloque suelto | ✅ En la portada; **pendiente** en las otras rutas |
+> | §7.5 · El botón X como control fantasma | ⏳ Pendiente |
+> | §7.6 · El carril del Taller deja de pintar las 8 guías | ⏳ Pendiente |
+> | §7.7 · El visor sin previsualización como panel de estado | ⏳ Pendiente |
+>
+> La portada se rediseñó además contra lo que pidió el responsable: menos texto,
+> más dibujo y sin huecos. Medido: de 5.168 a **2.161 px** de alto en escritorio
+> y de 9.561 a **4.271 px** en móvil, 356 px de espacio muerto a la derecha
+> convertidos en una segunda columna, y la subida repetida tres veces reducida a
+> una.
 
 ---
 
