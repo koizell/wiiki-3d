@@ -94,7 +94,7 @@ function UploadRoute() {
 
   if (!file) {
     return (
-      <div className="inicio">
+      <div className="inicio-ruta">
         {/*
           El orden, y por qué.
 
@@ -108,6 +108,11 @@ function UploadRoute() {
           que pinta `Inicio` y no esta ruta— sino que la subida va como hija de
           `Inicio`, que la pinta justo detrás de la propuesta de valor. El HTML
           exportado no cambia porque allí se pinta `Inicio` sin hijos.
+
+          Y la capa que envuelve todo esto se llama `.inicio-ruta`, no `.inicio`:
+          la que da la forma a la portada la pinta `Inicio`, para que la página
+          exportada y la del navegador tengan las mismas medidas. Antes el
+          contenedor estaba aquí, y el HTML exportado se quedaba sin él.
         */}
         <Inicio>
   <div

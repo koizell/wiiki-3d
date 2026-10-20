@@ -191,6 +191,18 @@
   }
 }
 
+/*
+ * A cuatro columnas desde 1080 px, que es donde la portada se parte en dos. Con
+ * dos, cada paso mide 590 px y el párrafo se va a 78 caracteres por línea: por
+ * encima del rango de 45 a 75 que el proyecto se exige. Con cuatro, cada uno
+ * mide 280 px y la línea ronda los 40.
+ */
+@media (min-width: 1080px) {
+  .inicio-pasos-lista {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .inicio-pasos-lista li {
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--border);
@@ -215,60 +227,27 @@
   font-family: var(--fuente-dato);
 }
 
-/* --- Los nueve problemas ------------------------------------------------- */
+/* --- Preguntas frecuentes ------------------------------------------------ */
 
-.inicio-problemas-lista {
-  list-style: none;
+/*
+ * Dos columnas a partir de 768 px, y la respuesta con su propia medida de
+ * lectura. Sin ese tope, una respuesta en una columna de 590 px llega a 78
+ * caracteres por línea y la pregunta se vuelve una banda de texto.
+ */
+.inicio-preguntas-lista {
   margin: 0;
-  padding: 0;
-  max-width: none;
   display: grid;
-  gap: 0.5rem;
+  gap: 1rem 2.5rem;
 }
 
 @media (min-width: 768px) {
-  .inicio-problemas-lista {
+  .inicio-preguntas-lista {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.inicio-problemas-lista a {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-panel);
-  text-decoration: none;
-  transition: border-color 0.18s;
-}
-
-.inicio-problemas-lista a:hover,
-.inicio-problemas-lista a:focus-visible {
-  border-color: var(--accent);
-}
-
-.inicio-problemas-lista strong {
-  color: var(--text-primary);
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.inicio-problemas-lista span {
-  color: var(--text-secondary);
-  font-size: var(--texto-sm);
-  line-height: 1.5;
-}
-
-/* --- Preguntas frecuentes ------------------------------------------------ */
-
-.inicio-preguntas-lista {
-  margin: 0;
-}
-
-.inicio-pregunta + .inicio-pregunta {
-  margin-top: 1rem;
+.inicio-pregunta {
+  min-width: 0;
 }
 
 .inicio-pregunta dt {
@@ -279,14 +258,8 @@
 
 .inicio-pregunta dd {
   margin: 0;
+  max-width: 62ch;
   color: var(--text-secondary);
-}
-
-/* --- El cierre ----------------------------------------------------------- */
-
-.inicio-cierre {
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
 }
 
 /*
@@ -295,7 +268,8 @@
  * igual porque el día que se añada la segunda nadie se acordará de esta.
  */
 @media (prefers-reduced-motion: reduce) {
-  .inicio-problemas-lista a {
+  .inicio-sintoma,
+  .inicio-modulo {
     transition: none;
   }
 }

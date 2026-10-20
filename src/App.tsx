@@ -170,9 +170,29 @@ function AppShell() {
             <span className="logo-text">wiiki-3d</span>
           </div>
           <nav className="top-nav">
-            <button type="button" className="btn-primary" onClick={openFilePicker}>
-              Subir Archivo
-            </button>
+            {/*
+              El botón de subir se esconde **en la portada y sólo cuando no hay
+              archivo**.
+
+              En el resto de las rutas es la única forma de abrir un archivo, y
+              hace falta. En la portada no: la zona de subida es un recuadro con
+              un botón propio que dice «Sube tu archivo», y tener los dos —
+              «Subir Archivo» arriba y «Sube tu archivo» en medio de la pantalla—
+              es la misma acción dicha dos veces a la vista.
+
+              Y en cuanto hay un archivo cargado, la zona de subida desaparece y
+              el botón vuelve a ser la única vía: por eso la condición mira el
+              archivo, no sólo la ruta.
+
+              El `<input>` que activa el selector **se queda siempre**: los
+              scripts de `scripts/verify/` lo activan con `setInputFiles`, y
+              esconder el botón no puede esconder el input.
+            */}
+            {!(pathname === '/' && !fileType) && (
+              <button type="button" className="btn-primary" onClick={openFilePicker}>
+                Subir Archivo
+              </button>
+            )}
             <input
               ref={fileInputRef}
               id="file-upload"

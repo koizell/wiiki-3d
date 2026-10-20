@@ -141,6 +141,37 @@
   --fuente-dato: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /*
+   * El motivo de plano, y su frontera.
+   *
+   * De la spec de identidad visual (§5): el sitio es un **plano de taller**, y
+   * el plano tiene tres cosas —una rejilla de fondo, marcas de esquina en las
+   * zonas de acción y numeración `01 ·` en las cabeceras de sección.
+   *
+   * **La frontera es la parte importante.** El motivo aparece en el lienzo de
+   * trabajo —la portada, el visor, el taller, el índice de la wiki— y **nunca
+   * en el cuerpo de lectura de las guías**: una rejilla detrás de 800 palabras
+   * es la saturación que este diseño existe para evitar. Es la misma frontera
+   * que separa `wiki/raw/` de `wiki/cooked/`: estructura y contenido no se
+   * mezclan.
+   */
+  --plano-rejilla: #1b2130;
+  --plano-paso: 18px;
+  --plano-linea: var(--border);
+  --plano-esquina: var(--accent-text);
+
+  /*
+   * Las cuatro primitivas de movimiento de la spec (§6). No se animan más
+   * propiedades que `opacity` y `transform`: cualquier otra toca el layout y
+   * mueve lo que hay debajo, que es exactamente lo que no debe pasar.
+   */
+  --dur-control: 140ms;
+  --dur-entrada: 160ms;
+  --dur-resultado: 180ms;
+  --dur-trazo: 220ms;
+  --curva-estandar: ease-out;
+  --curva-plano: cubic-bezier(0.22, 0.7, 0.3, 1);
+
+  /*
    * Escala tipográfica. Ocho tokens para lo que eran 33 valores.
    *
    * **Encabezados.** Un solo clamp para todos los `h1` de contenido —antes
@@ -596,6 +627,104 @@ body {
   color: var(--danger);
 }
 
+/* --- El motivo de plano: la rejilla del lienzo ---------------------------- *
+ *
+ * La rejilla va en la **portada**, y sólo en la portada. Es el lienzo de
+ * trabajo: donde se elige qué hacer. En el cuerpo de lectura de las guías no
+ * aparece, porque una rejilla detrás de 800 palabras es ruido, y el motivo de
+ * plano tiene una frontera que no se cruza.
+ *
+ * **Va en `.inicio` y no en `.canvas-area`** por una razón concreta: el lienzo
+ * es del shell de la aplicación, y el HTML exportado —el que leen un buscador y
+ * un revisor de AdSense— no lo tiene. Puesta en la portada, la rejilla sale
+ * igual en los dos; puesta en el lienzo, sólo se vería en el navegador.
+ */
+.inicio {
+  background-color: var(--bg-dark);
+  background-image:
+    linear-gradient(var(--plano-rejilla) 1px, transparent 1px),
+    linear-gradient(90deg, var(--plano-rejilla) 1px, transparent 1px);
+  background-size: var(--plano-paso) var(--plano-paso);
+  background-position: center top;
+}
+
+/*
+ * Las marcas de esquina de las zonas de acción.
+ *
+ * Cuatro escuadras de acento en las esquinas de la caja de subida: es lo que
+ * dice un plano técnico, en vez de un recuadro punteado. Van en un `::before`
+ * con ocho degradados —dos por esquina— porque un pseudo-elemento sólo puede
+ * llevar un borde y hacen falta dos.
+ */
+.upload-zone {
+  position: relative;
+}
+
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--radio-lg);
+  pointer-events: none;
+  background:
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) top left / 16px 2px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) top left / 2px 16px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) top right / 16px 2px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) top right / 2px 16px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) bottom left / 16px 2px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) bottom left / 2px 16px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) bottom right / 16px 2px no-repeat,
+    linear-gradient(var(--plano-esquina), var(--plano-esquina)) bottom right / 2px 16px no-repeat;
+}
+
+/*
+ * La cabecera de plano de la ruta: `01 · INICIO` a la izquierda, el estado a la
+ * derecha, y el titular debajo.
+ *
+ * El estado no es decorativo: dice qué está pasando en la pantalla. En la
+ * portada es «Sin archivo», porque en la portada no hay ninguno; y en el HTML
+ * exportado, que no tiene analizador, es «Modo lectura».
+ */
+.plano-ruta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 44rem;
+  margin: 0 auto 0.5rem;
+  font-family: var(--fuente-dato);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.plano-ruta-estado {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--plano-linea);
+  border-radius: var(--radio-pill);
+  color: var(--accent-text);
+  letter-spacing: 0.08em;
+}
+
+/* La numeración de las secciones: `02 ·`, `03 ·`… en la misma mono que el
+ * resto de los datos del sitio. */
+.plano-numero {
+  color: var(--accent-text);
+  font-family: var(--fuente-dato);
+  font-size: 0.82em;
+  letter-spacing: 0.08em;
+  margin-right: 0.15rem;
+}
+
+.inicio-visual h2 .plano-numero,
+.inicio-referencia h2 .plano-numero,
+.inicio-pasos h2 .plano-numero,
+.inicio-preguntas h2 .plano-numero {
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
 /* --- El inicio: la subida deja de ser toda la pantalla ----------------------- *
  *
  * La raíz `/` es la pantalla de subida, y lo sigue siendo: los scripts de
@@ -609,13 +738,86 @@ body {
  * ponían uno al lado del otro en vez de apilados, porque `.canvas-area` es
  * `display: flex` en fila. Un solo hijo que es columna lo arregla de raíz.
  */
+/*
+ * La portada es una rejilla de dos columnas en escritorio.
+ *
+ * **Por qué antes sobraba espacio a un lado.** La columna de contenido llevaba
+ * `max-width: 52rem` (832 px) dentro de una zona de 1.220 px, y como
+ * `.canvas-area` en modo columna usa `justify-content: flex-start`, se quedaba
+ * pegada a la izquierda: 356 px de vacío a la derecha, medidos a 1440 px. La
+ * página no estaba centrada, que es lo que hace que el hueco se lea como un
+ * error y no como un margen.
+ *
+ * **La solución es usar el ancho, no esconderlo.** A partir de 1080 px la
+ * portada se parte en dos: a la izquierda lo que se hace —la propuesta y la zona
+ * de subida— y a la derecha lo que se **mira**, que son los nueve problemas con
+ * su dibujo. Abajo, a todo el ancho, lo demás: los destinos, la tabla de
+ * temperaturas, los cuatro pasos y las preguntas.
+ *
+ * El corte está en 1080 px y no en 768 por una razón medible: con la navegación
+ * de 220 px, a 768 px quedarían 548 px para dos columnas, y la de los dibujos
+ * se quedaría en 160 px de ancho, con el esquema ilegible. A 1080 px quedan 860,
+ * y la columna de dibujos tiene 764 px: tres tarjetas de 240.
+ */
 .inicio {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.25rem;
   width: 100%;
-  max-width: 52rem;
+  max-width: 76rem;
+  margin-inline: auto;
   padding: 1.5rem 0.25rem 3rem;
+}
+
+@media (min-width: 1080px) {
+  .inicio {
+    grid-template-columns: minmax(20rem, 24rem) minmax(0, 1fr);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+
+  /*
+   * Los destinos vuelven a la columna de la acción, debajo de la zona de
+   * subida, y la columna de los dibujos se estira a las dos filas. Así las dos
+   * columnas miden lo mismo: la de la acción, 538 px de titular y caja de
+   * subida, más los destinos; la de los dibujos, 783 px de rejilla.
+   *
+   * El orden en el DOM no cambia —acciones, dibujos, destinos—, así que en
+   * móvil los destinos siguen estando debajo de los dibujos, que es donde
+   * tienen más sentido: primero el problema, después los otros destinos.
+   */
+  .inicio-accion {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .inicio-visual {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .inicio-modulos {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .inicio-referencia,
+  .inicio-pasos,
+  .inicio-preguntas {
+    grid-column: 1 / -1;
+  }
+}
+
+/* La capa que envuelve la portada en la aplicación. La forma la da `.inicio`,
+ * que pinta el propio `Inicio`: así el HTML exportado y el del navegador tienen
+ * las mismas medidas. Aquí sólo queda lo que va detrás: el aviso de
+ * almacenamiento y los recientes. */
+.inicio-ruta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .inicio-hero {
@@ -660,38 +862,62 @@ body {
   margin-bottom: 2.25rem;
 }
 
-.inicio-sintomas h2,
-.inicio-modulos h2 {
+.inicio-visual h2 {
   font-size: var(--h2);
   margin-bottom: 0.4rem;
 }
 
-.inicio-sintomas-intro {
+.inicio-visual-intro {
   color: var(--text-secondary);
   line-height: 1.6;
-  max-width: 44rem;
   margin-bottom: 1.1rem;
 }
 
 /*
- * `auto-fit` con `minmax(11rem, 1fr)` y no un número fijo de columnas: la columna
- * central mide distinto en cada tramo (335px en móvil, ~500 en tablet, hasta
- * 832 en escritorio) y una rejilla fija de tres dejaría las tarjetas en 160px en
- * el tramo estrecho, donde el síntoma se parte en cinco líneas. Con `auto-fit`
- * caben dos cuando hay sitio para dos y tres cuando hay para tres, y las vacías
- * se colapsan, así que las tres tarjetas se reparten el ancho entero.
+ * La rejilla de los dibujos.
+ *
+ * Dos columnas en tablet y **cuatro** en la columna derecha de la portada. El
+ * corte tiene una aritmética detrás, y no es la de que «caben más»: a 1080 px
+ * la columna de la derecha mide 740 px, y con cuatro tarjetas de 175 px la
+ * rejilla queda en tres filas de 180 px, es decir 540 px. La columna de la
+ * acción —titular y zona de subida— mide 538 px. **Las dos columnas miden lo
+ * mismo**, y por eso no queda un hueco de 300 px bajo la caja de subida.
+ *
+ * Con tres columnas la rejilla salía en cuatro filas, 846 px, y el hueco
+ * abajo de la zona de subida era de 300 px: exactamente el espacio que sobra
+ * que se complained de la página.
  */
-.inicio-sintomas-lista,
-.inicio-modulos-lista {
+.inicio-sintomas-lista {
   list-style: none;
   padding: 0;
+  margin: 0;
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.inicio-sintomas-lista > li,
-.inicio-modulos-lista > li {
+@media (min-width: 640px) {
+  .inicio-sintomas-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1080px) {
+  .inicio-sintomas-lista {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+
+/* Los destinos: apilados en la columna de la acción. */
+.inicio-modulos {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 0;
+}
+
+.inicio-sintomas-lista > li {
   display: flex;
 }
 
@@ -729,8 +955,14 @@ body {
 }
 
 .inicio-sintoma-dibujo {
-  width: 4.5rem;
+  width: 4rem;
   flex: none;
+}
+
+@media (min-width: 640px) {
+  .inicio-sintoma-dibujo {
+    width: 6rem;
+  }
 }
 
 .inicio-sintoma-texto {
@@ -770,10 +1002,9 @@ body {
 
 .inicio-modulo {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: 0.3rem;
-  padding: 1rem 0.95rem;
+  padding: 0.9rem 0.95rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);

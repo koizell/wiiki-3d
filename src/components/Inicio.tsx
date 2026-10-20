@@ -42,15 +42,33 @@ import type { Guia } from '../content/guias/tipos';
  */
 
 /**
- * Los tres síntomas que se reconocen mirando la pieza, y no leyendo.
+ * Los doce problemas que se enseñan con dibujo en la portada.
  *
- * Es una lista corta y elegida, no las tres primeras de `GUIAS`. El orden de
- * `GUIAS` es el del índice de la wiki, que empieza por la guía más general; para
- * la puerta de entrada valen más los tres defectos que alguien describe con sus
- * palabras. Los tres existen, y el que no existiera se cae de la lista en vez de
- * dejar un enlace roto.
+ * Es una lista corta y **elegida**, no un recorte de `GUIAS`: se quedan los que
+ * se reconocen mirando la pieza y los que, entre ellos, cubren los once
+ * esquemas que el sitio sabe dibujar —esquinas, primera capa, grieta, boquilla,
+ * chapa, voladizo, cámara, colapso, rugosidad, capas y corte en capas—, para que
+ * la cuadrícula se lea como un juego de dibujos y no como la misma foto doce
+ * veces.
+ *
+ * Los tres que estaban antes (`warping-pla`, `adhesion-primera-capa` y
+ * `separaciones-entre-capas`) siguen dentro, y en el mismo sitio: son los tres
+ * que más se buscan.
  */
-const DESTACADAS = ['warping-pla', 'adhesion-primera-capa', 'separaciones-entre-capas'];
+const DESTACADAS = [
+  'warping-pla',
+  'adhesion-primera-capa',
+  'stringing',
+  'separaciones-entre-capas',
+  'elephant-foot',
+  'temperatura-cama',
+  'voladizos-y-soportes',
+  'enclosure-y-warping',
+  'despegue-a-mitad',
+  'material',
+  'capas-desplazadas',
+  'agujeros-ovalados',
+] as const;
 
 /** De dónde salen los rangos de la tabla. */
 const FUENTES_TABLA = {
@@ -137,10 +155,9 @@ const PREGUNTAS: { pregunta: string; respuesta: React.ReactNode }[] = [
     pregunta: '¿Se sube mi archivo a algún servidor?',
     respuesta: (
       <>
-        El archivo se abre <strong>en tu navegador</strong> y no se envía para
-        guardarlo. Lo único que sale de tu equipo, cuando el diagnóstico está
-        configurado, son los metadatos de impresión —y el nombre del archivo, que
-        forma parte de ellos—. Está detallado en la{' '}
+        El archivo se abre <strong>en tu navegador</strong>. Lo único que sale de tu
+        equipo, cuando el diagnóstico está configurado, son los metadatos de
+        impresión —y el nombre del archivo, que forma parte de ellos—. Está en la{' '}
         <Link to="/privacidad">política de privacidad</Link>.
       </>
     ),
@@ -149,10 +166,9 @@ const PREGUNTAS: { pregunta: string; respuesta: React.ReactNode }[] = [
     pregunta: '¿De dónde salen las cifras de las guías?',
     respuesta: (
       <>
-        De las fichas y los foros de los fabricantes: Prusa, Bambu Lab y OrcaSlicer.
-        Cada guía lleva al final su lista de fuentes y cada acción dice de cuál sale.
-        Cuando dos fabricantes se contradicen, la guía enseña la contradicción en vez
-        de elegir una y callar la otra.
+        De las fichas y los foros de Prusa, Bambu Lab y OrcaSlicer. Cada guía lleva su
+        lista de fuentes, y cuando dos fabricantes se contradicen, la guía enseña la
+        contradicción en vez de elegir una y callar la otra.
       </>
     ),
   },
@@ -161,19 +177,8 @@ const PREGUNTAS: { pregunta: string; respuesta: React.ReactNode }[] = [
     respuesta: (
       <>
         Porque la cifra que sirve no es la general, es la tuya. La temperatura de cama
-        de un PLA cambia según la chapa que uses, y la de boquilla según el fabricante
-        del filamento. Al declarar tu montaje, las tarjetas que no aplican desaparecen
-        y la lista de acciones sale con tu número.
-      </>
-    ),
-  },
-  {
-    pregunta: '¿Sirve si no tengo un G-code a mano?',
-    respuesta: (
-      <>
-        Sí. Todas las guías se leen sin subir nada, y sin JavaScript: el diagnóstico
-        interactivo y el taller son lo que necesita el navegador. La calculadora de
-        coste sí necesita los gramos, y ésos salen del G-code.
+        de un PLA cambia según la chapa que uses. Al declarar tu montaje, la lista de
+        acciones sale con tu número y no con el del fabricante.
       </>
     ),
   },
@@ -183,8 +188,7 @@ const PREGUNTAS: { pregunta: string; respuesta: React.ReactNode }[] = [
       <>
         No laminar, no predecir si una pieza va a fallar antes de imprimirla y no
         decirte qué ajustar sin saber nada de tu montaje. Cada guía termina con un
-        apartado de lo que <strong>no</strong> resuelve, y decirlo es lo que hace
-        creíble el resto.
+        apartado de lo que <strong>no</strong> resuelve.
       </>
     ),
   },
@@ -219,84 +223,133 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
   const filas = temperaturasDeReferencia();
 
   return (
-    <>
+    <div className="inicio">
       {/*
         La cabecera va en los dos modos, y es lo que arregla dos cosas a la vez: el
         HTML exportado tenía **cero** `<h1>` —empezaba por la tabla— y el titular es
         lo primero que tiene que leer quien llega. Es texto y no necesita estado, así
         que no hay motivo para que el navegador lo tenga y el rastreador no.
 
-        **Sólo el titular y la promesa corta.** El párrafo de la wiki estaba aquí y
-        empujaba la zona de subida por debajo del pliegue a 375 px: el botón, que es
-        la acción principal de la página, quedaba fuera de la primera pantalla. Se ha
-        bajado detrás de la subida, que es donde se lee sin estorbar.
+        **El párrafo ya no pide que subas el archivo.** La zona de subida de abajo es
+        la que lo pide, con un botón y con un «Sube tu archivo» que se lee. Cuando
+        las dos cosas lo decían —la barra superior, el titular y la caja— subir el
+        archivo era la primera instrucción de la página repetida tres veces. Ahora
+        el titular dice qué se gana y la caja dice cómo se hace.
+
+        El contenedor `.inicio` **lo pinta este componente**, y no la ruta. Antes lo
+        pintaba `UploadRoute`, y por eso el HTML exportado —que renderiza
+        `Inicio` sin esa capa— se quedaba sin la columna de contenido y con otras
+        medidas. Un solo sitio que decide la forma de la portada, para los dos
+        modos.
       */}
-      <header className="inicio-hero">
-        <h1>¿Va a salir bien tu impresión?</h1>
-        <p>
-          Sube el archivo que exportó tu slicer y lee lo que lleva escrito dentro
-          —material, temperaturas, gramos— antes de gastar filamento.
-        </p>
-        {!interactivo ? (
-          <p className="inicio-estatico-aviso">
-            El analizador y el taller necesitan JavaScript. Esta página y las guías no:
-            se leen enteras sin él, y la tabla de abajo viene con su fuente.
+      <div className="inicio-accion">
+        <header className="inicio-hero">
+          {/*
+            La cabecera de plano de la ruta: el número de plano, el nombre de la
+            ruta y el estado. Es lo que pide la spec de identidad visual (§7.2) y
+            lo que le da al sitio una cara de plano técnico en vez de una
+            página más: una línea pequeña en mono, arriba, y el titular debajo.
+
+            El estado **no es adorno**: dice qué está pasando en la pantalla. En
+            la portada no hay archivo —o el archivo ya está en el visor, que es
+            otra vista—, y en el HTML exportado, que no tiene analizador, se
+            dice «Modo lectura».
+          */}
+          <p className="plano-ruta">
+            <span>01 · Inicio</span>
+            <span className="plano-ruta-estado">{interactivo ? 'Sin archivo' : 'Modo lectura'}</span>
           </p>
-        ) : null}
-      </header>
+          <h1>¿Va a salir bien tu impresión?</h1>
+          <p>
+            Tu slicer ya escribió dentro del archivo el material, las temperaturas y
+            los gramos. Esta página te dice qué significan.
+          </p>
+          {!interactivo ? (
+            <p className="inicio-estatico-aviso">
+              El analizador y el taller necesitan JavaScript. Esta página y las guías no:
+              se leen enteras sin él, y la tabla de abajo viene con su fuente.
+            </p>
+          ) : null}
+        </header>
 
-      {children}
-
-      <nav className="inicio-accesos" aria-label="Otras formas de empezar">
-        <Link to="/wiki"><strong>¿Tu pieza ha salido mal?</strong><span>Busca el síntoma y qué revisar →</span></Link>
-        <Link to="/maquinas"><strong>Conoce tu impresora</strong><span>Consulta modelos y filamentos →</span></Link>
-      </nav>
+        {children}
+      </div>
 
       {/*
-        Lo de la wiki, que antes estaba en la cabecera. Va aquí, justo detrás de la
-        zona de subida: en el navegador la subida va en este sitio y en el HTML
-        exportado este párrafo queda pegado al titular, que es donde estaba.
-      */}
-      <p className="inicio-hero-nota">
-        Alrededor del analizador hay una wiki de {GUIAS.length} guías escritas por
-        síntoma: cada una empieza confirmando que el problema es el que crees, sigue
-        con lo que hace falta saber de tu montaje y termina con las acciones que
-        puedes aplicar, cada una con la fuente de donde sale.
-      </p>
+        La columna de los dibujos.
 
-      {interactivo ? (
-        <section className="inicio-sintomas" aria-labelledby="inicio-sintomas-titulo">
-          <h2 id="inicio-sintomas-titulo">¿Algo salió mal en la pieza?</h2>
-          <p className="inicio-sintomas-intro">
-            Cada guía empieza por confirmar que el problema es el que crees, sigue con
-            lo que hace falta saber de tu montaje y termina con las acciones que puedes
-            aplicar. Cada cifra lleva su fuente.
-          </p>
-          <ul className="inicio-sintomas-lista">
-            {destacadas.map((g) => (
-              <li key={g.slug}>
-                <Link className="inicio-sintoma" to={`/wiki/${g.slug}`}>
-                  <span className="inicio-sintoma-dibujo">
-                    <DibujoSintoma dibujo={g.dibujo} className="dibujo" />
+        Esta es la parte que hace que la portada se pueda **mirar** en vez de leer:
+        nueve problemas, cada uno con su esquema —que es lo que explica el
+        defecto, no una foto— y el nombre con el que quien lo ha visto lo
+        describirá en una búsqueda.
+
+        Antes estaba una sección con los tres primeros y, más abajo, un muro con
+        los treinta problemas en tarjetas de texto: 3.000 palabras de la misma
+        lista que ya está en `/wiki`, con buscador. Eso no era contenido de la
+        portada: era el índice de otra página, copiado y descolocado. Aquí quedan
+        los nueve que tienen dibujo, y el enlace al índice completo.
+      */}
+      <section className="inicio-visual" aria-labelledby="inicio-visual-titulo">
+        <h2 id="inicio-visual-titulo"><span className="plano-numero" aria-hidden="true">02 ·</span>¿Tu pieza ha salido mal?</h2>
+        <p className="inicio-visual-intro">
+          Cada guía empieza confirmando que el problema es el que crees y termina con
+          las acciones que puedes aplicar, cada una con su fuente.
+        </p>
+        <ul className="inicio-sintomas-lista">
+          {destacadas.map((g) => (
+            <li key={g.slug}>
+              <Link className="inicio-sintoma" to={`/wiki/${g.slug}`}>
+                <span className="inicio-sintoma-dibujo">
+                  <DibujoSintoma dibujo={g.dibujo} className="dibujo" />
+                </span>
+                <span className="inicio-sintoma-texto">
+                  <span className="inicio-sintoma-sintoma">{g.sintoma}</span>
+                  <span className="inicio-sintoma-flecha" aria-hidden="true">
+                    →
                   </span>
-                  <span className="inicio-sintoma-texto">
-                    <span className="inicio-sintoma-sintoma">{g.sintoma}</span>
-                    <span className="inicio-sintoma-flecha" aria-hidden="true">
-                      →
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Link className="inicio-sintomas-enlace" to="/wiki">
-            Ver los {GUIAS.length} problemas cubiertos
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link className="inicio-sintomas-enlace" to="/wiki">
+          Ver los {GUIAS.length} problemas cubiertos →
+        </Link>
+      </section>
+
+      {/*
+        Los destinos que no son la subida. Antes eran dos bloques —«otras formas
+        de empezar» con dos enlaces y «qué más puedes hacer» con tres— y entre los
+        dos decían lo mismo dos veces: el taller y la wiki estaban en los dos.
+        Ahora es una fila de tres tarjetas, y la wiki no está: la columna de los
+        dibujos ya lleva a ella.
+      */}
+      <nav className="inicio-modulos" aria-label="Otras formas de empezar">
+        <Link className="inicio-modulo" to="/taller">
+          <span className="inicio-modulo-titulo">Taller</span>
+          <span className="inicio-modulo-detalle">
+            Calcula el coste de filamento de una pieza con los gramos que ya trae tu
+            G-code.
+          </span>
+        </Link>
+        <Link className="inicio-modulo" to="/maquinas">
+          <span className="inicio-modulo-titulo">Máquinas</span>
+          <span className="inicio-modulo-detalle">
+            Ocho impresoras con sus datos y de dónde sale cada uno.
+          </span>
+        </Link>
+        {interactivo ? (
+          <Link className="inicio-modulo" to="/historial">
+            <span className="inicio-modulo-titulo">Historial</span>
+            <span className="inicio-modulo-detalle">
+              Vuelve a consultar los análisis que ya has hecho.
+            </span>
           </Link>
-        </section>
-      ) : null}
+        ) : null}
+      </nav>
 
       <section className="inicio-referencia" aria-labelledby="inicio-referencia-titulo">
-        <h2 id="inicio-referencia-titulo">Temperaturas por material</h2>
+        <h2 id="inicio-referencia-titulo"><span className="plano-numero" aria-hidden="true">03 ·</span>Temperaturas por material</h2>
         <p className="inicio-referencia-intro">
           Los dos números que más se buscan, por familia de filamento. Son los mismos
           que usan las guías de <Link to="/wiki/temperatura-cama">temperatura de cama</Link> y
@@ -335,63 +388,42 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
       </section>
 
       <section className="inicio-pasos" aria-labelledby="inicio-pasos-titulo">
-        <h2 id="inicio-pasos-titulo">Qué hace el analizador</h2>
+        <h2 id="inicio-pasos-titulo"><span className="plano-numero" aria-hidden="true">04 ·</span>Qué hace el analizador</h2>
         <ol className="inicio-pasos-lista">
           <li>
             <h3>Lee el archivo</h3>
             <p>
               Abre el G-code en tu navegador y extrae lo que el slicer escribió:
-              material, temperaturas de cama y boquilla, altura de capa, gramos y tiempo
-              estimado.
+              material, temperaturas, altura de capa, gramos y tiempo.
             </p>
           </li>
           <li>
             <h3>Dice qué le falta</h3>
             <p>
-              Un campo que el slicer no escribió sale como «—» y no como un cero. La
-              diferencia importa: un cero es un valor y una ausencia es una pregunta que
-              hay que contestar a mano.
+              Un campo que el slicer no escribió sale como «—» y no como un cero. Un
+              cero es un valor; una ausencia es una pregunta.
             </p>
           </li>
           <li>
             <h3>Ofrece una orientación</h3>
             <p>
               En modo de demostración calcula un índice local orientativo: no es una
-              probabilidad de fallo validada ni verifica si la geometría necesita soportes.
-              En modo real consulta el servicio de clasificación configurado.
+              probabilidad de fallo validada ni verifica si la geometría necesita
+              soportes.
             </p>
           </li>
           <li>
             <h3>Te lleva a la guía</h3>
             <p>
               Cada dato del panel enlaza a la guía que lo explica, y allí lo declaras
-              para que la lista de acciones salga con tu cifra en vez de con la del
-              fabricante.
+              para que las acciones salgan con tu cifra y no con la del fabricante.
             </p>
           </li>
         </ol>
       </section>
 
-      <section className="inicio-problemas" aria-labelledby="inicio-problemas-titulo">
-        <h2 id="inicio-problemas-titulo">Los {GUIAS.length} problemas cubiertos</h2>
-        <p className="inicio-problemas-intro">
-          Cada guía se abre por lo que ves en la pieza, no por el nombre de un ajuste.
-          Si no sabes cuál es el tuyo, empieza por el síntoma.
-        </p>
-        <ul className="inicio-problemas-lista">
-          {GUIAS.map((g) => (
-            <li key={g.slug}>
-              <Link to={`/wiki/${g.slug}`}>
-                <strong>{g.sintoma}</strong>
-                <span>{g.resumen}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section className="inicio-preguntas" aria-labelledby="inicio-preguntas-titulo">
-        <h2 id="inicio-preguntas-titulo">Preguntas frecuentes</h2>
+        <h2 id="inicio-preguntas-titulo"><span className="plano-numero" aria-hidden="true">05 ·</span>Preguntas frecuentes</h2>
         <dl className="inicio-preguntas-lista">
           {PREGUNTAS.map((p) => (
             <div className="inicio-pregunta" key={p.pregunta}>
@@ -401,60 +433,6 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
           ))}
         </dl>
       </section>
-
-      <section className="inicio-cierre" aria-labelledby="inicio-cierre-titulo">
-        <h2 id="inicio-cierre-titulo">Por dónde empezar</h2>
-        <p>
-          Si ya tienes el G-code, súbelo y el panel te dice qué lleva dentro. Si lo que
-          tienes es una pieza mal impresa, ve al <Link to="/wiki">índice de síntomas</Link>.
-          Y si lo que quieres saber es cuánto te cuesta esa pieza en filamento, el{' '}
-          <Link to="/taller">taller</Link> lo calcula con los gramos del propio archivo y
-          el precio que teclees tú.
-        </p>
-      </section>
-
-      {/*
-        Los tres módulos, y sólo en el navegador.
-        
-        Aquí sí hay una razón para que sea interactivo: el enlace a `/historial` sólo
-        tiene sentido si el historial puede leerse, y el de `/taller` si la calculadora
-        puede calcular. En el HTML exportado se enlazan desde el cierre de arriba, que
-        dice lo mismo con menos promesa.
-      */}
-      {interactivo ? (
-        <section className="inicio-modulos" aria-labelledby="inicio-modulos-titulo">
-          <h2 id="inicio-modulos-titulo">Qué más puedes hacer</h2>
-          <ul className="inicio-modulos-lista">
-            <li>
-              <Link className="inicio-modulo" to="/taller">
-                <span className="inicio-modulo-titulo">Taller</span>
-                <span className="inicio-modulo-detalle">
-                  Calcula el coste de filamento de una pieza con los gramos que ya trae
-                  tu G-code.
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link className="inicio-modulo" to="/wiki">
-                <span className="inicio-modulo-titulo">Wiki 3D</span>
-                <span className="inicio-modulo-detalle">
-                  {GUIAS.length} guías por síntoma, con la fuente de cada cifra y las
-                  contradicciones entre fabricantes declaradas.
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link className="inicio-modulo" to="/historial">
-                <span className="inicio-modulo-titulo">Historial</span>
-                <span className="inicio-modulo-detalle">
-                  Vuelve a consultar los análisis que ya has hecho, sin subir el archivo
-                  otra vez.
-                </span>
-              </Link>
-            </li>
-          </ul>
-        </section>
-      ) : null}
-    </>
+    </div>
   );
 }
