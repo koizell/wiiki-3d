@@ -23,6 +23,7 @@ import { brimYSkirt } from '../content/guias/brim-y-skirt.ts';
 import { alturaCapa } from '../content/guias/altura-capa.ts';
 import { enclosureYWarping } from '../content/guias/enclosure-y-warping.ts';
 import { material } from '../content/guias/material.ts';
+import { tpuFlexible } from '../content/guias/tpu-flexible.ts';
 import { capasDesplazadas } from '../content/guias/capas-desplazadas.ts';
 import { separaciones } from '../content/guias/separaciones.ts';
 import { slicer } from '../content/guias/slicer.ts';
@@ -40,6 +41,7 @@ import { piezasCurvadasZ } from '../content/guias/piezas-curvadas-z.ts';
 import { orientacionResistencia } from '../content/guias/orientacion-resistencia.ts';
 import { rellenoPatrones } from '../content/guias/relleno-patrones.ts';
 import { paredesYPerimetros } from '../content/guias/paredes-y-perimetros.ts';
+import { zSeam } from '../content/guias/z-seam.ts';
 import type { Condicion, Guia, RangoFuente, Regla, Variable } from '../content/guias/tipos.ts';
 import { materialUnico } from './materiales.ts';
 
@@ -78,7 +80,7 @@ import { materialUnico } from './materiales.ts';
  * El coste es que hay que añadir una línea al escribir una guía. Se acepta: es
  * una línea, y a cambio el orden dice algo.
  */
-export const GUIAS: Guia[] = [alturaCapa, slicer, warping, stringing, ventiladorWarping, piezasGrandesGrietas, esquinasPetg, despegueAMitad, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, torreTemperatura, adhesion, material, secarFilamento, voladizosSoportes, flowRate, maxVolumetricSpeed, brimYSkirt, elephantFoot, placas, mallaDeCama, agujerosOvalados, toleranciasYEncaje, piezasCurvadasZ, orientacionResistencia, rellenoPatrones, paredesYPerimetros];const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
+export const GUIAS: Guia[] = [alturaCapa, slicer, warping, stringing, ventiladorWarping, piezasGrandesGrietas, esquinasPetg, despegueAMitad, enclosureYWarping, separaciones, capasDesplazadas, temperaturaCama, temperaturaHotend, torreTemperatura, adhesion, material, secarFilamento, tpuFlexible, voladizosSoportes, flowRate, maxVolumetricSpeed, brimYSkirt, elephantFoot, placas, mallaDeCama, agujerosOvalados, toleranciasYEncaje, piezasCurvadasZ, orientacionResistencia, rellenoPatrones, paredesYPerimetros, zSeam];const POR_SLUG = new Map(GUIAS.map((g) => [g.slug, g]));
 
 /** Una guía por su slug, o `null`. */
 export function guiaPorSlug(slug: string | undefined): Guia | null {
