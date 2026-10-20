@@ -125,6 +125,75 @@ try {
     await page.close();
   }
 
+  // ── 1b · La portada: lo que se ve, lo que se dice una vez y nada de muro ──
+  /*
+   * Estas seis comprobaciones son la huella del rediseño de la portada, y cada
+   * una mira una cosa que estaba mal de verdad:
+   *
+   * 1. **Los dibujos.** La portada pasó a ser visual: doce problemas con su
+   *    esquema. Si mañana la rejilla se vacía, la página vuelve a ser un muro de
+   *    texto y nadie se entera.
+   * 2. **La subida se dice una vez.** Estaba en la barra superior, en el titular
+   *    y en la caja de subida: tres veces, en pantalla, lo mismo. Ahora la caja
+   *    es la única, y la barra superior no la repite en la portada.
+   * 3. **No hay muro.** Los treinta problemas en tarjetas de texto eran el
+   *    índice de `/wiki` copiado en la portada. El límite de quince enlaces a
+   *    guías impide que vuelva: doce son los dibujos, dos los de la tabla de
+   *    temperaturas y el último el enlace al índice.
+   * 4. **No queda media columna vacía.** La columna de contenido estaba
+   *    capada a 832 px dentro de una zona de 1.220 px, pegada a la izquierda:
+   *    356 px de nada a la derecha, medidos a 1440 px. Ahora la portada usa el
+   *    ancho.
+   */
+  {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page.goto(`${BASE}/`);
+    await page.locator('.inicio-hero h1').waitFor();
+
+    const portada = await page.evaluate(() => {
+      const visible = (el) => el.getClientRects().length > 0;
+      const texto = (sel) =>
+        [...document.querySelectorAll(sel)].filter(visible).map((e) => (e.textContent || '').trim());
+      const ancho = (sel) => {
+        const el = document.querySelector(sel);
+        return el ? el.getBoundingClientRect().width : 0;
+      };
+      return {
+        dibujos: document.querySelectorAll('.inicio-sintoma svg.dibujo').length,
+        botonesBarra: texto('.top-nav button'),
+        vecesSube: texto('h2').filter((t) => /sube tu archivo/i.test(t)).length,
+        enlacesGuia: [...document.querySelectorAll('a[href^="/wiki/"]')].filter(visible).length,
+        anchoInicio: ancho('.inicio'),
+        anchoZona: ancho('.canvas-area'),
+        alto: document.body.scrollHeight,
+      };
+    });
+
+    comprobar(portada.dibujos === 12, `/: la portada enseña 12 dibujos (hay ${portada.dibujos})`);
+    comprobar(
+      portada.botonesBarra.length === 0,
+      `/: la barra superior no repite la subida en la portada (botones: ${portada.botonesBarra.join(', ') || 'ninguno'})`
+    );
+    comprobar(
+      portada.vecesSube === 1,
+      `/: «Sube tu archivo» se dice una sola vez (${portada.vecesSube} veces)`
+    );
+    comprobar(
+      portada.enlacesGuia <= 15,
+      `/: la portada no vuelve a ser un muro de enlaces a guías (${portada.enlacesGuia}, el máximo es 15)`
+    );
+    comprobar(
+      portada.anchoZona > 0 && portada.anchoInicio / portada.anchoZona >= 0.9,
+      `/: la portada usa el ancho de la zona (${Math.round(portada.anchoInicio)} de ${Math.round(portada.anchoZona)} px)`
+    );
+    comprobar(
+      portada.alto < 2600,
+      `/: la portada no crece sin límite (${portada.alto} px de alto; el máximo es 2600)`
+    );
+
+    await page.close();
+  }
+
   // ── 2 y 3 · Las fichas y los nombres del catálogo ─────────────────────────
   {
     const page = await browser.newPage({ viewport: { width: 768, height: 900 } });
