@@ -25,6 +25,21 @@ export interface EstadoGuia {
   setElegidas: (elegidas: Record<string, string>) => void;
   /** Borra todas las respuestas. */
   limpiar: () => void;
+  /**
+   * Comprobación del diferencial → respuesta.
+   *
+   * El diferencial es un filtro con salida: se contesta «sí» o «no» a cada
+   * comprobación, y sólo entonces se sabe si el problema es este o el de al lado.
+   *
+   * **Contestar es opcional.** Sin respuesta, la comprobación se enseña con su
+   * pregunta y sin veredicto: es la pregunta la que dice qué mirar, y el texto de
+   * las dos caras está ahí para quien lo quiera leer. Lo que se guarda es sólo la
+   * respuesta, porque el veredicto **se pinta** al contestar y no antes — que es
+   * justo lo que convierte un muro de texto en un filtro.
+   */
+  diferencial: Record<string, 'si' | 'no'>;
+  /** Contesta una comprobación, o la deja sin contestar si ya lo estaba. */
+  alternarDiferencial: (comprobacion: string, respuesta: 'si' | 'no') => void;
 }
 
 export const ContextoGuia = createContext<EstadoGuia | null>(null);

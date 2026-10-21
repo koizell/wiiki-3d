@@ -1,0 +1,778 @@
+/*
+ * La guía como instrumento.
+ *
+ * Este fichero sustituye la presentación de las cuatro etapas por la que está
+ * dibujada en Figma (`02 · Guía rediseñada`): la pregunta manda en el diferencial,
+ * las opciones son tarjetas, la cifra es el ancla de la tarjeta de conocimiento y
+ * la acción es un readout.
+ *
+ * ## Por qué un fichero aparte
+ *
+ * Porque `App.css` tiene ya 4.582 líneas y sigue creciendo, y porque esta
+ * maquetación es **una sola idea** —la guía deja de ser un documento y pasa a ser un
+ * instrumento— que se lee y se cambia como un bloque. El criterio del proyecto es
+ * «un fichero, una responsabilidad», y aquí la responsabilidad es la vista de la
+ * guía.
+ *
+ * ## Las reglas de la spec que esta maquetación respeta
+ *
+ * - **§5 · La rejilla no aparece en el cuerpo de lectura.** Aquí tampoco: el fondo
+ *   de la columna es liso, como estaba. La rejilla del motivo de plano se queda en
+ *   el lienzo de trabajo.
+ * - **§6 · Sólo se animan `transform` y `opacity`.** Ninguna regla de aquí cambia
+ *   una propiedad de layout, y el trazo azul es un `scaleX`.
+ * - **§3 · Los radios.** `12px` en las tarjetas, `6px` en los controles, `999px` en
+ *   las insignias. Sin excepciones, como manda la escala.
+ */
+
+/* ------------------------------------------------------------------------------------
+ * El indicador
+ * ---------------------------------------------------------------------------------- */
+
+.indicador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radio-sm);
+  background: var(--bg-hover);
+  color: var(--accent-text);
+  font-family: var(--fuente-dato);
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------------------------------
+ * La cabecera de plano
+ * ---------------------------------------------------------------------------------- */
+
+.guia-plano {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.guia-plano-ruta {
+  font-family: var(--fuente-dato);
+  font-size: 11px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--accent-text);
+  text-transform: uppercase;
+}
+
+.guia-plano-estado {
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-pill);
+  background: var(--bg-hover);
+  white-space: nowrap;
+}
+
+.guia-plano-estado--con-datos {
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------------------------------
+ * La cabecera
+ * ---------------------------------------------------------------------------------- */
+
+/*
+ * La segunda mitad del resumen va en letra más pequeña y más tenue.
+ *
+ * No es un detalle: el resumen entero eran 124 px de alto en la cabecera y lo que
+ * hace falta leer de un vistazo es **la primera frase**. El resto es contexto, y el
+ * contexto se lee después.
+ */
+.guia-cabecera-resumen-extra {
+  margin-top: 0.4rem;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 42rem;
+}
+
+/*
+ * La cabecera son tres cosas apiladas: la línea de plano, el texto y el dibujo.
+ *
+ * Antes eran dos columnas —el dibujo y el texto— y el dibujo iba **primero**, que
+ * en un móvil empujaba el titular hacia abajo. Ahora el texto va primero y el
+ * dibujo al lado en escritorio y debajo en móvil: el titular es lo que se lee, y
+ * el dibujo es lo que se mira cuando ya se ha enterse de qué va la guía.
+ */
+.guia-cabecera {
+  display: block;
+  padding-bottom: 0.5rem;
+}
+
+.guia-cabecera-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 13rem;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.guia-cabecera-lateral {
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------------------------
+ * El recorrido por las cuatro etapas
+ * ---------------------------------------------------------------------------------- */
+
+.guia-recorrido {
+  display: block;
+  margin: 0 0 28px;
+}
+
+.guia-recorrido-lista {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+}
+
+.guia-paso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  color: var(--text-secondary);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-control) var(--curva-estandar),
+    background-color var(--dur-control) var(--curva-estandar),
+    color var(--dur-control) var(--curva-estandar);
+}
+
+.guia-paso:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.guia-paso--activo {
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+.guia-paso-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radio-pill);
+  background: var(--bg-hover);
+  color: var(--text-tertiary);
+  font-family: var(--fuente-dato);
+  font-size: 11px;
+}
+
+.guia-paso--activo .guia-paso-numero {
+  background: var(--accent);
+  color: #fff;
+}
+
+.guia-paso-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.guia-paso-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.guia-paso-estado {
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-tertiary);
+}
+
+.guia-paso--activo .guia-paso-estado {
+  color: var(--accent-text);
+}
+
+.guia-etapa-aviso {
+  margin: 0 0 8px;
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------------------------
+ * El diferencial: la pregunta manda
+ * ---------------------------------------------------------------------------------- */
+
+.comprobacion {
+  padding: 18px 20px;
+  margin: 0 0 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  list-style: none;
+}
+
+.comprobacion-mira {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.comprobacion-botones {
+  display: flex;
+  gap: 8px;
+}
+
+.comprobacion-boton {
+  min-width: 84px;
+  padding: 8px 14px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-control) var(--curva-estandar),
+    background-color var(--dur-control) var(--curva-estandar),
+    color var(--dur-control) var(--curva-estandar);
+}
+
+.comprobacion-boton:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.comprobacion-boton--si.comprobacion-boton--activo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.comprobacion-boton--no.comprobacion-boton--activo {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.comprobacion-veredicto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  padding-left: 14px;
+  border-left: 3px solid var(--border);
+}
+
+.comprobacion-veredicto--si {
+  border-left-color: var(--success);
+}
+
+.comprobacion-veredicto--no {
+  border-left-color: var(--danger);
+}
+
+.comprobacion-veredicto-titulo {
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--success);
+}
+
+.comprobacion-veredicto--no .comprobacion-veredicto-titulo {
+  color: var(--danger);
+}
+
+.comprobacion-veredicto-texto {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.comprobacion-detalle {
+  margin-top: 12px;
+}
+
+.comprobacion-detalle summary {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.comprobacion-detalle summary:hover {
+  color: var(--accent-text);
+}
+
+.comprobacion-pares {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.comprobacion-cara {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.comprobacion-cara-titulo {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------------------------------
+ * Las variables: opciones-tarjeta
+ * ---------------------------------------------------------------------------------- */
+
+.variable {
+  margin: 0 0 12px;
+  padding: 18px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  border-left: 3px solid var(--border);
+}
+
+.variable-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.variable-texto {
+  min-width: 0;
+}
+
+.variable-requerida {
+  padding: 3px 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radio-pill);
+  font-family: var(--fuente-dato);
+  font-size: 9px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--warning);
+  text-transform: uppercase;
+}
+
+.variable-para {
+  margin: 8px 0 14px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.variable-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * La opción es una tarjeta, no un chip.
+ *
+ * El nombre de la clase se queda: `chip` es lo que busca la mitad de las
+ * comprobaciones del navegador (`verify:wiki`, `verify:ui`), y renombrarla
+ * obligaría a tocar doce referencias de un test que existe para cazar fallos, no
+ * para clasificar clases. Lo que cambia es **lo que es**: una tarjeta con su
+ * detalle debajo, en vez de una palabra suelta.
+ */
+.chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 96px;
+  padding: 9px 14px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+  color: var(--text-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--dur-control) var(--curva-estandar),
+    background-color var(--dur-control) var(--curva-estandar),
+    color var(--dur-control) var(--curva-estandar);
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.chip--activo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.chip-texto {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chip-detalle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.chip--activo .chip-detalle {
+  color: rgb(255 255 255 / 0.82);
+}
+
+/*
+ * El trazo azul de `confirmar`.
+ *
+ * Es un `span` absoluto al pie de la opción, con `scaleX` de 0 a 1. No mide nada,
+ * no empuja nada y no se ve con el movimiento reducido apagado.
+ */
+.opcion-trazo {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-text);
+}
+
+/* ------------------------------------------------------------------------------------
+ * Las tarjetas de conocimiento
+ * ---------------------------------------------------------------------------------- */
+
+.tarjeta {
+  margin: 0 0 12px;
+  padding: 18px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.tarjeta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tarjeta-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  text-align: right;
+}
+
+.tarjeta-cifra strong {
+  font-family: var(--fuente-dato);
+  font-size: 24px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+  line-height: 1.1;
+}
+
+.tarjeta-cifra em {
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-tertiary);
+}
+
+.tarjeta-puntos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.tarjeta-puntos li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.tarjeta-puntos li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-text);
+  opacity: 0.65;
+}
+
+.tarjeta-cita {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.tarjeta-cita-texto {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.tarjeta-cita-fuente {
+  font-size: 11px;
+  font-style: normal;
+  color: var(--text-tertiary);
+}
+
+.tarjeta-cita-fuente a {
+  color: var(--accent-text);
+}
+
+.tarjeta-enlace {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------------------------------
+ * Las acciones: el readout
+ * ---------------------------------------------------------------------------------- */
+
+.accion {
+  position: relative;
+  margin: 0 0 10px;
+  padding: 16px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  border-left: 3px solid var(--accent);
+  list-style: none;
+}
+
+.accion-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accion-orden {
+  font-family: var(--fuente-dato);
+  font-size: 11px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--text-tertiary);
+}
+
+.accion-indicador {
+  background: transparent;
+  color: var(--accent-text);
+}
+
+.accion-titulo {
+  flex: 1 1 auto;
+  /* `min-width: 0` para que el título pueda encogerse y dejar sitio a la cifra. */
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.accion-valor {
+  /*
+   * La cifra puede encogerse y partirse.
+   *
+   * Sin `min-width: 0`, un elemento flexible no baja de su ancho intrínseco, y una
+   * cifra larga —«G29.1 Z −0,02 ~ 0 mm»— empujaba la cabecera entera fuera de la
+   * columna. Medido: 756 px de ancho en una columna de 768.
+   */
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--fuente-dato);
+  font-size: 24px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+  line-height: 1.1;
+  text-align: right;
+  overflow-wrap: break-word;
+}
+
+.accion-porque {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.accion-alcance {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.accion-fuente {
+  margin: 10px 0 0;
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: var(--etiqueta-interletraje);
+  color: var(--accent-text);
+}
+
+/* ------------------------------------------------------------------------------------
+ * El lienzo de la guía
+ * ---------------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .guia-recorrido-lista {
+    /*
+     * El recorrido cabe en **una** fila de cuatro.
+     *
+     * Con dos columnas eran dos filas y 116 px de alto, y la primera comprobación
+     * caía por debajo de donde se ve sin desplazar. En una fila, cada celda pone
+     * el número encima y el título debajo, y la fila entera ocupa 66 px.
+     */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .guia-paso {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 8px 7px;
+  }
+
+  .guia-paso-numero {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .guia-paso-titulo {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .guia-paso-estado {
+    font-size: 9px;
+  }
+
+  .guia-recorrido {
+    margin-bottom: 16px;
+  }
+
+  .guia-cabecera-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* El dibujo en móvil es una banda, no un cuadro: informa, no ocupa. */
+  .guia-cabecera-dibujo {
+    padding: 0.3rem;
+  }
+
+  .guia-cabecera-dibujo .dibujo {
+    height: 58px;
+  }
+
+  .comprobacion-pares {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjeta-cabecera {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tarjeta-cifra {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .accion-cabecera {
+    flex-wrap: wrap;
+  }
+
+  .accion-valor {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/*
+ * El recorrido se dibuja en Figma con el mismo lenguaje que la portada: una fila de
+ * cuatro, y en móvil dos por dos. El ancho de lectura del resto no se toca.
+ */
+
+/*
+ * La segunda mitad del resumen, dentro del desplegable de contexto.
+ *
+ * Clase propia y no `guia-entrada`: las comprobaciones del navegador cuentan las
+ * entradas de la guía, y son dos párrafos con funciones distintas.
+ */
+.guia-contexto-extra {
+  margin: 0 0 0.8rem;
+  color: var(--text-secondary);
+}

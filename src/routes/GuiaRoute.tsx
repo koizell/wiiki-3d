@@ -5,7 +5,12 @@ import DiagnosticoGuia from '../components/DiagnosticoGuia';
 import { Negrita } from '../components/Negrita';
 import TuArchivo from '../components/TuArchivo';
 import EsquemaTorreTemperatura from '../components/EsquemaTorreTemperatura';
-import { idConocimiento, idVariable, etiquetaCampo } from '../lib/tu-archivo';
+import Comprobacion from '../components/guia/Comprobacion';
+import ReadoutAccion from '../components/guia/ReadoutAccion';
+import StepperEtapas from '../components/guia/StepperEtapas';
+import TarjetaConocimiento from '../components/guia/TarjetaConocimiento';
+import TarjetaVariable from '../components/guia/TarjetaVariable';
+import { etiquetaCampo } from '../lib/tu-archivo';
 import { actualizarSeo, seoGuia } from '../lib/seo';
 import { fechaLarga } from '../lib/formato';
 import {
@@ -18,29 +23,35 @@ import {
 } from '../lib/guias';
 import { useAnalysis } from '../state/useAnalysis';
 import { useGuiaEstado } from '../state/useGuia';
-import type { Guia, Opcion, Regla, Variable } from '../content/guias/tipos';
+import { ContextoMovimiento } from '../state/movimiento-contexto';
+import type { Guia, Regla, Variable } from '../content/guias/tipos';
 import type { ProjectMetadata } from '../services/types';
 
 /**
- * Una guía: las tres etapas, en orden.
+ * Una guía: las cuatro etapas, en orden.
  *
- * ## Por qué las variables van arriba y la recomendación abajo
+ * ## Lo que ha cambiado
  *
- * Por la dirección de la lectura, no por decoración. Quien llega con un warping
- * ya sabe que las esquinas se levantan — para eso está la tarjeta que ha pulsado
- * en el índice— y lo que no sabe es si su problema es de cama, de ventilador o de
- * material. Preguntar primero y resolver abajo es la única secuencia en la que
- * cada respuesta tiene consecuencia visible: al marcar «Textured PEI», las
- * tarjetas que no aplican desaparecen y la lista de acciones cambia de cifras. Eso
- * es lo que hace que la página esté viva en lugar derada.
+ * La guía era un documento largo: cuatro etapas apiladas, con las comprobaciones del
+ * diferencial como dos tarjetas de texto verde y rojo enfrentadas, las variables
+ * como una fila de chips de dos palabras, las tarjetas de conocimiento como un
+ * párrafo y un `blockquote`, y las acciones como una lista de seis bloques cada una.
  *
- * ## El diferencial es una etapa y no un párrafo
+ * Ahora es un **instrumento**:
  *
- * Porque es lo que evita el error caro. Subir la cama de un warping que en
- * realidad es una separación entre capas no arregla nada, y quien va a la wiki
- * con un problema lo primero que tiene que poder hacer es descartarlo. Por eso va
- * primero, con dos caras enfrentadas por comprobación, y con salida: si la
- * respuesta es «no», el enlace lleva a la guía que sí lo es.
+ * - La **pregunta** del diferencial es lo grande, y el veredicto llega al
+ *   contestar. El texto de las dos caras no se borra: baja a un desplegable.
+ * - Las **opciones** son tarjetas con el detalle que ya estaba escrito en el
+ *   contenido, y al marcar se dibuja el trazo azul de la spec §6.
+ * - Las **tarjetas de conocimiento** llevan su cifra en grande y su cuerpo en
+ *   puntos, no en un párrafo.
+ * - Las **acciones** son readouts: la cifra manda, el porqué es una línea y la
+ *   fuente va al lado.
+ * - Encima, la **cabecera de plano** con el estado y el **recorrido** con los
+ *   contadores en vivo.
+ *
+ * El contenido no ha cambiado: `src/content/guias/` sigue siendo el mismo, con
+ * `indicador` y `puntos` añadidos. Lo que ha cambiado es cómo se pinta.
  *
  * ## `exportEstatico`: la misma guía, contada de otra forma
  *
@@ -54,6 +65,10 @@ import type { ProjectMetadata } from '../services/types';
  * bandera, la etapa 4 publica el recetario completo con todas las condiciones que lo
  * desbloquea, que es la misma información en la única forma en que se puede contar
  * sin respuestas. Cada regla aparece una sola vez.
+ *
+ * Y en la segunda **no hay movimiento**: el HTML se genera una vez y se sirve, así
+ * que una animación dejaría el texto en su estado inicial —invisible—. Por eso el
+ * render va envuelto en `ContextoMovimiento` con `false`.
  */
 export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?: boolean } = {}) {
   const { slug } = useParams();
@@ -68,7 +83,14 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
    * sale del contexto de análisis es `precontestar`, que es el puente: lo que el
    * análisis sabe se escribe como si la persona lo hubiera dicho.
    */
-  const { elegidas, alternar: alternarVariable, setElegidas, limpiar } = useGuiaEstado();
+  const {
+    elegidas,
+    alternar: alternarVariable,
+    setElegidas,
+    limpiar,
+    diferencial,
+    alternarDiferencial,
+  } = useGuiaEstado();
 
   /*
    * El cambio de guía con el mismo componente montado.
@@ -78,11 +100,6 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
    * diferencial— dejaría las respuestas de la guía anterior en la pantalla: las
    * variables que no existen en la nueva guía se ignoran, pero las que comparten
    * nombre se quedan marcadas con el valor de otro material.
-   *
-   * La alternativa era un `key` en la ruta desde el router, que es más limpio pero
-   * añade una pieza al shell para un caso que sólo ocurre en un sitio. Aquí se
-   * resuelve con el `slug` como dependencia, y el aviso es el mismo que ya hay en
-   * el `key` de la entrada del artículo.
    */
   /*
    * Precontestar lo que el G-code ya sabe, y sólo una vez por guía.
@@ -133,8 +150,6 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
     return () => cancelAnimationFrame(frame);
   }, [hash, guia]);
 
-  const alternar = alternarVariable;
-
   const reglas = useMemo(() => (guia ? reglasQueSalen(guia, elegidas) : []), [guia, elegidas]);
   const tarjetas = useMemo(
     () => (guia ? conocimientoVisible(guia, elegidas) : []),
@@ -146,15 +161,10 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
       <div className="guia guia--vacia">
         <div className="guia-caja">
           <h1>Esa guía no existe</h1>
-          {slug && (
-            <p>
-              No hay nada en <code>/wiki/{slug}</code>. Puede que el enlace sea de
-              una versión anterior.
-            </p>
-          )}
           <p>
+            El enlace que has seguido no lleva a ninguna guía escrita.{' '}
             <Link className="guia-enlace" to="/wiki">
-              Ver los problemas que sí están cubiertos
+              Vuelve al índice
             </Link>
           </p>
         </div>
@@ -162,39 +172,43 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
     );
   }
 
-  return (
+  const contestadas = guia.variables.filter((v) => elegidas[v.id] !== undefined).length;
+
+  const contenido = (
     <div className="guia" key={guia.slug}>
       <Cabecera guia={guia} />
 
-      <nav className="guia-recorrido" aria-label="Recorrido de la guía">
-        <a href="#diagnostico">1 · Diagnóstico</a>
-        <a href="#montaje">2 · Montaje</a>
-        <a href="#conocimiento">3 · Conocimiento</a>
-        <a href="#recomendacion">4 · Acciones</a>
-      </nav>
-
       {/*
-        La barra de los datos del archivo va entre la cabecera y el diferencial, y
-        el orden es la decisión: es la única parte de la página que habla de **tu**
-        pieza, y las tres preguntas del diferencial se contestan mirando la pieza.
-        Ponerla después de las variables la haría llegar cuando ya has declarado a
-        mano el material que el archivo ya te decía.
+        El recorrido con los contadores.
 
-        No aparece sin archivo, ni aparece en las guías que no declaran ningún
-        campo: en los dos casos devuelve `null` y no deja nada detrás.
+        Son **enlaces**, no botones: el destino sigue siendo `#diagnostico`,
+        `#montaje`…, y quien recibe un enlace con un ancla llega al mismo sitio que
+        quien está interactuando. Un botón que moviera el scroll sin cambiar la URL
+        dejaría de poder enlazarse a una etapa.
       */}
+      <StepperEtapas
+        contestadas={contestadas}
+        totalVariables={guia.variables.length}
+        acciones={reglas.length}
+        tarjetas={tarjetas.length}
+      />
+
       <TuArchivo guia={guia} />
 
-      <EtapaDiferencial guia={guia} />
+      <EtapaDiferencial
+        guia={guia}
+        diferencial={diferencial}
+        onResponder={alternarDiferencial}
+      />
 
       <EtapaVariables
         guia={guia}
         elegidas={elegidas}
-        alternar={alternar}
-        reglas={reglas.length}
+        alternar={alternarVariable}
+        reglas={reglas}
       />
 
-      <EtapaConocimiento guia={guia} tarjetas={tarjetas} elegidas={elegidas} alternar={alternar} />
+      <EtapaConocimiento guia={guia} tarjetas={tarjetas} elegidas={elegidas} alternar={alternarVariable} />
 
       <EtapaRecomendacion
         reglas={reglas}
@@ -207,8 +221,9 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
       <section className="guia-fuentes" id="fuentes">
         <h2 className="etapa-titulo">De dónde sale esto</h2>
         <p className="guia-fuentes-nota">
-          Las {guia.fuentes.length} fuentes que respaldan esta guía. Cada cifra y
-          cada acción de arriba lleva la suya.
+          Cada dato de esta guía viene de una de estas fuentes. Cuando dos
+          fabricantes se contradicen, la guía enseña la contradicción en vez de
+          elegir una y callar la otra.
         </p>
         <ol className="guia-fuentes-lista">
           {guia.fuentes.map((f) => (
@@ -223,49 +238,85 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
       </section>
     </div>
   );
+
+  /*
+   * La exportación estática no se anima: el HTML se genera una vez y se sirve, y una
+   * animación dejaría el texto en su estado inicial, invisible.
+   */
+  if (exportEstatico) {
+    return <ContextoMovimiento.Provider value={false}>{contenido}</ContextoMovimiento.Provider>;
+  }
+  return contenido;
 }
 
-/* -------------------------------------------------------------------------- */
-
+/**
+ * La cabecera de la guía: el plano de arriba y el dibujo.
+ *
+ * Lo de arriba es la **cabecera de plano** de la spec §7.2 —`01 · INICIO` con el
+ * estado a la derecha— que hasta ahora sólo la portada tenía. En la guía dice
+ * `04 · WIKI 3D / <SLUG>` y el estado es si hay un archivo con el que comparar.
+ */
 function Cabecera({ guia }: { guia: Guia }) {
+  const { metadata } = useAnalysis();
+
   return (
     <header className="guia-cabecera">
-      <DibujoSintoma dibujo={guia.dibujo} grande className="guia-cabecera-dibujo" />
-      <div className="guia-cabecera-texto">
-        <p className="guia-cabecera-migas">
-          <Link to="/wiki">Wiki 3D</Link>
-        </p>
-        <h1>{guia.sintoma}</h1>
-        <p className="guia-cabecera-resumen">{guia.resumen}</p>
-        {/*
-          El párrafo de entrada, justo bajo el resumen. Es la única prosa que
-          contextualiza el problema antes de descartarlo, y por eso vive en la
-          cabecera y no suelto entre etapas: `resumen` es una frase para la
-          tarjeta del índice y el `<meta description>`; `entrada` es el párrafo
-          que se lee mirando la pieza. Van juntos porque son lo mismo en dos
-          longitudes, y los badges de abajo siguen siendo el cierre de la
-          cabecera.
-        */}
-        <details className="guia-contexto">
-          <summary>Entender el problema antes de empezar</summary>
-          <p className="guia-entrada">{guia.entrada}</p>
-        </details>
-        <p className="guia-cabecera-meta">
-          <span className="insignia">{guia.minutos} min</span>
-          {guia.campos && guia.campos.length > 0 && (
-            <span className="insignia insignia--acento">
-              Explica {guia.campos.map((c) => etiquetaCampo(c) ?? c).join(' y ')} del panel
-            </span>
-          )}
-        </p>
-        {/*
-          La firma y la fecha: quién responde por el contenido y de cuándo es. La autoría es la publicación (guia.autor.nombre); la identidad verificable es el buzón de contacto del dominio (una vía real y transparente para corregir algo), no un perfil personal. `actualizado` se declara en cada guía y aquí se pinta.
-        */}
-        <p className="guia-autor">
-          {guia.autor.nombre} ·{" "}
-          <a href="mailto:contacto@wiiki-3d.com">Contacto</a>
-          {` · Actualizado el ${fechaLarga(guia.actualizado)}`}
-        </p>
+      <div className="guia-plano">
+        <span className="guia-plano-ruta">04 · Wiki 3D / {guia.slug}</span>
+        <span
+          className={`guia-plano-estado${metadata ? ' guia-plano-estado--con-datos' : ''}`}
+        >
+          {metadata ? `Con ${metadata.material ?? 'archivo'}` : 'Sin archivo'}
+        </span>
+      </div>
+
+      <div className="guia-cabecera-cuerpo">
+        <div className="guia-cabecera-texto">
+          <p className="guia-cabecera-migas">
+            <Link to="/wiki">Wiki 3D</Link>
+          </p>
+          <h1>{guia.sintoma}</h1>
+          <p className="guia-cabecera-resumen">{guia.resumen}</p>
+          {/*
+            El contexto —el parrafo de entrada y la segunda mitad del resumen— sigue
+            en un desplegable.
+
+            Es lo que hace falta para entender por que ocurre, y es largo: leerlo
+            antes de saber si el problema es el tuyo es leer de mas. Quien quiere
+            entender, lo abre; quien quiere actuar, no lo necesita.
+
+            Y la segunda mitad del resumen —que antes estaba en la cabecera, con
+            178 caracteres y 124 px de alto— tambien es contexto: cabe en el mismo
+            sitio. Lo que se ve de un vistazo es la primera frase, que es la que
+            dice de que va la guia.
+          */}
+          <details className="guia-contexto">
+            <summary>Entender el problema antes de empezar</summary>
+            {guia.resumenExtra && <p className="guia-contexto-extra">{guia.resumenExtra}</p>}
+            <p className="guia-entrada">{guia.entrada}</p>
+          </details>
+
+          <p className="guia-cabecera-meta">
+            <span className="insignia">{guia.minutos} min</span>
+            {guia.campos && guia.campos.length > 0 && (
+              <span className="insignia insignia--acento">
+                Explica {guia.campos.length} {guia.campos.length === 1 ? 'campo' : 'campos'} del
+                panel
+              </span>
+            )}
+          </p>
+          <p className="guia-autor">
+            <span>wiiki-3d</span>
+            {' · '}
+            <a href="mailto:contacto@wiiki-3d.com">Contacto</a>
+            {' · Actualizado el '}
+            {fechaLarga(guia.actualizado)}
+          </p>
+        </div>
+
+        <div className="guia-cabecera-lateral">
+          <DibujoSintoma dibujo={guia.dibujo} grande className="guia-cabecera-dibujo" />
+        </div>
       </div>
     </header>
   );
@@ -274,64 +325,70 @@ function Cabecera({ guia }: { guia: Guia }) {
 /**
  * Etapa 1 · El diferencial.
  *
- * Cada comprobación son dos tarjetas enfrentadas: lo que ves si **sí** es este
- * problema, y lo que ves si **no**. Facing cards en vez de una lista porque la
- * pregunta que hace quien lee es «¿lo mío es esto?», y una respuesta sí/no se
- * lee mejor de lado que en prosa.
+ * ## Lo que ha cambiado
+ *
+ * Antes eran **dos tarjetas de texto verde y rojo, enfrentadas**, por comprobación,
+ * y las tres ocupaban una pantalla antes de poder hacer nada. El lector tenía que
+ * leer las seis caras para saber si su problema era el que buscaba.
+ *
+ * Ahora la **pregunta** es lo grande, con dos botones, y el veredicto —«es este
+ * problema» o «es otro problema»— aparece **cuando se contesta**. Las dos caras
+ * siguen escritas, debajo, en un desplegable.
+ *
+ * Y el texto de entrada sigue diciendo lo mismo: si las tres son «no», no es este
+ * problema, y sale el camino al que sí lo es.
  */
-function EtapaDiferencial({ guia }: { guia: Guia }) {
+function EtapaDiferencial({
+  guia,
+  diferencial,
+  onResponder,
+}: {
+  guia: Guia;
+  diferencial: Record<string, 'si' | 'no'>;
+  onResponder: (comprobacion: string, respuesta: 'si' | 'no') => void;
+}) {
+  const algunaNo = guia.diferencial.comprobaciones.some((c) => diferencial[c.id] === 'no');
+
   return (
     <section className="etapa etapa--diferencial" id="diagnostico">
       {/*
-        El título dice «descártalo como X» y no «comprueba que es Y».
-        Es la misma información en las dos direcciones, pero llega distinta. «Comprueba
-        que es warping» exige que quien lee ya sepa lo que es el warping; «descártalo
-        como separación entre capas» sólo exige que mire su pieza. Y quien llega aquí
-        todavía no sabe qué tiene: lo que sabe es que algo se levanta.
-
-        Por eso sale `diferencial.contra` y no `titulo`. La primera versión usaba
-        `titulo.toLowerCase()` y pintaba «comprueba que es warping en pla»: en minúsculas,
-        PLA deja de ser PLA y la guía se convierte en un acertijo.
+        El título es corto a propósito: dice **qué** hay que hacer, y el texto de
+        entrada dice **con qué** se confunde. Antes el título llevaba el nombre del
+        problema de al lado («descártalo como separación entre capas») y el texto de
+        entrada lo repetía entero: dos veces lo mismo, y en un móvil el título
+        ocupaba tres líneas.
       */}
       <h2 className="etapa-titulo">
-        <span className="etapa-num">1</span> Antes de tocar nada: descártalo como{' '}
-        {guia.diferencial.contraCorto ?? guia.diferencial.contra}
+        <span className="etapa-num">1</span> Antes de tocar nada: descártalo
       </h2>
       <p className="etapa-intro">
-        Compara lo que ves en la pieza antes de cambiar ajustes. Si no coincide,
-        usa la salida a la otra guía.
+        {guia.diferencial.contra}. Si las tres dicen que no, no es este problema.
       </p>
 
-      <div className="diferencial">
+      <ul className="comprobaciones">
         {guia.diferencial.comprobaciones.map((c) => (
-          <article className="diferencial-fila" key={c.id}>
-            <p className="diferencial-mira">{c.mira}</p>
-            <div className="diferencial-pares">
-              <div className="diferencial-cara diferencial-cara--si">
-                <p className="diferencial-veredicto">Sí</p>
-                <p>
-                  <Negrita>{c.si}</Negrita>
-                </p>
-              </div>
-              <div className="diferencial-cara diferencial-cara--no">
-                <p className="diferencial-veredicto">No</p>
-                <p>
-                  <Negrita>{c.no}</Negrita>
-                </p>
-              </div>
-            </div>
-          </article>
+          <Comprobacion
+            key={c.id}
+            comprobacion={c}
+            respuesta={diferencial[c.id]}
+            onResponder={(respuesta) => onResponder(c.id, respuesta)}
+          />
         ))}
-      </div>
+      </ul>
 
-      {guia.diferencial.siNo && (
-        <p className="diferencial-salida">
-          <span>Si las tres te dicen que no, no es este problema.</span>
+      {/*
+        La salida aparece **cuando hace falta**: si alguna comprobación es «no», el
+        problema no es este y hay que ir al lado. Antes estaba siempre, que es lo
+        mismo que no estar nunca.
+      */}
+      {algunaNo && guia.diferencial.siNo && (
+        <div className="diferencial-salida">
+          <span>Si has contestado «no», el problema es otro</span>
           <Link className="boton boton--ruta" to={`/wiki/${guia.diferencial.siNo.guia}`}>
             {guia.diferencial.siNo.etiqueta}
             <span aria-hidden="true"> →</span>
           </Link>
-        </p>
+        </div>
       )}
     </section>
   );
@@ -340,10 +397,10 @@ function EtapaDiferencial({ guia }: { guia: Guia }) {
 /**
  * Etapa 2 · Las variables.
  *
- * Cada grupo es una fila de botones con `aria-pressed`, y volver a pulsar el que
- * está marcado lo desmarca. Poder arrepentirse importa: una guía que no deja
- * volver atrás obliga a acertar a la primera, y acertar a la primera es justo lo
- * que no se puede pedir a alguien que está diagnosing por primera vez.
+ * Lo que cambia es cómo se **pintan** las opciones: antes eran chips de una
+ * palabra; ahora son tarjetas con el detalle que ya estaba escrito en el contenido.
+ * El estado, los datos y el cálculo no cambian: son los mismos que alimentan la
+ * etapa 4.
  */
 function EtapaVariables({
   guia,
@@ -354,119 +411,41 @@ function EtapaVariables({
   guia: Guia;
   elegidas: Record<string, string>;
   alternar: (variable: string, opcion: string) => void;
-  reglas: number;
+  reglas: Regla[];
 }) {
-  const orden = variablesEnOrden(guia);
-  const contestadas = guia.variables.filter((v) => elegidas[v.id] !== undefined).length;
-
   return (
     <section className="etapa etapa--variables" id="montaje">
       <h2 className="etapa-titulo">
         <span className="etapa-num">2</span> Tu montaje
       </h2>
       <p className="etapa-intro">
-        {contestadas === 0
-          ? 'Marca lo que puedas. Cada respuesta acorta lo que hay que mirar: las tarjetas que no aplican desaparecen y la lista de abajo cambia.'
-          : `${contestadas} de ${guia.variables.length} contestadas · ${reglas} ${reglas === 1 ? 'acción' : 'acciones'} que se pueden aplicar ya.`}
-        {reglas > 0 && (
-          <>
-            {' '}
-            <a className="etapa-intro-enlace" href="#recomendacion">
-              Ver las {reglas} →
-            </a>
-          </>
-        )}
+        Lo que declaras aquí decide qué acciones se aplican. Con lo que has marcado
+        hasta ahora salen <strong>{reglas.length}</strong>{' '}
+        {reglas.length === 1 ? 'acción' : 'acciones'}.
       </p>
 
-      {/*
-        El diagnóstico en línea. En escritorio vive en el carril, a la derecha y a
-        la vista; por debajo de 1200 el carril cae al final de la página —el shell
-        lo apila debajo de la guía—, así que el contador se trae aquí, junto al
-        control que lo mueve. Los dos montan el mismo componente, así que no pueden
-        decir números distintos.
-      */}
       <div className="guia-diagnostico">
         <DiagnosticoGuia guia={guia} />
       </div>
 
       <div className="variables">
-        {orden.map((variable) => (
-          <GrupoVariable
+        {variablesEnOrden(guia).map((variable: Variable) => (
+          <TarjetaVariable
             key={variable.id}
             variable={variable}
             elegida={elegidas[variable.id]}
-            alternar={alternar}
+            onAlternar={(opcion) => alternar(variable.id, opcion)}
           />
         ))}
       </div>
 
-      {/*
-        El atajo a la recomendación. Con doce tarjetas de conocimiento entre las
-        variables y las acciones, quien ya sabe lo que hace tiene que poder saltar
-        sin atravesarlas. Sólo aparece cuando hay algo a lo que saltar.
-      */}
-      {reglas > 0 && (
-        <p className="guia-atajo">
-          <a className="enlace-guia" href="#recomendacion">
-            {reglas === 1 ? 'Ir a la acción' : `Ir a las ${reglas} acciones`}
-            <span aria-hidden="true"> ↓</span>
-          </a>
-        </p>
-      )}
+      <p className="guia-atajo">
+        <a className="enlace-guia" href="#recomendacion">
+          Ir a las acciones
+          <span aria-hidden="true"> ↓</span>
+        </a>
+      </p>
     </section>
-  );
-}
-
-function GrupoVariable({
-  variable,
-  elegida,
-  alternar,
-}: {
-  variable: Variable;
-  elegida: string | undefined;
-  alternar: (variable: string, opcion: string) => void;
-}) {
-  return (
-    <fieldset className="variable" id={idVariable(variable.id)}>
-      {/*
-        El `id` es el destino del enlace de la barra «Tu archivo» cuando la variable
-        recoge un campo del panel, y se calcula con `anclaVariable` para que el
-        atributo y el `href` no puedan separarse: los dos salen de la misma función
-        y `verify:guias` comprueba que el prefijo es el que la barra usa.
-
-        Es un `id` y no un atributo inventado a propósito. Con un atributo propio el
-        enlace habría que resolverlo en JavaScript, y el HTML exportado para
-        GitHub Pages —que no lo ejecuta— se quedaría sin destino: un enlace que
-        funciona con JavaScript y no sin él es la peor de las dos.
-      */}
-      <legend className="variable-titulo">
-        {variable.etiqueta}
-        {variable.necesaria && (
-          <span className="variable-requerida" title="Sin esto la recomendación no se puede afinar">
-            necesaria
-          </span>
-        )}
-      </legend>
-      <p className="variable-para">{variable.para}</p>
-      <ul className="variable-opciones">
-        {variable.opciones.map((o: Opcion) => {
-          const activo = elegida === o.id;
-          return (
-            <li key={o.id}>
-              <button
-                type="button"
-                className={`chip${activo ? ' chip--activo' : ''}`}
-                aria-pressed={activo}
-                onClick={() => alternar(variable.id, o.id)}
-              >
-                <span className="chip-texto">{o.etiqueta}</span>
-                {o.detalle && <span className="chip-detalle">{o.detalle}</span>}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </fieldset>
   );
 }
 
@@ -475,7 +454,11 @@ function GrupoVariable({
  *
  * Sólo sale lo que tus variables hacen pertinente, y cada tarjeta trae su cifra y
  * su cita. La cita va corta y literal a propósito: es la prueba de que el dato no
- * es una opinion, y una cita larga sería prosa con otro formato.
+ * es una opinión, y una cita larga sería prosa con otro formato.
+ *
+ * El cuerpo ahora son **puntos** en vez de un párrafo. El texto es el mismo —el
+ * troceado es mecánico y el cotejo lo demuestra—, pero separado en líneas se lee
+ * de un vistazo.
  */
 function EtapaConocimiento({
   guia,
@@ -507,38 +490,24 @@ function EtapaConocimiento({
       ) : (
         <div className="tarjetas">
           {tarjetas.map((t) => (
-            <article className="tarjeta" key={t.id} id={idConocimiento(t.id)}>
-              <h3 className="tarjeta-titulo">
-                {t.titulo}
-                {t.cifra && (
-                  <span className="tarjeta-cifra">
-                    <strong>{t.cifra.valor}</strong>
-                    <em>{t.cifra.nota}</em>
-                  </span>
-                )}
-              </h3>
-              <p className="tarjeta-cuerpo">
-                <Negrita>{t.cuerpo}</Negrita>
-              </p>
-              {guia.slug === 'torre-temperatura' && t.id === 'puenteado' && (
-                <EsquemaTorreTemperatura />
-              )}
-              {t.cita && (
-                <blockquote className="tarjeta-cita">
-                  <p>{t.cita.texto}</p>
-                  <cite>
-                    {t.cita.fuente}{' · '}
-                    <a href="#fuentes">Ver fuentes de la guía</a>
-                  </cite>
-                </blockquote>
-              )}
-              {t.enlaza && <EnlaceGuia guia={t.enlaza.guia} etiqueta={t.enlaza.etiqueta} />}
-            </article>
+            <TarjetaConocimiento
+              key={t.id}
+              tarjeta={t}
+              enlaza={
+                t.enlaza
+                  ? { guia: t.enlaza.guia, etiqueta: t.enlaza.etiqueta }
+                  : undefined
+              }
+              extra={
+                guia.slug === 'torre-temperatura' && t.id === 'puenteado' ? (
+                  <EsquemaTorreTemperatura />
+                ) : undefined
+              }
+            />
           ))}
         </div>
       )}
 
-      {/* Botón de desmarcar todo, sólo si hay algo que desmarcar. */}
       {Object.keys(elegidas).length > 0 && (
         <button type="button" className="boton boton--sutil" onClick={() => Object.keys(elegidas).forEach((k) => alternar(k, elegidas[k]))}>
           Empezar de cero
@@ -556,15 +525,11 @@ function EtapaConocimiento({
  * tres primeras acciones son las del Tier 1 del fabricante, que es la única
  * secuencia que viene de una fuente y no de nosotros.
  *
- * Cada acción lleva su valor, su porqué y su fuente, y el alcance cuando la
- * fuente acota lo que recomienda. Ese bloque es lo que separa una recomendación
- * de un consejo.
- *
  * ## Los dos modos
  *
  * `guia` llega con valor **sólo** en la exportación estática, y entonces esta etapa
- * publica el recetario completo con las condiciones de cada acción, en vez
- * de la lista filtrada por las respuestas —que en ese render no existen—. En el
+ * publica el recetario completo con las condiciones de cada acción, en vez de
+ * la lista filtrada por las respuestas —que en ese render no existen—. En el
  * navegador `guia` es `null` y se pinta la lista calculada, que es el
  * comportamiento de siempre.
  */
@@ -602,34 +567,17 @@ function EtapaRecomendacion({
           */}
           <p className="etapa-intro" role="status" aria-live="polite">
             {reglas.length === 1 ? '1 acción' : `${reglas.length} acciones`} que se
-            aplican a tu caso. Las tres primeras son los pasos que el fabricante da por buenos de
-            entrada; a partir de ahí el orden es nuestro, no de la fuente.
+            aplican a lo que has declarado.
           </p>
+
           <ol className="acciones">
             {reglas.map((r, i) => (
-              <li className="accion" key={r.id} style={{ '--i': i } as React.CSSProperties}>
-                <div className="accion-cabeza">
-                  <span className="accion-orden" aria-hidden="true">
-                    {i + 1}
-                  </span>
-                  <div className="accion-titulo">
-                    <h3>{r.accion}</h3>
-                    {r.valor && <p className="accion-valor">{r.valor}</p>}
-                  </div>
-                </div>
-                <Comparacion regla={r} metadata={metadata} />
-                <p className="accion-porque">
-                  <Negrita>{r.porque}</Negrita>
-                </p>
-                {r.alcance && (
-                  <p className="accion-alcance">
-                    <Negrita>{r.alcance}</Negrita>
-                  </p>
-                )}
-                <p className="accion-fuente">
-                  <span>{r.fuente}</span>
-                </p>
-              </li>
+              <ReadoutAccion
+                key={r.id}
+                regla={r}
+                orden={i + 1}
+                comparacion={<Comparacion regla={r} metadata={metadata} />}
+              />
             ))}
           </ol>
         </>
@@ -702,14 +650,12 @@ function CondicionesAccion({ regla, guia }: { regla: Regla; guia: Guia }) {
 function AccionEstatica({ regla, orden, guia }: { regla: Regla; orden: number; guia: Guia }) {
   return (
     <li className="accion" data-regla={regla.id}>
-      <div className="accion-cabeza">
+      <div className="accion-cabecera">
         <span className="accion-orden" aria-hidden="true">
-          {orden}
+          {String(orden).padStart(2, '0')}
         </span>
-        <div className="accion-titulo">
-          <h3>{regla.accion}</h3>
-          {regla.valor && <p className="accion-valor">{regla.valor}</p>}
-        </div>
+        <h3 className="accion-titulo">{regla.accion}</h3>
+        {regla.valor && <p className="accion-valor">{regla.valor}</p>}
       </div>
       <CondicionesAccion regla={regla} guia={guia} />
       <p className="accion-porque">
@@ -721,7 +667,7 @@ function AccionEstatica({ regla, orden, guia }: { regla: Regla; orden: number; g
         </p>
       )}
       <p className="accion-fuente">
-        <span>{regla.fuente}</span>
+        <span>FUENTE · {regla.fuente}</span>
       </p>
     </li>
   );

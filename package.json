@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "verify:layout": "node scripts/verify/barrido.mjs",
+    "verify:animacion": "node scripts/verify/animacion.mjs",
     "verify:teclado": "node scripts/verify/teclado.mjs",
     "verify:overlay": "node scripts/verify/overlay.mjs",
     "verify:shots": "node scripts/verify/shots.mjs",
@@ -32,6 +33,7 @@
   },
   "dependencies": {
     "@types/three": "^0.186.0",
+    "motion": "^14.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "7.18.4",

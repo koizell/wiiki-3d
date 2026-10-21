@@ -82,12 +82,20 @@ export function seoGuia(guia: {
   titulo: string;
   sintoma: string;
   resumen: string;
+  resumenExtra?: string;
   minutos: number;
   autor: { nombre: string; credencial?: string; perfil?: string };
   actualizado: string;
   reglas: Array<{ accion: string; valor?: string }>;
 }): SeoPagina {
   const path = `/wiki/${guia.slug}/`;
+  /*
+   * La descripción sale del resumen **entero**: la primera frase y, si la hay, la
+   * segunda. La tarjeta del índice sí lleva sólo la primera —tiene que caber en
+   * tres líneas— pero la descripción no tiene ese problema, y una descripción de
+   * nueve palabras no le dice a un buscador de qué trata la página.
+   */
+  const descripcion = [guia.resumen, guia.resumenExtra].filter(Boolean).join(' ');
   const pasos = guia.reglas.slice(0, 8).map((r) => ({
     '@type': 'HowToStep',
     name: r.accion,
@@ -97,13 +105,13 @@ export function seoGuia(guia: {
   return {
     path,
     title: `${guia.sintoma} | ${guia.titulo} | wiiki-3d`,
-    description: guia.resumen,
+    description: descripcion,
     lastmod: guia.actualizado,
     schema: {
       '@context': 'https://schema.org',
       '@type': 'HowTo',
       name: `${guia.sintoma}: ${guia.titulo}`,
-      description: guia.resumen,
+      description: descripcion,
       inLanguage: 'es',
       totalTime: `PT${guia.minutos}M`,
       mainEntityOfPage: `${ORIGEN}${path}`,

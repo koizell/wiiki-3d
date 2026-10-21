@@ -49,23 +49,8 @@
 
 /* Guías: primero orientarse y comparar; el contexto extenso sigue disponible. */
 .guia { flex-shrink: 0; gap: 1.5rem; margin-inline: auto; }
-.guia-cabecera { grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; align-items: start; }
-.guia-cabecera-dibujo { padding: 0.25rem; }
 .guia-contexto { margin-top: 0.75rem; color: var(--text-secondary); }
 .guia-contexto summary { cursor: pointer; color: var(--accent-text); font-size: var(--texto-sm); min-height: 2rem; }
-.guia-recorrido { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
-.guia-recorrido a {
-  padding: 0.75rem;
-  color: var(--accent-text);
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radio-md);
-  font-size: var(--texto-sm);
-  text-decoration: none;
-  line-height: 1.4;
-}
-.guia-recorrido a:hover { border-color: var(--accent-text); }
-.guia-recorrido a:focus-visible,
 .guia-contexto summary:focus-visible,
 .riel-indice:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .etapa[id] { scroll-margin-top: 1rem; }
