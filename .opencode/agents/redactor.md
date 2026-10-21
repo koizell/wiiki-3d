@@ -79,6 +79,19 @@ Y una salida: `siNo` con la guía a la que va quien falla las tres. Si esa guía
 escrita todavía, **no la enlaces**: pon el `sintoma` en `fueraDeAlcance` y déjalo como
 texto. Un enlace a una página que no existe es peor que no enlazar.
 
+### 1.b · El resumen
+
+`resumen` es **una frase**. Una. Sale en la tarjeta del índice y en el
+`description` de la página, y las dos tienen que caber en una línea.
+
+Si hace falta una segunda frase —y a veces la hace—, va en `resumenExtra`, que
+sale **sólo** en la cabecera de la guía, dentro del desplegable de contexto. No
+se pierde: se coloca.
+
+`verify:guias` lo comprueba. Antes esta regla no se cumplía en 19 de las 32
+guías, y la cabecera de una guía tenía 124 px de párrafo antes de llegar al
+título.
+
 ### 2 · Las variables
 
 Lo que la persona declara de su montaje. Cada variable lleva su `para`: una frase que
@@ -103,6 +116,18 @@ Tarjetas. Cada una con su `cuerpo` de **dos o tres frases** —es una tarjeta, n
 sección— y, si el tema tiene cifra, su `cifra`: `valor` grande y `nota` con el
 **alcance**.
 
+Y dos cosas más, que la página usa y que antes no existían:
+
+- **`indicador`: el tema de la tarjeta.** Una clasificación, no un dato: `temperatura`,
+  `cama`, `material`, `altura`, `velocidad`, `calibracion`, `slicer`, `maquina`,
+  `entorno`, `ventilacion`, `geometria`, `general`. Es lo que permite entender de
+  un vistazo si lo que tiene delante es un número que se mide o un ajuste que se
+  hace. **Es obligatorio**: `verify:guias` lo hace fallar si falta.
+- **`puntos`: el cuerpo troceado.** Las mismas frases, pero separadas en puntos de
+  una línea, de dos a cuatro. El `cuerpo` **no se sustituye**: los dos van, y la
+  página pinta los puntos. El troceado es mecánico —corta por frases— y la
+  migración de las 32 guías se hizo con un script que no cambió ni una palabra.
+
 La `nota` no es adorno. Es lo que separa «35–45 °C para PLA en Cool Plate» de «35–45
 °C, que es una recomendación general», que es el error que hace que la gente suba la
 cama de más y destruya la chapa.
@@ -121,7 +146,15 @@ Las acciones, en orden. Cada una con:
 - `accion`: imperativo y corto. «Limpia la chapa con agua templada y jabón».
 - `valor`: el número, si lo hay. **Si la acción dice una cifra, la cifra va aquí**, no
   enterrada en el `porque`. `verify:guias` lo comprueba.
-- `porque`: una o dos frases. Nunca «porque sí».
+- `porque`: una o dos frases. Nunca «porque sí». Y en la práctica **una**: la
+  acción ya tiene su cifra en grande al lado, y un porqué de tres líneas debajo
+  vuelve a ser un párrafo. `verify:guias` lo vigila con un freno: 213 reglas de
+  583 siguen por encima de 200 caracteres, y ese número sólo puede bajar.
+- `indicador`: **qué hay que hacer con la acción**, si el verbo no lo dice solo.
+  Es opcional y casi nunca hace falta: sale del verbo de la `accion` —«sube» es
+  `subir`, «limpia» es `limpiar`— y sólo se declara cuando la derivación se
+  equivoca. Los valores son `subir`, `bajar`, `cambiar`, `activar`, `desactivar`,
+  `limpiar`, `medir`, `esperar`, `ajustar`, `mantener`, `evitar`, `instalar`.
 - `alcance`: qué es exactamente lo que la fuente acota. **Es una categoría distinta
   del `porque`**, y por eso tiene su propio campo y su propio color en la página:
   mezclar los dos es lo que convierte una fuente acotada en una recomendación
@@ -138,11 +171,17 @@ Para que lo que escribas se lea bien, esto es lo que hay:
 
 - El **índice** pinta tu `sintoma` como título de la tarjeta, tu `resumen` como
   descripción, tu `dibujo` como esquema y tu `minutos` como insignia.
-- El **diferencial** pinta tus comprobaciones como pares de tarjetas.
-- Las **variables** salen como filas de chips, con tu `detalle` dentro del chip: por
-  eso el detalle tiene que caber en un chip corto.
-- El **conocimiento** sale filtrado por lo marcado, con la cifra arriba a la derecha.
-- Las **reglas** salen numeradas, con el valor en color de acento.
+- El **diferencial** pinta **la pregunta** grande, con dos botones. El veredicto
+  —«es este problema» o «es otro problema»— sale **cuando alguien contesta**, y tus
+  dos caras quedan debajo, en un desplegable. Por eso la `si` y la `no` tienen que
+  poder leerse sueltas: son el texto de las dos caras.
+- Las **variables** salen como tarjetas, con tu `detalle` **dentro de la tarjeta**,
+  debajo de la etiqueta: por eso el detalle tiene que ser una línea y no un
+  paréntesis.
+- El **conocimiento** sale filtrado por lo marcado, con la cifra arriba a la
+  derecha y el cuerpo en puntos.
+- Las **reglas** salen numeradas, con el valor en color de acento y el porqué en
+  una línea debajo.
 - `fueraDeAlcance` sale como tres tarjetas en rojo, y dos de ellas llevan enlace a la
   otra guía si pones `guia`.
 - Las **fuentes** salen al pie, una por entrada, con `quien` en negrita y `que` debajo.
