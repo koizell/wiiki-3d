@@ -15,6 +15,37 @@ import {
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+/*
+ * El módulo de indicadores se carga aparte y a propósito falla suave.
+ *
+ * `src/lib/indicadores.ts` es la tabla que decide qué indicador lleva cada acción y
+ * cada tarjeta. Si no existe, o si le falta un verbo, **esta** comprobación tiene que
+ * fallar — y sólo ella: el resto del motor de guías sigue teniendo que correr, porque
+ * un fallo aquí no significa que el contenido esté mal, sino que falta la tabla.
+ */
+let indicadores = null;
+try {
+  indicadores = await import('../../src/lib/indicadores.ts');
+} catch {
+  indicadores = null;
+}
+
+/**
+ * La deuda de texto largo, medida y con freno.
+ *
+ * El «porqué» de una acción debería caber en una línea y el cuerpo de una tarjeta
+ * debería ser una lista de puntos. Hoy no es así, y no se va a arreglar reescribiendo
+ * 583 reglas a mano: se arregla en el ciclo del redactor, una vuelta cada vez.
+ *
+ * El número de aquí es el de **hoy**, y funciona como un freno: sólo puede bajar. Si
+ * somebody escribe una regla más larga, la comprobación falla; si alguien acorta, el
+ * número baja y hay que actualizar el de arriba. Es la forma de que una deuda que se
+ * ve no se vuelva a crecer en silencio.
+ */
+const MAX_PORQUE = 200;
+const DEUDA_PORQUE = 213;
+const MAX_CUERPO = 1021;
+
 /**
  * El motor de las guías, sin navegador.
  *
@@ -32,10 +63,26 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  */
 
 let pruebas = 0;
+const fallos = [];
+
+/**
+ * Una comprobación, y todas las que quedan.
+ *
+ * Antes, un fallo abortaba el script entero en la primera comprobación. Con una
+ * migración de 520 tarjetas de contenido eso significaba un fallo por vuelta y
+ * 520 vueltas, así que el script **acumula** y sale con código 1 al final, como
+ * hacen `verify:ui` y `verify:wiki`. El recuento de la última línea sigue siendo
+ * el de comprobaciones aprobadas, que es lo que el tablero cita.
+ */
 function comprobar(nombre, fn) {
-  fn();
-  pruebas++;
-  console.log(`  OK    ${nombre}`);
+  try {
+    fn();
+    pruebas++;
+    console.log(`  OK    ${nombre}`);
+  } catch (error) {
+    fallos.push({ nombre, mensaje: error?.message ?? String(error) });
+    console.log(`  FALLA ${nombre}`);
+  }
 }
 
 console.log('\n=== El registro ===\n');
@@ -166,6 +213,100 @@ for (const guia of GUIAS) {
       const conCifra = /°C|mm|%/.test(r.accion);
       if (conCifra) assert.ok(r.valor, `regla «${r.id}» dice una cifra en la acción y no la declara en valor`);
     }
+  });
+
+  /*
+   * El indicador de cada acción: lo que convierte una lista de frases en un
+   * instrumento.
+   *
+   * «Sube la temperatura de cama» es texto. «Sube la temperatura de cama» con una
+   * flecha ↑ al lado es una **acción**, y se lee de un vistazo lo que hay que hacer
+   * con ella: subir, bajar, limpiar, medir, activar.
+   *
+   * El indicador sale del **verbo** de la acción, no de un campo nuevo: escribirlo
+   * dos veces sería mantenerlo en dos sitios. Cuando la derivación se equivoca, la
+   * regla declara su `indicador` explícito y gana el declarado.
+   *
+   * Y aquí está la parte que manda: **un verbo que la tabla no conoce es un fallo**.
+   * No porque el texto esté mal, sino porque una acción cuyo indicador nadie sabe
+   * deducir es una acción que se pinta sin indicador, que es exactamente el muro de
+   * texto que este trabajo viene a quitar.
+   */
+  comprobar(`${guia.slug}: cada acción tiene un indicador`, () => {
+    assert.ok(indicadores, 'falta src/lib/indicadores.ts');
+    const ofensores = [];
+    for (const r of guia.reglas) {
+      const explicito = r.indicador;
+      if (explicito !== undefined) {
+        if (!indicadores.INDICADORES_ACCION.includes(explicito)) {
+          ofensores.push(`«${r.id}» declara el indicador «${explicito}», que no está en el vocabulario`);
+        }
+        continue;
+      }
+      const derivado = indicadores.indicadorDeAccion(r.accion);
+      if (derivado === null) {
+        ofensores.push(`«${r.id}» no dice qué hacer: «${r.accion}»`);
+      }
+    }
+    assert.deepEqual(ofensores, [], ofensores.join('\n      '));
+  });
+
+  comprobar(`${guia.slug}: cada tarjeta y cada variable declaran su tema`, () => {
+    assert.ok(indicadores, 'falta src/lib/indicadores.ts');
+    const ofensores = [];
+    for (const c of guia.conocimiento) {
+      if (c.indicador === undefined) {
+        ofensores.push(`la tarjeta «${c.id}» no declara su indicador`);
+        continue;
+      }
+      if (!indicadores.INDICADORES_TEMA.includes(c.indicador)) {
+        ofensores.push(`la tarjeta «${c.id}» declara el indicador «${c.indicador}», que no está en el vocabulario`);
+      }
+    }
+    for (const v of guia.variables) {
+      if (v.indicador === undefined) {
+        ofensores.push(`la variable «${v.id}» no declara su indicador`);
+        continue;
+      }
+      if (!indicadores.INDICADORES_TEMA.includes(v.indicador)) {
+        ofensores.push(`la variable «${v.id}» declara el indicador «${v.indicador}», que no está en el vocabulario`);
+      }
+    }
+    assert.deepEqual(ofensores, [], ofensores.join('\n      '));
+  });
+
+  /*
+   * El cuerpo de una tarjeta, en puntos.
+   *
+   * Un cuerpo de 336 caracteres de media son tres frases encadenadas, y encadenadas
+   * se leen como un párrafo: un muro. Separadas en puntos, la misma información se
+   * lee de un vistazo y la tarjeta gana la jerarquía que le faltaba.
+   *
+   * Los puntos son opcionales **sólo** mientras la migración no ha pasado por esta
+   * guía. En cuanto están, la comprobación exige que sean de dos a cuatro y que
+   * ninguno pase de 140 caracteres: un punto es una línea, no un párrafo.
+   */
+  comprobar(`${guia.slug}: cada tarjeta de conocimiento tiene sus puntos`, () => {
+    const ofensores = [];
+    for (const c of guia.conocimiento) {
+      if (c.puntos === undefined) continue;
+      assert.ok(c.puntos.length >= 1, `la tarjeta «${c.id}» no tiene puntos`);
+      for (const p of c.puntos) {
+        assert.ok(p.trim().length > 0, `la tarjeta «${c.id}» tiene un punto vacío`);
+        if (p.length > 140) {
+          ofensores.push(`la tarjeta «${c.id}» tiene un punto de ${p.length} caracteres`);
+        }
+      }
+    }
+    assert.deepEqual(ofensores, [], ofensores.join('\n      '));
+  });
+
+  comprobar(`${guia.slug}: el porqué de cada acción cabe en una línea`, () => {
+    const largos = guia.reglas.filter((r) => r.porque.length > MAX_PORQUE).length;
+    assert.ok(
+      largos <= DEUDA_PORQUE,
+      `${guia.slug} tiene ${largos} reglas con el porqué de más de ${MAX_PORQUE} caracteres, y el freno está en ${DEUDA_PORQUE}`
+    );
   });
 
   comprobar(`${guia.slug}: ningún enlace interno apunta a una guía inexistente`, () => {
@@ -954,5 +1095,11 @@ comprobar('la comparación marca dentro, por encima y por debajo', () => {
   assert.deepEqual(compararValor(rango, 70), { posicion: 'por-encima', diferencia: 5 });
   assert.equal(compararValor(rango, undefined), null, 'sin dato no hay comparación, no un «dentro»');
 });
+
+if (fallos.length > 0) {
+  console.log(`\n${fallos.length} COMPROBACIONES HAN FALLADO:\n`);
+  for (const f of fallos) console.log(`  ✗ ${f.nombre}\n      ${f.mensaje}\n`);
+  process.exit(1);
+}
 
 console.log(`\nMotor de guías: ${pruebas}/${pruebas} comprobaciones aprobadas.`);
