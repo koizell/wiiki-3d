@@ -5,7 +5,9 @@ export const despegueAMitad: Guia = {
   slug: 'despegue-a-mitad',
   titulo: 'Despegue a mitad de impresión',
   resumen:
-    'La pieza se despega, tumba o se desmorona a mitad. Antes de subir la temperatura, distingue si es warping de esquinas, adhesión de cama o colapso: las causas y los ajustes no son los mismos.',
+    'La pieza se despega, tumba o se desmorona a mitad.',
+  resumenExtra:
+    'Antes de subir la temperatura, distingue si es warping de esquinas, adhesión de cama o colapso: las causas y los ajustes no son los mismos.',
   sintoma: 'La pieza se despega o tumba a mitad',
   dibujo: 'colapso',
   entrada:

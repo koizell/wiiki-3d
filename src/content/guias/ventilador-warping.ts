@@ -27,7 +27,9 @@ export const ventiladorWarping: Guia = {
   slug: 'ventilador-warping',
   titulo: 'Ventilador de capa y warping',
   resumen:
-    'El ventilador puede causar warping cuando enfría demasiado rápido, especialmente en las primeras capas o en piezas grandes. Hay dos ventiladores distintos y tres contradicciones sin resolver entre fuentes oficiales.',
+    'El ventilador puede causar warping cuando enfría demasiado rápido, especialmente en las primeras capas o en piezas grandes.',
+  resumenExtra:
+    'Hay dos ventiladores distintos y tres contradicciones sin resolver entre fuentes oficiales.',
   sintoma: 'El ventilador causa o agrava el warping',
   dibujo: 'capas',
   entrada:

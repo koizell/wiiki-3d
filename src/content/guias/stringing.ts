@@ -13,7 +13,9 @@ export const stringing: Guia = {
   slug: 'stringing',
   titulo: 'Stringing y retracción',
   resumen:
-    'Hilos finos entre piezas o goteo constante de la boquilla. Distingue stringing de oozing y ajusta retracción, temperatura y travel speed en el orden correcto.',
+    'Hilos finos entre piezas o goteo constante de la boquilla.',
+  resumenExtra:
+    'Distingue stringing de oozing y ajusta retracción, temperatura y travel speed en el orden correcto.',
   sintoma: 'Hilos finos entre piezas o goteo de la boquilla',
   dibujo: 'hotend',
   entrada:

@@ -12,7 +12,9 @@ export const flowRate: Guia = {
   slug: 'flow-rate',
   titulo: 'Flow rate y calibración del flujo',
   resumen:
-    'Hay huecos entre líneas o material de sobra. Antes de tocar temperatura se descarta warping y separación: lo que falla aquí es cuánto filamento sale.',
+    'Hay huecos entre líneas o material de sobra.',
+  resumenExtra:
+    'Antes de tocar temperatura se descarta warping y separación: lo que falla aquí es cuánto filamento sale.',
   sintoma: 'Huecos o exceso de material en las líneas',
   dibujo: 'hotend',
   entrada:

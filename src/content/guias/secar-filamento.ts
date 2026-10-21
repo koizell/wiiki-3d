@@ -43,7 +43,9 @@ export const secarFilamento: Guia = {
   slug: 'secar-filamento',
   titulo: 'Secar filamento',
   resumen:
-    'El PETG tiene varias cifras de secado y ninguna es «la» buena: lo que las separa es el método y el fabricante. Esta guía te dice si lo tuyo es humedad y, si lo es, con qué aparato y a qué temperatura.',
+    'El PETG tiene varias cifras de secado y ninguna es «la» buena: lo que las separa es el método y el fabricante.',
+  resumenExtra:
+    'Esta guía te dice si lo tuyo es humedad y, si lo es, con qué aparato y a qué temperatura.',
   sintoma: '¿Es humedad lo que me pasa?',
   dibujo: 'rugosidad',
   entrada:

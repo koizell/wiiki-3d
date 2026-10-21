@@ -335,8 +335,27 @@ export interface Autor {
 export interface Guia {
   slug: string;
   titulo: string;
-  /** Una frase. Sale en la tarjeta del índice y en el `description`. */
+  /**
+   * Una frase. Sale en la tarjeta del índice y en el `description`.
+   *
+   * **Una frase de verdad.** El contrato lo decía desde el principio y no se
+   * cumplía: la longitud media era de 164 caracteres y 19 de las 32 guías tenían
+   * más de una frase. Una tarjeta de índice con tres frases no es un resumen, y
+   * una cabecera de guía con un párrafo de 124 px de alto es un muro de texto.
+   */
   resumen: string;
+  /**
+   * La segunda mitad del resumen, cuando la había.
+   *
+   * Lo que va después de la primera frase **sigue siendo contenido**: no se
+   * borra, se coloca. Sale en la cabecera de la guía, debajo del resumen, y no en
+   * la tarjeta del índice ni en el `description`, que tienen que caber en una
+   * línea.
+   *
+   * Ninguna guía lo tiene hoy, y está aquí para que la próxima que lo necesite no
+   * tenga que romper el contrato de `resumen` para decirlo.
+   */
+  resumenExtra?: string;
   /**
    * El párrafo de entrada de la guía, en prosa. Es lo primero que se lee al
    * abrirla, bajo la cabecera y antes del diferencial.

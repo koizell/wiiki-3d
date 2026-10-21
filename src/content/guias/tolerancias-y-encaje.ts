@@ -12,7 +12,9 @@ export const toleranciasYEncaje: Guia = {
   slug: 'tolerancias-y-encaje',
   titulo: 'Tolerancias y encaje en impresión 3D FDM',
   resumen:
-    'La pieza sale más grande o más pequeña de lo diseñado, o no encaja con otra. Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
+    'La pieza sale más grande o más pequeña de lo diseñado, o no encaja con otra.',
+  resumenExtra:
+    'Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
   sintoma: 'La pieza no sale a medida o no encaja',
   dibujo: 'slicer',
   entrada:

@@ -74,7 +74,9 @@ export const tpuFlexible: Guia = {
   slug: 'tpu-flexible',
   titulo: 'TPU flexible',
   resumen:
-    'El TPU no es un material con otros números: es un material con otras exigencias. Qué máquina puede con qué variante, qué hay que cambiar en el equipo y qué no se sabe todavía.',
+    'El TPU no es un material con otros números: es un material con otras exigencias.',
+  resumenExtra:
+    'Qué máquina puede con qué variante, qué hay que cambiar en el equipo y qué no se sabe todavía.',
   sintoma: '¿Mi impresora puede con TPU?',
   dibujo: 'hotend',
   entrada:

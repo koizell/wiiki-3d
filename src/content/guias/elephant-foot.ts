@@ -5,7 +5,9 @@ export const elephantFoot: Guia = {
   slug: 'elephant-foot',
   titulo: 'Pie de elefante (elephant foot)',
   resumen:
-    'La base sale más ancha que el resto. Antes de compensar, mide dónde está el ensanchamiento y si la máquina está demasiado baja: la compensación mueve el contorno, no cura la causa.',
+    'La base sale más ancha que el resto.',
+  resumenExtra:
+    'Antes de compensar, mide dónde está el ensanchamiento y si la máquina está demasiado baja: la compensación mueve el contorno, no cura la causa.',
   sintoma: 'La base sale más ancha que arriba',
   dibujo: 'primera-capa',
   entrada:

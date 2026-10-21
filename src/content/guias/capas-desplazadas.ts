@@ -14,7 +14,9 @@ export const capasDesplazadas: Guia = {
   slug: 'capas-desplazadas',
   titulo: 'Capas desplazadas',
   resumen:
-    'El bloque está bien pegado pero ha salido corrido. Antes de tocar temperatura, se descarta que sea separación o warping: la causa suele ser el motor, el driver o el firmware, no la unión entre capas.',
+    'El bloque está bien pegado pero ha salido corrido.',
+  resumenExtra:
+    'Antes de tocar temperatura, se descarta que sea separación o warping: la causa suele ser el motor, el driver o el firmware, no la unión entre capas.',
   sintoma: 'Las capas se han corrido de su sitio',
   dibujo: 'capas',
   entrada:

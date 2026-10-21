@@ -5,7 +5,9 @@ export const esquinasPetg: Guia = {
   slug: 'esquinas-petg',
   titulo: 'Esquinas levantadas en PETG (warping)',
   resumen:
-    'El PETG ensombrece el warping del PLA pero sus esquinas se levantan igual. Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
+    'El PETG ensombrece el warping del PLA pero sus esquinas se levantan igual.',
+  resumenExtra:
+    'Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
   sintoma: 'Esquinas levantadas en PETG',
   dibujo: 'esquinas',
   entrada:

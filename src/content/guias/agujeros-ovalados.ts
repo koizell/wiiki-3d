@@ -14,7 +14,9 @@ export const agujerosOvalados: Guia = {
   slug: 'agujeros-ovalados',
   titulo: 'Agujeros ovalados y compensación dimensional XY',
   resumen:
-    'Los agujeros salen más pequeños o elípticos. Antes de compensar, mide el error y descarta warping, separación y pie de elefante: la compensación mueve el contorno, no cura la causa.',
+    'Los agujeros salen más pequeños o elípticos.',
+  resumenExtra:
+    'Antes de compensar, mide el error y descarta warping, separación y pie de elefante: la compensación mueve el contorno, no cura la causa.',
   sintoma: 'Los agujeros salen más pequeños o elípticos',
   dibujo: 'slicer',
   entrada:

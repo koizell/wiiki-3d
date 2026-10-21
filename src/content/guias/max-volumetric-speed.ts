@@ -12,7 +12,9 @@ export const maxVolumetricSpeed: Guia = {
   slug: 'max-volumetric-speed',
   titulo: 'Velocidad volumétrica máxima (MVS)',
   resumen:
-    'La pieza se subextruye o se atasca sólo a alta velocidad. Antes de tocar temperatura se descarta flow rate y warping: lo que falla aquí es el techo de caudal que el hotend puede fundir.',
+    'La pieza se subextruye o se atasca sólo a alta velocidad.',
+  resumenExtra:
+    'Antes de tocar temperatura se descarta flow rate y warping: lo que falla aquí es el techo de caudal que el hotend puede fundir.',
   sintoma: 'Subextrusión o atascos a alta velocidad',
   dibujo: 'hotend',
   entrada:

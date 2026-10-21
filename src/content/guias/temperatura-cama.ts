@@ -31,7 +31,9 @@ export const temperaturaCama: Guia = {
   slug: 'temperatura-cama',
   titulo: 'Temperatura de cama',
   resumen:
-    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es la chapa, no el fabricante. Esta guía te dice cuál es la tuya y qué pasa si te pasas.',
+    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es la chapa, no el fabricante.',
+  resumenExtra:
+    'Esta guía te dice cuál es la tuya y qué pasa si te pasas.',
   sintoma: '¿Qué número de cama pongo?',
   dibujo: 'cama',
   entrada: 'No hay un número de cama: hay seis para el PLA y dependen de la chapa más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',

@@ -5,7 +5,9 @@ export const mallaDeCama: Guia = {
   slug: 'malla-de-cama',
   titulo: 'Malla de cama y nivelación',
   resumen:
-    'La adhesión va y viene por zonas. La malla mide la cama y la sigue, pero no corrige un offset alto ni una chapa sucia.',
+    'La adhesión va y viene por zonas.',
+  resumenExtra:
+    'La malla mide la cama y la sigue, pero no corrige un offset alto ni una chapa sucia.',
   sintoma: 'La primera capa se pega a trozos',
   dibujo: 'cama',
   entrada:

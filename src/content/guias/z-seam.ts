@@ -61,7 +61,9 @@ export const zSeam: Guia = {
   slug: 'z-seam',
   titulo: 'La costura Z',
   resumen:
-    'La costura Z es el punto donde cada perímetro empieza y acaba: es normal y con FFF no se puede eliminar. Esta guía dice dónde ponerla para que estorbe menos y qué se puede mejorar.',
+    'La costura Z es el punto donde cada perímetro empieza y acaba: es normal y con FFF no se puede eliminar.',
+  resumenExtra:
+    'Esta guía dice dónde ponerla para que estorbe menos y qué se puede mejorar.',
   sintoma: 'Una línea vertical que sube por la pared',
   dibujo: 'capas',
   entrada:
