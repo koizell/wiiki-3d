@@ -1,6 +1,51 @@
 # Kanban de wiiki-3d
 
-Actualizado: 2026-10-19. Tablero vivo: se actualiza al cerrar cada tarjeta.
+Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
+
+### Estado contrastado el 21 de octubre
+
+- **La guía deja de ser un muro de texto.** El módulo más pesado del sitio se ha
+  rediseñado como un **instrumento**, en la línea de la portada: la pregunta del
+  diferencial manda y el veredicto llega al contestar; las opciones son tarjetas
+  con su detalle; las tarjetas de conocimiento llevan la cifra en grande y el
+  cuerpo en puntos; las acciones son readouts con la cifra mandando, el porqué en
+  una línea y la fuente al lado. Encima, la cabecera de plano con el estado y el
+  recorrido con los contadores en vivo. El diseño está en Figma
+  ([wiiki-3d · design system](https://www.figma.com/design/DTXR8LOlujQXdC6vv4ks3Y),
+  página `02 · Guía redisejada`) y el plan en
+  [`2026-10-21-guia-como-instrumento.md`](superpowers/plans/2026-10-21-guia-como-instrumento.md).
+- **El contenido también se ha ajustado, no sólo la presentación.** El contrato
+  decía que `resumen` era «una frase» y no lo era: media de 164 caracteres y **19 de
+  32 guías con más de una frase**. Ahora `resumen` es la primera frase y el resto
+  va en `resumenExtra`, dentro del desplegable de contexto. **952 palabras de
+  resumen antes y 952 después**: no se ha perdido ni una. Y las 520 tarjetas de
+  conocimiento han pasado a tener **tema** (qué va) y **puntos** (el cuerpo
+  troceado en líneas de una): el troceado es mecánico y el cotejo lo demuestra.
+- **Siete acciones no eran acciones.** «En Prusa, la superficie recomendada es PA
+  Nylon o Satin» y «Lo que ves es el modo Random funcionando, no un fallo» son
+  frases, no instrucciones. Se han reescrito en imperativo **sin cambiar la
+  afirmación, el valor, el porqué ni la fuente**, y las ocho diferencias están
+  declaradas una por una en el cotejo.
+- **`motion` entra, y la spec se ha actualizado.** La spec §2 D5 decía «ninguna
+  dependencia»; ahora admite `motion` para lo que el CSS no cubre, que es la
+  **salida** de una etapa. El chunk de entrada crece **0,19 kB** —la librería se va
+  con la ruta, que ya era `lazy`— y el hover, el foco y el pulso siguen en CSS.
+  `verify:animacion` es la comprobación nueva: 18/18.
+- **El CLS de la guía era de 0,586** y no era culpa de la animación: la spec §4
+  manda `preload` para los pesos de la primera pantalla y **el `preload` no
+  estaba**. Con él, el CLS es de cero.
+- **`verify:ux-tareas` llevaba en rojo desde el 20 de octubre** sin que nadie lo
+  dijera: seguía buscando la clase `.inicio-accesos`, que el rediseño de la
+  portada había borrado. Ahora comprueba el orden —los síntomas antes de la
+  documentación larga— y no una altura que ya no describía el diseño.
+- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (214), `ui`
+  (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
+  `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
+  `seo` (450), `animacion` (18) y `guias` (1059). `lint` con 0 errores y las 3
+  advertencias preexistentes de las copias de Three de `.superpowers/brainstorm/`.
+- **Lo que queda**: la etapa activa del recorrido (hoy no se marca al desplazar), el
+  piloto del G-code con trayectoria 3D, y las guías que aún tienen el `porqué` de
+  más de 200 caracteres —**213 de 583**, y ese número sólo puede bajar.
 
 ### Estado contrastado el 19 de octubre
 
