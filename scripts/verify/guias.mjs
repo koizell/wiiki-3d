@@ -251,6 +251,20 @@ for (const guia of GUIAS) {
     assert.deepEqual(ofensores, [], ofensores.join('\n      '));
   });
 
+  comprobar(`${guia.slug}: el resumen es una frase`, () => {
+    /*
+     * El contrato dice que `resumen` es una frase, y no lo era: la media eran 164
+     * caracteres y 19 de las 32 guías tenían más de una frase. La tarjeta del índice
+     * y el `description` salían con tres frases encima.
+     *
+     * Lo que se comprueba ahora es lo que el contrato dice. Y lo que va después de
+     * la primera frase no se pierde: está en `resumenExtra` y sale en la cabecera
+     * de la guía.
+     */
+    const frases = (guia.resumen.match(/[.!?](?=\s|$)/g) ?? []).length;
+    assert.ok(frases <= 1, `el resumen tiene ${frases} frases: «${guia.resumen}»`);
+  });
+
   comprobar(`${guia.slug}: cada tarjeta y cada variable declaran su tema`, () => {
     assert.ok(indicadores, 'falta src/lib/indicadores.ts');
     const ofensores = [];

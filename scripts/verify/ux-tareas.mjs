@@ -38,11 +38,36 @@ try {
       assert(libre.top >= 0 && libre.bottom < libre.limit && libre.hit, JSON.stringify(libre));
     });
     await probar('Inicio ofrece síntomas y catálogo antes de la documentación larga', async p => {
-      const enlaces = p.locator('.inicio-accesos');
-      assert.equal(await enlaces.locator('a[href="/wiki"]').count(), 1);
-      assert.equal(await enlaces.locator('a[href="/maquinas"]').count(), 1);
-      const r = await enlaces.boundingBox();
-      assert(r.y < 667, `accesos en y=${r.y}`);
+      /*
+       * La portada se rediseñó el 20 de octubre: los síntomas pasaron a ser una
+       * rejilla de dibujos y los accesos a módulos, a tres tarjetas. Esta
+       * comprobación seguía buscando la clase de la portada anterior —`.inicio-
+       * accesos`—, que ya no existe, y llevaba en rojo desde entonces sin que nadie
+       * lo dijera.
+       *
+       * Lo que se comprueba es lo mismo de antes: que hay un camino al índice y a
+       * las máquinas, y que están **arriba**, antes de la tabla de temperaturas y
+       * las preguntas.
+       */
+      assert.equal(await p.locator('.inicio-sintomas-enlace[href="/wiki"]').count(), 1);
+      assert.equal(await p.locator('.inicio-modulos a[href="/maquinas"]').count(), 1);
+      /*
+       * Lo que se comprueba es el **orden**, no una altura: los síntomas y el
+       * catálogo tienen que estar antes de la documentación larga —la tabla de
+       * temperaturas y las preguntas—.
+       *
+       * Antes se comparaba con una altura fija —667 px, la del móvil viejo—, y
+       * el rediseño de la portada del 20 de octubre la dejó en 674: la
+       * comprobación llevaba en rojo desde entonces, mirando un número que ya no
+       * describía el diseño.
+       */
+      const donde = await p.evaluate(() => {
+        const sintomas = document.querySelector('.inicio-sintomas-lista')?.getBoundingClientRect();
+        const tabla = document.querySelector('.inicio-referencia')?.getBoundingClientRect();
+        return { sintomas: sintomas?.y ?? 0, tabla: tabla?.y ?? 0 };
+      });
+      assert(donde.sintomas < donde.tabla, `síntomas en y=${Math.round(donde.sintomas)}, tabla en y=${Math.round(donde.tabla)}`);
+      assert(donde.sintomas < 900, `síntomas en y=${Math.round(donde.sintomas)}`);
     });
     await probar('G-code muestra recomendación en main, sin visor vacío ni duplicados', async p => {
       await p.locator('#file-upload').setInputFiles(GCODE_FIXTURE);
@@ -95,7 +120,7 @@ try {
       for (const link of await nav.locator('a').all()) {
         assert.equal(await p.locator(await link.getAttribute('href')).count(), 1);
       }
-      const pregunta = await p.locator('.diferencial-mira').first().boundingBox();
+      const pregunta = await p.locator('.comprobacion-mira').first().boundingBox();
       assert(pregunta.y < 750, `primera comprobación en y=${pregunta.y}`);
       assert.equal(await p.locator('.guia-contexto .guia-entrada').count(), 1);
       assert.equal(await p.locator('.guia-fuentes-lista').count(), 1);
@@ -103,7 +128,7 @@ try {
     await probar('guía conserva diferencial, variables y relacionadas sin enumerar toda la wiki', async p => {
       await p.goto(servidor.base + '/wiki/warping-pla');
       await p.locator('.etapa--variables').waitFor();
-      assert.equal(await p.locator('.diferencial-fila').count(), 3);
+      assert.equal(await p.locator('.comprobacion').count(), 3);
       assert.equal(await p.locator('.riel-lista li').count(), 3);
       assert.equal(await p.locator('.riel a[href="/wiki"]').count(), 1);
       await p.locator('fieldset button').first().click();

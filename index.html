@@ -13,6 +13,41 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
+      Las fuentes, por adelantado.
+
+      La spec de identidad visual (§4) las manda con `font-display: swap` y con un
+      `preload` para los pesos de la primera pantalla. El `preload` **faltaba**, y su
+      ausencia se medía: sin él, el navegador pinta con la fuente del sistema y al
+      llegar la de Plex **todo el texto se mueve**. Medido en la guía: un desplazamiento
+      acumulado de 0.586, que es un CLS de casi seis décimas.
+
+      Con el `preload` la fuente llega antes del primer pintado y el texto no se
+      mueve. El `crossorigin` es obligatorio: las fuentes se piden en modo CORS
+      aunque se sirvan del mismo origen, y sin él el navegador las descarga dos
+      veces y la precarga no sirve de nada.
+    -->
+    <link
+      rel="preload"
+      href="/fuentes/plex-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fuentes/plex-mono-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fuentes/plex-mono-500.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <!--
       Pinta la barra del navegador móvil con el fondo de la app. Sin esto el
       navegador usa su color por defecto (claro) y la app oscura queda encajada en
       una franja blanca, que es justo la sensación que se quiere evitar al
