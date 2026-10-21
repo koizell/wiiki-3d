@@ -362,7 +362,8 @@ function EtapaDiferencial({
         <span className="etapa-num">1</span> Antes de tocar nada: descártalo
       </h2>
       <p className="etapa-intro">
-        {guia.diferencial.contra}. Si las tres dicen que no, no es este problema.
+        {mayuscula(guia.diferencial.contra)}. Si las tres dicen que no, no es este
+        problema.
       </p>
 
       <ul className="comprobaciones">
@@ -753,7 +754,7 @@ function FueraDeAlcance({ guia }: { guia: Guia }) {
   );
 }
 
-/** Un enlace a otra guía. El tercer sitio donde la wiki se interconecta. */
+/** Una enlace a otra guía. El tercer sitio donde la wiki se interconecta. */
 function EnlaceGuia({ guia, etiqueta }: { guia: string; etiqueta: string }) {
   return (
     <Link className="enlace-guia" to={`/wiki/${guia}`}>
@@ -761,4 +762,15 @@ function EnlaceGuia({ guia, etiqueta }: { guia: string; etiqueta: string }) {
       <span aria-hidden="true"> →</span>
     </Link>
   );
+}
+
+/**
+ * La primera letra en mayúscula.
+ *
+ * `contra` es una enumeración en minúsculas —«separación entre capas», «voladizo
+ * que cuelga»— porque se leía después de «descártalo como». Ahora abre la frase
+ * del texto de entrada, y una frase no empieza en minúscula.
+ */
+function mayuscula(texto: string): string {
+  return texto.length === 0 ? texto : texto.charAt(0).toUpperCase() + texto.slice(1);
 }
