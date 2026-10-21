@@ -44,6 +44,7 @@ export const material: Guia = {
     {
       id: 'material',
       etiqueta: '¿Qué filamento usas?',
+      indicador: 'material',
       para: 'Cada familia tiene distinta contracción, distinta absorción de humedad y distintos requisitos de cámara y boquilla.',
       necesaria: true,
       campos: ['material'],
@@ -59,6 +60,7 @@ export const material: Guia = {
     {
       id: 'sintoma',
       etiqueta: '¿Qué ves en la impresión?',
+      indicador: 'general',
       para: 'El síntoma decide si el problema es del material o de otra cosa.',
       opciones: [
         { id: 'humedad', etiqueta: 'Burbujas, chasquidos, stringing, rugosidad' },
@@ -73,6 +75,12 @@ export const material: Guia = {
     {
       id: 'pla',
       titulo: 'PLA',
+      puntos: [
+        'El filamento más fácil de imprimir y el más predecible.',
+        'Poca contracción y absorbe poca humedad.',
+        'No es recomendable para entornos de unos 50 °C o superiores: se ablanda y deforma.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'El filamento más fácil de imprimir y el más predecible. Poca contracción y absorbe poca humedad. No es recomendable para entornos de unos 50 °C o superiores: se ablanda y deforma.',
       cuando: { material: 'pla' },
       cita: { texto: 'PLA: mejor elección para principiantes, resultados predecibles.', fuente: 'Bambu Lab, beginners' },
@@ -80,6 +88,12 @@ export const material: Guia = {
     {
       id: 'petg',
       titulo: 'PETG',
+      puntos: [
+        'Tan fácil de imprimir como PLA pero más resistente y duradero.',
+        'Absorbe humedad del aire: conviene mantenerlo alejado de ambientes húmedos.',
+        'No es propenso al warping, pero con temperaturas ambientales bajas puede perder resistencia entre capas.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Tan fácil de imprimir como PLA pero más resistente y duradero. Absorbe humedad del aire: conviene mantenerlo alejado de ambientes húmedos. No es propenso al warping, pero con temperaturas ambientales bajas puede perder resistencia entre capas.',
       cuando: { material: 'petg' },
       cita: { texto: 'PETG: importante mantener alejado de humedad, puede absorber humedad y dar menor calidad de impresión.', fuente: 'Bambu Lab, beginners' },
@@ -87,6 +101,13 @@ export const material: Guia = {
     {
       id: 'abs',
       titulo: 'ABS / ASA',
+      puntos: [
+        'Resistente y duradero, con buena resistencia al calor.',
+        'Requiere cama caliente y cámara cerrada para evitar el warping.',
+        'Se contrae considerablemente más que PLA o PETG.',
+        'Emite humos potencialmente peligrosos: necesita ventilación.',
+      ],
+      indicador: 'cama',
       cuerpo: 'Resistente y duradero, con buena resistencia al calor. Requiere cama caliente y cámara cerrada para evitar el warping. Se contrae considerablemente más que PLA o PETG. Emite humos potencialmente peligrosos: necesita ventilación.',
       cuando: { material: 'abs' },
       cita: { texto: 'ABS: propenso a warping sin cama caliente y adhesivo.', fuente: 'Bambu Lab, beginners' },
@@ -94,6 +115,12 @@ export const material: Guia = {
     {
       id: 'pc',
       titulo: 'PC',
+      puntos: [
+        'Alta resistencia mecánica y térmica.',
+        'Requiere cámara cerrada y temperaturas de impresión elevadas.',
+        'Puede volverse quebradizo después de ciclos repetidos de secado.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Alta resistencia mecánica y térmica. Requiere cámara cerrada y temperaturas de impresión elevadas. Puede volverse quebradizo después de ciclos repetidos de secado.',
       cuando: { material: 'pc' },
       cita: { texto: 'PC: puede volverse quebradizo después de ciclos repetidos de secado.', fuente: 'Bambu Lab, drying' },
@@ -101,6 +128,12 @@ export const material: Guia = {
     {
       id: 'pa',
       titulo: 'PA (Nylon)',
+      puntos: [
+        'Muy higroscópico: absorbe humedad rápidamente del aire.',
+        'Requiere cámara cerrada.',
+        'Después de unos tres meses expuesto al aire, es muy difícil de secar.',
+      ],
+      indicador: 'material',
       cuerpo: 'Muy higroscópico: absorbe humedad rápidamente del aire. Requiere cámara cerrada. Después de unos tres meses expuesto al aire, es muy difícil de secar.',
       cuando: { material: 'pa' },
       cita: { texto: 'PA-based filamentos: después de ~3 meses expuestos al aire, son muy difíciles de secar.', fuente: 'Bambu Lab, drying' },
@@ -108,6 +141,12 @@ export const material: Guia = {
     {
       id: 'tpu',
       titulo: 'TPU',
+      puntos: [
+        'Flexible y resistente a impactos.',
+        'No es compatible con AMS.',
+        'No requiere cámara cerrada.',
+      ],
+      indicador: 'material',
       cuerpo: 'Flexible y resistente a impactos. No es compatible con AMS. No requiere cámara cerrada.',
       cuando: { material: 'tpu' },
       cita: { texto: 'TPU: no compatible con AMS.', fuente: 'Bambu Lab, material-table' },
@@ -115,12 +154,23 @@ export const material: Guia = {
     {
       id: 'humedad-general',
       titulo: 'Todos los filamentos absorben humedad',
+      puntos: [
+        'Todos los filamentos absorben humedad del aire en cierta medida.',
+        'El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión, agujeros y superficies rugosas.',
+        'Cuanto mayor la humedad y la exposición, más severos los defectos.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Todos los filamentos absorben humedad del aire en cierta medida. El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión, agujeros y superficies rugosas. Cuanto mayor la humedad y la exposición, más severos los defectos.',
       cita: { texto: 'Todos los filamentos absorben humedad del aire en cierta medida.', fuente: 'Bambu Lab, material-table' },
     },
     {
       id: 'humedad-pla',
       titulo: 'PLA y humedad',
+      puntos: [
+        'La mayoría de filamentos PLA no sufren absorción de humedad significativa, pero no están exentos.',
+        'Mantenerlo alejado de ambientes húmedos es una prudencia de bajo coste.',
+      ],
+      indicador: 'material',
       cuerpo: 'La mayoría de filamentos PLA no sufren absorción de humedad significativa, pero no están exentos. Mantenerlo alejado de ambientes húmedos es una prudencia de bajo coste.',
       cuando: { material: 'pla' },
       cita: { texto: 'La mayoría de filamentos PLA no sufren absorción de humedad, pero se recomienda mantener alejado de ambientes húmedos.', fuente: 'Bambu Lab, beginners' },
@@ -128,24 +178,45 @@ export const material: Guia = {
     {
       id: 'contraccion-ranking',
       titulo: 'Contracción por material',
+      puntos: [
+        'Cada filamento se contrae de forma distinta: PLA y PETG son de contracción mínima, ABS es de contracción considerable.',
+        'Los materiales reforzados con fibra (CF/GF) reducen la contracción al limitar el encogimiento del material base.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Cada filamento se contrae de forma distinta: PLA y PETG son de contracción mínima, ABS es de contracción considerable. Los materiales reforzados con fibra (CF/GF) reducen la contracción al limitar el encogimiento del material base.',
       cita: { texto: 'Diferentes filamentos se contraen en diferentes cantidades.', fuente: 'Bambu Lab, shrinkage' },
     },
     {
       id: 'contraccion-ejes',
       titulo: 'La contracción es mayor en X e Y',
+      puntos: [
+        'El efecto de la contracción es más notable en los ejes X e Y que en Z. Si una pieza debe encajar con otra, compensa en esos ejes.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'El efecto de la contracción es más notable en los ejes X e Y que en Z. Si una pieza debe encajar con otra, compensa en esos ejes.',
       cita: { texto: 'El efecto es más notable en los ejes X e Y.', fuente: 'Bambu Lab, shrinkage' },
     },
     {
       id: 'boquilla-cf',
       titulo: 'Materiales CF/GF: boquilla de acero',
+      puntos: [
+        'Los materiales reforzados con fibra de carbono o vidrio requieren boquilla de acero endurecido.',
+        'No usar boquillas de acero inoxidable o latón: se desgastan rápido.',
+        'Evitar boquillas de 0.2 mm: riesgo de obstrucción extremadamente alto.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Los materiales reforzados con fibra de carbono o vidrio requieren boquilla de acero endurecido. No usar boquillas de acero inoxidable o latón: se desgastan rápido. Evitar boquillas de 0.2 mm: riesgo de obstrucción extremadamente alto.',
       cita: { texto: 'Materiales CF/GF: requieren boquilla de acero endurecido.', fuente: 'Bambu Lab, material-table' },
     },
     {
       id: 'almacenamiento',
       titulo: 'Almacenamiento y humedad',
+      puntos: [
+        'Por debajo de 20 % HR, los filamentos permanecen secos entre 2 y 7 días.',
+        'A unos 55 % HR, un filamento recién secado absorberá suficiente humedad para afectar la calidad en 2–12 horas.',
+        'Para almacenamiento diario, mantener siempre sellado y protegido contra humedad.',
+      ],
+      indicador: 'material',
       cuerpo: 'Por debajo de 20 % HR, los filamentos permanecen secos entre 2 y 7 días. A unos 55 % HR, un filamento recién secado absorberá suficiente humedad para afectar la calidad en 2–12 horas. Para almacenamiento diario, mantener siempre sellado y protegido contra humedad.',
       cifra: { valor: '20 % HR', nota: 'Humedad de almacenamiento para mantener filamento seco 2–7 días' },
       cita: { texto: 'Debajo de 20% RH, filamentos permanecen secos 2-7 días.', fuente: 'Bambu Lab, drying' },

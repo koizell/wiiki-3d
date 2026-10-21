@@ -55,6 +55,7 @@ export const separaciones: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material contrae distinto, y el ajuste que lo arregla no es el mismo.',
       necesaria: true,
       // El material es lo único que esta guía lee del archivo. La barra «Tu
@@ -71,6 +72,7 @@ export const separaciones: Guia = {
     {
       id: 'esquinas',
       etiqueta: 'Dónde se abre',
+      indicador: 'geometria',
       para: 'El borde exterior es warping; por dentro es separación. Decidir esto antes evita cambiar lo que no toca.',
       necesaria: true,
       opciones: [
@@ -82,6 +84,7 @@ export const separaciones: Guia = {
     {
       id: 'altura',
       etiqueta: '¿Dónde en la pieza?',
+      indicador: 'altura',
       para: 'Un punto concreto y un tramo que se deteriora apuntan a cosas distintas que la temperatura no arregla.',
       opciones: [
         { id: 'inicio', etiqueta: 'Desde el principio' },
@@ -92,6 +95,7 @@ export const separaciones: Guia = {
     {
       id: 'enfriamiento',
       etiqueta: 'Enfriamiento por capa',
+      indicador: 'ventilacion',
       para: 'Enfriar más rápido de lo que la capa pega es la vía por la que se abre una unión.',
       opciones: [
         { id: 'alto', etiqueta: 'Alto' },
@@ -102,6 +106,7 @@ export const separaciones: Guia = {
     {
       id: 'traslado',
       etiqueta: 'Movimiento durante la impresión',
+      indicador: 'entorno',
       para: 'La pieza abierta de golpe se separa; la pieza abierta poco a poco se despega.',
       opciones: [
         { id: 'descalce', etiqueta: 'Se ha movido o se ha soltado de la cama' },
@@ -114,6 +119,13 @@ export const separaciones: Guia = {
     {
       id: 'frontera',
       titulo: 'La frontera que hay que tener clara',
+      puntos: [
+        'Separada y desplazada son dos fallos distintos.',
+        'En la separación la pieza se abre por dentro y la base está plana: material que no llegó a pegarse.',
+        'En el desplazamiento la pieza se ha movido: la base tampoco está donde debía, y la causa es que la primera capa no se sujetó.',
+        'Se parecen en la foto y no se arreglan con lo mismo.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Separada y desplazada son dos fallos distintos. En la separación la pieza se abre por dentro y la base está plana: material que no llegó a pegarse. En el desplazamiento la pieza se ha movido: la base tampoco está donde debía, y la causa es que la primera capa no se sujetó. Se parecen en la foto y no se arreglan con lo mismo.',
       enlaza: { guia: 'warping-pla', etiqueta: 'Ver warping' },
@@ -122,6 +134,13 @@ export const separaciones: Guia = {
       id: 'corte-punto',
       titulo: 'Se abre en una altura concreta: puedes cortarlo ahí',
       cuando: { altura: 'punto' },
+      puntos: [
+        'Es el mejor caso para diagnosticar, y la razón es práctica: como sabes a qué altura se abre,.',
+        'puedes cortar la pieza justo por ahí y mirar el corte.',
+        'Eso separa los dos fallos que se parecen en la foto y decide qué protocolo sigue.',
+        'Si además sabes qué ajuste cambió justo antes de esa altura, ya tienes el candidato.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Es el mejor caso para diagnosticar, y la razón es práctica: como sabes a qué altura se abre, puedes cortar la pieza justo por ahí y mirar el corte. Eso separa los dos fallos que se parecen en la foto y decide qué protocolo sigue. Si además sabes qué ajuste cambió justo antes de esa altura, ya tienes el candidato.',
       enlaza: { guia: 'warping-pla', etiqueta: 'Ver el warping' },
@@ -130,12 +149,24 @@ export const separaciones: Guia = {
       id: 'corte-inicio',
       titulo: 'Se abre desde el principio: el corte dice menos',
       cuando: { altura: 'inicio' },
+      puntos: [
+        'Si la separación lleva desde la base, el corte te dice que faltó adhesión pero no dónde: es un ajuste constante, no un cambio puntual.',
+        'Eso deja la temperatura de boquilla y el enfriamiento por capa como las dos variables,.',
+        'y descarta de entrada toda la investigación sobre iteraciones o transiciones del perfil.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si la separación lleva desde la base, el corte te dice que faltó adhesión pero no dónde: es un ajuste constante, no un cambio puntual. Eso deja la temperatura de boquilla y el enfriamiento por capa como las dos variables, y descarta de entrada toda la investigación sobre iteraciones o transiciones del perfil.',
     },
     {
       id: 'material-alcance',
       titulo: 'Qué material y con qué aviso',
+      puntos: [
+        'El PETG es el peor caso documentado en este lote, con capas internas más débiles.',
+        'Y hay un aviso de alcance que este artículo tiene que decir: la fuente que describe capas débiles habla del PETG,.',
+        'y trasladar ese criterio a otro material sin más no está respaldado.',
+      ],
+      indicador: 'material',
       cuerpo:
         'El PETG es el peor caso documentado en este lote, con capas internas más débiles. Y hay un aviso de alcance que este artículo tiene que decir: la fuente que describe capas débiles habla del PETG, y trasladar ese criterio a otro material sin más no está respaldado.',
       cuando: { material: 'petg' },
@@ -143,6 +174,12 @@ export const separaciones: Guia = {
     {
       id: 'diagnostico',
       titulo: 'Cómo se diagnostica',
+      puntos: [
+        'La comprobación que decide es cortar la pieza en la altura donde se abre y mirar el corte.',
+        'Si viene limpio y falta material entre capas, el problema es que no hubo adhesión suficiente.',
+        'Si el corte viene desgarrado con material arrancado, no llegó material: es un problema de flujo, y la temperatura no lo arregla.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La comprobación que decide es cortar la pieza en la altura donde se abre y mirar el corte. Si viene limpio y falta material entre capas, el problema es que no hubo adhesión suficiente. Si el corte viene desgarrado con material arrancado, no llegó material: es un problema de flujo, y la temperatura no lo arregla.',
     },
@@ -150,6 +187,12 @@ export const separaciones: Guia = {
       id: 'borde',
       titulo: 'Si se abre por el borde, esto no es separación',
       cuando: { esquinas: 'borde' },
+      puntos: [
+        'Una rotura en el borde exterior, en las esquinas o a lo largo de una pared larga, es territorio del warping.',
+        'es el patrón que produce la contracción térmica al enfriarse los exteriores antes que el centro.',
+        'Lo que los distingue es la base —si arquea desde la cama, es warping— y no el sitio donde se abre la grieta, que es el dato que más engaña.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Una rotura en el borde exterior, en las esquinas o a lo largo de una pared larga, es territorio del warping: es el patrón que produce la contracción térmica al enfriarse los exteriores antes que el centro. Lo que los distingue es la base —si arquea desde la cama, es warping— y no el sitio donde se abre la grieta, que es el dato que más engaña.',
       enlaza: { guia: 'warping-pla', etiqueta: 'Ver warping en PLA' },
@@ -158,12 +201,27 @@ export const separaciones: Guia = {
       id: 'horizontal',
       titulo: 'Una sección horizontal entera es otro caso',
       cuando: { esquinas: 'horizontal' },
+      puntos: [
+        'Si la pieza se parte por una línea horizontal completa, el corte sigue siendo el dato: si viene limpio y falta material entre capas,.',
+        'es adhesión insuficiente.',
+        'Y si la línea se ve repetida en toda la altura,.',
+        'lo que estás mirando puede no ser la rotura sino un cambio de ajuste en ese punto —una iteración distinta,.',
+        'un cambio de temperatura o de velocidad—, y eso esta guía no lo cubre.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si la pieza se parte por una línea horizontal completa, el corte sigue siendo el dato: si viene limpio y falta material entre capas, es adhesión insuficiente. Y si la línea se ve repetida en toda la altura, lo que estás mirando puede no ser la rotura sino un cambio de ajuste en ese punto —una iteración distinta, un cambio de temperatura o de velocidad—, y eso esta guía no lo cubre.',
     },
     {
       id: 'desacuerdo',
       titulo: 'Las dos fuentes oficiales no dicen lo mismo',
+      puntos: [
+        'Prusa sube la temperatura de boquilla; Bambu sube la cama.',
+        'Es un desacuerdo real entre dos fabricantes, y aquí no se promedia ni se elige por gusto.',
+        'Lo que sí se puede decir es que ambosacted sobre la misma causa —contracción al enfriarse— y que la diferencia es cuál de los dos lados de',
+        'la unión es el débil en su equipo.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Prusa sube la temperatura de boquilla; Bambu sube la cama. Es un desacuerdo real entre dos fabricantes, y aquí no se promedia ni se elige por gusto. Lo que sí se puede decir es que ambosacted sobre la misma causa —contracción al enfriarse— y que la diferencia es cuál de los dos lados de la unión es el débil en su equipo.',
       cifra: { valor: 'Prusa ↑ boquilla · Bambu ↑ cama', nota: 'desacuerdo sin resolver' },
@@ -172,6 +230,12 @@ export const separaciones: Guia = {
     {
       id: 'boquilla',
       titulo: 'La boquilla del PLA: tres cifras, tres sitios',
+      puntos: [
+        'El rango de temperatura de boquilla para el PLA aparece como 185–235 °C en la tabla de materiales,.',
+        'como 215 °C en la ficha del PLA y como un valor concreto en un hilo de foro.',
+        'No se contradicen necesariamente, pero el corpus no lo resuelve y esta guía no elige por ti.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El rango de temperatura de boquilla para el PLA aparece como 185–235 °C en la tabla de materiales, como 215 °C en la ficha del PLA y como un valor concreto en un hilo de foro. No se contradicen necesariamente, pero el corpus no lo resuelve y esta guía no elige por ti.',
       cuando: { material: 'pla' },
@@ -180,6 +244,12 @@ export const separaciones: Guia = {
     {
       id: 'hilos',
       titulo: 'Los dos hilos: ninguno se resuelve',
+      puntos: [
+        'Los dos casos de foro que acompañan esta guía están sin resolver.',
+        'Uno terminó sin-improvement con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó.',
+        'Oídos así, son el límite de lo que un caso de foro puede demostrar.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Los dos casos de foro que acompañan esta guía están sin resolver. Uno terminó sin-improvement con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó. Oídos así, son el límite de lo que un caso de foro puede demostrar.',
     },

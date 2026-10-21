@@ -101,6 +101,7 @@ export const slicer: Guia = {
        * sitios distintos dentro de la misma guía, y quien lee necesita
        * **declarar** su programa antes que **entender** el de su fichero.
        */
+      indicador: 'slicer',
       para: 'Cada casa documenta su propia comprobación en su propio sitio, y el de una no vale para las otras tres: lo que hay que mirar cambia de programa.',
       necesaria: true,
       campos: ['slicer'],
@@ -115,6 +116,7 @@ export const slicer: Guia = {
     {
       id: 'formato',
       etiqueta: 'Formato de salida',
+      indicador: 'slicer',
       para: 'Si exportas en binario no puedes abrir el fichero con un editor de texto, y leerlo es una de las comprobaciones de esta guía.',
       opciones: [
         { id: 'texto', etiqueta: 'Texto (.gcode)', detalle: 'Se abre con cualquier editor' },
@@ -127,6 +129,15 @@ export const slicer: Guia = {
     {
       id: 'que-es',
       titulo: 'Qué es un slicer',
+      puntos: [
+        'Es el programa que convierte el modelo en instrucciones capa a capa para la impresora, y su producto es un fichero.',
+        'G-code de texto o binario.',
+        'La razón de que haya capas está escrita: cada capa se apoya sobre la anterior,.',
+        'así que hace falta calcular qué soporte va debajo de lo que se imprimiría en el aire.',
+        'Es gratuito, de código abierto, y no está atado a una marca de impresora.',
+        'la comunidad ha hecho perfiles para máquinas de muchos fabricantes y los que no vienen integrados se importan a mano.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Es el programa que convierte el modelo en instrucciones capa a capa para la impresora, y su producto es un fichero: G-code de texto o binario. La razón de que haya capas está escrita: cada capa se apoya sobre la anterior, así que hace falta calcular qué soporte va debajo de lo que se imprimiría en el aire. Es gratuito, de código abierto, y no está atado a una marca de impresora: la comunidad ha hecho perfiles para máquinas de muchos fabricantes y los que no vienen integrados se importan a mano.',
       cita: {
@@ -138,6 +149,15 @@ export const slicer: Guia = {
     {
       id: 'recorrido',
       titulo: 'El recorrido: de modelo a fichero',
+      puntos: [
+        'El recorrido en PrusaSlicer es: importar, orientar, elegir impresora, material y perfil, decidir soportes, relleno y brim,.',
+        'previsualizar y exportar.',
+        'Admite cinco formatos de entrada —STL, STEP, 3MF, OBJ y AMF—.',
+        'Las piezas no se imprimen macizas ni huecas: se usa un patrón de relleno disperso que dé soporte interno a las capas superiores,.',
+        'y su ejemplo de partida está en torno a un 15 % de relleno.',
+        'La altura de capa es otro ajuste, con su propio rango.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'El recorrido en PrusaSlicer es: importar, orientar, elegir impresora, material y perfil, decidir soportes, relleno y brim, previsualizar y exportar. Admite cinco formatos de entrada —STL, STEP, 3MF, OBJ y AMF—. Las piezas no se imprimen macizas ni huecas: se usa un patrón de relleno disperso que dé soporte interno a las capas superiores, y su ejemplo de partida está en torno a un 15 % de relleno. La altura de capa es otro ajuste, con su propio rango.',
       cifra: { valor: '0,15–0,20 mm', nota: 'altura de capa de partida que sugiere Prusa' },
@@ -150,6 +170,14 @@ export const slicer: Guia = {
     {
       id: 'perfiles',
       titulo: 'Un preset es un conjunto, no un ajuste',
+      puntos: [
+        'Bambu reparte sus cientos de parámetros en tres categorías —impresora,.',
+        'filamento y proceso— y un preset no es un ajuste sino el conjunto de los ajustes de una categoría.',
+        'El de impresora lleva la velocidad máxima de cada eje, los límites del área de impresión y el diámetro de boquilla; el de filamento,.',
+        'la temperatura de impresión, la de cama y el flow ratio; el de proceso, la altura de capa, los detalles de soporte y el ancho de extrusión.',
+        'Prusa organiza lo mismo en tres pestañas y trae presets integrados para muchos materiales.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Bambu reparte sus cientos de parámetros en tres categorías —impresora, filamento y proceso— y un preset no es un ajuste sino el conjunto de los ajustes de una categoría. El de impresora lleva la velocidad máxima de cada eje, los límites del área de impresión y el diámetro de boquilla; el de filamento, la temperatura de impresión, la de cama y el flow ratio; el de proceso, la altura de capa, los detalles de soporte y el ancho de extrusión. Prusa organiza lo mismo en tres pestañas y trae presets integrados para muchos materiales.',
       cita: {
@@ -162,24 +190,60 @@ export const slicer: Guia = {
     {
       id: 'frontera',
       titulo: 'Las tres categorías existen en las dos casas; la frontera, no',
+      puntos: [
+        'Las dos casas dicen tener la misma separación en tres grupos, pero el reparto concreto no cae en el mismo sitio.',
+        'en Prusa la retracción vive en la pestaña Printers,.',
+        'y en Bambu la retracción no se nombra en ninguna de las tres listas mientras el flow ratio vive en el preset de filamento.',
+        'Es una frontera distinta, **no un sinónimo**, y ninguna de las dos fuentes declara la equivalencia con la otra.',
+        'De aquí no se puede escribir que las tres categorías sean «lo de la máquina,.',
+        'lo del material y lo del trabajo» como si fuera una taxonomía compartida.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Las dos casas dicen tener la misma separación en tres grupos, pero el reparto concreto no cae en el mismo sitio: en Prusa la retracción vive en la pestaña Printers, y en Bambu la retracción no se nombra en ninguna de las tres listas mientras el flow ratio vive en el preset de filamento. Es una frontera distinta, **no un sinónimo**, y ninguna de las dos fuentes declara la equivalencia con la otra. De aquí no se puede escribir que las tres categorías sean «lo de la máquina, lo del material y lo del trabajo» como si fuera una taxonomía compartida.',
     },
     {
       id: 'metadato',
       titulo: 'Dónde vive el metadato: tres respuestas, y ninguna vale para las otras dos',
+      puntos: [
+        'OrcaSlicer documenta un interruptor booleano —`gcode_comments`,.',
+        '«Verbose G-code»— que añade comentarios descriptivos y opcionales a líneas y bloques.',
+        'Cura no documenta ningún interruptor de comentarios: documenta plantillas de inicio y fin con marcadores que el slicer resuelve al exportar,',
+        'y en su ejemplo el valor acaba en la instrucción —`M140 S50.0`—, no en un comentario.',
+        'Y Orca documenta un tercer sitio, el nombre del fichero, con una plantilla de tokens de la que sale `OrcaCube_PLA_1h15m.gcode`.',
+        'Son tres modelos distintos de dónde acaba un dato: en un fichero de Cura la temperatura de cama se saca del parámetro M140,.',
+        'no de un comentario.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'OrcaSlicer documenta un interruptor booleano —`gcode_comments`, «Verbose G-code»— que añade comentarios descriptivos y opcionales a líneas y bloques. Cura no documenta ningún interruptor de comentarios: documenta plantillas de inicio y fin con marcadores que el slicer resuelve al exportar, y en su ejemplo el valor acaba en la instrucción —`M140 S50.0`—, no en un comentario. Y Orca documenta un tercer sitio, el nombre del fichero, con una plantilla de tokens de la que sale `OrcaCube_PLA_1h15m.gcode`. Son tres modelos distintos de dónde acaba un dato: en un fichero de Cura la temperatura de cama se saca del parámetro M140, no de un comentario.',
     },
     {
       id: 'hueco',
       titulo: 'Lo que ninguna fuente de esta guía lista',
+      puntos: [
+        'Ninguna de las nueve fuentes enumera la cabecera real de un G-code ni un comentario concreto de los que el slicer escribe por su cuenta.',
+        'lo documentado es un booleano en Orca y marcadores de posición en Cura, y de eso no se puede deducir una lista.',
+        'Tampoco está el nombre literal de la etiqueta que aparece en el nombre del fichero cuando el análisis del tiempo todavía se está ejecutando,',
+        'ni dice ninguna fuente si un `.bgcode` conserva los mismos metadatos que el ASCII.',
+        'Los huecos se declaran y **no se rellenan**.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Ninguna de las nueve fuentes enumera la cabecera real de un G-code ni un comentario concreto de los que el slicer escribe por su cuenta: lo documentado es un booleano en Orca y marcadores de posición en Cura, y de eso no se puede deducir una lista. Tampoco está el nombre literal de la etiqueta que aparece en el nombre del fichero cuando el análisis del tiempo todavía se está ejecutando, ni dice ninguna fuente si un `.bgcode` conserva los mismos metadatos que el ASCII. Los huecos se declaran y **no se rellenan**.',
     },
     {
       id: 'calcula',
       titulo: 'Lo que el slicer calcula, y se puede inspeccionar después',
+      puntos: [
+        'Tras laminar se puede ver, capa a capa, el tipo de línea, el filamento, la velocidad, la ruta de impresión, el tiempo,.',
+        'el ventilador y la temperatura de boquilla.',
+        'La altura de capa es la resolución vertical del modelo —a menos altura,.',
+        'más finura— y el ancho de línea es la anchura del filamento fundido que sale por la boquilla, normalmente casi igual al diámetro de ésta.',
+        'El caudal máximo se calcula con una fórmula que la fuente da literal,.',
+        'y el visor es también el sitio donde se añaden pausas y G-code propio por capa.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Tras laminar se puede ver, capa a capa, el tipo de línea, el filamento, la velocidad, la ruta de impresión, el tiempo, el ventilador y la temperatura de boquilla. La altura de capa es la resolución vertical del modelo —a menos altura, más finura— y el ancho de línea es la anchura del filamento fundido que sale por la boquilla, normalmente casi igual al diámetro de ésta. El caudal máximo se calcula con una fórmula que la fuente da literal, y el visor es también el sitio donde se añaden pausas y G-code propio por capa.',
       cita: {
@@ -191,6 +255,16 @@ export const slicer: Guia = {
     {
       id: 'temperatura-capa',
       titulo: 'La temperatura de boquilla por capa: constante, y a la vez no',
+      puntos: [
+        'Bambu dice que con un solo filamento la temperatura de boquilla será constante durante todo el proceso,.',
+        'y que con varios filamentos y un AMS puede variar.',
+        'La misma página documenta lo contrario para un caso concreto.',
+        'el G-code personalizado por capa permite cambiarla a mitad de impresión —M104 S250 calienta la boquilla a 250 °C antes de esa capa—,.',
+        'y así se hace una torre de temperaturas.',
+        'La frase de la constante va acotada a un solo filamento y a lo que muestra un visor,.',
+        'así que no se puede leer como «la temperatura es una durante toda la impresión».',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Bambu dice que con un solo filamento la temperatura de boquilla será constante durante todo el proceso, y que con varios filamentos y un AMS puede variar. La misma página documenta lo contrario para un caso concreto: el G-code personalizado por capa permite cambiarla a mitad de impresión —M104 S250 calienta la boquilla a 250 °C antes de esa capa—, y así se hace una torre de temperaturas. La frase de la constante va acotada a un solo filamento y a lo que muestra un visor, así que no se puede leer como «la temperatura es una durante toda la impresión».',
       enlaza: { guia: 'temperatura-hotend', etiqueta: 'Temperatura de boquilla' },
@@ -198,6 +272,14 @@ export const slicer: Guia = {
     {
       id: 'soportes',
       titulo: 'Soportes automáticos sí, de árbol no',
+      puntos: [
+        'Prusa dice que PrusaSlicer puede detectar dónde colocar soportes y generarlos automáticamente, con dos opciones en el desplegable.',
+        'Everywhere o On build plate only.',
+        'En su FAQ, la respuesta a los soportes de árbol para FDM es un no con matiz temporal: «at least for the time being».',
+        'No se contradicen: una habla de la generación automática en general y la otra de un tipo concreto,.',
+        'y el «no» no se puede generalizar a «PrusaSlicer no genera soportes» ni a «ningún slicer tiene soportes de árbol».',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Prusa dice que PrusaSlicer puede detectar dónde colocar soportes y generarlos automáticamente, con dos opciones en el desplegable: Everywhere o On build plate only. En su FAQ, la respuesta a los soportes de árbol para FDM es un no con matiz temporal: «at least for the time being». No se contradicen: una habla de la generación automática en general y la otra de un tipo concreto, y el «no» no se puede generalizar a «PrusaSlicer no genera soportes» ni a «ningún slicer tiene soportes de árbol».',
       enlaza: { guia: 'voladizos-y-soportes', etiqueta: 'Voladizos y soportes' },
@@ -205,6 +287,14 @@ export const slicer: Guia = {
     {
       id: 'niveles',
       titulo: 'Cuatro niveles, y sólo lo global se guarda',
+      puntos: [
+        'En Bambu Studio los parámetros de proceso tienen cuatro niveles: Global, que afecta a cada objeto del proyecto; Object; Part; y Modifier,.',
+        'una parte especial pensada para cambiar parámetros en las regiones que intersecta.',
+        'La regla general es que, si el mismo parámetro está a valores distintos en varios niveles, se usa el del nivel más pequeño.',
+        'Y hay una restricción que se pierde de vista: los presets son globales, así que un cambio a nivel de objeto,.',
+        'parte o modificador no se puede guardar como preset.',
+      ],
+      indicador: 'general',
       cuerpo:
         'En Bambu Studio los parámetros de proceso tienen cuatro niveles: Global, que afecta a cada objeto del proyecto; Object; Part; y Modifier, una parte especial pensada para cambiar parámetros en las regiones que intersecta. La regla general es que, si el mismo parámetro está a valores distintos en varios niveles, se usa el del nivel más pequeño. Y hay una restricción que se pierde de vista: los presets son globales, así que un cambio a nivel de objeto, parte o modificador no se puede guardar como preset.',
       cifra: { valor: '5 % → 20 %', nota: 'el ejemplo de Bambu: 5 % global y 20 % a un objeto' },
@@ -217,12 +307,27 @@ export const slicer: Guia = {
     {
       id: 'visibilidad',
       titulo: 'Tres casas filtran el acceso, por tres caminos distintos',
+      puntos: [
+        'Bambu filtra por el nivel de aplicabilidad, porque sólo las modificaciones globales se pueden guardar como preset.',
+        'Prusa filtra por el modo de interfaz, y hay parámetros que sólo se ven en modo experto.',
+        'Orca filtra por el nivel de visibilidad: `gcode_comments` es Advanced y `gcode_add_line_number` es Developer,.',
+        'así que la legibilidad del G-code depende del modo en que esté el programa.',
+        'Ninguna declara que su filtro equivalga al de las otras, y **un ajuste que no aparece no significa que el slicer no lo aplique**.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Bambu filtra por el nivel de aplicabilidad, porque sólo las modificaciones globales se pueden guardar como preset. Prusa filtra por el modo de interfaz, y hay parámetros que sólo se ven en modo experto. Orca filtra por el nivel de visibilidad: `gcode_comments` es Advanced y `gcode_add_line_number` es Developer, así que la legibilidad del G-code depende del modo en que esté el programa. Ninguna declara que su filtro equivalga al de las otras, y **un ajuste que no aparece no significa que el slicer no lo aplique**.',
     },
     {
       id: 'estimacion',
       titulo: 'El tiempo estimado depende del perfil',
+      puntos: [
+        'Prusa dice que su estimación de tiempo es muy precisa —a menudo menos de un minuto de diferencia en una impresión de más de diez horas—,.',
+        'pero sólo si se elige el perfil de impresora correcto, porque la estimación tiene en cuenta la aceleración,.',
+        'el jerk y otros ajustes que cambian de una máquina a otra.',
+        'Una estimación calculada con el perfil equivocado no es precisa: está hecha para otra impresora.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Prusa dice que su estimación de tiempo es muy precisa —a menudo menos de un minuto de diferencia en una impresión de más de diez horas—, pero sólo si se elige el perfil de impresora correcto, porque la estimación tiene en cuenta la aceleración, el jerk y otros ajustes que cambian de una máquina a otra. Una estimación calculada con el perfil equivocado no es precisa: está hecha para otra impresora.',
       cifra: { valor: '< 1 min', nota: 'diferencia habitual en más de 10 h, con el perfil correcto' },
@@ -231,6 +336,16 @@ export const slicer: Guia = {
       id: 'binario',
       titulo: 'El fichero puede no ser texto',
       cuando: { formato: 'binario' },
+      puntos: [
+        'El `.bgcode` codifica y comprime el G-code ASCII: la razón es el tamaño, porque el texto ocupa mucho.',
+        'No es una compresión cualquiera —las impresoras corren en hardware limitado, y por eso comprimir no es trivial—,.',
+        'pero el origen del formato es el peso del fichero, no la limitación del hardware.',
+        'En PrusaSlicer se activa en Printers → General → Support binary G-code y viene activado por defecto desde la versión 2.7.0.',
+        'la conversión en los dos sentidos está en File → Convert.',
+        'Hace falta firmware que lo soporte —en MINI, MK4 y XL desde el 5.1.0— y hay programas externos de control, OctoPrint entre ellos,.',
+        'que pueden tener problemas con él.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'El `.bgcode` codifica y comprime el G-code ASCII: la razón es el tamaño, porque el texto ocupa mucho. No es una compresión cualquiera —las impresoras corren en hardware limitado, y por eso comprimir no es trivial—, pero el origen del formato es el peso del fichero, no la limitación del hardware. En PrusaSlicer se activa en Printers → General → Support binary G-code y viene activado por defecto desde la versión 2.7.0; la conversión en los dos sentidos está en File → Convert. Hace falta firmware que lo soporte —en MINI, MK4 y XL desde el 5.1.0— y hay programas externos de control, OctoPrint entre ellos, que pueden tener problemas con él.',
       cifra: { valor: '~70 %', nota: 'reducción media de tamaño en las pruebas de Prusa' },
@@ -239,6 +354,15 @@ export const slicer: Guia = {
       id: 'sin-firma',
       titulo: 'Si el archivo no trae firma',
       cuando: { slicer: 'desconocido' },
+      puntos: [
+        'Esta app lee la cabecera del fichero y busca la firma de una de las tres familias que sabe leer; si no aparece ninguna,.',
+        'el análisis se detiene y el panel pide volver a exportar el G-code desde el slicer para que incluya la cabecera con los ajustes.',
+        'Las dos causas que el analizador admite son un fichero truncado y un programa que no escribe cabecera.',
+        'El analizador también agrupa por familias: OrcaSlicer,.',
+        'Bambu Studio y los forks de Creality comparten convención y no se distinguen entre sí, igual que PrusaSlicer y SuperSlicer.',
+        'Eso es cosa del analizador, no de la documentación de ningún fabricante —que, como se ve arriba, tampoco lista la cabecera—.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Esta app lee la cabecera del fichero y busca la firma de una de las tres familias que sabe leer; si no aparece ninguna, el análisis se detiene y el panel pide volver a exportar el G-code desde el slicer para que incluya la cabecera con los ajustes. Las dos causas que el analizador admite son un fichero truncado y un programa que no escribe cabecera. El analizador también agrupa por familias: OrcaSlicer, Bambu Studio y los forks de Creality comparten convención y no se distinguen entre sí, igual que PrusaSlicer y SuperSlicer. Eso es cosa del analizador, no de la documentación de ningún fabricante —que, como se ve arriba, tampoco lista la cabecera—.',
     },

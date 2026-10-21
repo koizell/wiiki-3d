@@ -52,6 +52,7 @@ export const stringing: Guia = {
     {
       id: 'extrusor',
       etiqueta: 'Tipo de extrusor',
+      indicador: 'maquina',
       para: 'La distancia de retracción depende del tipo: direct drive y Bowden necesitan valores completamente distintos.',
       necesaria: true,
       opciones: [
@@ -62,6 +63,7 @@ export const stringing: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'PETG y TPU son más propensos al stringing y necesitan más retracción que PLA o ABS.',
       necesaria: true,
       opciones: [
@@ -74,6 +76,7 @@ export const stringing: Guia = {
     {
       id: 'temperatura',
       etiqueta: 'Temperatura de boquilla',
+      indicador: 'temperatura',
       para: 'Si la temperatura está alta, el plástico es menos viscoso y gotea más fácilmente.',
       opciones: [
         { id: 'alta', etiqueta: 'Alta (por encima del rango habitual)' },
@@ -83,6 +86,7 @@ export const stringing: Guia = {
     {
       id: 'humedad',
       etiqueta: 'Humedad del filamento',
+      indicador: 'entorno',
       para: 'El filamento húmedo puede causar stringing incluso con la retracción bien ajustada.',
       opciones: [
         { id: 'seco', etiqueta: 'Seco (almacenado bien o recién secado)' },
@@ -93,6 +97,7 @@ export const stringing: Guia = {
     {
       id: 'travelSpeed',
       etiqueta: 'Velocidad de travel',
+      indicador: 'velocidad',
       para: 'Si el travel es lento, la boquilla tiene más tiempo para gotear sobre aire.',
       opciones: [
         { id: 'alta', etiqueta: 'Alta (más de 150 mm/s)' },
@@ -105,6 +110,11 @@ export const stringing: Guia = {
     {
       id: 'que-es-stringing',
       titulo: 'Qué es el stringing',
+      puntos: [
+        'El stringing son hilos finos de plástico que quedan sobre el modelo impreso.',
+        'Ocurre cuando plástico gotea de la boquilla mientras el extrusor se mueve a una nueva ubicación.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El stringing son hilos finos de plástico que quedan sobre el modelo impreso. Ocurre cuando plástico gotea de la boquilla mientras el extrusor se mueve a una nueva ubicación.',
       cita: {
@@ -115,6 +125,11 @@ export const stringing: Guia = {
     {
       id: 'que-es-oozing',
       titulo: 'Qué es el oozing',
+      puntos: [
+        'El oozing es plástico que sale de la boquilla mientras el extrusor se mueve a una nueva ubicación.',
+        'Cuando también gotea sin moverse, la causa suele ser temperatura alta.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El oozing es plástico que sale de la boquilla mientras el extrusor se mueve a una nueva ubicación. Cuando también gotea sin moverse, la causa suele ser temperatura alta.',
       cita: {
@@ -125,6 +140,11 @@ export const stringing: Guia = {
     {
       id: 'causa-temperatura',
       titulo: 'Causa: temperatura demasiado alta',
+      puntos: [
+        'Si la temperatura es demasiado alta, el plástico dentro de la boquilla se vuelve menos viscoso y gotea más fácilmente.',
+        'Reducir la temperatura 5–10 grados puede tener un impacto significativo en la calidad de impresión.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Si la temperatura es demasiado alta, el plástico dentro de la boquilla se vuelve menos viscoso y gotea más fácilmente. Reducir la temperatura 5–10 grados puede tener un impacto significativo en la calidad de impresión.',
       cuando: { temperatura: 'alta' },
@@ -136,6 +156,11 @@ export const stringing: Guia = {
     {
       id: 'causa-humedad',
       titulo: 'Causa: filamento húmedo',
+      puntos: [
+        'Si hay mucho stringing en la parte superior de la torre de calibración,.',
+        'se recomienda secar el filamento y comprobar que la boquilla esté correctamente instalada sin fugas.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si hay mucho stringing en la parte superior de la torre de calibración, se recomienda secar el filamento y comprobar que la boquilla esté correctamente instalada sin fugas.',
       cita: {
@@ -146,6 +171,11 @@ export const stringing: Guia = {
     {
       id: 'causa-retraccion',
       titulo: 'Causa: retracción insuficiente',
+      puntos: [
+        'Si la longitud de retracción es demasiado corta, no previene eficazmente el goteo.',
+        'Si es demasiado larga, puede provocar obstrucciones o sub-extrusión.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Si la longitud de retracción es demasiado corta, no previene eficazmente el goteo. Si es demasiado larga, puede provocar obstrucciones o sub-extrusión.',
       cita: {
@@ -156,6 +186,12 @@ export const stringing: Guia = {
     {
       id: 'causa-travel',
       titulo: 'Causa: velocidad de travel baja',
+      puntos: [
+        'Aumentar la velocidad de movimiento reduce el tiempo que el extrusor tiene para gotear entre piezas.',
+        'Los movimientos cortos pueden ser lo suficientemente rápidos para que el plástico no tenga tiempo de gotear.',
+        'los movimientos largos tienen más probabilidades de crear hilos.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Aumentar la velocidad de movimiento reduce el tiempo que el extrusor tiene para gotear entre piezas. Los movimientos cortos pueden ser lo suficientemente rápidos para que el plástico no tenga tiempo de gotear; los movimientos largos tienen más probabilidades de crear hilos.',
       cita: {
@@ -166,6 +202,12 @@ export const stringing: Guia = {
     {
       id: 'valores-extrusor',
       titulo: 'Valores de retracción por extrusor',
+      puntos: [
+        'Direct drive: 0,5–2,0 mm. Bowden: hasta 15 mm según Simplify3D, o 1–6 mm según OrcaSlicer.',
+        'Ambos rangos provienen de sus respectivas fuentes.',
+        'PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Direct drive: 0,5–2,0 mm. Bowden: hasta 15 mm según Simplify3D, o 1–6 mm según OrcaSlicer. Ambos rangos provienen de sus respectivas fuentes. PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm.',
       cuando: { extrusor: ['directo', 'bowden'] },
@@ -181,6 +223,14 @@ export const stringing: Guia = {
     {
       id: 'velocidad-retraccion',
       titulo: 'Velocidad de retracción',
+      puntos: [
+        'El rango óptimo es 1200–6000 mm/min (20–100 mm/s).',
+        'Si la velocidad de retracción es demasiado lenta,.',
+        'el plástico goteará lentamente a través de la boquilla y puede empezar a fugarse antes de que el extrusor termine de moverse.',
+        'Si es demasiado rápida, el filamento puede separarse del plástico caliente dentro de la boquilla,.',
+        'o el engranaje puede desgastar trozos del filamento.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El rango óptimo es 1200–6000 mm/min (20–100 mm/s). Si la velocidad de retracción es demasiado lenta, el plástico goteará lentamente a través de la boquilla y puede empezar a fugarse antes de que el extrusor termine de moverse. Si es demasiado rápida, el filamento puede separarse del plástico caliente dentro de la boquilla, o el engranaje puede desgastar trozos del filamento.',
       cifra: {
@@ -195,6 +245,11 @@ export const stringing: Guia = {
     {
       id: 'materiales-propensos',
       titulo: 'Materiales propensos al stringing',
+      puntos: [
+        'PETG y TPU son más propensos al stringing que PLA o ABS, y pueden requerir longitudes de retracción más largas.',
+        'PLA y ABS tienen un goteo mínimo; la torre de retracción puede parecer limpia desde el principio.',
+      ],
+      indicador: 'material',
       cuerpo:
         'PETG y TPU son más propensos al stringing que PLA o ABS, y pueden requerir longitudes de retracción más largas. PLA y ABS tienen un goteo mínimo; la torre de retracción puede parecer limpia desde el principio.',
       cuando: { material: ['petg', 'tpu'] },
@@ -206,6 +261,11 @@ export const stringing: Guia = {
     {
       id: 'wipe',
       titulo: 'Wipe while retracting',
+      puntos: [
+        'El wipe mueve la boquilla a lo largo del último camino de extracción al retraer, para limpiar el material fugado de la boquilla.',
+        'Puede minimizar blobs al imprimir una nueva pieza después de un desplazamiento.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El wipe mueve la boquilla a lo largo del último camino de extracción al retraer, para limpiar el material fugado de la boquilla. Puede minimizar blobs al imprimir una nueva pieza después de un desplazamiento.',
       cita: {
@@ -216,6 +276,12 @@ export const stringing: Guia = {
     {
       id: 'avoid-crossing',
       titulo: 'Avoid crossing outline',
+      puntos: [
+        'Ajusta automáticamente la ruta de travel para que la boquilla tenga una distancia muy corta sobre espacios abiertos,.',
+        'o incluso evitar cruzar espacios abiertos por completo.',
+        'Es la solución cuando los movimientos largos son los que producen los hilos.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Ajusta automáticamente la ruta de travel para que la boquilla tenga una distancia muy corta sobre espacios abiertos, o incluso evitar cruzar espacios abiertos por completo. Es la solución cuando los movimientos largos son los que producen los hilos.',
       cita: {
@@ -226,6 +292,12 @@ export const stringing: Guia = {
     {
       id: 'orden-ajustes',
       titulo: 'Orden de ajustes recomendado',
+      puntos: [
+        'Primero distancia de retracción, luego velocidad de retracción, luego temperatura, luego travel speed.',
+        'Cada ajuste anterior puede eliminar el problema sin tocar los siguientes.',
+        'Empezar por el final es cambiar tres cosas a la vez y no saber cuál funcionó.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Primero distancia de retracción, luego velocidad de retracción, luego temperatura, luego travel speed. Cada ajuste anterior puede eliminar el problema sin tocar los siguientes. Empezar por el final es cambiar tres cosas a la vez y no saber cuál funcionó.',
       cita: {
@@ -236,6 +308,10 @@ export const stringing: Guia = {
     {
       id: 'travel-distance-threshold',
       titulo: 'Travel distance threshold',
+      puntos: [
+        'Solo activa la retracción cuando la distancia de travel supera este umbral.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Solo activa la retracción cuando la distancia de travel supera este umbral.',
       cita: {
@@ -246,6 +322,10 @@ export const stringing: Guia = {
     {
       id: 'retract-on-layer-change',
       titulo: 'Retract on layer change',
+      puntos: [
+        'Fuerza una retracción en cada cambio de capa.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Fuerza una retracción en cada cambio de capa.',
       cita: {
@@ -256,6 +336,10 @@ export const stringing: Guia = {
     {
       id: 'extra-length-restart',
       titulo: 'Extra length on restart',
+      puntos: [
+        'Cantidad adicional de filamento empujado tras la retracción para compensar el filamento perdido.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Cantidad adicional de filamento empujado tras la retracción para compensar el filamento perdido.',
       cita: {

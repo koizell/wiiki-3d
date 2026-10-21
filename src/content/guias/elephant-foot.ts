@@ -44,6 +44,7 @@ export const elephantFoot: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Solo PLA y ABS traen cifras por material; el resto sigue el mismo procedimiento, con valores aún no acotados por las fuentes.',
       necesaria: true,
       campos: ['material'],
@@ -57,6 +58,7 @@ export const elephantFoot: Guia = {
     {
       id: 'cama',
       etiqueta: 'Temperatura de cama ahora',
+      indicador: 'cama',
       para: 'Decide si el ajuste es bajar o subir, y eso depende del diagnóstico real, no de la apariencia.',
       campos: ['bedTemp'],
       opciones: [
@@ -68,6 +70,7 @@ export const elephantFoot: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'El valor de compensación no es intercambiable entre tipos de placa, y algunas máquinas ajustan fino según texturizada o no.',
       necesaria: true,
       opciones: [
@@ -81,6 +84,7 @@ export const elephantFoot: Guia = {
     {
       id: 'brim',
       etiqueta: '¿Usabas brim?',
+      indicador: 'geometria',
       para: 'Con compensación activa el brim parece separado en la previsualización y eso no es un error; el exceso de compensación sí se separa en la pieza real.',
       opciones: [
         { id: 'si', etiqueta: 'Sí' },
@@ -90,6 +94,7 @@ export const elephantFoot: Guia = {
     {
       id: 'severidad',
       etiqueta: '¿Qué tan grave es?',
+      indicador: 'general',
       para: 'Leve: la compensación del slicer basta. Severo: hay que centrarse en nivelación, Z-offset y temperatura de cama.',
       opciones: [
         { id: 'leve', etiqueta: 'Leve, no afecta al ensamble' },
@@ -99,6 +104,7 @@ export const elephantFoot: Guia = {
     {
       id: 'medicion',
       etiqueta: '¿Qué dice la medición?',
+      indicador: 'calibracion',
       para: 'Distingue el pie de elefante clásico del abultamiento por contracción diferencial, que se ven igual pero piden ajustes opuestos.',
       opciones: [
         { id: 'primera', etiqueta: 'Solo la primera capa sobresale' },
@@ -109,6 +115,7 @@ export const elephantFoot: Guia = {
     {
       id: 'slicer',
       etiqueta: 'Slicer',
+      indicador: 'slicer',
       para: 'Los parámetros, las rutas y las fórmulas cambian según el programa, y Orca generaliza a varias capas la compensación que Prusa y Bambu aplican a la primera.',
       opciones: [
         { id: 'prusa', etiqueta: 'PrusaSlicer' },
@@ -124,6 +131,14 @@ export const elephantFoot: Guia = {
     {
       id: 'concepto',
       titulo: 'Qué es el pie de elefante',
+      puntos: [
+        'La primera capa y a veces las primeras salen más anchas que las superiores y dejan un anillo saliente en el borde inferior.',
+        'La causa física nominal es que esa capa se prensa contra la cama caliente y, antes de haber enfriado,.',
+        'sigue blanda y se deforma con facilidad.',
+        'La segunda causa mecánica es el peso de las capas superiores sobre una base que todavía no ha fraguado.',
+        'cuanto más grande el modelo y más ancha la base, más se nota.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La primera capa y a veces las primeras salen más anchas que las superiores y dejan un anillo saliente en el borde inferior. La causa física nominal es que esa capa se prensa contra la cama caliente y, antes de haber enfriado, sigue blanda y se deforma con facilidad. La segunda causa mecánica es el peso de las capas superiores sobre una base que todavía no ha fraguado: cuanto más grande el modelo y más ancha la base, más se nota.',
       cita: {
@@ -134,6 +149,15 @@ export const elephantFoot: Guia = {
     {
       id: 'termica',
       titulo: 'Dos temperaturas, dos sentidos',
+      puntos: [
+        'Creality da el ajuste en una dirección —bajar la cama en incrementos de unos 5 °C para que la base deje de reblandecerse— y un reporte del.',
+        'foro de Bambu propone la contraria para el mismo aspecto,.',
+        'subir de 55 a 60 °C para mejorar la adherencia.',
+        'Son dos problemas con la misma apariencia aparente: Creality asume base reblandecida por calor.',
+        'el hilo del foro es identificado por varios participantes como warping por contracción diferencial.',
+        'El ajuste de temperatura va en direcciones opuestas según el diagnóstico real, por eso hay que medir y no adivinar por la apariencia.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Creality da el ajuste en una dirección —bajar la cama en incrementos de unos 5 °C para que la base deje de reblandecerse— y un reporte del foro de Bambu propone la contraria para el mismo aspecto, subir de 55 a 60 °C para mejorar la adherencia. Son dos problemas con la misma apariencia aparente: Creality asume base reblandecida por calor; el hilo del foro es identificado por varios participantes como warping por contracción diferencial. El ajuste de temperatura va en direcciones opuestas según el diagnóstico real, por eso hay que medir y no adivinar por la apariencia.',
       cita: {
@@ -144,6 +168,14 @@ export const elephantFoot: Guia = {
     {
       id: 'compensacion',
       titulo: 'Compensación: mueve el contorno, no cura la causa',
+      puntos: [
+        'El slicer reduce intencionalmente el contorno de la primera capa para alinearla con las superiores.',
+        'Es una corrección geométrica, no un remedio de nozzle bajo ni de cama sobrecalentada,.',
+        'por eso sirve como estándar cuando la máquina ya está bien calibrada.',
+        'Prusa la trae activada por defecto en sus perfiles oficiales con unos 0,2 mm para la boquilla de 0,4 mm.',
+        'Bambu dice que el valor del sistema sirve para modelos generales y, para precisión alta, hay que medir y calcular.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El slicer reduce intencionalmente el contorno de la primera capa para alinearla con las superiores. Es una corrección geométrica, no un remedio de nozzle bajo ni de cama sobrecalentada, por eso sirve como estándar cuando la máquina ya está bien calibrada. Prusa la trae activada por defecto en sus perfiles oficiales con unos 0,2 mm para la boquilla de 0,4 mm; Bambu dice que el valor del sistema sirve para modelos generales y, para precisión alta, hay que medir y calcular.',
       cifra: { valor: '0,2 mm', nota: 'típico para boquilla de 0,4 mm (Prusa)' },
@@ -156,6 +188,15 @@ export const elephantFoot: Guia = {
       id: 'medicion',
       titulo: 'Cómo medir el valor exacto',
       cuando: { severidad: 'severo' },
+      puntos: [
+        'Limpiar la placa, hacer auto bed leveling completo y flow dynamics calibration,.',
+        'imprimir la pieza de prueba (cubo de 25 × 25 × 10 mm o el gauge block de pie de elefante) con compensación a cero y sin brim,.',
+        'dejar enfriar del todo a temperatura ambiente.',
+        'Medir en la mitad de cada lado, no en las esquinas, con calibre o micrómetro de al menos 0,01 mm.',
+        'desviación X igual a tamaño de foot X menos tamaño de referencia X,.',
+        'y el valor de compensación igual a (desviación X + desviación Y) entre 2. El ejemplo del propio wiki da 0,10 mm.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Limpiar la placa, hacer auto bed leveling completo y flow dynamics calibration, imprimir la pieza de prueba (cubo de 25 × 25 × 10 mm o el gauge block de pie de elefante) con compensación a cero y sin brim, dejar enfriar del todo a temperatura ambiente. Medir en la mitad de cada lado, no en las esquinas, con calibre o micrómetro de al menos 0,01 mm; desviación X igual a tamaño de foot X menos tamaño de referencia X, y el valor de compensación igual a (desviación X + desviación Y) entre 2. El ejemplo del propio wiki da 0,10 mm.',
       cifra: { valor: '≥0,01 mm', nota: 'resolución mínima del calibre' },
@@ -167,6 +208,13 @@ export const elephantFoot: Guia = {
     {
       id: 'criterio',
       titulo: 'Cuándo compensación y cuándo fixes mecánicos',
+      puntos: [
+        'Abultamiento menor y dimensiones no críticas: compensación del slicer o expansión horizontal negativa como fix rápido.',
+        'Abultamiento severo o tolerancias ajustadas: nivelación, Z-offset y bajada de temperatura de cama.',
+        'Con causa incierta, calibrar primero y aplicar compensación si queda residuo; con materiales que exigen cama alta (ABS y similares),.',
+        'enfriamiento y detalle CAD antes que compensación.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Abultamiento menor y dimensiones no críticas: compensación del slicer o expansión horizontal negativa como fix rápido. Abultamiento severo o tolerancias ajustadas: nivelación, Z-offset y bajada de temperatura de cama. Con causa incierta, calibrar primero y aplicar compensación si queda residuo; con materiales que exigen cama alta (ABS y similares), enfriamiento y detalle CAD antes que compensación.',
       cita: {
@@ -177,6 +225,14 @@ export const elephantFoot: Guia = {
     {
       id: 'z-offset',
       titulo: 'Nozzle demasiado cerca: la causa más directa',
+      puntos: [
+        'La boquilla demasiado próxima a la cama aplasta el filamento sobre la placa y la primera capa sobresale.',
+        'Si la primera capa está sobrecoplada, subir el Z-offset 0,05–0,1 mm y reimprimir un patrón de prueba.',
+        'Las camas desiguales dan abultamientos localizados de un lado, por eso conviene re-nivelar.',
+        'Los ajustes físico de nozzle (0,05–0,1 mm) y el offset de firmware en la macro G29.1 de la serie A1 (−0,02 ~ 0 mm en texturizada,.',
+        '−0,01 ~ 0,01 en no texturizada) no son comparables ni promediables.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La boquilla demasiado próxima a la cama aplasta el filamento sobre la placa y la primera capa sobresale. Si la primera capa está sobrecoplada, subir el Z-offset 0,05–0,1 mm y reimprimir un patrón de prueba. Las camas desiguales dan abultamientos localizados de un lado, por eso conviene re-nivelar. Los ajustes físico de nozzle (0,05–0,1 mm) y el offset de firmware en la macro G29.1 de la serie A1 (−0,02 ~ 0 mm en texturizada, −0,01 ~ 0,01 en no texturizada) no son comparables ni promediables.',
       cita: {
@@ -188,6 +244,14 @@ export const elephantFoot: Guia = {
       id: 'first-layer-low',
       titulo: 'First layer too low en la serie A1',
       cuando: { slicer: 'bambu' },
+      puntos: [
+        'El defecto se ve como pelado, abultamiento y líneas onduladas en la primera capa.',
+        'Causas: bed leveling no realizado, hotend más cerca de la cama que cuando se niveló, o extrusión excesiva de la primera capa.',
+        'Bambu recomienda hacer el bed leveling automático antes de imprimir, especialmente tras cambiar la placa PEI.',
+        'También propone re-apretar los tornillos del heater assembly y comprobar que su clip esté bien fijado,.',
+        'porque el hotend puede desplazarse hacia abajo con la presión de extrusión.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El defecto se ve como pelado, abultamiento y líneas onduladas en la primera capa. Causas: bed leveling no realizado, hotend más cerca de la cama que cuando se niveló, o extrusión excesiva de la primera capa. Bambu recomienda hacer el bed leveling automático antes de imprimir, especialmente tras cambiar la placa PEI. También propone re-apretar los tornillos del heater assembly y comprobar que su clip esté bien fijado, porque el hotend puede desplazarse hacia abajo con la presión de extrusión.',
       cita: {
@@ -199,6 +263,16 @@ export const elephantFoot: Guia = {
       id: 'orca-formula',
       titulo: 'La fórmula capa a capa (OrcaSlicer)',
       cuando: { slicer: 'orca' },
+      puntos: [
+        'Compensación positiva que achica la primera capa decreciendo linealmente en N capas: capa 1 al 100 %,.',
+        'capas intermedias decrecimiento lineal, y cero por encima de N. Fórmula por capa.',
+        'compensation = input_compensation_distance − (input_compensation_distance / input_compensation_layers) × (current_layer − 1),.',
+        'para current_layer ≤ input_compensation_layers.',
+        'Se omite por completo con raft.',
+        '«Elephant Foot Compensation Density» (80–90 % como punto de partida,.',
+        '1–2 capas) reduce la densidad del infill sólido interno en las capas compensadas para mitigar ripples.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Compensación positiva que achica la primera capa decreciendo linealmente en N capas: capa 1 al 100 %, capas intermedias decrecimiento lineal, y cero por encima de N. Fórmula por capa: compensation = input_compensation_distance − (input_compensation_distance / input_compensation_layers) × (current_layer − 1), para current_layer ≤ input_compensation_layers. Se omite por completo con raft. «Elephant Foot Compensation Density» (80–90 % como punto de partida, 1–2 capas) reduce la densidad del infill sólido interno en las capas compensadas para mitigar ripples.',
       cifra: { valor: '80–90 %', nota: 'densidad EFC, punto de partida (Orca)' },
@@ -211,6 +285,14 @@ export const elephantFoot: Guia = {
       id: 'brim-preview',
       titulo: 'Con compensación, el brim parece separado',
       cuando: { brim: 'si' },
+      puntos: [
+        'Con compensación activa el brim aparece separado del modelo en la previsualización.',
+        'en la impresión real el hueco se rellena por el material aplastado y el brim queda unido.',
+        'Si con brim-object gap a 0 mm sigue habiendo hueco a la vista, la causa más probable es la propia compensación.',
+        'Si el brim se separa en la pieza real, la compensación es excesiva.',
+        'El brim estabiliza los bordes y distribuye el aplastamiento, pero no corrige el reborde.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Con compensación activa el brim aparece separado del modelo en la previsualización; en la impresión real el hueco se rellena por el material aplastado y el brim queda unido. Si con brim-object gap a 0 mm sigue habiendo hueco a la vista, la causa más probable es la propia compensación. Si el brim se separa en la pieza real, la compensación es excesiva. El brim estabiliza los bordes y distribuye el aplastamiento, pero no corrige el reborde.',
       cita: {
@@ -222,6 +304,14 @@ export const elephantFoot: Guia = {
       id: 'temperatura',
       titulo: 'Temperatura de cama, con valores por material',
       cuando: { material: 'pla' },
+      puntos: [
+        'Temperatura de cama demasiado alta hace la base más fluida: se extiende al ser aplastada por la boquilla.',
+        'Bajarla en incrementos de unos 5 °C y re-probar.',
+        'Valores indicativos: PLA 50–60 °C (no necesita mucho más que ~60 °C) y ABS alrededor de 90–100 °C. OrcaSlicer lista la temperatura de cama.',
+        'demasiado alta entre las causas explícitas.',
+        'Con materiales que exigen cama alta, los fixes mecánicos van antes que la compensación.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Temperatura de cama demasiado alta hace la base más fluida: se extiende al ser aplastada por la boquilla. Bajarla en incrementos de unos 5 °C y re-probar. Valores indicativos: PLA 50–60 °C (no necesita mucho más que ~60 °C) y ABS alrededor de 90–100 °C. OrcaSlicer lista la temperatura de cama demasiado alta entre las causas explícitas. Con materiales que exigen cama alta, los fixes mecánicos van antes que la compensación.',
       cifra: { valor: '50–60 °C', nota: 'PLA indicativo (Creality)' },
@@ -233,6 +323,16 @@ export const elephantFoot: Guia = {
     {
       id: 'extrusion-enfriamiento',
       titulo: 'Over-extrusión, enfriamiento y fixes mecánicos',
+      puntos: [
+        'Over-extrusión en la primera capa (flow alto o ancho de línea alto de primera capa) hace que sobresalga.',
+        'bajar el flow de la primera capa al 90–100 % o reducir el ancho de línea.',
+        'Falta de enfriamiento mantiene la base blanda con el peso de las capas superiores; activar el ventilador pronto (capa 2 o 3 en adelante),.',
+        'con PLA desde el principio.',
+        'Chaflán o redondeo de 0,5–5 mm a 45° en los bordes de la base hace que el abultamiento se asiente en la cara inclinada y no en la base',
+        'funcional.',
+        'Brim de 5–10 mm distribuye el aplastamiento pero no elimina el reborde; raft para casos severos.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Over-extrusión en la primera capa (flow alto o ancho de línea alto de primera capa) hace que sobresalga: bajar el flow de la primera capa al 90–100 % o reducir el ancho de línea. Falta de enfriamiento mantiene la base blanda con el peso de las capas superiores; activar el ventilador pronto (capa 2 o 3 en adelante), con PLA desde el principio. Chaflán o redondeo de 0,5–5 mm a 45° en los bordes de la base hace que el abultamiento se asiente en la cara inclinada y no en la base funcional. Brim de 5–10 mm distribuye el aplastamiento pero no elimina el reborde; raft para casos severos.',
       cita: {
@@ -317,7 +417,7 @@ export const elephantFoot: Guia = {
     },
     {
       id: 'a1-textured',
-      accion: 'Ajuste fino Bambu A1 (placa texturizada)',
+      accion: 'Ajusta el offset fino en la Bambu A1 con placa texturizada',
       valor: 'G29.1 Z −0,02 ~ 0 mm',
       cuando: { slicer: 'bambu', chapa: 'textured', medicion: 'primera' },
       porque:
@@ -328,7 +428,7 @@ export const elephantFoot: Guia = {
     },
     {
       id: 'a1-lisa',
-      accion: 'Ajuste fino Bambu A1 (placa no texturizada)',
+      accion: 'Ajusta el offset fino en la Bambu A1 con placa no texturizada',
       valor: 'G29.1 Z −0,01 ~ 0,01 mm',
       cuando: { slicer: 'bambu', chapa: ['cool', 'smooth', 'engineering', 'acero'], medicion: 'primera' },
       porque:

@@ -42,6 +42,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'problema',
       etiqueta: 'Problema observado',
+      indicador: 'general',
       para: 'Decide qué acción concreta aplicar: resistencia, acabado de superficie, paredes delgadas, precisión o vase mode.',
       necesaria: true,
       opciones: [
@@ -56,6 +57,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'generador',
       etiqueta: 'Generador de paredes',
+      indicador: 'slicer',
       para: 'Arachne ajusta el ancho dinámicamente; Classic es fijo. Cambia el manejo de paredes delgadas y la base del solape.',
       opciones: [
         { id: 'arachne', etiqueta: 'Arachne', detalle: 'Ajusta ancho dinámicamente' },
@@ -65,6 +67,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'paredes',
       etiqueta: 'Número de paredes (perímetros)',
+      indicador: 'geometria',
       para: 'Inner/Outer/Inner exige mínimo 3; con 2 o menos no se puede usar y alternate_extra_wall ancla peor.',
       opciones: [
         { id: 'pocas', etiqueta: '2 o menos', detalle: 'Pocas paredes' },
@@ -74,6 +77,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'voladizos',
       etiqueta: 'Voladizos importantes',
+      indicador: 'geometria',
       para: 'Decide el orden de paredes: Inner/Outer favorece voladizos, Inner/Outer/Inner favorece acabado y precisión.',
       opciones: [
         { id: 'si', etiqueta: 'Sí, hay voladizos', detalle: 'Voladizos que cuelgan' },
@@ -83,6 +87,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'alturaCapa',
       etiqueta: 'Altura de capa',
+      indicador: 'altura',
       para: 'A menor altura de capa, más capas sólidas superiores hacen falta para el mismo grosor mínimo.',
       opciones: [
         { id: 'baja', etiqueta: 'Baja (≤0,15 mm)', detalle: 'Más capas para el mismo grosor' },
@@ -95,6 +100,12 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'perimetros-vs-relleno',
       titulo: 'La resistencia la definen los perímetros',
+      puntos: [
+        'La resistencia de un modelo está definida principalmente por el número de perímetros, no por el relleno.',
+        'Si quieres una pieza más fuerte, aumenta el número de perímetros.',
+        'Esta afirmación es de una sola fuente (Prusa) y no cuantifica la relación ni da un umbral a partir del cual el relleno empieza a importar.',
+      ],
+      indicador: 'general',
       cuerpo:
         'La resistencia de un modelo está definida principalmente por el número de perímetros, no por el relleno. Si quieres una pieza más fuerte, aumenta el número de perímetros. Esta afirmación es de una sola fuente (Prusa) y no cuantifica la relación ni da un umbral a partir del cual el relleno empieza a importar.',
       cita: { texto: 'The strength of a model is mostly defined by the number of perimeters (not the infill). If you want a stronger print, increase the number of perimeters.', fuente: 'Prusa KB' },
@@ -103,6 +114,13 @@ export const paredesYPerimetros: Guia = {
       id: 'alternate-extra-wall',
       titulo: 'Pared extra cada dos capas',
       cuando: { problema: 'resistencia' },
+      puntos: [
+        'alternate_extra_wall añade una pared extra cada dos capas para que el relleno quede encajado verticalmente entre las paredes,.',
+        'resultando en impresiones más fuertes.',
+        'No funciona bien con "Ensure vertical shell thickness: All" (OrcaSlicer ofrece cambiarlo a "Moderate") ni con Lightning infill,.',
+        'porque hay poco relleno al que anclar las paredes extra.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'alternate_extra_wall añade una pared extra cada dos capas para que el relleno quede encajado verticalmente entre las paredes, resultando en impresiones más fuertes. No funciona bien con "Ensure vertical shell thickness: All" (OrcaSlicer ofrece cambiarlo a "Moderate") ni con Lightning infill, porque hay poco relleno al que anclar las paredes extra.',
       cifra: { valor: '1 pared cada 2 capas', nota: 'Contradicciones documentadas: Ensure vertical shell thickness All y Lightning infill' },
@@ -111,6 +129,12 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'minimo-perimetros',
       titulo: 'Mínimo de perímetros y paredes cerradas',
+      puntos: [
+        'Por defecto cada pared consta de perímetros externo e interno: mínimo 2 perímetros, incluso en paredes delgadas.',
+        'Las paredes se imprimen como bucles cerrados.',
+        'una pared de una sola extrusión (detect thin walls) reduce la calidad superficial y la resistencia por no ser un bucle cerrado.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'Por defecto cada pared consta de perímetros externo e interno: mínimo 2 perímetros, incluso en paredes delgadas. Las paredes se imprimen como bucles cerrados; una pared de una sola extrusión (detect thin walls) reduce la calidad superficial y la resistencia por no ser un bucle cerrado.',
       cita: { texto: 'By default, every wall consists of outside and inside perimeters (a minimum of two perimeters for thin walls).', fuente: 'Prusa KB' },
@@ -119,6 +143,13 @@ export const paredesYPerimetros: Guia = {
       id: 'detect-thin-walls',
       titulo: 'Detección de paredes delgadas',
       cuando: { problema: 'pared-delgada' },
+      puntos: [
+        'Detect thin walls (Prusa) genera un solo perímetro que sirve de cáscara interior y exterior para capturar detalles pequeños.',
+        'las paredes más delgadas que el ancho de una sola extrusión probablemente se ignoran.',
+        'Se desactiva automáticamente si el generador Arachne está activo.',
+        'OrcaSlicer recomienda usar Arachne, que desactiva detect_thin_wall por usar un enfoque distinto.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Detect thin walls (Prusa) genera un solo perímetro que sirve de cáscara interior y exterior para capturar detalles pequeños; las paredes más delgadas que el ancho de una sola extrusión probablemente se ignoran. Se desactiva automáticamente si el generador Arachne está activo. OrcaSlicer recomienda usar Arachne, que desactiva detect_thin_wall por usar un enfoque distinto.',
       cita: { texto: 'This feature is automatically disabled if the Arachne perimeter generator is active, as it already automatically adjusts for thin walls.', fuente: 'Prusa KB' },
@@ -127,6 +158,14 @@ export const paredesYPerimetros: Guia = {
       id: 'grosor-optimo',
       titulo: 'Grosor óptimo de pared delgada',
       cuando: { problema: 'pared-delgada' },
+      puntos: [
+        'PrusaSlicer calcula el grosor óptimo de pared delgada para un número de perímetros y una altura de capa dados.',
+        'no es simplemente número × ancho de extrusión, por el solape entre perímetros.',
+        'Ejemplo: ancho de extrusión 0,45 mm, 2 perímetros a 0,2 mm de capa → 0,86 mm (no 0,90 mm).',
+        'Este cálculo es específico de PrusaSlicer (sección asumida.',
+        'rectángulo con extremos semicirculares) y no está corroborado por OrcaSlicer ni Simplify3D.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'PrusaSlicer calcula el grosor óptimo de pared delgada para un número de perímetros y una altura de capa dados; no es simplemente número × ancho de extrusión, por el solape entre perímetros. Ejemplo: ancho de extrusión 0,45 mm, 2 perímetros a 0,2 mm de capa → 0,86 mm (no 0,90 mm). Este cálculo es específico de PrusaSlicer (sección asumida: rectángulo con extremos semicirculares) y no está corroborado por OrcaSlicer ni Simplify3D.',
       cifra: { valor: '0,86 mm', nota: '2 perímetros, 0,2 mm de capa, boquilla 0,45 mm (PrusaSlicer)' },
@@ -136,6 +175,13 @@ export const paredesYPerimetros: Guia = {
       id: 'capas-solidas-minimo',
       titulo: 'Grosor mínimo de capas sólidas superiores',
       cuando: { problema: 'superficie' },
+      puntos: [
+        'Las fuentes no se ponen de acuerdo en el umbral de grosor objetivo: Prusa apunta a ≈ 0,9 mm (3 capas a 0,3 mm; 9 capas a 0,1 mm),.',
+        'Simplify3D exige mínimo 0,5 mm (2 capas a 0,25 mm; 5 capas a 0,1 mm) y OrcaSlicer recomienda al menos 3 shell layers.',
+        'A menor altura de capa, más capas sólidas hacen falta para el mismo grosor.',
+        'El redactor presenta ambos umbrales con atribución, no elige uno.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Las fuentes no se ponen de acuerdo en el umbral de grosor objetivo: Prusa apunta a ≈ 0,9 mm (3 capas a 0,3 mm; 9 capas a 0,1 mm), Simplify3D exige mínimo 0,5 mm (2 capas a 0,25 mm; 5 capas a 0,1 mm) y OrcaSlicer recomienda al menos 3 shell layers. A menor altura de capa, más capas sólidas hacen falta para el mismo grosor. El redactor presenta ambos umbrales con atribución, no elige uno.',
       cifra: { valor: '0,5–0,9 mm', nota: 'Simplify3D: 0,5 mm mínimo; Prusa: ≈ 0,9 mm; OrcaSlicer: ≥ 3 capas' },
@@ -144,6 +190,14 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'top-solid-bridging',
       titulo: 'Las capas sólidas superiores son bridging sobre el relleno',
+      puntos: [
+        'El top solid infill es esencialmente bridging sobre el patrón de relleno; a menor porcentaje de relleno,.',
+        'mayor distancia de bridging y mayor sag.',
+        'Se contrarresta aumentando las capas sólidas (sugerido al menos 3 superiores) o con un modifier mesh que aumente el relleno en las últimas',
+        'capas antes del sólido.',
+        'Las capas sólidas superior e inferior son normalmente 100 % de relleno.',
+      ],
+      indicador: 'general',
       cuerpo:
         'El top solid infill es esencialmente bridging sobre el patrón de relleno; a menor porcentaje de relleno, mayor distancia de bridging y mayor sag. Se contrarresta aumentando las capas sólidas (sugerido al menos 3 superiores) o con un modifier mesh que aumente el relleno en las últimas capas antes del sólido. Las capas sólidas superior e inferior son normalmente 100 % de relleno.',
       cita: { texto: 'The top solid infill is essentially bridging over the infill pattern. Because of that, you\'ll almost always see some sag in the first few solid infill lines. The lower the infill, the longer the bridging distance, and as a result the bigger the sag.', fuente: 'Prusa KB' },
@@ -152,6 +206,15 @@ export const paredesYPerimetros: Guia = {
       id: 'solape-relleno-pared',
       titulo: 'Solape relleno-pared',
       cuando: { problema: ['superficie', 'ninguno'] },
+      puntos: [
+        'top_bottom_infill_wall_overlap: solape del relleno sólido superior/inferior con las paredes para mejor unión y menos pinholes.',
+        '25–30 % es un buen punto de partida.',
+        'La base del porcentaje cambia según el wall generator.',
+        'Classic usa mitad del espaciado de pared interior + mitad del espaciado de relleno sólido interno.',
+        'Arachne usa el espaciado de pared interior; con una sola pared, el espaciado de pared exterior.',
+        'Cambiar de Classic a Arachne cambia el significado del mismo porcentaje.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'top_bottom_infill_wall_overlap: solape del relleno sólido superior/inferior con las paredes para mejor unión y menos pinholes; 25–30 % es un buen punto de partida. La base del porcentaje cambia según el wall generator: Classic usa mitad del espaciado de pared interior + mitad del espaciado de relleno sólido interno; Arachne usa el espaciado de pared interior; con una sola pared, el espaciado de pared exterior. Cambiar de Classic a Arachne cambia el significado del mismo porcentaje.',
       cifra: { valor: '25–30 %', nota: 'Base de cálculo distinta entre Classic y Arachne' },
@@ -161,6 +224,16 @@ export const paredesYPerimetros: Guia = {
       id: 'orden-paredes',
       titulo: 'Orden de paredes: voladizo vs acabado',
       cuando: { problema: ['resistencia', 'precision', 'ninguno'] },
+      puntos: [
+        'Inner/Outer: mejor para voladizos (las paredes voladas se adhieren a un perímetro vecino),.',
+        'a costa de calidad superficial ligeramente reducida.',
+        'Inner/Outer/Inner: mejor acabado superficial y precisión dimensional,.',
+        'pero reduce el rendimiento de voladizo (no hay perímetro interno contra el que imprimir la pared externa).',
+        'requiere mínimo 3 paredes y se recomienda sobre Outer/Inner en la mayoría de casos.',
+        'Outer/Inner: misma calidad superficial y precisión que Inner/Outer/Inner, pero costuras Z menos consistentes.',
+        'Es un trade-off explícito: mejor voladizo o mejor acabado, no ambos a la vez.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'Inner/Outer: mejor para voladizos (las paredes voladas se adhieren a un perímetro vecino), a costa de calidad superficial ligeramente reducida. Inner/Outer/Inner: mejor acabado superficial y precisión dimensional, pero reduce el rendimiento de voladizo (no hay perímetro interno contra el que imprimir la pared externa); requiere mínimo 3 paredes y se recomienda sobre Outer/Inner en la mayoría de casos. Outer/Inner: misma calidad superficial y precisión que Inner/Outer/Inner, pero costuras Z menos consistentes. Es un trade-off explícito: mejor voladizo o mejor acabado, no ambos a la vez.',
       cita: { texto: 'Use Inner/Outer/Inner for the best external surface finish and dimensional accuracy as the external wall is printed undisturbed from an internal perimeter. However, overhang performance will reduce as there is no internal perimeter to print the external wall against.', fuente: 'OrcaSlicer — Wall and Surfaces' },
@@ -169,6 +242,16 @@ export const paredesYPerimetros: Guia = {
       id: 'arachne-vs-classic',
       titulo: 'Arachne vs Classic',
       cuando: { generador: ['arachne', 'classic'] },
+      puntos: [
+        'Classic crea tantas paredes como permite wall_loops extruyendo a lo largo del perímetro con ancho de línea definido.',
+        'no varía el ancho de extrusión; rápido y predecible.',
+        'Arachne ajusta dinámicamente el ancho de extrusión para seguir mejor la geometría.',
+        'mejor manejo de detalles finos y transiciones suaves entre número de paredes.',
+        'Prusa: para la mayoría de impresiones Arachne es superior; para piezas funcionales donde la precisión de esquinas cóncavas es importante,.',
+        'Classic puede ser mejor.',
+        'OrcaSlicer describe ambos sin declarar preferencia explícita.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Classic crea tantas paredes como permite wall_loops extruyendo a lo largo del perímetro con ancho de línea definido; no varía el ancho de extrusión; rápido y predecible. Arachne ajusta dinámicamente el ancho de extrusión para seguir mejor la geometría; mejor manejo de detalles finos y transiciones suaves entre número de paredes. Prusa: para la mayoría de impresiones Arachne es superior; para piezas funcionales donde la precisión de esquinas cóncavas es importante, Classic puede ser mejor. OrcaSlicer describe ambos sin declarar preferencia explícita.',
       cita: { texto: 'The Arachne wall generator dynamically adjusts extrusion width to follow the shape of the model more closely. This allows better handling of thin features and smooth transitions between wall counts.', fuente: 'OrcaSlicer — Wall Generator' },
@@ -177,6 +260,15 @@ export const paredesYPerimetros: Guia = {
       id: 'vase-mode',
       titulo: 'Vase mode: un solo perímetro continuo',
       cuando: { problema: 'vase' },
+      puntos: [
+        'Vase mode crea un contenedor de un solo perímetro continuo con altura Z gradual.',
+        'Con vase mode activo, PrusaSlicer ajusta automáticamente: 1 perímetro, 0 % de relleno, capas sólidas superiores desactivadas,.',
+        'soportes desactivados, "ensure vertical shell thickness" desactivado.',
+        'Se puede ajustar el número de capas sólidas inferiores y el ancho de extrusión de los perímetros externos para un vaso más',
+        'grueso/fuerte/estanco (ej. de 0,45 a 0,6).',
+        'El modelo debe definirse como sólido (solo dimensiones exteriores) y solo se puede imprimir un objeto a la vez.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Vase mode crea un contenedor de un solo perímetro continuo con altura Z gradual. Con vase mode activo, PrusaSlicer ajusta automáticamente: 1 perímetro, 0 % de relleno, capas sólidas superiores desactivadas, soportes desactivados, "ensure vertical shell thickness" desactivado. Se puede ajustar el número de capas sólidas inferiores y el ancho de extrusión de los perímetros externos para un vaso más grueso/fuerte/estanco (ej. de 0,45 a 0,6). El modelo debe definirse como sólido (solo dimensiones exteriores) y solo se puede imprimir un objeto a la vez.',
       cita: { texto: 'When the vase mode is activated, PrusaSlicer automatically sets related settings accordingly:', fuente: 'Prusa KB' },
@@ -184,6 +276,13 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'gap-fill',
       titulo: 'Gap fill',
+      puntos: [
+        'Fill gaps rellena huecos entre perímetros individuales y entre el perímetro más interno y el relleno.',
+        'Classic rellena el medio de paredes de 3 líneas con gap fill, impreso después de ambas paredes externas.',
+        'Simplify3D usa gap fill por defecto para huecos pequeños entre paredes delgadas, con patrón back-and-forth ajustable al espacio.',
+        'OrcaSlicer expone gap_fill_flow_ratio como variable de flow ratio para gap fill.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Fill gaps rellena huecos entre perímetros individuales y entre el perímetro más interno y el relleno. Classic rellena el medio de paredes de 3 líneas con gap fill, impreso después de ambas paredes externas. Simplify3D usa gap fill por defecto para huecos pequeños entre paredes delgadas, con patrón back-and-forth ajustable al espacio. OrcaSlicer expone gap_fill_flow_ratio como variable de flow ratio para gap fill.',
       cita: { texto: 'Enables filling of gaps between individual perimeters and between the innermost perimeter and infill.', fuente: 'Prusa KB' },
@@ -192,6 +291,13 @@ export const paredesYPerimetros: Guia = {
       id: 'narrow-walls',
       titulo: 'Paredes estrechas (narrow walls)',
       cuando: { problema: 'pared-delgada' },
+      puntos: [
+        'Cuando una pared es demasiado estrecha para las paredes de ambos lados, contorno y hueco comparten el espacio.',
+        'con 2 líneas solo las paredes externas del contorno y el hueco, tocándose; con 3 líneas las dos externas y una línea entre ellas.',
+        'Arachne imprime esa línea como pared interna compartida y sigue el orden de paredes; Classic rellena el medio con gap fill.',
+        'Ejemplo (tubo de pared 0,5 mm, 3 wall loops, Arachne): 1 mm → 2 líneas; 1,5 mm → 3 líneas; 2 mm → 4 líneas.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Cuando una pared es demasiado estrecha para las paredes de ambos lados, contorno y hueco comparten el espacio: con 2 líneas solo las paredes externas del contorno y el hueco, tocándose; con 3 líneas las dos externas y una línea entre ellas. Arachne imprime esa línea como pared interna compartida y sigue el orden de paredes; Classic rellena el medio con gap fill. Ejemplo (tubo de pared 0,5 mm, 3 wall loops, Arachne): 1 mm → 2 líneas; 1,5 mm → 3 líneas; 2 mm → 4 líneas.',
       cita: { texto: 'When a wall is too narrow for the walls of both its sides, like the wall of a thin tube, the contour and the hole share the room between them:', fuente: 'OrcaSlicer — Wall and Surfaces' },
@@ -199,6 +305,13 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'ensure-vertical',
       titulo: 'Ensure vertical shell thickness',
+      puntos: [
+        'Ensure vertical shell thickness: Disabled (extrusión adicional solo para capas superiores.',
+        'puede hacer fallar la impresión) / Partial (soporte parcial) / Enabled (estándar.',
+        'añade relleno sólido cerca de superficies inclinadas para garantizar el grosor de cáscara vertical.',
+        'aplicado a capas sólidas superior e inferior). alternate_extra_wall no funciona bien con "All" y OrcaSlicer ofrece cambiarlo a "Moderate".',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Ensure vertical shell thickness: Disabled (extrusión adicional solo para capas superiores; puede hacer fallar la impresión) / Partial (soporte parcial) / Enabled (estándar; añade relleno sólido cerca de superficies inclinadas para garantizar el grosor de cáscara vertical; aplicado a capas sólidas superior e inferior). alternate_extra_wall no funciona bien con "All" y OrcaSlicer ofrece cambiarlo a "Moderate".',
       cita: { texto: 'Disabled: Produces additional extrusion only to support top layers. Choosing this option may cause your print to fail. Partial: Provides partial support to vertical shells without fully enforcing the required thickness. Enabled: Standard setting. Enables the addition of solid infill near sloping surfaces to guarantee the vertical shell thickness. It is applied to the top and bottom solid layers.', fuente: 'Prusa KB' },
@@ -207,6 +320,15 @@ export const paredesYPerimetros: Guia = {
       id: 'only-one-wall',
       titulo: 'Only one wall',
       cuando: { problema: ['superficie', 'ninguno'] },
+      puntos: [
+        'Only one perimeter (Prusa) fuerza un solo perímetro en capas superiores o en la primera capa para un acabado más limpio sin sacrificar.',
+        'rigidez.',
+        'top y bottom controlables por separado.',
+        'OrcaSlicer expone only_one_wall_first_layer / only_one_wall_top.',
+        'una sola pared en superficies planas para dar más espacio al patrón de relleno superior; útil en features pequeñas (letras).',
+        'requiere shell layers > 0.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Only one perimeter (Prusa) fuerza un solo perímetro en capas superiores o en la primera capa para un acabado más limpio sin sacrificar rigidez; top y bottom controlables por separado. OrcaSlicer expone only_one_wall_first_layer / only_one_wall_top: una sola pared en superficies planas para dar más espacio al patrón de relleno superior; útil en features pequeñas (letras); requiere shell layers > 0.',
       cita: { texto: 'This option forces a single perimeter on top or first layers to achieve a cleaner, more uniform aesthetic finish without sacrificing the object\'s structural rigidity.', fuente: 'Prusa KB' },
@@ -215,6 +337,13 @@ export const paredesYPerimetros: Guia = {
       id: 'precision-dimensional',
       titulo: 'Precisión dimensional',
       cuando: { problema: 'precision' },
+      puntos: [
+        'Inner/Outer/Inner y Outer/Inner ofrecen mejor precisión dimensional que Inner/Outer (perímetro externo impreso sin perturbar).',
+        'External perimeters first puede mejorar la precisión dimensional. wall_maximum_deviation afecta la precisión de la pared (mayor valor =',
+        'menor precisión).',
+        'Ninguna fuente da valores de holgura o interferencia para piezas que deben encajar; solo afirmaciones genéricas de precisión dimensional.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Inner/Outer/Inner y Outer/Inner ofrecen mejor precisión dimensional que Inner/Outer (perímetro externo impreso sin perturbar). External perimeters first puede mejorar la precisión dimensional. wall_maximum_deviation afecta la precisión de la pared (mayor valor = menor precisión). Ninguna fuente da valores de holgura o interferencia para piezas que deben encajar; solo afirmaciones genéricas de precisión dimensional.',
       cita: { texto: 'Use Inner/Outer/Inner for the best external surface finish and dimensional accuracy as the external wall is printed undisturbed from an internal perimeter.', fuente: 'OrcaSlicer — Wall and Surfaces' },
@@ -223,6 +352,16 @@ export const paredesYPerimetros: Guia = {
       id: 'top-surface-expansion',
       titulo: 'Surface expansion',
       cuando: { problema: 'superficie' },
+      puntos: [
+        'top_surface_expansion (novedad ≥ 2.4.2).',
+        'expande las superficies superiores por una distancia (mm) para conectar superficies distintas y rellenar huecos donde un feature sube a.',
+        'través de ellas.',
+        'no hace nada si shell layers = 0 o surface density = 0 %.',
+        'Surface expansion: margin (despeje real respecto a las paredes),.',
+        'direction (inward / outward / inward_and_outward) e interacción con Only one wall (las paredes internas se eliminan sobre la superficie.',
+        'expandida).',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'top_surface_expansion (novedad ≥ 2.4.2): expande las superficies superiores por una distancia (mm) para conectar superficies distintas y rellenar huecos donde un feature sube a través de ellas; no hace nada si shell layers = 0 o surface density = 0 %. Surface expansion: margin (despeje real respecto a las paredes), direction (inward / outward / inward_and_outward) e interacción con Only one wall (las paredes internas se eliminan sobre la superficie expandida).',
       cita: { texto: 'Expands the top surfaces by this distance (in mm) to connect distinct top surfaces and fill the gaps left where a feature rises through them.', fuente: 'OrcaSlicer — Top/Bottom Shells' },

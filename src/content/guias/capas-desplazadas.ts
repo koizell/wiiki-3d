@@ -53,6 +53,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'firmware',
       etiqueta: 'Firmware',
+      indicador: 'maquina',
       para: 'Los comandos, los errores y los procedimientos cambian por firmware: Klipper, Marlin u otro.',
       necesaria: true,
       opciones: [
@@ -64,6 +65,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'driver',
       etiqueta: 'Driver del motor',
+      indicador: 'maquina',
       para: 'Cómo se fija la corriente del motor depende de si el driver se configura por UART o lleva potenciómetro.',
       necesaria: true,
       opciones: [
@@ -75,6 +77,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'corriente',
       etiqueta: 'Corriente del motor',
+      indicador: 'velocidad',
       para: 'Menos corriente da menos torque y puede perder pasos; más de la cuenta sobrecalienta el driver.',
       necesaria: true,
       opciones: [
@@ -87,6 +90,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'modo',
       etiqueta: 'Modo del driver TMC',
+      indicador: 'general',
       para: 'stealthChop es más silencioso pero introduce positional lag y puede disparar sobrecorriente; spreadCycle es el modo por defecto de Klipper.',
       opciones: [
         { id: 'spreadcycle', etiqueta: 'spreadCycle' },
@@ -98,6 +102,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'interpolacion',
       etiqueta: 'Interpolación del driver',
+      indicador: 'calibracion',
       para: 'La interpolación reduce ruido, pero añade un error posicional sistemático.',
       opciones: [
         { id: 'activa', etiqueta: 'Activa' },
@@ -109,6 +114,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'psu',
       etiqueta: 'Fuente de alimentación',
+      indicador: 'maquina',
       para: 'Una fuente insuficiente se congela o resetea los drivers al combinar calentadores con movimientos rápidos.',
       opciones: [
         { id: 'suficiente', etiqueta: 'Suficiente y medida' },
@@ -119,6 +125,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'hold',
       etiqueta: 'hold_current',
+      indicador: 'calibracion',
       para: 'Reducir corriente con el motor inmóvil ahorra calor, pero puede introducir movimiento no ordenado.',
       opciones: [
         { id: 'ninguno', etiqueta: 'No lo he configurado' },
@@ -129,6 +136,7 @@ export const capasDesplazadas: Guia = {
     {
       id: 'cambioMecanico',
       etiqueta: 'Cambio mecánico reciente',
+      indicador: 'calibracion',
       para: 'Input Shaping se recalibra tras cambios mecánicos o estructurales.',
       opciones: [
         { id: 'si', etiqueta: 'Sí' },
@@ -141,6 +149,12 @@ export const capasDesplazadas: Guia = {
     {
       id: 'frontera',
       titulo: 'No es ni separación ni warping',
+      puntos: [
+        'Una capa desplazada conserva la unión entre capas: el bloque sale corrido, pero no se abre.',
+        'Por eso subir la temperatura de cama o de boquilla no toca el fallo: esas ajustan adhesión, y aquí la unión está intacta.',
+        'La causa está en el movimiento del hotend.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Una capa desplazada conserva la unión entre capas: el bloque sale corrido, pero no se abre. Por eso subir la temperatura de cama o de boquilla no toca el fallo: esas ajustan adhesión, y aquí la unión está intacta. La causa está en el movimiento del hotend.',
       enlaza: { guia: 'separaciones-entre-capas', etiqueta: 'Comparar con separación entre capas' },
@@ -148,12 +162,24 @@ export const capasDesplazadas: Guia = {
     {
       id: 'eje',
       titulo: 'El eje en el que se corrió importa para el diagnóstico',
+      puntos: [
+        'Prusa pide identificar el eje para saber qué tocar.',
+        'Los pasos de diagnóstico son iguales para X y para Y; lo que cambia es qué motor, driver y correa se revisan.',
+        'Una impresora con correa independiente por eje aísla el fallo al eje que se movió.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Prusa pide identificar el eje para saber qué tocar. Los pasos de diagnóstico son iguales para X y para Y; lo que cambia es qué motor, driver y correa se revisan. Una impresora con correa independiente por eje aísla el fallo al eje que se movió.',
     },
     {
       id: 'corriente-tuning',
       titulo: 'Corriente del TMC: torque frente a calor',
+      puntos: [
+        'Más corriente da más torque y más precisión posicional, pero también más calor.',
+        'Si el driver se calienta demasiado se deshabilita; si el motor se calienta demasiado pierde torque.',
+        'La mejor práctica de Klipper es preferir valores altos mientras el motor siga tibio al tacto y el driver no reporte avisos.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Más corriente da más torque y más precisión posicional, pero también más calor. Si el driver se calienta demasiado se deshabilita; si el motor se calienta demasiado pierde torque. La mejor práctica de Klipper es preferir valores altos mientras el motor siga tibio al tacto y el driver no reporte avisos.',
       cifra: { valor: 'Tibio al tacto, sin avisos', nota: 'criterio de Klipper, sin cifra fija' },
@@ -161,6 +187,12 @@ export const capasDesplazadas: Guia = {
     {
       id: 'hold-current',
       titulo: 'hold_current: casi siempre mejor no ponerlo',
+      puntos: [
+        'Cambiar la corriente del motor cuando detecta que no se mueve introduce movimiento por detent forces o por fuerzas externas sobre el carro.',
+        'Pocos movimientos de impresión dejan el motor inmóvil el tiempo suficiente para activarlo, así que Klipper recomienda no especificarlo.',
+        'La excepción son los motores Z dedicados que están inactivos en la impresión normal, calibrando driver_TPOWERDOWN e IHOLDDELAY.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Cambiar la corriente del motor cuando detecta que no se mueve introduce movimiento por detent forces o por fuerzas externas sobre el carro. Pocos movimientos de impresión dejan el motor inmóvil el tiempo suficiente para activarlo, así que Klipper recomienda no especificarlo. La excepción son los motores Z dedicados que están inactivos en la impresión normal, calibrando driver_TPOWERDOWN e IHOLDDELAY.',
       cuando: { hold: ['configurado', 'z-dedicado'] },
@@ -168,6 +200,13 @@ export const capasDesplazadas: Guia = {
     {
       id: 'stealthchop-lag',
       titulo: 'stealthChop introduce positional lag',
+      puntos: [
+        'stealthChop es más silencioso que spreadCycle,.',
+        'pero en pruebas ha mostrado un incremento de positional lag de alrededor del 75 % de un full-step en movimientos a velocidad constante,.',
+        'además de poder desencadenar sobrecorriente.',
+        'La fuente lo deja como trueque: tú decides si prefieres el ruido menor.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'stealthChop es más silencioso que spreadCycle, pero en pruebas ha mostrado un incremento de positional lag de alrededor del 75 % de un full-step en movimientos a velocidad constante, además de poder desencadenar sobrecorriente. La fuente lo deja como trueque: tú decides si prefieres el ruido menor.',
       cifra: { valor: '~0,150 mm', nota: 'positional lag, ej. 40 mm / 200 steps, sin corroborar' },
@@ -176,6 +215,12 @@ export const capasDesplazadas: Guia = {
     {
       id: 'interpolacion-error',
       titulo: 'La interpolación añade un error sistemático',
+      puntos: [
+        'La interpolación reduce el ruido a costa de retrasar la ejecución de los steps.',
+        'En spreadCycle el error es de casi medio microstep configurado.',
+        'Con spreadCycle y interpolate en False, subir los microsteps a 64 o 128 da un ruido similar sin ese error.',
+      ],
+      indicador: 'general',
       cuerpo:
         'La interpolación reduce el ruido a costa de retrasar la ejecución de los steps. En spreadCycle el error es de casi medio microstep configurado. Con spreadCycle y interpolate en False, subir los microsteps a 64 o 128 da un ruido similar sin ese error.',
       cifra: { valor: '~0,006 mm', nota: 'spreadCycle, ej. 40 mm / 200 / 16, un sólo fuente' },
@@ -184,6 +229,11 @@ export const capasDesplazadas: Guia = {
     {
       id: 'spreadcycle-recomendacion',
       titulo: 'SpreadCycle más microsteps altos: precisión sin ruido',
+      puntos: [
+        'Para mejor precisión posicional, usar spreadCycle y deshabilitar la interpolación.',
+        'entonces se puede subir los microsteps para reducir el ruido audible, típicamente 64 o 128.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Para mejor precisión posicional, usar spreadCycle y deshabilitar la interpolación; entonces se puede subir los microsteps para reducir el ruido audible, típicamente 64 o 128.',
       cifra: { valor: '64 o 128', nota: 'microsteps en spreadCycle sin interpolación' },
@@ -192,6 +242,12 @@ export const capasDesplazadas: Guia = {
     {
       id: 'errores-tmc',
       titulo: 'Si el driver se deshabilita, la impresión se para',
+      puntos: [
+        'Un TMC que se deshabilita deja de mantener la posición y deja de responder a los comandos; en Klipper eso lleva a shutdown.',
+        'Las causas registradas son Overtemp, ShortToGND/ShortToSupply, reset a mitad de impresión y Undervoltage.',
+        'El modo stealthChop puede disparar sobrecorriente por mala predicción de la carga mecánica.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Un TMC que se deshabilita deja de mantener la posición y deja de responder a los comandos; en Klipper eso lleva a shutdown. Las causas registradas son Overtemp, ShortToGND/ShortToSupply, reset a mitad de impresión y Undervoltage. El modo stealthChop puede disparar sobrecorriente por mala predicción de la carga mecánica.',
       cuando: { driver: ['tmc-uart', 'tmc-standalone'] },
@@ -199,6 +255,13 @@ export const capasDesplazadas: Guia = {
     {
       id: 'psu-medicion',
       titulo: 'La fuente se mide bajo carga',
+      puntos: [
+        'Una fuente insuficiente combinada con calentadores y movimientos a alta velocidad puede congelar la placa sin paro ni watchdog,.',
+        'dejando los calentadores activos.',
+        'Se mide la tensión de entrada con multímetro durante los movimientos rápidos.',
+        'una caída por debajo de la tensión esperada —12 V o 24 V— indica problema.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Una fuente insuficiente combinada con calentadores y movimientos a alta velocidad puede congelar la placa sin paro ni watchdog, dejando los calentadores activos. Se mide la tensión de entrada con multímetro durante los movimientos rápidos; una caída por debajo de la tensión esperada —12 V o 24 V— indica problema.',
       cifra: { valor: '12 V o 24 V', nota: 'umbral de caída bajo carga' },
@@ -206,6 +269,13 @@ export const capasDesplazadas: Guia = {
     {
       id: 'pasos-perdidos',
       titulo: 'Detectar pasos perdidos con GET_POSITION',
+      puntos: [
+        'En Klipper se puede medir sin imprimir: homing, GET_POSITION, movimientos a alta velocidad, homing de nuevo y otro GET_POSITION.',
+        'se comparan los valores de la línea mcu.',
+        'Una pérdida real aparece en múltiplos de 64 microsteps con 16 microsteps; pequeñas diferencias se deben a los finales de carrera,.',
+        'que disparan en posiciones ligeramente distintas.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'En Klipper se puede medir sin imprimir: homing, GET_POSITION, movimientos a alta velocidad, homing de nuevo y otro GET_POSITION; se comparan los valores de la línea mcu. Una pérdida real aparece en múltiplos de 64 microsteps con 16 microsteps; pequeñas diferencias se deben a los finales de carrera, que disparan en posiciones ligeramente distintas.',
       cifra: { valor: 'múltiplos de 64', nota: 'con 16 microsteps configurados' },
@@ -214,6 +284,13 @@ export const capasDesplazadas: Guia = {
     {
       id: 'cornering',
       titulo: 'Jerk y Junction Deviation son alternativos',
+      puntos: [
+        'Son dos algoritmos de control de esquinas, no dos parámetros que se suman.',
+        'En Marlin 2, Classic Jerk está deprecado en favor de Junction Deviation,.',
+        'y si una máquina usa Classic Jerk hay que poner Maximum Junction Deviation a 0 para que apliquen los límites de jerk.',
+        'OrcaSlicer da la conversión JD = 0,4 · Jerk² / Accel.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Son dos algoritmos de control de esquinas, no dos parámetros que se suman. En Marlin 2, Classic Jerk está deprecado en favor de Junction Deviation, y si una máquina usa Classic Jerk hay que poner Maximum Junction Deviation a 0 para que apliquen los límites de jerk. OrcaSlicer da la conversión JD = 0,4 · Jerk² / Accel.',
       cifra: { valor: 'JD = 0,4·Jerk²/Accel', nota: 'conversión OrcaSlicer' },
@@ -221,6 +298,11 @@ export const capasDesplazadas: Guia = {
     {
       id: 'input-shaping',
       titulo: 'Input Shaping y su calibración',
+      puntos: [
+        'Contraataca vibraciones en movimientos de alta velocidad, que se manifiestan como ringing.',
+        'Se recomienda calibrar una vez al año o tras cambios mecánicos o estructurales: reubicación, superficie de apoyo, correas, motores, chasis.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Contraataca vibraciones en movimientos de alta velocidad, que se manifiestan como ringing. Se recomienda calibrar una vez al año o tras cambios mecánicos o estructurales: reubicación, superficie de apoyo, correas, motores, chasis.',
       cuando: { cambioMecanico: ['si', 'no'] },
@@ -228,6 +310,14 @@ export const capasDesplazadas: Guia = {
     {
       id: 'limites-orca',
       titulo: 'OrcaSlicer: aceleración, Motion Ability y flavor',
+      puntos: [
+        'Los límites de aceleración y jerk del slicer no superan los máximos de Motion Ability.',
+        'Si la aceleración normal de printing es 0, Orca no envía comandos de aceleración y manda la del firmware,.',
+        'deshabilitando los demás ajustes de aceleración del proceso.',
+        'Con flavor Klipper, la opción de emitir límites al G-code se ignora y accel_to_decel se gestiona con SET_VELOCITY_LIMIT (por defecto al 50.',
+        '%).',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Los límites de aceleración y jerk del slicer no superan los máximos de Motion Ability. Si la aceleración normal de printing es 0, Orca no envía comandos de aceleración y manda la del firmware, deshabilitando los demás ajustes de aceleración del proceso. Con flavor Klipper, la opción de emitir límites al G-code se ignora y accel_to_decel se gestiona con SET_VELOCITY_LIMIT (por defecto al 50 %).',
       cuando: { driver: ['tmc-uart', 'tmc-standalone', 'trimpot'] },
@@ -235,6 +325,11 @@ export const capasDesplazadas: Guia = {
     {
       id: 'rsense',
       titulo: 'rsense mal configurado como causa',
+      puntos: [
+        'Marlin advierte de impresión poco fiable y capas desplazadas cuando rsense no está configurado según las recomendaciones.',
+        'No da valor ni procedimiento; es una comprobación de configuración del driver Trinamic.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Marlin advierte de impresión poco fiable y capas desplazadas cuando rsense no está configurado según las recomendaciones. No da valor ni procedimiento; es una comprobación de configuración del driver Trinamic.',
       cuando: { firmware: 'marlin' },
@@ -316,7 +411,8 @@ export const capasDesplazadas: Guia = {
     },
     {
       id: 'hold-z',
-      accion: 'En motores Z dedicados inactivos, hold_current puede aplicarse calibrando driver_TPOWERDOWN e IHOLDDELAY',
+      accion: 'Aplica hold_current en motores Z dedicados inactivos, calibrando driver_TPOWERDOWN e IHOLDDELAY',
+      indicador: 'activar',
       cuando: { hold: 'z-dedicado' },
       porque:
         'Los motores Z que no participan en la impresión normal (sin bed_mesh, bed_tilt, skew en Z ni vase mode) se mantienen más fríos con hold_current, calculando el movimiento no ordenado en nivelación y sondeo.',
@@ -417,7 +513,7 @@ export const capasDesplazadas: Guia = {
     },
     {
       id: 'accel-a-cero',
-      accion: 'Si la aceleración normal de printing es 0 en OrcaSlicer, el control de aceleración lo decide el firmware',
+      accion: 'Confirma que la aceleración la decide el firmware si la de OrcaSlicer está a 0',
       cuando: { firmware: ['klipper', 'marlin', 'otro'] },
       porque:
         'A 0, Orca no envía comandos de aceleración y los demás ajustes de aceleración del proceso se deshabilitan.',

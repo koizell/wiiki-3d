@@ -42,6 +42,7 @@ export const temperaturaHotend: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material tiene su rango de temperatura de boquilla; sin esto no hay recomendación.',
       necesaria: true,
       opciones: [
@@ -57,6 +58,7 @@ export const temperaturaHotend: Guia = {
     {
       id: 'temperatura',
       etiqueta: 'Temperatura de boquilla',
+      indicador: 'temperatura',
       para: 'Saber si la temperatura del archivo cae dentro, por debajo o por encima del rango del fabricante.',
       campos: ['hotendTemp'],
       opciones: [
@@ -70,6 +72,11 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-pla',
       titulo: 'Rango de PLA',
+      puntos: [
+        'Bambu Lab da 190–240 °C para PLA.',
+        'Prusa da 195–220 °C. Cada fabricante tiene su rango; no se promedian.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 190–240 °C para PLA. Prusa da 195–220 °C. Cada fabricante tiene su rango; no se promedian.',
       cuando: { material: 'pla' },
       cifra: { valor: '190–240 °C', nota: 'Bambu Lab. Prusa: 195–220 °C.' },
@@ -78,6 +85,10 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-petg',
       titulo: 'Rango de PETG',
+      puntos: [
+        'Bambu Lab da 240–270 °C para PETG.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 240–270 °C para PETG.',
       cuando: { material: 'petg' },
       cifra: { valor: '240–270 °C', nota: 'Bambu Lab' },
@@ -86,6 +97,10 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-abs',
       titulo: 'Rango de ABS',
+      puntos: [
+        'Bambu Lab da 240–280 °C para ABS.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 240–280 °C para ABS.',
       cuando: { material: 'abs' },
       cifra: { valor: '240–280 °C', nota: 'Bambu Lab' },
@@ -94,6 +109,10 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-asa',
       titulo: 'Rango de ASA',
+      puntos: [
+        'Bambu Lab da 240–280 °C para ASA.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 240–280 °C para ASA.',
       cuando: { material: 'asa' },
       cifra: { valor: '240–280 °C', nota: 'Bambu Lab' },
@@ -102,6 +121,10 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-pc',
       titulo: 'Rango de PC',
+      puntos: [
+        'Bambu Lab da 260–290 °C para PC.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 260–290 °C para PC.',
       cuando: { material: 'pc' },
       cifra: { valor: '260–290 °C', nota: 'Bambu Lab' },
@@ -110,6 +133,10 @@ export const temperaturaHotend: Guia = {
     {
       id: 'rango-pa',
       titulo: 'Rango de PA',
+      puntos: [
+        'Bambu Lab da 260–300 °C para PA-CF/GF, PA6-CF/GF, PAHT-CF/GF.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 260–300 °C para PA-CF/GF, PA6-CF/GF, PAHT-CF/GF.',
       cuando: { material: 'pa' },
       cifra: { valor: '260–300 °C', nota: 'Bambu Lab' },
@@ -118,6 +145,12 @@ export const temperaturaHotend: Guia = {
     {
       id: 'trueque-union',
       titulo: 'Subir la temperatura mejora la unión',
+      puntos: [
+        'Aumentar la temperatura de boquilla o disminuir la velocidad de impresión permite al filamento extruido más tiempo para unirse con la capa.',
+        'inferior,.',
+        'mejorando la adhesión intercapa.',
+      ],
+      indicador: 'calibracion',
       cuerpo: 'Aumentar la temperatura de boquilla o disminuir la velocidad de impresión permite al filamento extruido más tiempo para unirse con la capa inferior, mejorando la adhesión intercapa.',
       cita: {
         texto: 'This method allows the extruded filament more time to bond with the layer below, thereby improving interlayer adhesion.',
@@ -127,6 +160,11 @@ export const temperaturaHotend: Guia = {
     {
       id: 'trueque-stringing',
       titulo: 'Bajar la temperatura mejora los hilos',
+      puntos: [
+        'Bajar la temperatura de boquilla en 5–10 °C disminuye la ocurrencia de hilos.',
+        'Pero puede empeorar la unión entre capas.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bajar la temperatura de boquilla en 5–10 °C disminuye la ocurrencia de hilos. Pero puede empeorar la unión entre capas.',
       cita: {
         texto: 'Lowering the temperature decreases the occurrence of strings. Try decreasing the nozzle temperature by 5 – 10°C and check whether there\'s less stringing.',
@@ -136,6 +174,12 @@ export const temperaturaHotend: Guia = {
     {
       id: 'hotendTemp-opcional',
       titulo: 'Por qué el slicer puede no haber escrito `hotendTemp`',
+      puntos: [
+        '`hotendTemp` es opcional en `ProjectMetadata`.',
+        'Si el slicer no lo escribió, la guía no puede precontestar la variable `temperatura`.',
+        'Tienes que declararla manualmente.',
+      ],
+      indicador: 'slicer',
       cuerpo: '`hotendTemp` es opcional en `ProjectMetadata`. Si el slicer no lo escribió, la guía no puede precontestar la variable `temperatura`. Tienes que declararla manualmente.',
     },
   ],

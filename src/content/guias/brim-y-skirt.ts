@@ -44,6 +44,7 @@ export const brimYSkirt: Guia = {
     {
       id: 'objetivo',
       etiqueta: '¿Para que lo necesitas?',
+      indicador: 'general',
       para: 'Brim, skirt y escudo resuelven problemas distintos; el ajuste depende de para que se monta.',
       necesaria: true,
       opciones: [
@@ -56,6 +57,7 @@ export const brimYSkirt: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Auto brim usa un coeficiente de adhesion y una longitud termica por material; el raft tiene materiales donde tiene sentido.',
       necesaria: true,
       campos: ['material'],
@@ -71,6 +73,7 @@ export const brimYSkirt: Guia = {
     {
       id: 'impresora',
       etiqueta: 'Tipo de impresora',
+      indicador: 'maquina',
       para: 'En una maquina belt el brim se imprime por tiras, el raft no se puede usar y leading/extrawidth pasan a ser los ajustes utiles.',
       necesaria: true,
       opciones: [
@@ -81,6 +84,7 @@ export const brimYSkirt: Guia = {
     {
       id: 'superficie',
       etiqueta: 'Superficie de apoyo',
+      indicador: 'cama',
       para: 'El raft esta pensado para contacto pequeno, features finas o placas desgastadas; con apoyo normal basta brim.',
       opciones: [
         { id: 'pequena', etiqueta: 'Pequena o con features finas' },
@@ -91,6 +95,7 @@ export const brimYSkirt: Guia = {
     {
       id: 'entorno',
       etiqueta: 'Entorno de impresion',
+      indicador: 'entorno',
       para: 'El escudo de corriente aporta sobre todo en maquina abierta o con ventilacion directa sobre la pieza.',
       opciones: [
         { id: 'open', etiqueta: 'Abierta o con corrientes' },
@@ -103,12 +108,26 @@ export const brimYSkirt: Guia = {
     {
       id: 'concepto',
       titulo: 'Brim, skirt y escudo no resuelven lo mismo',
+      puntos: [
+        'El brim es una capa plana impresa alrededor de la base del modelo para mejorar la adhesion a la cama.',
+        'el skirt son uno o mas perimetros adicionales en la primera capa que purgan la boquilla,.',
+        'estabilizan la extrusion y pueden actuar como barrera basica de viento si se construyen mas alto.',
+        'el escudo imprime la skirt como una pared continua tan alta como el modelo mas alto de la cama.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El brim es una capa plana impresa alrededor de la base del modelo para mejorar la adhesion a la cama; el skirt son uno o mas perimetros adicionales en la primera capa que purgan la boquilla, estabilizan la extrusion y pueden actuar como barrera basica de viento si se construyen mas alto; el escudo imprime la skirt como una pared continua tan alta como el modelo mas alto de la cama.',
     },
     {
       id: 'auto-brim',
       titulo: 'Auto brim calcula la anchura optima',
+      puntos: [
+        'Auto brim evalua propiedades del material, la geometria de la pieza, la velocidad de impresion y las caracteristicas termicas.',
+        'altura del modelo, forma de la primera capa y la diagonal de la base.',
+        'La anchura computada queda capada a 18 mm y a 1,5x la longitud termica.',
+        'si queda por debajo de 5 mm y tambien por debajo de 1,5x la longitud termica, no se genera brim.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Auto brim evalua propiedades del material, la geometria de la pieza, la velocidad de impresion y las caracteristicas termicas: altura del modelo, forma de la primera capa y la diagonal de la base. La anchura computada queda capada a 18 mm y a 1,5x la longitud termica; si queda por debajo de 5 mm y tambien por debajo de 1,5x la longitud termica, no se genera brim.',
       cifra: { valor: '18 mm', nota: 'tope de la anchura calculada en auto brim (OrcaSlicer)' },
@@ -120,6 +139,13 @@ export const brimYSkirt: Guia = {
     {
       id: 'longitudes-termicas',
       titulo: 'Longitudes termicas por material en auto brim',
+      puntos: [
+        'La diagonal de la base del modelo es la longitud termica de referencia.',
+        'OrcaSlicer trae valores especificos por material: ABS, PA-CF y PET-CF usan 100; PC usa 40; TPU usa 1000.',
+        'A mayores velocidades maximas de impresion se recomienda mayor anchura de brim, y el coeficiente de adhesion del material es 1 por defecto,.',
+        '2 para PETG/PCTG y 0,5 para TPU.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La diagonal de la base del modelo es la longitud termica de referencia. OrcaSlicer trae valores especificos por material: ABS, PA-CF y PET-CF usan 100; PC usa 40; TPU usa 1000. A mayores velocidades maximas de impresion se recomienda mayor anchura de brim, y el coeficiente de adhesion del material es 1 por defecto, 2 para PETG/PCTG y 0,5 para TPU.',
       cuando: { material: ['pc', 'tpu'] },
@@ -127,6 +153,13 @@ export const brimYSkirt: Guia = {
     {
       id: 'tipos-brim',
       titulo: 'Outer, inner o ambos son un trade-off, no una opcion correcta',
+      puntos: [
+        'outer_only es mas facil de remover pero puede afectar al aspecto si no se limpia bien.',
+        'inner_only es mas dificil de remover y menos efectivo, aunque puede ocultar la costura de remocion y los detalles finos internos.',
+        'outer_and_inner combina las desventajas de ambos pero mejora la adhesion global,.',
+        'y en modelos complejos o materiales exigentes se sugiere considerar un raft.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'outer_only es mas facil de remover pero puede afectar al aspecto si no se limpia bien; inner_only es mas dificil de remover y menos efectivo, aunque puede ocultar la costura de remocion y los detalles finos internos; outer_and_inner combina las desventajas de ambos pero mejora la adhesion global, y en modelos complejos o materiales exigentes se sugiere considerar un raft.',
       cita: {
@@ -137,6 +170,13 @@ export const brimYSkirt: Guia = {
     {
       id: 'mouse-ears',
       titulo: 'Mouse ears: adhesion local con menos material que un brim completo',
+      puntos: [
+        'Las mouse ears son extensiones locales del brim, tipicamente cerca de esquinas y features afiladas,.',
+        'que mejoran la adhesion usando menos material.',
+        'El analisis de geometria selecciona candidatos por umbral de angulo y radio de deteccion; con brim_ears_max_angle a 0 grados no se generan,.',
+        'y con 180 grados se permiten en casi cualquier feature no recto.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Las mouse ears son extensiones locales del brim, tipicamente cerca de esquinas y features afiladas, que mejoran la adhesion usando menos material. El analisis de geometria selecciona candidatos por umbral de angulo y radio de deteccion; con brim_ears_max_angle a 0 grados no se generan, y con 180 grados se permiten en casi cualquier feature no recto.',
       cita: {
@@ -147,6 +187,14 @@ export const brimYSkirt: Guia = {
     {
       id: 'draft-shield',
       titulo: 'Escudo de corriente: proteccion termica real',
+      puntos: [
+        'Con draft_shield habilitado, la skirt se imprime como un escudo de corriente.',
+        'una pared continua mas alta alrededor de la pieza para proteger de corrientes y cambios bruscos de temperatura, especialmente en ABS/ASA.',
+        'El escudo es tan alto como el modelo mas alto de la cama; con el ajuste desactivado,.',
+        'la skirt usa skirt_height. single_loop_draft_shield ahorra material y tiempo,.',
+        'pero el escudo queda menos robusto y mas propenso a warping o cracking.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Con draft_shield habilitado, la skirt se imprime como un escudo de corriente: una pared continua mas alta alrededor de la pieza para proteger de corrientes y cambios bruscos de temperatura, especialmente en ABS/ASA. El escudo es tan alto como el modelo mas alto de la cama; con el ajuste desactivado, la skirt usa skirt_height. single_loop_draft_shield ahorra material y tiempo, pero el escudo queda menos robusto y mas propenso a warping o cracking.',
       cuando: { entorno: 'open' },
@@ -158,6 +206,12 @@ export const brimYSkirt: Guia = {
     {
       id: 'flow',
       titulo: 'El flow real de brim y skirt',
+      puntos: [
+        'brim_flow_ratio multiplica el flow ratio del filamento (y el del objeto si lo tiene).',
+        'un valor ligeramente mayor que 1,0 puede ayudar al brim a sujetar la impresion, pero dificulta la remocion.',
+        'El flow ratio de primera capa no afecta ni a brims ni a skirts; solo al resto de la primera capa.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'brim_flow_ratio multiplica el flow ratio del filamento (y el del objeto si lo tiene); un valor ligeramente mayor que 1,0 puede ayudar al brim a sujetar la impresion, pero dificulta la remocion. El flow ratio de primera capa no afecta ni a brims ni a skirts; solo al resto de la primera capa.',
       cita: {
@@ -168,12 +222,28 @@ export const brimYSkirt: Guia = {
     {
       id: 'efc-preview',
       titulo: 'Con EFC alto el brim puede verse despegado',
+      puntos: [
+        'El skirt se imprime a skirt_distance del brim o del objeto, por lo que el escudo no interseca con los brims.',
+        'Con compensacion de pie de elefante alta, el brim puede verse desconectado del modelo en la previsualizacion,.',
+        'pero en la impresion final queda correctamente anexado si la compensacion esta bien calibrada.',
+        'Cuando la compensacion altera mucho la huella, conviene alinear el brim con el perimetro compensado; si el setup ya funciona,.',
+        'ese ajuste puede ser innecesario y fusionar el brim con las capas superiores.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El skirt se imprime a skirt_distance del brim o del objeto, por lo que el escudo no interseca con los brims. Con compensacion de pie de elefante alta, el brim puede verse desconectado del modelo en la previsualizacion, pero en la impresion final queda correctamente anexado si la compensacion esta bien calibrada. Cuando la compensacion altera mucho la huella, conviene alinear el brim con el perimetro compensado; si el setup ya funciona, ese ajuste puede ser innecesario y fusionar el brim con las capas superiores.',
     },
     {
       id: 'belt',
       titulo: 'En maquinas belt el brim cambia de comportamiento',
+      puntos: [
+        'El objeto toca la banda a lo largo de una tira estrecha por capa, y el brim se imprime en la superficie inclinada de la banda,.',
+        'una tira a la vez.',
+        'Outer, inner, outer and inner y leading edge only funcionan como se describe; auto,.',
+        'mouse ears y painted se imprimen como brim outer usando brim_width.',
+        'El brim solo se genera si la inclinacion de la banda esta entre 1 y 85 grados.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'El objeto toca la banda a lo largo de una tira estrecha por capa, y el brim se imprime en la superficie inclinada de la banda, una tira a la vez. Outer, inner, outer and inner y leading edge only funcionan como se describe; auto, mouse ears y painted se imprimen como brim outer usando brim_width. El brim solo se genera si la inclinacion de la banda esta entre 1 y 85 grados.',
       cuando: { impresora: 'belt' },
@@ -185,6 +255,14 @@ export const brimYSkirt: Guia = {
     {
       id: 'raft',
       titulo: 'Raft: cuando deja de ser mejor el brim',
+      puntos: [
+        'El raft es una plataforma de soporte material impresa bajo el objeto; ayuda cuando el material tiende a warpear o levantar esquinas (ABS,.',
+        'ASA, PC, Nylon), cuando la pieza toca la cama con area pequena o features finas, o cuando la placa esta desigual o desgastada.',
+        'A cambio, el fondo queda mas rugoso, la impresion tarda mas, gasta mas material y hay que retirarlo.',
+        'Si el problema es solo adhesion o warping, el brim es mas rapido, usa menos material y deja la superficie inferior limpia,.',
+        'asi que va primero.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El raft es una plataforma de soporte material impresa bajo el objeto; ayuda cuando el material tiende a warpear o levantar esquinas (ABS, ASA, PC, Nylon), cuando la pieza toca la cama con area pequena o features finas, o cuando la placa esta desigual o desgastada. A cambio, el fondo queda mas rugoso, la impresion tarda mas, gasta mas material y hay que retirarlo. Si el problema es solo adhesion o warping, el brim es mas rapido, usa menos material y deja la superficie inferior limpia, asi que va primero.',
       cita: {

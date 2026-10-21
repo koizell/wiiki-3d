@@ -51,6 +51,7 @@ export const flowRate: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material fluye distinto: PLA fluye fácil, ABS y nylon más espeso, PETG pegajoso, TPU flexible y viscoso, PC duro y los composites abrasivos.',
       necesaria: true,
       campos: ['material'],
@@ -67,6 +68,7 @@ export const flowRate: Guia = {
     {
       id: 'slicer',
       etiqueta: 'Slicer',
+      indicador: 'slicer',
       para: 'Cada slicer calibra el flujo con un procedimiento distinto y no se mezclan entre ecosistemas.',
       necesaria: true,
       opciones: [
@@ -79,6 +81,7 @@ export const flowRate: Guia = {
     {
       id: 'defecto',
       etiqueta: 'Síntoma visible',
+      indicador: 'general',
       para: 'La dirección del ajuste depende de si falta o sobra material.',
       necesaria: true,
       opciones: [
@@ -90,6 +93,7 @@ export const flowRate: Guia = {
     {
       id: 'boquilla',
       etiqueta: 'Boquilla',
+      indicador: 'temperatura',
       para: 'Algunas calibraciones automáticas sólo soportan un diámetro concreto, y el caudal volumétrico depende del área de sección.',
       opciones: [
         { id: '04', etiqueta: '0,4 mm' },
@@ -100,6 +104,7 @@ export const flowRate: Guia = {
     {
       id: 'extrusor',
       etiqueta: 'Extrusor',
+      indicador: 'maquina',
       para: 'Direct drive y bowden necesitan correcciones de presión distintas, con escalas distintas.',
       opciones: [
         { id: 'directo', etiqueta: 'Direct drive' },
@@ -110,6 +115,7 @@ export const flowRate: Guia = {
     {
       id: 'firmware',
       etiqueta: 'Firmware',
+      indicador: 'maquina',
       para: 'Pressure Advance y Linear Advance son funciones específicas de cada firmware y no se portan entre ellos.',
       opciones: [
         { id: 'klipper', etiqueta: 'Klipper' },
@@ -124,6 +130,12 @@ export const flowRate: Guia = {
     {
       id: 'misma-cosa',
       titulo: 'El mismo ajuste, en dos capas distintas',
+      puntos: [
+        'El extrusion multiplier del slicer y el flow rate del firmware ajustan la misma cosa: cuánto filamento sale de la boquilla.',
+        'Total flow rate = M221 (firmware) × Extrusion multiplier (slicer, PrusaSlicer usa la misma matemática que Slic3r).',
+        'Cambiar uno no cambia el valor del otro, y el efecto total es el producto.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'El extrusion multiplier del slicer y el flow rate del firmware ajustan la misma cosa: cuánto filamento sale de la boquilla. Total flow rate = M221 (firmware) × Extrusion multiplier (slicer, PrusaSlicer usa la misma matemática que Slic3r). Cambiar uno no cambia el valor del otro, y el efecto total es el producto.',
       cifra: { valor: 'M221 × EM', nota: 'efecto total multiplicativo (Prusa)' },
@@ -135,6 +147,13 @@ export const flowRate: Guia = {
     {
       id: 'flow-definicion',
       titulo: 'Qué es el flow rate',
+      puntos: [
+        'Es la cantidad de filamento que empuja el extrusor, medida como porcentaje o multiplicador del valor por defecto,.',
+        'y controla el grosor del plástico extruido.',
+        'Demasiado alto produce sobreextrusión: blobs y líneas que se solapan.',
+        'Demasiado bajo produce subextrusión: huecos en las líneas.',
+      ],
+      indicador: 'altura',
       cuerpo:
         'Es la cantidad de filamento que empuja el extrusor, medida como porcentaje o multiplicador del valor por defecto, y controla el grosor del plástico extruido. Demasiado alto produce sobreextrusión: blobs y líneas que se solapan. Demasiado bajo produce subextrusión: huecos en las líneas.',
       cifra: { valor: '1 = 100 %', nota: 'Prusa: PLA por defecto' },
@@ -146,6 +165,13 @@ export const flowRate: Guia = {
     {
       id: 'materiales',
       titulo: 'El flow debe coincidir con el material',
+      puntos: [
+        'Los filamentos difieren en viscosidad y punto de fusión: PLA fluye fácil, ABS y nylon algo más espeso, PETG pegajoso,.',
+        'TPU flexible y viscoso, PC duro y los composites pueden ser abrasivos.',
+        'El flow debe coincidir con las propiedades del material.',
+        'También son útiles para materiales espumosos como LW-PLA, que se expanden mucho al calentarse.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Los filamentos difieren en viscosidad y punto de fusión: PLA fluye fácil, ABS y nylon algo más espeso, PETG pegajoso, TPU flexible y viscoso, PC duro y los composites pueden ser abrasivos. El flow debe coincidir con las propiedades del material. También son útiles para materiales espumosos como LW-PLA, que se expanden mucho al calentarse.',
       cita: { texto: 'Los filamentos difieren en viscosidad y punto de fusión; el flow debe coincidir con las propiedades del material.', fuente: 'Bambu Lab' },
@@ -153,6 +179,12 @@ export const flowRate: Guia = {
     {
       id: 'em-prusa-default',
       titulo: 'Extrusion Multiplier por defecto en PrusaSlicer',
+      puntos: [
+        'El EM por defecto para PLA es 1, y los valores ajustados habitualmente quedan entre 0,9 y 1,1.',
+        'Esta calibración está marcada por Prusa como avanzada y recomendada sólo para usuarios experimentados.',
+        'no es necesaria en una impresora recién salida de fábrica, y el valor ideal difiere por tipo de material, color e incluso por bobina.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El EM por defecto para PLA es 1, y los valores ajustados habitualmente quedan entre 0,9 y 1,1. Esta calibración está marcada por Prusa como avanzada y recomendada sólo para usuarios experimentados; no es necesaria en una impresora recién salida de fábrica, y el valor ideal difiere por tipo de material, color e incluso por bobina.',
       cuando: { slicer: 'prusa' },
@@ -165,6 +197,11 @@ export const flowRate: Guia = {
     {
       id: 'preset-prusa',
       titulo: 'El preset base sobre el que se calibra (Prusa)',
+      puntos: [
+        'Perfil de boquilla 0,4, altura de capa 0,1–0,2 mm, ancho de extrusión 0,45 y EM = 1 para materiales básicos (PLA, ABS, PETG).',
+        'Calibrar sobre otro preset desplaza el resultado.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Perfil de boquilla 0,4, altura de capa 0,1–0,2 mm, ancho de extrusión 0,45 y EM = 1 para materiales básicos (PLA, ABS, PETG). Calibrar sobre otro preset desplaza el resultado.',
       cuando: { slicer: 'prusa' },
@@ -174,6 +211,12 @@ export const flowRate: Guia = {
     {
       id: 'caudal-maximo',
       titulo: 'Caudal volumétrico máximo',
+      puntos: [
+        'En Bambu Studio el Flow muestra el caudal volumétrico en distintas posiciones y la impresora impone un límite máximo por filamento.',
+        'Máximo caudal volumétrico = área de sección transversal de la línea extruida × velocidad máxima de impresión.',
+        'Cambiar parámetros obliga a volver a rebanar.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'En Bambu Studio el Flow muestra el caudal volumétrico en distintas posiciones y la impresora impone un límite máximo por filamento. Máximo caudal volumétrico = área de sección transversal de la línea extruida × velocidad máxima de impresión. Cambiar parámetros obliga a volver a rebanar.',
       cifra: { valor: 'área × velocidad', nota: 'Bambu: fórmula de límite' },
@@ -182,6 +225,13 @@ export const flowRate: Guia = {
     {
       id: 'flow-ratio-rango',
       titulo: 'Flow Ratio en OrcaSlicer',
+      puntos: [
+        'El Flow Ratio (filament_flow_ratio, modo Advanced) cambia proporcionalmente todo el flujo de extrusión de ese filamento en el G-code.',
+        'el material puede tener cambio de volumen al pasar entre fundido y cristalino.',
+        'Rango recomendado: entre 0,95 y 1,05.',
+        'El flow ratio final del objeto es ese valor multiplicado por el flow ratio del filamento.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'El Flow Ratio (filament_flow_ratio, modo Advanced) cambia proporcionalmente todo el flujo de extrusión de ese filamento en el G-code; el material puede tener cambio de volumen al pasar entre fundido y cristalino. Rango recomendado: entre 0,95 y 1,05. El flow ratio final del objeto es ese valor multiplicado por el flow ratio del filamento.',
       cuando: { slicer: ['orca', 'bambu'] },
@@ -191,6 +241,12 @@ export const flowRate: Guia = {
     {
       id: 'max-vol-no-cero',
       titulo: 'Max Volumetric Speed no puede ser cero',
+      puntos: [
+        'En OrcaSlicer, el Max Volumetric Speed (filament_max_volumetric_speed) es el volumen de filamento que se puede fundir y extruir por segundo.',
+        'la velocidad de impresión se limita a ese valor para evitar atascos, subextrusión o mala adhesión entre capas.',
+        'No puede ser cero.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'En OrcaSlicer, el Max Volumetric Speed (filament_max_volumetric_speed) es el volumen de filamento que se puede fundir y extruir por segundo; la velocidad de impresión se limita a ese valor para evitar atascos, subextrusión o mala adhesión entre capas. No puede ser cero.',
       cuando: { slicer: 'orca' },
@@ -200,6 +256,13 @@ export const flowRate: Guia = {
     {
       id: 'adaptive-vol',
       titulo: 'Adaptive volumetric speed (experimental)',
+      puntos: [
+        'En OrcaSlicer, el Adaptive volumetric speed (filament_adaptive_volumetric_speed,.',
+        'modo Developer) es experimental e incompleto (importado de BBS).',
+        'Con él habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo definido por el usuario; con él deshabilitado,.',
+        'sólo se aplica el máximo del usuario.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'En OrcaSlicer, el Adaptive volumetric speed (filament_adaptive_volumetric_speed, modo Developer) es experimental e incompleto (importado de BBS). Con él habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo definido por el usuario; con él deshabilitado, sólo se aplica el máximo del usuario.',
       cuando: { slicer: 'orca' },
@@ -208,6 +271,13 @@ export const flowRate: Guia = {
     {
       id: 'm221-comando',
       titulo: 'M221: Set Flow Percentage (Marlin)',
+      puntos: [
+        'M221 S<percent> [T<index>] fija el porcentaje de flujo, que se aplica a todos los movimientos del extrusor (E) añadidos al planner.',
+        'T<index> selecciona el extrusor en máquinas multieje; por defecto es el extrusor activo.',
+        'Es el mismo valor que Prusa llama Flow rate en el menú Tune del firmware.',
+        'Marlin no describe calibración en esa página, sólo el comando y sus parámetros.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'M221 S<percent> [T<index>] fija el porcentaje de flujo, que se aplica a todos los movimientos del extrusor (E) añadidos al planner. T<index> selecciona el extrusor en máquinas multieje; por defecto es el extrusor activo. Es el mismo valor que Prusa llama Flow rate en el menú Tune del firmware. Marlin no describe calibración en esa página, sólo el comando y sus parámetros.',
       cuando: { firmware: 'marlin' },
@@ -217,6 +287,15 @@ export const flowRate: Guia = {
     {
       id: 'presion-concepto',
       titulo: 'Pressure Advance: qué corrige (Anticipación)',
+      puntos: [
+        'Pressure advance (Klipper; equivalente a Linear Advance en Marlin,.',
+        'y documentado también por OrcaSlicer y Duet/RepRap) compensa el retraso de la presión del filamento en la boquilla durante aceleración y.',
+        'deceleración,.',
+        'reduciendo ooze, blobs y extrusión inconsistente, sobre todo en esquinas y movimientos rápidos.',
+        'No cambia el tiempo ni la trayectoria del cabezal, ni la cantidad total de filamento extruido.',
+        'sólo añade movimiento del extrusor durante la aceleración/deceleración.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Pressure advance (Klipper; equivalente a Linear Advance en Marlin, y documentado también por OrcaSlicer y Duet/RepRap) compensa el retraso de la presión del filamento en la boquilla durante aceleración y deceleración, reduciendo ooze, blobs y extrusión inconsistente, sobre todo en esquinas y movimientos rápidos. No cambia el tiempo ni la trayectoria del cabezal, ni la cantidad total de filamento extruido: sólo añade movimiento del extrusor durante la aceleración/deceleración.',
       cifra: { valor: 'Sin cambio de tiempo', nota: 'sólo añade movimiento del extrusor' },
@@ -225,6 +304,12 @@ export const flowRate: Guia = {
     {
       id: 'pa-dependencia',
       titulo: 'PA depende de todo el montaje',
+      puntos: [
+        'La PA depende del extrusor, la boquilla y el filamento: un filamento de distinto fabricante o pigmento puede exigir valores muy distintos,.',
+        'y conviene calibrarla en cada impresora y con cada bobina.',
+        'También la afectan la temperatura de impresión y los caudales de extrusión.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La PA depende del extrusor, la boquilla y el filamento: un filamento de distinto fabricante o pigmento puede exigir valores muy distintos, y conviene calibrarla en cada impresora y con cada bobina. También la afectan la temperatura de impresión y los caudales de extrusión.',
       cita: { texto: 'PA depende del extrusor, la boquilla y el filamento; un filamento de distinto fabricante o pigmento puede exigir valores muy distintos.', fuente: 'Klipper3d' },
@@ -232,6 +317,11 @@ export const flowRate: Guia = {
     {
       id: 'pa-rango-klipper',
       titulo: 'Valores típicos de PA (Klipper)',
+      puntos: [
+        'Valores típicos de pressure advance entre 0,050 y 1,000 (el extremo alto sólo en bowden).',
+        'Si no mejora hasta 1,000, es poco probable que ayude: volver a la configuración por defecto con PA deshabilitado.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Valores típicos de pressure advance entre 0,050 y 1,000 (el extremo alto sólo en bowden). Si no mejora hasta 1,000, es poco probable que ayude: volver a la configuración por defecto con PA deshabilitado.',
       cuando: { firmware: 'klipper' },
@@ -241,6 +331,13 @@ export const flowRate: Guia = {
     {
       id: 'pa-alto',
       titulo: 'PA alto: avisos de extrusor',
+      puntos: [
+        'Si el PA es alto (> 0,200) puede haber saltos del extrusor al volver a la aceleración normal.',
+        'Conviene tener la rotation_distance del extrusor y la temperatura de boquilla ya calibradas antes.',
+        'Medir con calibre la altura de la mejor calidad; ante la duda, escoger la más baja.',
+        'Un PA alto exige mucha adaptación del extrusor durante la acel/decel.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si el PA es alto (> 0,200) puede haber saltos del extrusor al volver a la aceleración normal. Conviene tener la rotation_distance del extrusor y la temperatura de boquilla ya calibradas antes. Medir con calibre la altura de la mejor calidad; ante la duda, escoger la más baja. Un PA alto exige mucha adaptación del extrusor durante la acel/decel.',
       cuando: { firmware: 'klipper' },
@@ -250,6 +347,16 @@ export const flowRate: Guia = {
     {
       id: 'pa-ensayo-klipper',
       titulo: 'Ensayo de PA en Klipper',
+      puntos: [
+        'En Klipper se activa con pressure_advance = <valor> en [extruder] y un RESTART.',
+        'El ensayo usa una torre hueca (cuadrado hueco, square_tower.stl), velocidad alta (≈ 100 mm/s),.',
+        'relleno cero y capa gruesa (≈ 75 % del diámetro de boquilla).',
+        'Desactivar en el slicer "dynamic acceleration control" y costuras "scarf joint".',
+        'Comandos base: SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500.',
+        'direct drive TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005; bowden largo FACTOR=.020.',
+        'Cálculo: PA = start + altura medida × factor.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'En Klipper se activa con pressure_advance = <valor> en [extruder] y un RESTART. El ensayo usa una torre hueca (cuadrado hueco, square_tower.stl), velocidad alta (≈ 100 mm/s), relleno cero y capa gruesa (≈ 75 % del diámetro de boquilla). Desactivar en el slicer "dynamic acceleration control" y costuras "scarf joint". Comandos base: SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500; direct drive TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005; bowden largo FACTOR=.020. Cálculo: PA = start + altura medida × factor.',
       cuando: { firmware: 'klipper' },
@@ -259,6 +366,16 @@ export const flowRate: Guia = {
     {
       id: 'linear-advance',
       titulo: 'Linear Advance en Marlin (Anticipación)',
+      puntos: [
+        'LIN_ADVANCE desacopla la extrusión de los ejes XYZ para controlar la presión del material dentro de la boquilla en función de la velocidad.',
+        'de impresión.',
+        'reduce material extra al final de cada movimiento y sangrado en esquinas.',
+        'Mejora la precisión dimensional y permite velocidades más altas sin perder calidad.',
+        'En v1.5, K pasa a tener unidades significativas (mm de compresión por mm/s de velocidad de extrusión, mm/mm/s).',
+        'valores típicos de K alrededor de 0,1–2,0 (frente a 30–130 en v1.0).',
+        'Necesita recalibrar K al cambiar de versión.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'LIN_ADVANCE desacopla la extrusión de los ejes XYZ para controlar la presión del material dentro de la boquilla en función de la velocidad de impresión; reduce material extra al final de cada movimiento y sangrado en esquinas. Mejora la precisión dimensional y permite velocidades más altas sin perder calidad. En v1.5, K pasa a tener unidades significativas (mm de compresión por mm/s de velocidad de extrusión, mm/mm/s); valores típicos de K alrededor de 0,1–2,0 (frente a 30–130 en v1.0). Necesita recalibrar K al cambiar de versión.',
       cuando: { firmware: 'marlin' },
@@ -268,6 +385,14 @@ export const flowRate: Guia = {
     {
       id: 'k-bowden',
       titulo: 'Bowden necesita K más alto',
+      puntos: [
+        'Los extrusores bowden necesitan un K más alto que los directos.',
+        'Rangos orientativos de K para bowden: ≈ 0,1 hasta ≈ 2,0 (v1.5) o ≈ 30 hasta ≈ 130 (v1.0).',
+        'El mejor K depende del tipo de filamento (los muy flexibles como Ninjaflex pueden no funcionar), temperatura de impresión,.',
+        'características del extrusor (directo vs. bowden, longitud, holguras) y geometría de boquilla.',
+        'El steps/mm del extrusor debe estar calibrado con precisión y hay que repetir la calibración si cambia alguno de esos parámetros.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Los extrusores bowden necesitan un K más alto que los directos. Rangos orientativos de K para bowden: ≈ 0,1 hasta ≈ 2,0 (v1.5) o ≈ 30 hasta ≈ 130 (v1.0). El mejor K depende del tipo de filamento (los muy flexibles como Ninjaflex pueden no funcionar), temperatura de impresión, características del extrusor (directo vs. bowden, longitud, holguras) y geometría de boquilla. El steps/mm del extrusor debe estar calibrado con precisión y hay que repetir la calibración si cambia alguno de esos parámetros.',
       cuando: { extrusor: 'bowden' },
@@ -277,6 +402,14 @@ export const flowRate: Guia = {
     {
       id: 'k-calibracion',
       titulo: 'Patrón de calibración K-Factor (Marlin)',
+      puntos: [
+        'Generar G-code con el generador de Marlin.',
+        'Cada línea: 20 mm de extrusión a velocidad lenta, luego 40 mm a velocidad rápida y 20 mm a velocidad lenta.',
+        'El K aumenta por pasos (K-Factor Stepping).',
+        'Demasiado bajo da presión atrasada al acelerar (línea "starved") y exceso al decelerar (blob).',
+        'demasiado alto da exceso al arrancar y hambre al decelerar; la línea con transición fluida y apenas visible es la óptima.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Generar G-code con el generador de Marlin. Cada línea: 20 mm de extrusión a velocidad lenta, luego 40 mm a velocidad rápida y 20 mm a velocidad lenta. El K aumenta por pasos (K-Factor Stepping). Demasiado bajo da presión atrasada al acelerar (línea "starved") y exceso al decelerar (blob); demasiado alto da exceso al arrancar y hambre al decelerar; la línea con transición fluida y apenas visible es la óptima.',
       cuando: { firmware: 'marlin' },
@@ -286,6 +419,17 @@ export const flowRate: Guia = {
     {
       id: 'pa-orca',
       titulo: 'PA por filamento en OrcaSlicer',
+      puntos: [
+        'En OrcaSlicer, el PA del material (enable_pressure_advance, pressure_advance float,.',
+        'modos Simple/Advanced) habilitado sobrescribe el resultado de la auto-calibración y sirve para compensar el retraso de presión,.',
+        'reduciendo blobs, ooze y extrusión inconsistente.',
+        'Adaptive Pressure Advance (beta, adaptive_pressure_advance) asume que con velocidades/caudales/aceleraciones crecientes el PA efectivo.',
+        'típicamente disminuye,.',
+        'así que un solo valor de PA suele no ser óptimo para todos los elementos.',
+        'el slicer modela la respuesta del sistema y emite el PA calculado según las condiciones.',
+        'Al habilitarlo, el valor fijo de PA se sobrescribe; se recomienda un valor fijo razonable como respaldo y para cambios de herramienta.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'En OrcaSlicer, el PA del material (enable_pressure_advance, pressure_advance float, modos Simple/Advanced) habilitado sobrescribe el resultado de la auto-calibración y sirve para compensar el retraso de presión, reduciendo blobs, ooze y extrusión inconsistente. Adaptive Pressure Advance (beta, adaptive_pressure_advance) asume que con velocidades/caudales/aceleraciones crecientes el PA efectivo típicamente disminuye, así que un solo valor de PA suele no ser óptimo para todos los elementos; el slicer modela la respuesta del sistema y emite el PA calculado según las condiciones. Al habilitarlo, el valor fijo de PA se sobrescribe; se recomienda un valor fijo razonable como respaldo y para cambios de herramienta.',
       cuando: { slicer: 'orca' },
@@ -294,6 +438,18 @@ export const flowRate: Guia = {
     {
       id: 'adaptive-pa-medidas',
       titulo: 'Mediciones para Adaptive PA (beta)',
+      puntos: [
+        'Adaptive Pressure Advance para voladizos (adaptive_pressure_advance_overhangs,.',
+        'beta) y PA para puentes (adaptive_pressure_advance_bridges) son opcionales.',
+        'un PA más bajo en puentes ayuda a reducir la subextrusión leve justo después del puente (caída de presión al imprimir en el aire).',
+        'poner 0 desactiva.',
+        'Las mediciones son tripletes "PA, FLOW, ACCELERATION", uno por línea (ej.',
+        '0,04, 3,96, 3000).',
+        'Calibrar ejecutando la prueba de PA en al menos 3 velocidades por valor de aceleración, para la aceleración mínima y la máxima,.',
+        'y no superar la aceleración máxima recomendada por el input shaper de Klipper.',
+        'El PA ideal debe disminuir al aumentar el caudal volumétrico; si no, revisar el extrusor o usar el valor de la prueba más rápida.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Adaptive Pressure Advance para voladizos (adaptive_pressure_advance_overhangs, beta) y PA para puentes (adaptive_pressure_advance_bridges) son opcionales: un PA más bajo en puentes ayuda a reducir la subextrusión leve justo después del puente (caída de presión al imprimir en el aire); poner 0 desactiva. Las mediciones son tripletes "PA, FLOW, ACCELERATION", uno por línea (ej. 0,04, 3,96, 3000). Calibrar ejecutando la prueba de PA en al menos 3 velocidades por valor de aceleración, para la aceleración mínima y la máxima, y no superar la aceleración máxima recomendada por el input shaper de Klipper. El PA ideal debe disminuir al aumentar el caudal volumétrico; si no, revisar el extrusor o usar el valor de la prueba más rápida.',
       cuando: { slicer: 'orca' },
@@ -302,6 +458,12 @@ export const flowRate: Guia = {
     {
       id: 'tpu-composites',
       titulo: 'TPU y composites: flujo más conservador',
+      puntos: [
+        'TPU es flexible y viscoso, y los composites (PLA-CF, PETG-CF)\npueden ser abrasivos y exigir boquilla endurecida.',
+        'En ambos casos la\ncalibración por paredes interiores es la que mejor funciona,.',
+        'porque la\nviscosidad y la abrasión no se capturan bien con el método visual por\ncapa superior.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'TPU es flexible y viscoso, y los composites (PLA-CF, PETG-CF)\npueden ser abrasivos y exigir boquilla endurecida. En ambos casos la\ncalibración por paredes interiores es la que mejor funciona, porque la\nviscosidad y la abrasión no se capturan bien con el método visual por\ncapa superior.',
       cuando: { material: ['tpu', 'pla-cf'] },
@@ -310,6 +472,14 @@ export const flowRate: Guia = {
     {
       id: 'bambu-auto-notas',
       titulo: 'Auto Flow Rate en Bambu Studio',
+      puntos: [
+        'Bambu Studio Auto Flow Rate Calibration usa Micro-Lidar que mide directamente los patrones.',
+        'puede fallar con filamentos transparentes o semitransparentes, con partículas brillantes o de acabado muy reflectante.',
+        'Los resultados varían entre calibración y filamento; se sigue mejorando con actualizaciones de firmware.',
+        'La calibración manual puede ser precisa si se sigue el procedimiento.',
+        'Sólo disponible en la serie X1; con OTA 01.06.00.00 sólo se soporta boquilla 0,4 mm.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Bambu Studio Auto Flow Rate Calibration usa Micro-Lidar que mide directamente los patrones; puede fallar con filamentos transparentes o semitransparentes, con partículas brillantes o de acabado muy reflectante. Los resultados varían entre calibración y filamento; se sigue mejorando con actualizaciones de firmware. La calibración manual puede ser precisa si se sigue el procedimiento. Sólo disponible en la serie X1; con OTA 01.06.00.00 sólo se soporta boquilla 0,4 mm.',
       cuando: { slicer: 'bambu' },
@@ -319,6 +489,16 @@ export const flowRate: Guia = {
     {
       id: 'bambu-manual-notas',
       titulo: 'Calibración manual en Bambu Studio',
+      puntos: [
+        'Modos manual: gruesa (coarse) con valores de flujo entre 80 % y 120 % sobre el flow ratio del preset, paso del 5 %.',
+        'útil cuando no se sabe el rango.',
+        'Fina (fine) con valores entre 91 % y 100 % sobre un flow ratio personalizado, paso del 1 %.',
+        'útil si el rango ya se conoce con un margen < 10 %.',
+        'Complete Calibration encadena coarse + fine; Fine basada en Flow Ratio hace sólo la fina.',
+        'Tras imprimir, el bloque más liso decide (ejemplo de la fuente: entre muestras −5 a +5, la muestra +5 fue la más lisa, flow rate 0,997500.',
+        'en la fina, evitar muestras con subextrusión leve y conformarse con 0).',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Modos manual: gruesa (coarse) con valores de flujo entre 80 % y 120 % sobre el flow ratio del preset, paso del 5 %; útil cuando no se sabe el rango. Fina (fine) con valores entre 91 % y 100 % sobre un flow ratio personalizado, paso del 1 %; útil si el rango ya se conoce con un margen < 10 %. Complete Calibration encadena coarse + fine; Fine basada en Flow Ratio hace sólo la fina. Tras imprimir, el bloque más liso decide (ejemplo de la fuente: entre muestras −5 a +5, la muestra +5 fue la más lisa, flow rate 0,997500; en la fina, evitar muestras con subextrusión leve y conformarse con 0).',
       cuando: { slicer: 'bambu' },
@@ -328,6 +508,13 @@ export const flowRate: Guia = {
     {
       id: 'advertencia-bambu-orca',
       titulo: 'Bambu Lab: no mezclar ecosistemas de calibración',
+      puntos: [
+        'OrcaSlicer avisa a los usuarios de Bambu Lab: no seleccionar la opción "Flow calibration" en OrcaSlicer.',
+        'Bambu Studio tiene su propio flujo (Micro-Lidar, bloques por porcentaje) que no es el de OrcaSlicer (modificadores de flow ratio,.',
+        'patrones Archimedean).',
+        'Usar uno en el ecosistema del otro no está soportado por ninguna de las dos fuentes.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'OrcaSlicer avisa a los usuarios de Bambu Lab: no seleccionar la opción "Flow calibration" en OrcaSlicer. Bambu Studio tiene su propio flujo (Micro-Lidar, bloques por porcentaje) que no es el de OrcaSlicer (modificadores de flow ratio, patrones Archimedean). Usar uno en el ecosistema del otro no está soportado por ninguna de las dos fuentes.',
       cuando: { slicer: ['bambu', 'orca'] },
@@ -336,6 +523,13 @@ export const flowRate: Guia = {
     {
       id: 'flow-dynamics-previo',
       titulo: 'Flow Dynamics antes del Flow Rate (Bambu)',
+      puntos: [
+        'El flow rate requiere otras calibraciones previas (Flow Dynamics) antes de tocarlo.',
+        'Síntomas que lo justifican (tras hacer las demás calibraciones): sobreextrusión (blobs/zits, capas gruesas), subextrusión (capas que faltan,',
+        'relleno débil, huecos), mala calidad superficial y poca resistencia.',
+        'También útil para materiales espumosos como LW-PLA.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El flow rate requiere otras calibraciones previas (Flow Dynamics) antes de tocarlo. Síntomas que lo justifican (tras hacer las demás calibraciones): sobreextrusión (blobs/zits, capas gruesas), subextrusión (capas que faltan, relleno débil, huecos), mala calidad superficial y poca resistencia. También útil para materiales espumosos como LW-PLA.',
       cuando: { slicer: 'bambu' },
@@ -344,6 +538,12 @@ export const flowRate: Guia = {
     {
       id: 'abrir-por-dentro',
       titulo: 'Cuándo la temperatura no es el ajuste',
+      puntos: [
+        'Si el corte sale con material arrancado, no llegó filamento suficiente: es un problema de flujo, y subir la temperatura lo empeora.',
+        'Subextrusión leve se ve como huecos entre líneas de capa o perímetros.',
+        'El ajuste que corresponde es de flow; no de temperatura de cama.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Si el corte sale con material arrancado, no llegó filamento suficiente: es un problema de flujo, y subir la temperatura lo empeora. Subextrusión leve se ve como huecos entre líneas de capa o perímetros. El ajuste que corresponde es de flow; no de temperatura de cama.',
       enlaza: { guia: 'temperatura-hotend', etiqueta: 'Ver temperatura de hotend' },
@@ -531,7 +731,7 @@ export const flowRate: Guia = {
     },
     {
       id: 'klipper-volver-default',
-      accion: 'Si no mejora hasta 1,000, vuelve al valor por defecto sin PA',
+      accion: 'Vuelve al valor por defecto sin PA si no mejora hasta 1.000',
       valor: '0,050–1,000',
       porque:
         'Valores típicos de pressure advance entre 0,050 y 1,000 (extremo alto sólo bowden). Si no mejora hasta 1,000, es poco probable que ayude.',

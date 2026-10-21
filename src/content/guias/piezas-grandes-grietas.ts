@@ -42,6 +42,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'El ranking de riesgo de warping y las cifras de cama y cámara dependen de él; las piezas grandes en ABS, ASA, PC y PA casi siempre warpean sin enclosure.',
       necesaria: true,
       opciones: [
@@ -56,6 +57,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'Decide la cifra de cama correcta; más que el fabricante.',
       necesaria: true,
       opciones: [
@@ -69,6 +71,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'tamaño',
       etiqueta: 'Tamaño o forma',
+      indicador: 'geometria',
       para: 'El warping aparece más en piezas grandes y el colapso en las altas y delgadas.',
       necesaria: true,
       opciones: [
@@ -81,6 +84,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'cama',
       etiqueta: 'Temperatura de cama ahora',
+      indicador: 'cama',
       para: 'La acción depende de si estás por debajo, dentro o por encima del rango del material.',
       necesaria: true,
       opciones: [
@@ -92,6 +96,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'ambiente',
       etiqueta: 'Temperatura ambiente',
+      indicador: 'entorno',
       para: 'Por debajo de 20 °C aparece warping incluso en PLA y PETG; el aire alto o con corriente también.',
       necesaria: true,
       opciones: [
@@ -104,6 +109,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'recinto',
       etiqueta: '¿Trabajabas con el recinto cerrado?',
+      indicador: 'entorno',
       para: 'Los materiales de alta temperatura lo necesitan; en PLA y PETG una cámara demasiado caliente puede ablandar el filamento.',
       opciones: [
         { id: 'abierto', etiqueta: 'Abierto o sin tapa' },
@@ -113,6 +119,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'fan',
       etiqueta: 'Ventilador de pieza o auxiliar',
+      indicador: 'ventilacion',
       para: 'Dos fuentes dicen direcciones opuestas; la cifra depende de cuál ventilador y de la geometría.',
       opciones: [
         { id: 'desconocido', etiqueta: 'No lo sé' },
@@ -124,6 +131,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'infill',
       etiqueta: 'Patrón de relleno',
+      indicador: 'velocidad',
       para: 'Grid y Triangle generan tensión lineal interna; Gyroid se encoge de forma más uniforme.',
       opciones: [
         { id: 'cruzado', etiqueta: 'Grid o Triangle' },
@@ -134,6 +142,7 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'humedad',
       etiqueta: 'Humedad del filamento',
+      indicador: 'entorno',
       para: 'El filamento húmedo da síntomas de burbujas y chasquidos, no de warping.',
       opciones: [
         { id: 'seco', etiqueta: 'Seco y bien guardado' },
@@ -146,12 +155,24 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'mecanismo',
       titulo: 'Por qué se alabea una pieza grande',
+      puntos: [
+        'Es contracción térmica.',
+        'Los bordes exteriores se enfrían antes que el centro y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
+        'En una pieza grande la tensión ya no es de esquina: tira del borde entero.',
+        'El estrés severo de warping puede producir grietas o fracturas visibles, sobre todo en materiales frágiles.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Es contracción térmica. Los bordes exteriores se enfrían antes que el centro y esa diferencia genera una tensión que tira de las esquinas hacia arriba. En una pieza grande la tensión ya no es de esquina: tira del borde entero. El estrés severo de warping puede producir grietas o fracturas visibles, sobre todo en materiales frágiles.',
     },
     {
       id: 'ranking',
       titulo: 'El ranking de riesgo de warping',
+      puntos: [
+        'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC, PA-CF, PA, ABS, ASA, PETG, PLA.',
+        'Es un ranking entre esos siete, no una comparación con todos los rígidos, ni una medida de la frecuencia de las causas del warping en PLA.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC, PA-CF, PA, ABS, ASA, PETG, PLA. Es un ranking entre esos siete, no una comparación con todos los rígidos, ni una medida de la frecuencia de las causas del warping en PLA.',
       cifra: { valor: 'PC -> PLA', nota: 'Siete materiales; PLA el menos propenso' },
@@ -159,6 +180,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'grande-relleno',
       titulo: 'Piezas grandes y relleno denso',
+      puntos: [
+        'El warping es más común con piezas grandes y con densidad de relleno alta: Bambu pone el 60 % frente al 15 % por defecto como ejemplo.',
+        'A más relleno, más tensión lineal interna.',
+      ],
+      indicador: 'general',
       cuerpo:
         'El warping es más común con piezas grandes y con densidad de relleno alta: Bambu pone el 60 % frente al 15 % por defecto como ejemplo. A más relleno, más tensión lineal interna.',
       cuando: { tamaño: 'grande' },
@@ -166,6 +192,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'enclosure-alternativa',
       titulo: 'Piezas grandes de alta temperatura sin enclosure',
+      puntos: [
+        'Un modelo grande y plano impreso en ABS, ASA o PC warpea casi siempre sin enclosure.',
+        'Si no tienes enclosure, la alternativa respaldada es cambiar a PLA, PLA-CF, PETG o PETG-CF para piezas grandes.',
+        'Para piezas grandes de ABS, PETG es mejor opción y ASA es más dependiente del entorno.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Un modelo grande y plano impreso en ABS, ASA o PC warpea casi siempre sin enclosure. Si no tienes enclosure, la alternativa respaldada es cambiar a PLA, PLA-CF, PETG o PETG-CF para piezas grandes. Para piezas grandes de ABS, PETG es mejor opción y ASA es más dependiente del entorno.',
       cuando: { material: ['abs', 'pc', 'pa'], tamaño: 'grande' },
@@ -173,6 +205,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'sub-20',
       titulo: 'Por debajo de 20 °C',
+      puntos: [
+        'Por debajo de 20 °C aparece warping incluso con PLA y PETG, que son los materiales más indulgentes.',
+        'En estructura abierta conviene aumentar la temperatura de cama +10 °C para compensar y bloquear el flujo de aire.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Por debajo de 20 °C aparece warping incluso con PLA y PETG, que son los materiales más indulgentes. En estructura abierta conviene aumentar la temperatura de cama +10 °C para compensar y bloquear el flujo de aire.',
       cuando: { ambiente: ['frio', 'corriente'] },
@@ -180,6 +217,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'ambiente-estable',
       titulo: 'Ambiente estable y humedad baja',
+      puntos: [
+        'Prevenir warping: ambiente estable entre 20 y 25 °C con humedad baja.',
+        'Es una sola fuente de fabricante, sin corroborar por otra fuente del lote; úsalo como banda orientativa, no como regla general.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Prevenir warping: ambiente estable entre 20 y 25 °C con humedad baja. Es una sola fuente de fabricante, sin corroborar por otra fuente del lote; úsalo como banda orientativa, no como regla general.',
       cuando: { ambiente: ['templado'] },
@@ -188,6 +230,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'corrientes',
       titulo: 'Una corriente de aire basta',
+      puntos: [
+        'Una corriente de aire enfría un lado más que otro y basta una ventana abierta, un aire acondicionado o un ventilador de mesa.',
+        'Por eso se recomienda bloquear el flujo de aire alrededor de la impresora y cerrar la puerta frontal y la cubierta superior en impresoras',
+        'cerradas.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Una corriente de aire enfría un lado más que otro y basta una ventana abierta, un aire acondicionado o un ventilador de mesa. Por eso se recomienda bloquear el flujo de aire alrededor de la impresora y cerrar la puerta frontal y la cubierta superior en impresoras cerradas.',
       cuando: { ambiente: 'corriente' },
@@ -195,12 +243,25 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'warping-real',
       titulo: 'Warping real: bordes que se arquean',
+      puntos: [
+        'Warping real: las esquinas o bordes se arquean hacia arriba y se despegan de la cama; la pieza se curva como una cáscara de plátano.',
+        'La separación entre capas es distinta: el objeto se raja por capas y se identifica por cortes limpios que muestran una ligera curvatura.',
+        'hacia arriba o warping.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Warping real: las esquinas o bordes se arquean hacia arriba y se despegan de la cama; la pieza se curva como una cáscara de plátano. La separación entre capas es distinta: el objeto se raja por capas y se identifica por cortes limpios que muestran una ligera curvatura hacia arriba o warping.',
     },
     {
       id: 'interlayer',
       titulo: 'Interlayer cracking a lo largo del eje Z',
+      puntos: [
+        'Cuando la adhesión entre capas es insuficiente y la contracción del material es significativa, aparecen grietas a lo largo del eje Z,.',
+        'perpendiculares al plano de la capa.',
+        'Es frecuente en ABS, ASA, PC, PET-CF y PA-CF.',
+        'Un atasco leve de boquilla puede impedir la extrusión en una capa concreta y manifestarse igual que una grieta.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Cuando la adhesión entre capas es insuficiente y la contracción del material es significativa, aparecen grietas a lo largo del eje Z, perpendiculares al plano de la capa. Es frecuente en ABS, ASA, PC, PET-CF y PA-CF. Un atasco leve de boquilla puede impedir la extrusión en una capa concreta y manifestarse igual que una grieta.',
       cuando: { material: ['abs', 'pc', 'pa'] },
@@ -208,18 +269,37 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'mecanismo-cracking',
       titulo: 'El cracking es consecuencia del warping',
+      puntos: [
+        'La separación entre capas ocurre cuando las fuerzas de warping superan la resistencia de adhesión entre capas,.',
+        'al enfriarse las capas a ritmos distintos.',
+        'Es decir, el cracking es consecuencia del warping, no un fenómeno aparte.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La separación entre capas ocurre cuando las fuerzas de warping superan la resistencia de adhesión entre capas, al enfriarse las capas a ritmos distintos. Es decir, el cracking es consecuencia del warping, no un fenómeno aparte.',
     },
     {
       id: 'cuatro-fallos',
       titulo: 'Cuatro fallos que se confunden',
+      puntos: [
+        'Bambu separa cuatro tipos: corner warping (esquinas o bordes que se curvan y despegan),.',
+        'fallo de adhesión a la cama (la pieza entera se desplaza o salta, por grasa, chapa equivocada o Z-offset alto),.',
+        'colapso estructural (modelo alto o fino convertido en nido de pájaro o capas superiores desplazadas por vibración,.',
+        'correas flojas o patrones de relleno que se cruzan) e interlayer cracking (grietas a lo largo del eje Z).',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Bambu separa cuatro tipos: corner warping (esquinas o bordes que se curvan y despegan), fallo de adhesión a la cama (la pieza entera se desplaza o salta, por grasa, chapa equivocada o Z-offset alto), colapso estructural (modelo alto o fino convertido en nido de pájaro o capas superiores desplazadas por vibración, correas flojas o patrones de relleno que se cruzan) e interlayer cracking (grietas a lo largo del eje Z).',
     },
     {
       id: 'infill-patron',
       titulo: 'Relleno: Gyroid frente a líneas rectas',
+      puntos: [
+        'Para piezas planas grandes: cambiar el patrón de relleno a Gyroid con 25 % o menos de densidad.',
+        'Grid y Triangle crean tensión lineal interna y se cruzan dentro de una misma capa levantando un resalto que la boquilla roza.',
+        'el Gyroid se contrae de forma más uniforme en todas las direcciones.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Para piezas planas grandes: cambiar el patrón de relleno a Gyroid con 25 % o menos de densidad. Grid y Triangle crean tensión lineal interna y se cruzan dentro de una misma capa levantando un resalto que la boquilla roza; el Gyroid se contrae de forma más uniforme en todas las direcciones.',
       cuando: { infill: ['cruzado', 'gyroid'] },
@@ -228,6 +308,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'walls',
       titulo: 'Paredes frente a relleno',
+      puntos: [
+        'Para piezas estructurales con altos requisitos de resistencia: 5 capas de pared y alrededor del 25 % de relleno,.',
+        'intentando evitar más del 50 % para reducir la tendencia de contracción.',
+        'Para piezas no estructurales con bajos requisitos: 2 capas de pared y 15 % de relleno, valores por defecto. (Unica fuente del lote.',
+        'verificar antes de tratarlos como universal.).',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Para piezas estructurales con altos requisitos de resistencia: 5 capas de pared y alrededor del 25 % de relleno, intentando evitar más del 50 % para reducir la tendencia de contracción. Para piezas no estructurales con bajos requisitos: 2 capas de pared y 15 % de relleno, valores por defecto. (Unica fuente del lote; verificar antes de tratarlos como universal.)',
       cuando: { tamaño: ['grande', 'mediana'] },
@@ -235,6 +322,14 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'fan-contradiccion',
       titulo: 'Ventilador: dos direcciones y dos ventiladores',
+      puntos: [
+        'Los excesos de enfriamiento enfrían las paredes exteriores demasiado rápido y desencadenan warping.',
+        'Bambu recomienda bajar el ventilador auxiliar a 40-50 % o reducirlo a 20-30 % según la página; además las 3 primeras capas sin enfriamiento.',
+        'Prusa, en cambio, habla del ventilador de pieza: en ABS, apagado por completo,.',
+        'pero si lo que se curva son voladizos inclinados o piezas pequeñas se puede probar a activarlo al 10-20 %.',
+        'Son dos ventiladores distintos y las dos afirmaciones pueden ser ciertas según el caso.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Los excesos de enfriamiento enfrían las paredes exteriores demasiado rápido y desencadenan warping: Bambu recomienda bajar el ventilador auxiliar a 40-50 % o reducirlo a 20-30 % según la página; además las 3 primeras capas sin enfriamiento. Prusa, en cambio, habla del ventilador de pieza: en ABS, apagado por completo, pero si lo que se curva son voladizos inclinados o piezas pequeñas se puede probar a activarlo al 10-20 %. Son dos ventiladores distintos y las dos afirmaciones pueden ser ciertas según el caso.',
       cuando: { fan: ['desconocido', 'apagado', 'bajo', 'alto'] },
@@ -242,6 +337,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'fan-desacuerdo-números',
       titulo: 'No hay una única cifra para el ventilador auxiliar',
+      puntos: [
+        'Bambu escribe dos cifras en dos páginas para el mismo ventilador auxiliar: bajarlo a 40-50 % en una y reducirlo 20-30 % en otra.',
+        'El material cocinado no resuelve cuál aplicar; ambas se exponen y no se promedian.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu escribe dos cifras en dos páginas para el mismo ventilador auxiliar: bajarlo a 40-50 % en una y reducirlo 20-30 % en otra. El material cocinado no resuelve cuál aplicar; ambas se exponen y no se promedian.',
       cuando: { fan: 'alto' },
@@ -250,6 +350,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'primeras-3',
       titulo: 'Sin ventilador en las tres primeras capas',
+      puntos: [
+        'Mantener apagado el enfriamiento en las primeras 3 capas mejora la adhesión y el enfriamiento lento de las capas, evitando warping.',
+        'Es el ajuste que Bambu señala como uno de los más importantes para el warping.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Mantener apagado el enfriamiento en las primeras 3 capas mejora la adhesión y el enfriamiento lento de las capas, evitando warping. Es el ajuste que Bambu señala como uno de los más importantes para el warping.',
       cifra: { valor: '0 %', nota: 'Enfriamiento en las 3 primeras capas' },
@@ -257,6 +362,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'placa-offset',
       titulo: 'La Textured PEI baja la boquilla 0,04 mm',
+      puntos: [
+        'En la placa Textured PEI, la impresora baja la boquilla 0,04 mm tras la nivelación para garantizar la adhesión de la primera capa.',
+        'Si laminaste para otra placa, ese descenso no se aplica y la boquilla queda demasiado alta.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'En la placa Textured PEI, la impresora baja la boquilla 0,04 mm tras la nivelación para garantizar la adhesión de la primera capa. Si laminaste para otra placa, ese descenso no se aplica y la boquilla queda demasiado alta.',
       cuando: { chapa: 'textured' },
@@ -265,6 +375,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'cama-por-material',
       titulo: 'Temperatura de cama por material',
+      puntos: [
+        'Bambu da PETG a 60-80 °C, ABS y ASA a 90-100 °C,.',
+        'PC a 100-120 °C y PA o variantes a 90-110 °C. Para PLA da 35-45 °C en Cool Plate y 45-65 °C en Textured, Smooth y Engineering.',
+        'OrcaSlicer afina ABS y ASA a 90-100 °C y PC a 100-120 °C.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Bambu da PETG a 60-80 °C, ABS y ASA a 90-100 °C, PC a 100-120 °C y PA o variantes a 90-110 °C. Para PLA da 35-45 °C en Cool Plate y 45-65 °C en Textured, Smooth y Engineering. OrcaSlicer afina ABS y ASA a 90-100 °C y PC a 100-120 °C.',
       cuando: { material: ['petg', 'abs', 'pc', 'pa', 'pla'] },
@@ -272,6 +388,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'orcaslicer-techo',
       titulo: 'Si la cama está demasiado baja o demasiado alta',
+      puntos: [
+        'Si la cama está demasiado baja: fallo de adhesión, warping, unión débil o desprendimiento total.',
+        'Si está demasiado alta: las capas inferiores se sobrecalientan y deforman (elephant foot).',
+        'Margen típico ±5 °C; regla práctica de OrcaSlicer: usar el Tg del material y restar 5-10 °C para estimar el límite superior seguro,.',
+        'aunque ninguna fuente del lote da el Tg del PLA.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si la cama está demasiado baja: fallo de adhesión, warping, unión débil o desprendimiento total. Si está demasiado alta: las capas inferiores se sobrecalientan y deforman (elephant foot). Margen típico ±5 °C; regla práctica de OrcaSlicer: usar el Tg del material y restar 5-10 °C para estimar el límite superior seguro, aunque ninguna fuente del lote da el Tg del PLA.',
       cuando: { cama: ['baja', 'alta'] },
@@ -279,6 +402,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'camara-oficial',
       titulo: 'Temperatura de cámara por material',
+      puntos: [
+        'Cámara recomendada por Bambu: PLA, PETG, TPU y PVA a 0 °C (desactivar); ABS y ASA a 40-50 °C; PC,.',
+        'PA-CF y afines a 50-60 °C. ADVERTENCIA oficial: no habilitar temperatura de cámara alta para filamentos de baja temperatura (PLA, PETG, TPU,',
+        'PVA, etc.), puede ablandar el filamento y atascar el extrusor.',
+        'OrcaSlicer da ABS y ASA a 50-70 °C de cámara, PC a 80-100 °C y PA a 70-100 °C; las dos cifras para ABS son oficiales y no se promedian.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Cámara recomendada por Bambu: PLA, PETG, TPU y PVA a 0 °C (desactivar); ABS y ASA a 40-50 °C; PC, PA-CF y afines a 50-60 °C. ADVERTENCIA oficial: no habilitar temperatura de cámara alta para filamentos de baja temperatura (PLA, PETG, TPU, PVA, etc.), puede ablandar el filamento y atascar el extrusor. OrcaSlicer da ABS y ASA a 50-70 °C de cámara, PC a 80-100 °C y PA a 70-100 °C; las dos cifras para ABS son oficiales y no se promedian.',
       cuando: { material: ['abs', 'pc', 'pa'] },
@@ -286,6 +416,11 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'camara-x1e',
       titulo: 'X1E: cámara hasta 60 °C',
+      puntos: [
+        'X1E: cámara máxima de 60 °C; en filamentos de alta temperatura (PC, PA-CF, PAHT-CF, PET-CF, PPA-CF, PPS,.',
+        'PPS-CF) seleccionar 60 °C mejora precisión dimensional, calidad visual, suprime el warping y da mayor adhesión entre capas.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'X1E: cámara máxima de 60 °C; en filamentos de alta temperatura (PC, PA-CF, PAHT-CF, PET-CF, PPA-CF, PPS, PPS-CF) seleccionar 60 °C mejora precisión dimensional, calidad visual, suprime el warping y da mayor adhesión entre capas.',
       cuando: { material: ['pc', 'pa'] },
@@ -294,6 +429,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'abs-fan',
       titulo: 'ABS: ventilador apagado y cámara cerrada',
+      puntos: [
+        'ABS es muy susceptible a la separación de capas con cualquier aire frío antes de que la pieza haya enfriado del todo.',
+        'ventilador apagado por completo y cámara cerrada, incluso calentada.',
+        'Si lo que se curva son voladizos inclinados o piezas pequeñas, se puede probar a habilitar el ventilador al 10-20 %,.',
+        'pero demasiado ventilador puede deformar toda la pieza y reducir la adhesión entre capas.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'ABS es muy susceptible a la separación de capas con cualquier aire frío antes de que la pieza haya enfriado del todo; ventilador apagado por completo y cámara cerrada, incluso calentada. Si lo que se curva son voladizos inclinados o piezas pequeñas, se puede probar a habilitar el ventilador al 10-20 %, pero demasiado ventilador puede deformar toda la pieza y reducir la adhesión entre capas.',
       cuando: { material: 'abs' },
@@ -301,6 +443,16 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'flujo-velocidad',
       titulo: 'Flujo y velocidad: el otro lado del warping',
+      puntos: [
+        'Imprimir demasiado rápido puede causar warping: peor unión entre capas y enfriamiento más rápido (una sola fuente, fabricante,.',
+        'sin corroborar).',
+        'Para materiales de alta temperatura (PC-Blend), bajar la velocidad de impresión ayuda a que el conjunto asiente,.',
+        'funda las capas entre sí y deforme menos.',
+        'En interlayer cracking en ABS: aumentar la temperatura de boquilla o bajar la velocidad (pared interior 150 mm/s y exterior 100 mm/s),.',
+        'reducir el ventilador de pieza (referencia.',
+        'ventilador máximo del 60 % en paredes) y subir cama 5-10 °C y cámara 5 °C si hay calefacción activa.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Imprimir demasiado rápido puede causar warping: peor unión entre capas y enfriamiento más rápido (una sola fuente, fabricante, sin corroborar). Para materiales de alta temperatura (PC-Blend), bajar la velocidad de impresión ayuda a que el conjunto asiente, funda las capas entre sí y deforme menos. En interlayer cracking en ABS: aumentar la temperatura de boquilla o bajar la velocidad (pared interior 150 mm/s y exterior 100 mm/s), reducir el ventilador de pieza (referencia: ventilador máximo del 60 % en paredes) y subir cama 5-10 °C y cámara 5 °C si hay calefacción activa.',
       cuando: { tamaño: ['grande', 'alta-delgada'] },
@@ -308,6 +460,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'pla-hotend',
       titulo: 'PLA con boquilla insuficiente',
+      puntos: [
+        'PLA con temperatura de boquilla insuficiente puede sufrir cracking y separación de capas.',
+        'según la marca se imprime entre 195 y 220 °C. Si hay problemas, subir en incrementos de 5 °C hasta obtener buena adhesión de capa.',
+        'Aumentar el flow rate o extrusion multiplier en incrementos del 5 % crea un vínculo más fuerte entre capas (accesible en PrusaSlicer sólo en',
+        'modo Advanced o Expert).',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'PLA con temperatura de boquilla insuficiente puede sufrir cracking y separación de capas; según la marca se imprime entre 195 y 220 °C. Si hay problemas, subir en incrementos de 5 °C hasta obtener buena adhesión de capa. Aumentar el flow rate o extrusion multiplier en incrementos del 5 % crea un vínculo más fuerte entre capas (accesible en PrusaSlicer sólo en modo Advanced o Expert).',
       cuando: { material: 'pla' },
@@ -316,6 +475,14 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'boquilla-interlayer',
       titulo: 'Boquilla, cama y cámara en cracking inter-capa',
+      puntos: [
+        'Prusa enfatiza subir la temperatura de boquilla en incrementos de 5 °C hasta conseguir adhesión de capa.',
+        'Bambu además permite bajar la velocidad (pared interior 150 mm/s, exterior 100 mm/s en ABS),.',
+        'subir la cama 5-10 °C y la cámara +5 °C si hay calefacción activa.',
+        'Ambas son oficiales y apuntan a problemas térmicos de adhesión entre capas: una enfatiza la boquilla y el flujo, la otra la cama,.',
+        'el ventilador y la cámara.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Prusa enfatiza subir la temperatura de boquilla en incrementos de 5 °C hasta conseguir adhesión de capa. Bambu además permite bajar la velocidad (pared interior 150 mm/s, exterior 100 mm/s en ABS), subir la cama 5-10 °C y la cámara +5 °C si hay calefacción activa. Ambas son oficiales y apuntan a problemas térmicos de adhesión entre capas: una enfatiza la boquilla y el flujo, la otra la cama, el ventilador y la cámara.',
       cuando: { material: ['abs', 'pc', 'pa'] },
@@ -323,6 +490,14 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'adhesión-chapa',
       titulo: 'Tipo de chapa y limpieza',
+      puntos: [
+        'Seleccionar el tipo de chapa correcto según el filamento.',
+        'laminar para Cool Plate (35 °C para PLA) e imprimir en Textured PEI (55-65 °C para PLA) deja la adhesión demasiado fría.',
+        'la Textured PEI baja la boquilla 0,04 mm automáticamente al nivelar,.',
+        'desactivando ese offset si el tipo de chapa está mal elegido en el slicer.',
+        'Limpiar la chapa con agua templada y jabón, enjuagar y secar al aire; no tocar la superficie con las manos desnudas después de limpiar.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Seleccionar el tipo de chapa correcto según el filamento: laminar para Cool Plate (35 °C para PLA) e imprimir en Textured PEI (55-65 °C para PLA) deja la adhesión demasiado fría; la Textured PEI baja la boquilla 0,04 mm automáticamente al nivelar, desactivando ese offset si el tipo de chapa está mal elegido en el slicer. Limpiar la chapa con agua templada y jabón, enjuagar y secar al aire; no tocar la superficie con las manos desnudas después de limpiar.',
       cuando: { chapa: ['cool-plate', 'textured', 'smooth', 'engineering'] },
@@ -330,6 +505,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'brim-alcance',
       titulo: 'Brim completo o brim ears',
+      puntos: [
+        'Bambu recomienda un brim de 8-10 mm o brim ears pintados sólo en las esquinas que levantan.',
+        'Prusa propone un brim normal para aumentar la adhesión.',
+        'No se contradicen: el brim completo es la salida básica; los brim ears son la versión dirigida a esquinas concretas.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Bambu recomienda un brim de 8-10 mm o brim ears pintados sólo en las esquinas que levantan. Prusa propone un brim normal para aumentar la adhesión. No se contradicen: el brim completo es la salida básica; los brim ears son la versión dirigida a esquinas concretas.',
       cuando: { tamaño: ['grande', 'mediana'] },
@@ -338,12 +519,25 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'glue',
       titulo: 'Adhesivos y glue stick',
+      puntos: [
+        'Glue stick o adhesivos (PVA delgado, hairspray, sprays especializados) como refuerzo para filamentos difíciles (ABS, ASA, PA, PC).',
+        'en placas de vidrio, una capa fina de PVA.',
+        'Tier 1 de Bambu: tres pasos resuelven aproximadamente el 80 % de los fallos de warping y adhesión: limpiar la placa,.',
+        'ejecutar el nivelado automático completo (especialmente tras mover la impresora,.',
+        'mantenimiento o firmware) y comprobar que la boquilla esté bien instalada (clips fijados).',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Glue stick o adhesivos (PVA delgado, hairspray, sprays especializados) como refuerzo para filamentos difíciles (ABS, ASA, PA, PC); en placas de vidrio, una capa fina de PVA. Tier 1 de Bambu: tres pasos resuelven aproximadamente el 80 % de los fallos de warping y adhesión: limpiar la placa, ejecutar el nivelado automático completo (especialmente tras mover la impresora, mantenimiento o firmware) y comprobar que la boquilla esté bien instalada (clips fijados).',
     },
     {
       id: 'velocidad-primera',
       titulo: 'Primera capa despacio',
+      puntos: [
+        'Primera capa: reducir la velocidad a 40-50 mm/s y el valor ideal recomendado para buena adhesión es 20-30 mm/s.',
+        'Es una sola fuente de fabricante (Creality), sin corroborar.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Primera capa: reducir la velocidad a 40-50 mm/s y el valor ideal recomendado para buena adhesión es 20-30 mm/s. Es una sola fuente de fabricante (Creality), sin corroborar.',
       cuando: { cama: ['baja', 'media'] },
@@ -352,6 +546,13 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'humedad-secado',
       titulo: 'Humedad: no es warping',
+      puntos: [
+        'El filamento húmedo no es warping: chasquidos o superficie rugosa y con burbujas apuntan a humedad.',
+        'la recomendación es secarlo y reintentar.',
+        'PETG absorbe humedad y da crujidos, burbujas y stringing, reduciendo la unión entre capas.',
+        'Secar antes de reintentar, según la recomendación del fabricante del filamento o del secador.',
+      ],
+      indicador: 'material',
       cuerpo:
         'El filamento húmedo no es warping: chasquidos o superficie rugosa y con burbujas apuntan a humedad; la recomendación es secarlo y reintentar. PETG absorbe humedad y da crujidos, burbujas y stringing, reduciendo la unión entre capas. Secar antes de reintentar, según la recomendación del fabricante del filamento o del secador.',
       cuando: { humedad: ['humedo', 'desconocido'] },
@@ -359,6 +560,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'post-impresion',
       titulo: 'Deformaciones leves tras imprimir',
+      puntos: [
+        'Post-impresión, sólo para deformaciones leves: lijar la base para aplanar o calentar suavemente con secador,.',
+        'con cuidado de no fundir la pieza.',
+        'Es una sola fuente de fabricante, sin corroborar.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Post-impresión, sólo para deformaciones leves: lijar la base para aplanar o calentar suavemente con secador, con cuidado de no fundir la pieza. Es una sola fuente de fabricante, sin corroborar.',
       cuando: { tamaño: ['grande'] },
@@ -366,6 +573,14 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'recinto-pla',
       titulo: 'PLA y PETG con cámara demasiado caliente',
+      puntos: [
+        'Los materiales de alta temperatura necesitan enclosure para mantener un ambiente caliente y estable.',
+        'imprimir PLA o PETG en enclosure puede ser mala idea porque necesitan mucha refrigeración de pieza,.',
+        'más difícil de conseguir con ambiente caliente.',
+        'Cuando la temperatura de cama es igual o mayor que la temperatura de reblandecimiento del filamento (PLA ronda los 45 °C, PETG los 70 °C),.',
+        'se recomienda abrir la puerta frontal y quitar la cubierta superior: el calor acumulado en la cámara ablanda el filamento.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Los materiales de alta temperatura necesitan enclosure para mantener un ambiente caliente y estable; imprimir PLA o PETG en enclosure puede ser mala idea porque necesitan mucha refrigeración de pieza, más difícil de conseguir con ambiente caliente. Cuando la temperatura de cama es igual o mayor que la temperatura de reblandecimiento del filamento (PLA ronda los 45 °C, PETG los 70 °C), se recomienda abrir la puerta frontal y quitar la cubierta superior: el calor acumulado en la cámara ablanda el filamento.',
       cuando: { material: ['pla', 'petg'], cama: 'alta' },
@@ -373,6 +588,12 @@ export const piezasGrandesGrietas: Guia = {
     {
       id: 'recinto-alto',
       titulo: 'Cámara más caliente: ayuda y perjuicio',
+      puntos: [
+        'Para ABS, ASA, PC y PA, una cámara más caliente puede suprimir o reducir el warping y aumentar la adhesión entre capas,.',
+        'pero a la vez reduce la eficacia del filtrado del aire en ABS y ASA.',
+        'Por eso las dos cifras oficiales de cámara para ABS (40-50 °C Bambu y 50-70 °C Orca) no se resuelven promediando.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Para ABS, ASA, PC y PA, una cámara más caliente puede suprimir o reducir el warping y aumentar la adhesión entre capas, pero a la vez reduce la eficacia del filtrado del aire en ABS y ASA. Por eso las dos cifras oficiales de cámara para ABS (40-50 °C Bambu y 50-70 °C Orca) no se resuelven promediando.',
       cuando: { material: ['abs', 'pc', 'pa'] },

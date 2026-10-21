@@ -95,6 +95,7 @@ export const secarFilamento: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material tiene su fila de la tabla: cambian la temperatura, el tiempo y hasta si hace falta secarlo.',
       necesaria: true,
       /*
@@ -120,6 +121,7 @@ export const secarFilamento: Guia = {
     {
       id: 'dispositivo',
       etiqueta: '¿Con qué vas a secar?',
+      indicador: 'maquina',
       para: 'La tabla da un número por método y no son el mismo: el AMS 2 Pro no pasa de 65 °C y el horno llega a 140 °C.',
       necesaria: true,
       opciones: [
@@ -133,6 +135,7 @@ export const secarFilamento: Guia = {
     {
       id: 'sintoma',
       etiqueta: '¿Qué se ve?',
+      indicador: 'general',
       para: 'El síntoma decide si hay que secar y qué comprobar después: los hilos tienen más causas que la humedad, y los huecos no la tienen.',
       opciones: [
         { id: 'burbujas', etiqueta: 'Burbujas o chasquidos' },
@@ -149,6 +152,12 @@ export const secarFilamento: Guia = {
     {
       id: 'higroscopico',
       titulo: 'Higroscópico no es «está húmedo»',
+      puntos: [
+        'Los materiales de impresión FFF son **mayoritariamente higroscópicos**: atraen moléculas de agua del ambiente.',
+        'Eso es una **propiedad del material**, no el estado de tu carrete, y las dos fuentes de este lote formulan la condición por separado.',
+        'un material higroscópico *puede* coger humedad, y sólo se sabe que la cogió cuando se nota en la pieza.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Los materiales de impresión FFF son **mayoritariamente higroscópicos**: atraen moléculas de agua del ambiente. Eso es una **propiedad del material**, no el estado de tu carrete, y las dos fuentes de este lote formulan la condición por separado: un material higroscópico *puede* coger humedad, y sólo se sabe que la cogió cuando se nota en la pieza.',
       cita: {
@@ -159,6 +168,12 @@ export const secarFilamento: Guia = {
     {
       id: 'senal',
       titulo: 'La primera señal es la superficie',
+      puntos: [
+        'Prusa pone la primera señal en la calidad de la superficie, y amplía la lista cuando el contenido de agua es alto: mala unión entre capas,.',
+        'bultos en la pieza, burbujas y humo durante la extrusión. **Ninguna fuente de este lote da una prueba para saber si tu bobina está húmeda**.',
+        'sólo el síntoma.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'Prusa pone la primera señal en la calidad de la superficie, y amplía la lista cuando el contenido de agua es alto: mala unión entre capas, bultos en la pieza, burbujas y humo durante la extrusión. **Ninguna fuente de este lote da una prueba para saber si tu bobina está húmeda**: sólo el síntoma.',
       cita: {
@@ -169,6 +184,12 @@ export const secarFilamento: Guia = {
     {
       id: 'mecanismo',
       titulo: 'Lo que hace el agua dentro de la boquilla',
+      puntos: [
+        'El mecanismo está escrito en la otra casa, y explica por qué salen todos los síntomas a la vez.',
+        'la humedad se vaporiza dentro de la boquilla caliente, el filamento fundido se expande y sale errático, y de ahí salen burbujas, hilos,.',
+        'goteo, huecos, superficies rugosas y menos resistencia.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El mecanismo está escrito en la otra casa, y explica por qué salen todos los síntomas a la vez: la humedad se vaporiza dentro de la boquilla caliente, el filamento fundido se expande y sale errático, y de ahí salen burbujas, hilos, goteo, huecos, superficies rugosas y menos resistencia.',
       cita: {
@@ -179,6 +200,12 @@ export const secarFilamento: Guia = {
     {
       id: 'no-warping',
       titulo: 'La humedad no explica el warping',
+      puntos: [
+        'Ninguna fuente de este lote relaciona la humedad con el warping: la sección de warping de Bambu no la cuenta entre sus causas,.',
+        'y la sección de filamento húmedo no incluye las esquinas levantadas entre sus síntomas. **Secar la bobina no levanta ni baja una esquina**,.',
+        'y si eso es lo que te pasa, el diagnóstico es otro.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Ninguna fuente de este lote relaciona la humedad con el warping: la sección de warping de Bambu no la cuenta entre sus causas, y la sección de filamento húmedo no incluye las esquinas levantadas entre sus síntomas. **Secar la bobina no levanta ni baja una esquina**, y si eso es lo que te pasa, el diagnóstico es otro.',
       enlaza: { guia: 'warping-pla', etiqueta: 'Warping en PLA' },
@@ -186,6 +213,13 @@ export const secarFilamento: Guia = {
     {
       id: 'no-huecos',
       titulo: 'Las líneas finas y los huecos no son de humedad',
+      puntos: [
+        'La subextrusión tiene su propia lista de causas en la fuente: resistencia a la extrusión,.',
+        'volumen de extrusión insuficiente y valor de PA mal ajustado. **La humedad no aparece en ninguna de las tres.** Si lo que falla es que no.',
+        'sale material,.',
+        'secar el carrete no cambia nada de eso.',
+      ],
+      indicador: 'material',
       cuerpo:
         'La subextrusión tiene su propia lista de causas en la fuente: resistencia a la extrusión, volumen de extrusión insuficiente y valor de PA mal ajustado. **La humedad no aparece en ninguna de las tres.** Si lo que falla es que no sale material, secar el carrete no cambia nada de eso.',
       enlaza: { guia: 'flow-rate', etiqueta: 'Flujo y subextrusión' },
@@ -193,6 +227,16 @@ export const secarFilamento: Guia = {
     {
       id: 'petg',
       titulo: 'El PETG tiene varias temperaturas de secado, y una de ellas no lo es',
+      puntos: [
+        'Tres salen de la **tabla de secado** de Bambu y son un número por método: 65 °C en el AMS,.',
+        '60–65 °C en el horno de convección y 75–85 °C en la cama.',
+        'Otra cifra, 65–75 °C, sale de su página de diagnóstico y no de la tabla, y las dos no se resuelven.',
+        'el corpus no dice por qué el horno de una página pide más que el de la otra.',
+        'El **55 °C** que aparece en esa misma página de secado **no es una temperatura de secado**.',
+        'es la que el AMS baja cuando arranca una impresión para no atascar el extrusor.',
+        'Prusa da 55 °C y 6 h para su PETG, sin decir en qué método.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Tres salen de la **tabla de secado** de Bambu y son un número por método: 65 °C en el AMS, 60–65 °C en el horno de convección y 75–85 °C en la cama. Otra cifra, 65–75 °C, sale de su página de diagnóstico y no de la tabla, y las dos no se resuelven: el corpus no dice por qué el horno de una página pide más que el de la otra. El **55 °C** que aparece en esa misma página de secado **no es una temperatura de secado**: es la que el AMS baja cuando arranca una impresión para no atascar el extrusor. Prusa da 55 °C y 6 h para su PETG, sin decir en qué método.',
       cuando: { material: 'petg' },
@@ -209,6 +253,13 @@ export const secarFilamento: Guia = {
     {
       id: 'metodos',
       titulo: 'El AMS 2 Pro tiene un techo, y no es un límite del material',
+      puntos: [
+        'El AMS 2 Pro sirve para filamentos que no piden más de **65 °C**.',
+        'Los que piden 75–85 °C —ABS, ASA, PC, PVA, poliamidas con fibra— o 100–140 °C —PPA-CF, PPS-CF— salen en su columna como «no compatible».',
+        'Eso es **del aparato**: el ABS se puede secar, lo que no puede es el AMS 2 Pro.',
+        'El AMS HT cubre todos los materiales, pero avisa de que algunos no quedan secos del todo.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El AMS 2 Pro sirve para filamentos que no piden más de **65 °C**. Los que piden 75–85 °C —ABS, ASA, PC, PVA, poliamidas con fibra— o 100–140 °C —PPA-CF, PPS-CF— salen en su columna como «no compatible». Eso es **del aparato**: el ABS se puede secar, lo que no puede es el AMS 2 Pro. El AMS HT cubre todos los materiales, pero avisa de que algunos no quedan secos del todo.',
       cifra: { valor: '65 °C', nota: 'techo del AMS 2 Pro: por encima, el aparato no puede' },
@@ -220,6 +271,14 @@ export const secarFilamento: Guia = {
     {
       id: 'horno-cocina',
       titulo: 'El horno de cocina: uno lo permite y otro lo prohíbe',
+      puntos: [
+        'Bambu lo prohíbe —el reparto de calor de un horno doméstico es irregular y las zonas pegadas a las resistencias se ponen muy calientes— y',
+        'pide convección forzada.',
+        'Prusa lo admite con dos condiciones: un termómetro externo, porque el horno mide mal,.',
+        'y aceptar que muchos hornos no bajan lo suficiente para secar sin estropear el filamento. **El corpus no resuelve cuál seguir**.',
+        'lo único en que coinciden es en que pasarse de la temperatura ablanda el filamento y lo pega.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Bambu lo prohíbe —el reparto de calor de un horno doméstico es irregular y las zonas pegadas a las resistencias se ponen muy calientes— y pide convección forzada. Prusa lo admite con dos condiciones: un termómetro externo, porque el horno mide mal, y aceptar que muchos hornos no bajan lo suficiente para secar sin estropear el filamento. **El corpus no resuelve cuál seguir**: lo único en que coinciden es en que pasarse de la temperatura ablanda el filamento y lo pega.',
       cita: {
@@ -230,6 +289,16 @@ export const secarFilamento: Guia = {
     {
       id: 'prusa-tabla',
       titulo: 'La tabla de Prusa es de los materiales Prusament',
+      puntos: [
+        'Su alcance se nota en lo que no cubre: no da cifras propias para ABS, PA sin fibra, TPU de otras marcas,.',
+        'PET-CF ni PVA. **No asigna método a sus filas**,.',
+        'así que sus tiempos no son «el tiempo del horno de casa» —su 55 °C y 6 h del PETG no es un tiempo de horno—,.',
+        'ni el de un AMS —Prusa no tiene AMS; el AMS 2 Pro y el AMS HT son de Bambu—.',
+        'El **ASA y el PC sí están**, y con cifras distintas de las de Bambu: Prusa da 80 ºC y 4 h para su ASA, y 85 ºC y 5 h,.',
+        '90 ºC y 4 h y 90 °C y 4–6 h para sus tres variantes de PC, sin método asignado, frente a los 80 °C y 8 h del AMS HT de Bambu.',
+        'Son dos casas con métodos no declarados por una de las partes y **no se promedian**.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Su alcance se nota en lo que no cubre: no da cifras propias para ABS, PA sin fibra, TPU de otras marcas, PET-CF ni PVA. **No asigna método a sus filas**, así que sus tiempos no son «el tiempo del horno de casa» —su 55 °C y 6 h del PETG no es un tiempo de horno—, ni el de un AMS —Prusa no tiene AMS; el AMS 2 Pro y el AMS HT son de Bambu—. El **ASA y el PC sí están**, y con cifras distintas de las de Bambu: Prusa da 80 ºC y 4 h para su ASA, y 85 ºC y 5 h, 90 ºC y 4 h y 90 °C y 4–6 h para sus tres variantes de PC, sin método asignado, frente a los 80 °C y 8 h del AMS HT de Bambu. Son dos casas con métodos no declarados por una de las partes y **no se promedian**.',
       cita: {
@@ -240,6 +309,16 @@ export const secarFilamento: Guia = {
     {
       id: 'almacenamiento',
       titulo: 'Secar sin guardar es la mitad del trabajo',
+      puntos: [
+        'Las cifras de almacenamiento son de Bambu: el objetivo es guardar por debajo del **20 % RH**,.',
+        'y a esa humedad el filamento seco aguanta entre 2 y 7 días, según lo higroscópico que sea.',
+        'En un interior de unos 55 % RH —lo habitual— el filamento recién seco absorbe suficiente humedad para afectar la calidad en **2 a 12.',
+        'horas**,.',
+        'y en el aire abierto suele estar entre el 45 % y el 65 %.',
+        'Prusa no da ninguna de esas cifras: publica el procedimiento, que es pasar el carrete a la caja seca y cerrarla de inmediato,.',
+        'y dos formas de guardar, un espacio cerrado con desecante y una bolsa al vacío con desecante dentro.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Las cifras de almacenamiento son de Bambu: el objetivo es guardar por debajo del **20 % RH**, y a esa humedad el filamento seco aguanta entre 2 y 7 días, según lo higroscópico que sea. En un interior de unos 55 % RH —lo habitual— el filamento recién seco absorbe suficiente humedad para afectar la calidad en **2 a 12 horas**, y en el aire abierto suele estar entre el 45 % y el 65 %. Prusa no da ninguna de esas cifras: publica el procedimiento, que es pasar el carrete a la caja seca y cerrarla de inmediato, y dos formas de guardar, un espacio cerrado con desecante y una bolsa al vacío con desecante dentro.',
       cifra: {
@@ -254,6 +333,17 @@ export const secarFilamento: Guia = {
     {
       id: 'desecante',
       titulo: 'El desecante avisa por color',
+      puntos: [
+        'El gel de sílice cambia de color: las perlas amarillas se van poniendo verdes,.',
+        'y cuando **todo el paquete está verde oscuro** hay que cambiarlo o regenerarlo.',
+        'Se regenera en el horno doméstico a 80–90 °C durante 1–2 h si está algo húmedo o 2–3 h si está saturado, y **nunca por encima de 100 °C**,.',
+        'porque por encima se daña la estructura de la sílice.',
+        'Con una cama a 80 °C el proceso tarda 3–4 h, porque la potencia es menor.',
+        'Se puede regenerar 5–15 veces.',
+        'Ese horno de casa es el mismo que Bambu prohíbe para el filamento: lo que aquí se hornea es el gel de sílice, no el carrete,.',
+        'y sus temperaturas no son de secado.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'El gel de sílice cambia de color: las perlas amarillas se van poniendo verdes, y cuando **todo el paquete está verde oscuro** hay que cambiarlo o regenerarlo. Se regenera en el horno doméstico a 80–90 °C durante 1–2 h si está algo húmedo o 2–3 h si está saturado, y **nunca por encima de 100 °C**, porque por encima se daña la estructura de la sílice. Con una cama a 80 °C el proceso tarda 3–4 h, porque la potencia es menor. Se puede regenerar 5–15 veces. Ese horno de casa es el mismo que Bambu prohíbe para el filamento: lo que aquí se hornea es el gel de sílice, no el carrete, y sus temperaturas no son de secado.',
       cifra: {
@@ -268,6 +358,13 @@ export const secarFilamento: Guia = {
     {
       id: 'carrete',
       titulo: 'Los límites del carrete son cuatro y el color no basta',
+      puntos: [
+        'El carrete negro **viejo**, con tapas de plástico prensadas contra el cartón, sólo se puede calentar hasta 45 °C.',
+        'por encima el plástico se expande, el cartón se queda expandido al enfriar y el carrete queda flojo.',
+        'El gris viejo aguanta 90 °C por el pegamento, el negro nuevo 90 °C y el gris nuevo 150 °C. Para el carrete viejo por encima de 45 °C,.',
+        'la alternativa de Prusa es un tornillo M4×65 que sujete las dos tapas.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El carrete negro **viejo**, con tapas de plástico prensadas contra el cartón, sólo se puede calentar hasta 45 °C: por encima el plástico se expande, el cartón se queda expandido al enfriar y el carrete queda flojo. El gris viejo aguanta 90 °C por el pegamento, el negro nuevo 90 °C y el gris nuevo 150 °C. Para el carrete viejo por encima de 45 °C, la alternativa de Prusa es un tornillo M4×65 que sujete las dos tapas.',
       cifra: {
@@ -279,6 +376,14 @@ export const secarFilamento: Guia = {
     {
       id: 'pa',
       titulo: 'Para el PA sin fibra no hay cifras',
+      puntos: [
+        'Las dos tablas dan poliamida **con fibra**: Bambu, PA6-CF/GF y PAHT-CF/GF; Prusa,.',
+        'PA11 Carbon Fiber. **Ninguna fuente da parámetros para PA12, PA6 o nylon sin refuerzo**, y esta guía no rellena ese hueco.',
+        'Además el PA abierto al aire se bebe la humedad en unos 3 meses,.',
+        'y a partir de ahí es muy difícil de secar con un horno de convección a 80–90 °C: la respuesta pasa a ser preventiva,.',
+        'protegerlo y guardarlo sellado.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Las dos tablas dan poliamida **con fibra**: Bambu, PA6-CF/GF y PAHT-CF/GF; Prusa, PA11 Carbon Fiber. **Ninguna fuente da parámetros para PA12, PA6 o nylon sin refuerzo**, y esta guía no rellena ese hueco. Además el PA abierto al aire se bebe la humedad en unos 3 meses, y a partir de ahí es muy difícil de secar con un horno de convección a 80–90 °C: la respuesta pasa a ser preventiva, protegerlo y guardarlo sellado.',
       cuando: { material: 'pa' },
@@ -295,6 +400,12 @@ export const secarFilamento: Guia = {
     {
       id: 'pc',
       titulo: 'El PC se vuelve quebradizo con los ciclos',
+      puntos: [
+        'El PC puede volverse quebradizo después de ciclos repetidos de calentamiento y enfriamiento.',
+        'No afecta a las propiedades mecánicas de la pieza impresa, pero sí al riesgo de que el filamento se rompa dentro del extrusor.',
+        'Si el carrete ha estado bien protegido, puede no necesitar secado, o sólo uno corto, para no acumular ciclos.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El PC puede volverse quebradizo después de ciclos repetidos de calentamiento y enfriamiento. No afecta a las propiedades mecánicas de la pieza impresa, pero sí al riesgo de que el filamento se rompa dentro del extrusor. Si el carrete ha estado bien protegido, puede no necesitar secado, o sólo uno corto, para no acumular ciclos.',
       cuando: { material: 'pc' },
@@ -306,6 +417,14 @@ export const secarFilamento: Guia = {
     {
       id: 'horno-protocolo',
       titulo: 'En el horno, el carrete no puede tocar nada',
+      puntos: [
+        'El horno tiene que ser de convección forzada, la cámara no demasiado pequeña y el carrete **alejado de los elementos calefactores**.',
+        'el mínimo son 250 mm de fondo por 250 mm de ancho y 90 mm de alto,.',
+        'y la bobina reutilizable de Bambu mide 200 mm de diámetro exterior y 67 mm de altura.',
+        'En el horno de laboratorio de Prusa: sólo carretes sin su embalaje original, sin mezclar materiales en la misma tanda,.',
+        'y el temporizador arranca **cuando se alcanza la temperatura objetivo**, no al encender el horno.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El horno tiene que ser de convección forzada, la cámara no demasiado pequeña y el carrete **alejado de los elementos calefactores**: el mínimo son 250 mm de fondo por 250 mm de ancho y 90 mm de alto, y la bobina reutilizable de Bambu mide 200 mm de diámetro exterior y 67 mm de altura. En el horno de laboratorio de Prusa: sólo carretes sin su embalaje original, sin mezclar materiales en la misma tanda, y el temporizador arranca **cuando se alcanza la temperatura objetivo**, no al encender el horno.',
       cuando: { dispositivo: 'horno' },
@@ -322,6 +441,14 @@ export const secarFilamento: Guia = {
     {
       id: 'cama-metodo',
       titulo: 'La cama como secador, sólo en impresoras cerradas',
+      puntos: [
+        'El método de cama **exige impresora cerrada**: las de estructura abierta no pueden usarse para secar.',
+        'El procedimiento es descargar el filamento del cabezal, bajar la cama a la posición de reposo,.',
+        'tapar el carrete con una tapa resistente al calor o con su caja de embalaje,.',
+        'y **voltear el carrete a mitad** para que el calor sea uniforme.',
+        'Al terminar, la cama a 0 °C y se espera a que el carrete se enfríe antes de tocarlo.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'El método de cama **exige impresora cerrada**: las de estructura abierta no pueden usarse para secar. El procedimiento es descargar el filamento del cabezal, bajar la cama a la posición de reposo, tapar el carrete con una tapa resistente al calor o con su caja de embalaje, y **voltear el carrete a mitad** para que el calor sea uniforme. Al terminar, la cama a 0 °C y se espera a que el carrete se enfríe antes de tocarlo.',
       cuando: { dispositivo: 'cama' },
@@ -333,6 +460,13 @@ export const secarFilamento: Guia = {
     {
       id: 'lw-pla',
       titulo: 'El filamento de baja densidad trae gas dentro',
+      puntos: [
+        'El LW-PLA tiene más huecos y gas —agua— en el interior,.',
+        'así que la página de diagnóstico recomienda secarlo antes de imprimir y bajar el ratio de flujo al laminar.',
+        'El ratio es de la guía de flujo; aquí lo que se conserva es el mecanismo.',
+        'este filamento trae su propio problema de gas aunque el carrete no se haya mojado.',
+      ],
+      indicador: 'material',
       cuerpo:
         'El LW-PLA tiene más huecos y gas —agua— en el interior, así que la página de diagnóstico recomienda secarlo antes de imprimir y bajar el ratio de flujo al laminar. El ratio es de la guía de flujo; aquí lo que se conserva es el mecanismo: este filamento trae su propio problema de gas aunque el carrete no se haya mojado.',
       cuando: { material: 'pla' },
