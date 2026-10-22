@@ -99,11 +99,23 @@ Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
   atrás**: quien no tiene un síntoma no tiene dónde empezar. Y sus **modelos de test
   gratuitos** con su licencia. En
   [`investigacion-control3d-2026-10-21.md`](investigacion-control3d-2026-10-21.md).
-- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (218), `ui`
+- **La ruta de calibración existe**, y es la primera guía que **enruta** en vez de
+  diagnosticar. Los siete tests de calibración ya eran siete guías; esta lleva a cada
+  uno con un enlace nuevo en las reglas y se queda con lo que nadie más tenía: **el
+  orden**, y que **no hay un orden**. Hay tres métodos publicados que se contradicen y
+  Prusa y Bambu no publican ninguno, y la guía dice exactamente eso.
+  **Diez de sus doce reglas** llevan a la guía que las desarrolla.
+- **Las contradicciones, declaradas y no resueltas**: el orden de los tests; la
+  dirección del síntoma del Pressure Advance —que el material cocinado corrigió,
+  porque Bambu, Prusa y Duet3D **coinciden** y el choque real es con Klipper—; la
+  escala del K, que no es la misma en cinco firmwares; y la retracción en Bowden, que
+  tiene tres valores. Las cifras de Control3D van marcadas como **método de un
+  autor**, no como dato de fabricante.
+- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (220), `ui`
   (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
   `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
-  `seo` (450), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72) y `guias`
-(1059). `lint` con 0 errores y las 3
+  `seo` (463), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72) y `guias`
+(1091). `lint` con 0 errores y las 3
   advertencias preexistentes de las copias de Three de `.superpowers/brainstorm/`.
 - **Lo que queda**: la revisión editorial de los 19 `resumenExtra` —la migración fue
   mecánica y esa parte necesita criterio, no un script—, la **ruta de calibración** que
