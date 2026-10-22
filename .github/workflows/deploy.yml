@@ -82,52 +82,20 @@ jobs:
 
       # Y la wiki renderizada, que es lo que lee la gente.
       #
-      # **Ésta no bloquea el despliegue**, y es una decisión con nombre y apellidos.
+      # Esta puerta estuvo cerrada mucho tiempo, y no era culpa del sitio: la
+      # comprobación necesita un G-code de ejemplo, y el del repo está en
+      # `test-fixtures/`, que está en el `.gitignore` a propósito —«G-codes
+      # reales de usuario, no se suben»—. En el runner ese fichero no está, y el
+      # script moría **al importarlo**, en el primer segundo, sin imprimir nada.
       #
-      # En el runner de GitHub falla de forma **intermitente** y en el primer
-      # segundo: sin imprimir ni una comprobación, tres veces seguidas, y con
-      # tres reintentos igual. En un contenedor limpio con Node 22 y `npm ci` —el
-      # mismo `package.json`, el mismo navegador— pasa las 220 sin despeinarse.
-      #
-      # El log de un job sólo lo lee quien tenga permisos de administrador, así
-      # que el motivo exacto no se puede ver desde aquí. Y un portón que da
-      # falso a veces es peor que no tenerlo: entrena al que lo mira a ignorar
-      # las luces, y bloquea despliegues que están bien.
-      #
-      # Así que **informa**: su salida se queda en el log y en el resumen del
-      # job. El despliegue lo cierran las comprobaciones que sí son fiables —
-      # la revisión de AdSense, el contenido, los enlaces internos y el SEO—,
-      # que en las últimas ejecuciones han pasado todas.
-      #
-      # ## PENDIENTE: volver a ponerla de puerta
-      #
-      # Cuando alguien pueda leer el log del job —la API dice que hace falta
-      # permiso de administrador— hay que mirar por qué falla en el runner y
-      # arreglarlo. El log también se sube como artefacto, que se descarga sin
-      # ese permiso: `wiki-verificacion.log`.
-      #
-      # Y el arreglo, si resultara ser del entorno, es el mismo de siempre:
-      # más margen, o menos cosas a la vez en el mismo runner.
-      #
-      # Mientras tanto, esto **no bloquea**: un portón que da falso a veces
-      # entrena a ignorar las luces y bloquea despliegues que están bien.
+      # Lo que hace ahora `fixtures.mjs` es el patrón que el propio repo ya
+      # usaba para lo mismo: **el archivo real si está, y el sintético si no**.
+      # Con eso la comprobación se puede ejecutar en cualquier sitio, y con el
+      # archivo real sigue siendo más exigente.
       - name: Wiki renderizada
-        id: wiki
-        continue-on-error: true
         run: |
           set -o pipefail
-          if npm run verify:wiki 2>&1 | tee wiki-verificacion.log; then
-            exit 0
-          fi
-          {
-            echo '### La wiki renderizada falla en el runner'
-            echo '```'
-            tail -30 wiki-verificacion.log
-            echo '```'
-            echo 'Pasa en local y en un contenedor limpio con Node 22. El log del job lo'
-            echo 'leen quien tenga permisos de administrador.'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit 1
+          npm run verify:wiki 2>&1 | tee wiki-verificacion.log
 
       # El log de la wiki como artefacto, para que se pueda leer sin ser
       # administrador del repositorio. Es lo que hace falta para poder cerrar el

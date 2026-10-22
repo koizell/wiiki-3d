@@ -10,9 +10,10 @@
  * El tetraedro se escribe en un directorio temporal, nunca en el repo.
  */
 
-import { writeFileSync, mkdtempSync, readFileSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { crearGcodeSintetico } from './gcode-sintetico.mjs';
 
 const SIZE = Buffer.alloc(84 + 4 * 50);
 SIZE.writeUInt32LE(4, 80);
@@ -38,7 +39,27 @@ writeFileSync(file, SIZE);
 
 export const STL_FIXTURE = file;
 
-/** El G-code real de Creality Print que el repo trae en `test-fixtures/`. */
+/**
+ * El G-code real de Creality Print que el repo trae en `test-fixtures/`.
+ *
+ * Y aquí está la cosa: **`test-fixtures/` está en el `.gitignore` a
+ * propósito** —«G-codes reales de usuario, no se suben»—, así que ese fichero
+ * **no está en el repositorio**. Está en la máquina de quien lo descargó.
+ *
+ * Y esoconvertía este módulo en una bomba de relojería para el CI: nueve
+ * verificadores lo importan, y **los nueve** lo leen al importarse. En el
+ * runner, donde el fichero no está, morían en el primer segundo con un
+ * `ENOENT`, sin imprimir ni una comprobación. Una comprobación que depende de
+ * un archivo que no está en el repositorio no es una comprobación: es una que
+ * funciona en mi máquina.
+ *
+ * El patrón que aplica el propio repo para lo mismo está en
+ * `gcode-sintetico.mjs`: **el archivo real si está, el sintético si no**. El
+ * real es mejor —tiene arcos, retracciones y marcadores de tres familias de
+ * slicer, y eso no se fabrica—, pero el sintético sirve para lo que las
+ * comprobaciones necesitan de verdad, que es un G-code que la aplicación sepa
+ * analizar.
+ */
 const GCODE_REAL = join(
   import.meta.dirname,
   '..',
@@ -46,7 +67,31 @@ const GCODE_REAL = join(
   'test-fixtures',
   'Argentina T-shirt medal_PLA_2m56s.gcode'
 );
-export const GCODE_FIXTURE = GCODE_REAL;
+
+/** Si el G-code real está en esta máquina. */
+export const HAY_GCODE_REAL = existsSync(GCODE_REAL);
+
+/**
+ * El G-code que se sube al navegador.
+ *
+ * El real si está —y entonces la comprobación es más exigente—; el sintético si
+ * no, para que la comprobación se pueda ejecutar en cualquier sitio.
+ */
+export const GCODE_FIXTURE = HAY_GCODE_REAL ? GCODE_REAL : escribirGcodeSintetico();
+
+/**
+ * Escribe el G-code sintético en un directorio temporal.
+ *
+ * En el temporal y no en el repo, por la misma razón que el tetraedro: un
+ * fichero de prueba que no está en el control de versiones no puede quedarse
+ * obsoleto en silencio.
+ */
+function escribirGcodeSintetico() {
+  const dir = mkdtempSync(join(tmpdir(), 'wiiki-verify-gcode-'));
+  const ruta = join(dir, 'sintetico.gcode');
+  writeFileSync(ruta, crearGcodeSintetico());
+  return ruta;
+}
 
 /**
  * Un G-code **sin gramos de filamento**, para el estado 3 de Taller.
@@ -69,11 +114,13 @@ export const GCODE_FIXTURE = GCODE_REAL;
  * primera: si sobrevive `; total filament used [g]`, `filamentUsed` saldría
  * definido y el estado 3 no se llegaría a ver.
  *
+ * Sale del G-code que haya: el real si está en esta máquina, el sintético si no.
+ *
  * Se escribe en el directorio temporal y no en el repo, por la misma razón que
  * el tetraedro: un fichero de prueba que no está en el control de versiones no
  * puede quedarse obsoleto en silencio.
  */
 const SIN_GRAMOS = mkdtempSync(join(tmpdir(), 'wiiki-verify-sin-gramos-'));
 const sinGramos = join(SIN_GRAMOS, 'sin-gramos.gcode');
-writeFileSync(sinGramos, readFileSync(GCODE_REAL, 'utf8').replace(/^;.*filament.*\[g\].*$\n?/gim, ''));
+writeFileSync(sinGramos, readFileSync(GCODE_FIXTURE, 'utf8').replace(/^;.*filament.*\[g\].*$\n?/gim, ''));
 export const GCODE_SIN_GRAMOS = sinGramos;

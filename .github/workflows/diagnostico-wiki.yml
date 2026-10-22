@@ -23,11 +23,16 @@ name: Diagnóstico de la wiki renderizada
 #       desde la pestaña Actions.
 
 on:
+  # A mano, y sólo a mano.
+  #
+  # Esta herramiento nació para diagnosticar el fallo de `verify:wiki` en el
+  # runner, y ese fallo ya está explicado y arreglado: la comprobación necesita
+  # un G-code de ejemplo que el `.gitignore` deja fuera del repositorio.
+  #
+  # Se queda porque la próxima vez que algo «sólo falle en el runner» va a hacer
+  # falta lo mismo: un entorno anotado, la comprobación repetida y el log
+  # publicado donde se pueda leer sin ser administrador.
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/diagnostico-wiki.yml'
 
 jobs:
   diagnostico:

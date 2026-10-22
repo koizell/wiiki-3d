@@ -339,16 +339,34 @@ La regla que sale de las cuatro: **un timeout no es un fallo de lo que se
 mide**, y una comprobación que depende del reloj de la máquina necesita un
 margen que la máquina más lenta del mundo pueda cumplir.
 
-Y una cosa que no se puede arreglar desde aquí: `verify:wiki` falla **a veces**
-en el runner, en el primer segundo, con tres reintentos igual, y en un
-contenedor limpio con Node 22 y `npm ci` pasa las 220. El log de un job sólo lo
-lee quien tenga permisos de administrador, así que el motivo no se puede ver.
+### Y la que faltaba: una comprobación que depende de un fichero que no está
 
-Por eso **informa y no bloquea**. Un portón que da falso a veces es peor que no
-tenerlo: entrena al que lo mira a ignorar las luces, y bloquea despliegues que
-están bien. El despliegue lo cierran las cuatro comprobaciones que sí son
-fiables —la revisión, el contenido, los enlaces y el SEO— y la wiki renderizada
-sigue corriendo, con su salida en el resumen del job.
+`verify:wiki` fallaba en el runner en el primer segundo, sin imprimir nada, y
+en un contenedor limpio con Node 22 y `npm ci` pasaba las 220. Con tres
+reintentos igual. El log de un job sólo lo lee quien tenga permisos de
+administrador, así que el motivo no se podía ver… hasta que se construyó el
+arnés que publica su informe en una rama.
+
+El motivo: **la comprobación necesita un G-code de ejemplo, y el del repo está
+en `test-fixtures/`, que está en el `.gitignore` a propósito** —«G-codes reales
+de usuario, no se suben»—. En el runner ese fichero no está, y `fixtures.mjs` lo
+leía **al importarse**: no era la comprobación la que fallaba, era el módulo.
+
+Y **nueve verificadores** lo importan. Los nueve se rompían igual.
+
+La moraleja es la que el propio repo ya tenía escrita en
+`gcode-sintetico.mjs`, en su primer párrafo:
+
+> «Una comprobación que dependa de un archivo que no está en el repositorio no
+> es una comprobación: es una que funciona en mi máquina.»
+
+El arreglo es el patrón que ya usaba para lo mismo: **el archivo real si está,
+el sintético si no**. Y para que el sintético sirviera, hubo que darle la firma
+real de Cura —`; Generated with Cura_SteamEngine`, con G mayúscula y «with»—,
+su material, su tiempo y sus temperaturas: sin material el panel no enlaza
+nada, y sin temperatura la acción no pinta la comparación.
+
+La puerta vuelve a cerrar.
 
 ## Fuera de alcance
 
