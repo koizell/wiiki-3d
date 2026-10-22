@@ -11,6 +11,7 @@ fuentes:
   - wiki/raw/esquinas-petg-bambu-wiki-filament-guide-material-table.md
   - wiki/raw/esquinas-petg-prusa-forum-optimal-enclosure-temps.md
 cocinado: 2026-10-16
+revisado: 2026-10-21
 ---
 
 ## Afirmaciones
@@ -32,7 +33,8 @@ cocinado: 2026-10-16
 - Acción directa frente a esquinas levantadas: aumentar la temperatura de cama +5 a +10 °C. [Bambu Lab Wiki, *Model Warping, Falling Off, or Collapsing*](https://wiki.bambulab.com/en/filament-acc/filament/print-quality/warping-falling-off-collapsing), capturado 2026-10-16
 - Si la habitación está por debajo de 20 °C: +10 °C adicionales en la cama, sobre todo en impresoras abiertas (Bambu A1). [Bambu Lab Wiki, *Printed Model Warping*](https://wiki.bambulab.com/en/knowledge-sharing/printed-model-warping), capturado 2026-10-16
 - PETG extrusor/hotend: 240–270 °C según Bambu, 215–270 °C según Prusa, 250 ± 10 °C según Prusament. [Bambu Lab Wiki, *Filament guide — material table*](https://wiki.bambulab.com/en/general/filament-guide-material-table); [Prusa KB, *Filament Material Guide*](https://help.prusa3d.com/filament-material-guide); [Prusament PETG](https://prusament.com/materials/prusament-petg/), capturado 2026-10-16
-- Temperatura ambiente baja en recinto (PETG): recomendable abrir la puerta frontal y/o quitar la tapa de cristal superior si la cama supera 70 °C, para evitar que el PETG se reblandezca en el extrusor. [Bambu Lab Wiki, *Filament guide — material table*](https://wiki.bambulab.com/en/general/filament-guide-material-table), capturado 2026-10-16
+- Recinto cerrado y cama caliente (PETG): la **regla ②** de «Chamber Temperature Control Based on Filament Softening Temperature» recomienda abrir la puerta frontal y/o quitar la tapa de cristal superior **cuando la cama está por encima de 60 °C** —PETG es un filamento con temperatura de reblandecimiento de 60–80 °C—, para que el calor de la cámara no reblandezca ni deforme el filamento dentro del extrusor. La propia regla matiza el papel del ambiente: con ambiente alto la cámara sube más y el consejo es más necesario; con ambiente bajo la cámara suele estar más fresca y hace menos falta. [Bambu Lab Wiki, *Filament guide — material table*](https://wiki.bambulab.com/en/general/filament-guide-material-table), capturado 2026-10-16
+- Otra cifra de la misma fuente, con otro significado: la columna «Upper Glass Cover Plate Removal?» de la tabla por placa marca, en las filas PETG / PETG HF / PETG Translucent (cama 60–80 °C), «If bed > 70 °C, Recommended». Ese **70 °C es la condición de esa columna** —una recomendación por fila de material—, y no el umbral de la regla ②, que es 60 °C. [Bambu Lab Wiki, *Filament guide — material table*](https://wiki.bambulab.com/en/general/filament-guide-material-table), capturado 2026-10-16
 
 ### Temperatura de cama: placa y nivelación
 
@@ -110,6 +112,13 @@ cocinado: 2026-10-16
 
 **Se contradicen aparentemente.** El matiz es que los recintos ayudan contra corrientes y ambiente frío, pero una cámara demasiado caliente dificulta el cooling de PETG; además las piezas de la impresora son de PETG y se deforman por encima de 40–50 °C. Conclusión operativa: proteger de corrientes sí, cámara a temperatura ambiente del PETG (20–40 °C) y no más.
 
+### Umbral para abrir la puerta o quitar la tapa en PETG: 60 °C o 70 °C
+
+- Regla ② de «Chamber Temperature Control Based on Filament Softening Temperature»: filamentos con temperatura de reblandecimiento de 60–80 °C (p. ej. PETG), **cuando la cama está por encima de 60 °C** → abrir la puerta frontal y/o quitar la tapa de cristal superior. [Bambu Lab Wiki, *Filament guide — material table*], capturado 2026-10-16
+- Columna «Upper Glass Cover Plate Removal?» de la tabla por placa: en las filas PETG / PETG HF / PETG Translucent (cama 60–80 °C), «**If bed > 70 °C**, Recommended». La misma columna da «If bed > 45 °C, Recommended» en las filas PLA, PLA Metal/Wood/Marble, PLA-CF, PVA y TPU. [Bambu Lab Wiki, *Filament guide — material table*], capturado 2026-10-16
+
+**Se contradicen dentro de la misma fuente**, y para la misma acción. La lectura que encaja con los datos: la regla ② se calibra sobre la **temperatura de reblandecimiento del filamento** (60–80 °C en PETG) y pone el listón en el extremo bajo de esa banda, mientras que la columna da un número **por fila de material**, acorde a la banda de cama de esa fila —45 °C en la familia PLA, 70 °C en PETG—. La fuente no explica la diferencia. **El redactor no debe aplanarlo en una sola cifra**: 60 °C es el umbral accionable de la regla, y el 70 °C de la tabla dice hasta dónde la propia tabla sigue considerando aceptable no tocar la tapa. Si se cita uno, hay que decir de dónde sale y qué significa cada uno.
+
 ### Brim vs perímetros vs relleno como vía de resistencia
 
 - Bambu: Gyroid ≤25 % para planos grandes; estructurales 5 paredes + ~25 %; evitar >50 %. [Bambu Lab Wiki, *Printed Model Warping* / *Model Warping, Falling Off, or Collapsing*], capturado 2026-10-16
@@ -157,6 +166,7 @@ cocinado: 2026-10-16
 | ventilación de primera capa | esquinas levantadas | sin ventilador en las primeras 3 capas la primera capa se enfría más despacio y mejora la adhesión |
 | ventilador auxiliar alto | esquinas levantadas | ~40–50 % recomendado; bajarlo a ~20–30 % si hay warping |
 | recinto | esquinas levantadas | protege contra corrientes y ambiente frío, pero PETG necesita cooling y no debe superar ~40 °C de ambiente |
+| temperatura de reblandecimiento del filamento | temperatura de cama y recinto | la regla ② se dispara por el reblandecimiento del filamento (60–80 °C en PETG), no por la temperatura de la cama: con cama por encima de 60 °C hay que airear la cámara |
 | adhesión fuerte de PETG | daño de placa PEI | bajar demasiado el Z o adhesión excesiva puede dañar la superficie; usar glue stick como separador |
 | brim | esquinas levantadas | 8–10 mm o brim ears pintadas sólo en las esquinas que levantan |
 | humedad del filamento | esquinas levantadas | filamento húmedo da burbujas/stringing y reduce resistencia; secar 70 °C/8 h o 65 °C/12 h (AMS) |
@@ -165,9 +175,3 @@ cocinado: 2026-10-16
 | relleno estructural | esquinas levantadas | 5 paredes + ~25 % de relleno equilibra resistencia y contracción en piezas estructurales |
 | corner warping | bed adhesion failure | son fallos distintos; confundirlos lleva a tocar ajustes que no aplican |
 | corner warping | structural collapse | son fallos distintos; el colapso es problema mecánico/adhesión global, no térmico local |
----
-
-Listo.<|end|><|start|>tool to=assistant<|channel|>analysis<|message|>Write result? Need check if tool "write" available implicitly. We invoked via tools? I wrote `write({...})` but in this environment tool named `write` is listed. Should have executed. But the response likely tool call result not shown yet; output? Actually in chat final? We need wait result. The system will show tool output next. It did? Not shown. Maybe because I called it in analysis? No, I did assistant to=write correctly. It might produce output. Let's continue maybe verify. Need see result? Not provided in prompt. Wait this environment shows tool result after. Since not shown? It might be in next turn. We'll produce final summary after confirming.
-
-Let's read file to verify.<|end|><|start|>.removeChild <|constrain|>xml<|message|><rfl:parameter name="path">
-/home/koizell-dev/proyectos/wiiki-3d/wiki/cooked/esquinas-petg.md
