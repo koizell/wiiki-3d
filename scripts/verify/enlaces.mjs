@@ -2,13 +2,13 @@
 import assert from 'node:assert/strict';
 import { chromium, request } from 'playwright';
 import { GUIAS, conocimientoVisible } from '../../src/lib/guias.ts';
-import { arrancarPreview } from './probe.mjs';
+import { arrancarPreview, TIMEOUT_COMPROBACION } from './probe.mjs';
 
 const servidor = await arrancarPreview(5292);
 const base = servidor.base;
 const origen = new URL(base).origin;
 const browser = await chromium.launch();
-const http = await request.newContext({ timeout: 30000 });
+const http = await request.newContext({ timeout: TIMEOUT_COMPROBACION });
 const internos = new Map();
 const paginas = new Map();
 let pruebas = 0;
@@ -30,6 +30,8 @@ try {
   for (const javaScriptEnabled of [false, true]) {
     const modo = javaScriptEnabled ? 'con JS' : 'sin JS';
     const contexto = await browser.newContext({ javaScriptEnabled, viewport: { width: 375, height: 812 } });
+    contexto.setDefaultTimeout(TIMEOUT_COMPROBACION);
+    contexto.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
     try {
       // Pruebas aisladas: no cargar publicidad/analítica ni visitar fuentes externas.
       await contexto.route('**/*', (route) => new URL(route.request().url()).origin === origen

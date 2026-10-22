@@ -253,6 +253,20 @@ export async function startPreview(port = 4173) {
  * `detener()` cierra el servidor **sólo si este proceso lo abrió**: si ya había
  * uno vivo —el de otra sesión, o uno levantado a mano— no hace nada.
  */
+/**
+ * El tiempo que una comprobación puede esperar antes de rendirse.
+ *
+ * Playwright espera 30 segundos por defecto, y en un runner de CI una carga de
+ * página puede pasarse de eso sin que nada esté mal: el disco es más lento, la
+ * CPU está compartida y la página pesa lo que pesa.
+ *
+ * Y el modo de fallo de un timeout **no es un fallo de lo que se mide**: es un
+ * error de la infraestructura que se presenta como si fuera del sitio. Con un
+ * minuto, la diferencia entre «el sitio va lento» y «la máquina va lenta» deja
+ * de depender del reloj de la comprobación.
+ */
+export const TIMEOUT_COMPROBACION = 60000;
+
 export async function arrancarPreview(port = 4173) {
   if (process.env.BASE_URL) return { base: process.env.BASE_URL, detener: () => {} };
   const host = `http://127.0.0.1:${port}`;

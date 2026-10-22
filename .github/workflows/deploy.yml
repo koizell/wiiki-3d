@@ -82,7 +82,24 @@ jobs:
 
       # Y la wiki renderizada, que es lo que lee la gente.
       - name: Wiki renderizada
-        run: npm run verify:wiki
+        id: wiki
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run verify:wiki 2>&1 | tee wiki-verificacion.log
+
+      # Si falla, el motivo va en una anotación: «Process completed with exit
+      # code 1» no dice qué comprobación falló, y el log de un job hay que
+      # pedirlo con permisos de administrador.
+      - name: El motivo del fallo de la wiki
+        if: steps.wiki.outcome == 'failure'
+        run: |
+          {
+            echo "::error::La wiki renderizada falla. Comprobaciones que no pasan:"
+            grep -E '^  - ' wiki-verificacion.log | head -20 || echo "  (sin resumen: el script no llegó a imprimirlo)"
+            tail -25 wiki-verificacion.log
+          } >&2
+          exit 1
 
       - name: Subir artefacto
         uses: actions/upload-pages-artifact@v3

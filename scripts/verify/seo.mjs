@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { startPreview } from './probe.mjs';
+import { TIMEOUT_COMPROBACION } from './probe.mjs';
 
 /*
  * Los slugs vienen del registro de la aplicación, no de un directorio de ficheros.
@@ -93,6 +93,8 @@ try {
     assert.equal((html.match(/class="accion"/g) ?? []).length, GUIAS.find((g) => g.slug === 'despegue-a-mitad').reglas.length);
   });
   const sin = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
+  sin.setDefaultTimeout(TIMEOUT_COMPROBACION);
+  sin.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
   await cortarExternos(sin, BASE);
   const titulos = new Set();
   for (const ruta of rutas) {
@@ -318,6 +320,8 @@ try {
   comprobar('404 estático noindex', () => assert.ok(readFileSync(join(dist, '404.html'), 'utf8').includes('noindex, follow')));
 
   const con = await browser.newContext({ viewport: { width: 375, height: 667 } });
+  con.setDefaultTimeout(TIMEOUT_COMPROBACION);
+  con.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
   await cortarExternos(con, BASE);
   const page = await con.newPage();
   const errores = [];

@@ -43,7 +43,7 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { GCODE_FIXTURE } from './fixtures.mjs';
-import { arrancarPreview } from './probe.mjs';
+import { arrancarPreview, TIMEOUT_COMPROBACION } from './probe.mjs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,7 +58,7 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * cuando alguien se acordaba de levantar el servidor antes — y como los resultados
  * se leían al final, era fácil no notar cuál de los dos casos había sido.
  *
- * `verify:seo` y `verify:taller` ya lo hacían bien; este se les ha_copyJoined. Con
+ * `verify:seo` y `verify:taller` ya lo hacían bien; a este se le había olvidado. Con
  * `startPreview()` el script levanta lo que necesita, y si ya hay algo escuchando en
  * ese puerto lo reutiliza en vez de pelearse con él.
  */
@@ -160,6 +160,8 @@ function comprobar(nombre, ok, detalle = '') {
 
 async function abrir(navegador, ancho, alto, ruta, opciones = {}) {
   const ctx = await navegador.newContext({ viewport: { width: ancho, height: alto }, ...opciones });
+  ctx.setDefaultTimeout(TIMEOUT_COMPROBACION);
+  ctx.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
   // Esta suite mide UI local, no anuncios/telemetría remotos. No ejecuta scripts de terceros.
   await ctx.route(/^https?:\/\//, route => new URL(route.request().url()).origin === new URL(BASE).origin
     ? route.continue()
@@ -801,6 +803,8 @@ try {
    * que algo lo está rompiendo letra a letra. El límite es 4 y está medido, no puesto.
    */
   const desbordes = await navegador.newContext({ viewport: { width: 1280, height: 800 } });
+  desbordes.setDefaultTimeout(TIMEOUT_COMPROBACION);
+  desbordes.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
   const pagDesbordes = await desbordes.newPage();
   await pagDesbordes.goto(`${BASE}${rutaConVariables}`, { waitUntil: 'networkidle' });
   await pagDesbordes.waitForTimeout(400);
@@ -1266,6 +1270,8 @@ try {
      * guía sigue estando.
      */
     const sinJs = await navegador.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
+    sinJs.setDefaultTimeout(TIMEOUT_COMPROBACION);
+    sinJs.setDefaultNavigationTimeout(TIMEOUT_COMPROBACION);
     for (const g of GUIAS) {
       const page = await sinJs.newPage();
       await page.goto(`${BASE}/wiki/${g.slug}/`, { waitUntil: 'domcontentloaded' });
