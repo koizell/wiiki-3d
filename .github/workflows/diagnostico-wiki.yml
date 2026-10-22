@@ -32,6 +32,8 @@ on:
 jobs:
   diagnostico:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -140,3 +142,54 @@ jobs:
             seo.log
           retention-days: 14
           if-no-files-found: ignore
+
+      # Y el informe **en el repositorio**, que es lo único que se puede leer sin
+      # permisos de administrador: el artefacto se descarga con autenticación, y
+      # el resumen del job no sale por la API. Una rama es lo que hace falta para
+      # que el diagnóstico se pueda mirar desde fuera.
+      - name: Publicar el informe
+        if: always()
+        run: |
+          set +e
+          {
+            echo '# Diagnóstico de la wiki renderizada'
+            echo ''
+            echo "Generado el $(date -u +%Y-%m-%d %H:%M:%S) UTC, en el runner de GitHub."
+            echo ''
+            echo '## El entorno'
+            echo ''
+            echo '```'
+            echo "node:    $(node --version)"
+            echo "npm:     $(npm --version)"
+            echo "playwright: $(node -e "console.log(require('./node_modules/playwright/package.json').version)")"
+            echo "nproc:   $(nproc)"
+            echo ''
+            uname -a
+            echo ''
+            free -m
+            echo ''
+            ls -1 ~/.cache/ms-playwright 2>/dev/null || echo '(sin caché de navegadores)'
+            echo '```'
+            echo ''
+            echo '## Los intentos'
+            for f in wiki-suelto-*.log wiki-tras-seo-*.log; do
+              [ -f "$f" ] || continue
+              echo ''
+              echo "### \`$f\` — $(wc -l < "$f") líneas"
+              echo ''
+              echo '```'
+              head -20 "$f"
+              echo '…'
+              tail -20 "$f"
+              echo '```'
+            done
+          } > diagnostico-wiki.md
+
+          git config user.name 'diagnostico'
+          git config user.email 'diagnostico@users.noreply.github.com'
+          git fetch origin diagnostico/wiki 2>/dev/null || true
+          git checkout -B diagnostico/wiki
+          git add -f diagnostico-wiki.md
+          git commit -q -m "diagnóstico: la wiki renderizada en el runner" || echo 'sin cambios que publicar'
+          git push --force origin HEAD:refs/heads/diagnostico/wiki
+          exit 0
