@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "verify:layout": "node scripts/verify/barrido.mjs",
+    "verify:animacion": "node scripts/verify/animacion.mjs",
     "verify:teclado": "node scripts/verify/teclado.mjs",
     "verify:overlay": "node scripts/verify/overlay.mjs",
     "verify:shots": "node scripts/verify/shots.mjs",
@@ -19,6 +20,10 @@
     "verify:taller": "node scripts/verify/taller.mjs",
     "verify:historial": "node scripts/verify/historial.mjs",
     "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
+    "verify:gcode": "node --experimental-strip-types scripts/verify/gcode.mjs",
+    "verify:texto": "node --experimental-strip-types scripts/verify/texto.mjs",
+    "verify:recorte": "node scripts/verify/recorte.mjs",
+    "verify:protegidos": "node --experimental-strip-types scripts/verify/protegidos.mjs",
     "verify:esquema": "node scripts/verify/esquema-torre.mjs",
     "verify:enlaces": "node scripts/verify/enlaces.mjs",
     "verify:demo": "node scripts/verify/demo.mjs",
@@ -28,10 +33,13 @@
     "verify:subida": "node scripts/verify/subida-ui.mjs",
     "verify:ui": "node scripts/verify/ui.mjs",
     "verify:revision": "node --experimental-strip-types scripts/verify/revision.mjs",
-    "verify:revision-selftest": "node scripts/verify/revision-selftest.mjs"
+    "verify:revision-selftest": "node scripts/verify/revision-selftest.mjs",
+    "verify:contenido": "npm run verify:guias && npm run verify:texto && npm run verify:wiki",
+    "verify:dist": "npm run verify:enlaces && npm run verify:seo"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
+    "motion": "^14.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "7.18.4",

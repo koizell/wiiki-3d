@@ -237,7 +237,8 @@ try {
           assert.equal(accion.valor, regla.valor ?? null);
           assert.equal(accion.porque, sinNegrita(regla.porque));
           assert.equal(accion.alcance, regla.alcance ? sinNegrita(regla.alcance) : null);
-          assert.equal(accion.fuente, regla.fuente);
+          // La fuente se pinta con el prefijo «FUENTE ·», que es de maquetación.
+          assert.equal(accion.fuente.replace(/^FUENTE · /, ''), regla.fuente);
           const condiciones = Object.entries(regla.cuando ?? {});
           if (!condiciones.length) assert.match(accion.condiciones, /se aplica siempre/i);
           else {

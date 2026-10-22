@@ -26,6 +26,7 @@ import { ContextoGuia, type EstadoGuia } from './guia-contexto';
  */
 export function ProveedorGuia({ children }: { children: ReactNode }) {
   const [elegidas, setElegidas] = useState<Record<string, string>>({});
+  const [diferencial, setDiferencial] = useState<Record<string, 'si' | 'no'>>({});
 
   /*
    * Marcar y desmarcar en la misma función.
@@ -51,9 +52,26 @@ export function ProveedorGuia({ children }: { children: ReactNode }) {
 
   const limpiar = useCallback(() => setElegidas({}), []);
 
+  /*
+   * Contestar una comprobación del diferencial.
+   *
+   * Igual que `alternar`: una pulsación y la respuesta cambia. Pulsar la misma
+   * respuesta la quita, porque una comprobación sin contestar y una contestada con
+   * la misma respuesta no se ven igual y quien la ha contestado puede querer
+   * volver atrás.
+   */
+  const alternarDiferencial = useCallback((comprobacion: string, respuesta: 'si' | 'no') => {
+    setDiferencial((antes) => {
+      const siguiente = { ...antes };
+      if (siguiente[comprobacion] === respuesta) delete siguiente[comprobacion];
+      else siguiente[comprobacion] = respuesta;
+      return siguiente;
+    });
+  }, []);
+
   const valor = useMemo<EstadoGuia>(
-    () => ({ elegidas, setElegidas, alternar, limpiar }),
-    [elegidas, alternar, limpiar]
+    () => ({ elegidas, setElegidas, alternar, limpiar, diferencial, alternarDiferencial }),
+    [elegidas, alternar, limpiar, diferencial, alternarDiferencial]
   );
 
   return <ContextoGuia.Provider value={valor}>{children}</ContextoGuia.Provider>;

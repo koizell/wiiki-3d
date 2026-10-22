@@ -99,6 +99,12 @@ try {
           await page.getByRole('button', { name: 'ABS', exact: true }).click();
           await page.getByRole('button', { name: 'Cura', exact: true }).click();
           assert.equal(await figura.count(), 1, 'cambiar variables no duplica ni pierde el esquema');
+          /*
+           * La salida del diferencial aparece **al contestar «no»**: es la forma de
+           * que el enlace signifique algo. Antes estaba siempre, y por eso esta
+           * comprobación podía limitarse a pulsarlo.
+           */
+          await page.locator('.comprobacion-boton--no').first().click();
           await page.locator('.diferencial-salida a').click();
           await page.waitForURL('**/wiki/flow-rate');
           await figura.waitFor({ state: 'detached' });

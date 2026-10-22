@@ -350,14 +350,36 @@ export async function parseGcode(file: File): Promise<ProjectMetadata> {
   }
 
   const header = await readGcodeText(file);
-  const slicer = detectSlicer(header);
+  return parseGcodeTexto(header, file.name);
+}
+
+/**
+ * Lee los metadatos de un G-code que ya está en memoria.
+ *
+ * ## Por qué existe aparte
+ *
+ * Porque un G-code puede llegar **dentro de otro archivo**: un 3MF de proyecto
+ * lleva el suyo en `Metadata/plate_1.gcode`. Es el mismo G-code, byte a byte, y
+ * tiene los mismos metadatos —pero no es un `File` y no se puede abrir con el
+ * selector de archivos—.
+ *
+ * La función de archivo y la de texto hacen **lo mismo**: la primera lee el
+ * archivo y llama a la segunda. Un solo sitio donde se decide qué metadato sale
+ * de qué clave, y dos caminos para llegar a él.
+ *
+ * @param texto El G-code entero.
+ * @param nombre El nombre que se pone en los metadatos: el del archivo que lo
+ *   contiene, para que quien lo ve sepa de dónde ha salido.
+ */
+export function parseGcodeTexto(texto: string, nombre: string): ProjectMetadata {
+  const slicer = detectSlicer(texto);
 
   switch (slicer) {
     case 'cura':
-      return extractCura(header, file.name);
+      return extractCura(texto, nombre);
     case 'prusa':
     case 'orca':
-      return extractPrusaOrca(header, file.name);
+      return extractPrusaOrca(texto, nombre);
     case 'unknown':
       break;
   }

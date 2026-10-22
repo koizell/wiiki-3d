@@ -31,6 +31,60 @@
  * lo es.
  */
 
+/**
+ * El indicador visual de una acción: **qué hay que hacer con ella**.
+ *
+ * «Sube la temperatura de cama» es texto. La misma frase con una flecha al lado es
+ * una acción, y se lee de un vistazo. El indicador es lo que hace que una lista de
+ * 583 acciones se pueda recorrer de un vistazo en vez de leerse entera.
+ *
+ * Sale del **verbo** de la acción, no de un campo aparte: escribirlo dos veces sería
+ * mantenerlo en dos sitios y dejarlos desincronizados. Cuando la derivación se
+ * equivoca, la regla declara su `indicador` explícito y gana el declarado.
+ *
+ * El vocabulario es cerrado a propósito. Un verbo que no está aquí es un verbo que
+ * nadie sabe traducir a un indicador, y `verify:guias` lo hace fallar.
+ */
+export type IndicadorAccion =
+  | 'subir'
+  | 'bajar'
+  | 'cambiar'
+  | 'activar'
+  | 'desactivar'
+  | 'limpiar'
+  | 'medir'
+  | 'esperar'
+  | 'ajustar'
+  | 'mantener'
+  | 'evitar'
+  | 'instalar';
+
+/**
+ * El tema visual de una tarjeta de conocimiento o de una variable.
+ *
+ * No es un dato: es una **clasificación**. La tarjeta que explica una temperatura y
+ * la que explica una chapa se distinguen por el tema, y quien recorre la guía sabe
+ * de un vistazo si lo que tiene delante es un número que se mide o un ajuste que se
+ * hace.
+ *
+ * Deliberadamente no sustituye a la `cifra`: una tarjeta con cifra la enseña, y el
+ * tema sólo dice de qué va. Un tema nunca es un dato y nunca se pinta como si lo
+ * fuera.
+ */
+export type IndicadorTema =
+  | 'temperatura'
+  | 'cama'
+  | 'material'
+  | 'altura'
+  | 'velocidad'
+  | 'calibracion'
+  | 'slicer'
+  | 'maquina'
+  | 'entorno'
+  | 'ventilacion'
+  | 'geometria'
+  | 'general';
+
 /** Un valor que el lector declara sobre su montaje. */
 export interface Opcion {
   id: string;
@@ -45,6 +99,14 @@ export interface Variable {
   etiqueta: string;
   /** Para qué se pregunta. Una frase: esto es lo que va a condicionar la recomendación. */
   para: string;
+  /**
+   * El tema visual de lo que se declara.
+   *
+   * Es una clasificación, no un dato: dice «esto que preguntas es de temperatura», y
+   * la vista lo pinta como el indicador de la tarjeta de la variable. Sin él, la
+   * variable es una pregunta suelta sin nada que la distinga de las demás.
+   */
+  indicador?: IndicadorTema;
   opciones: Opcion[];
   /**
    * `true` si el diagnóstico no puede afinar sin ella.
@@ -132,6 +194,30 @@ export interface Diferencial {
 export interface Conocimiento {
   id: string;
   titulo: string;
+  /**
+   * El cuerpo, en puntos de una línea.
+   *
+   * Un cuerpo de 336 caracteres de media son tres frases encadenadas, y encadenadas
+   * se leen como un párrafo: un muro. Separadas en puntos, la misma información se
+   * lee de un vistazo y la tarjeta gana la jerarquía que le faltaba.
+   *
+   * **Los puntos no sustituyen al `cuerpo`:** son la misma información troceada, y
+   * quien los escribe no pierde ni una palabra. Es lo que permite migrar las 520
+   * tarjetas sin reescribir el contenido: el troceado es mecánico y el texto se
+   * revisa después, en la vuelta del redactor.
+   *
+   * Si no hay puntos, la vista pinta el `cuerpo` como un bloque. Es el camino de
+   * compatibilidad para las guías que todavía no han pasado por la migración.
+   */
+  puntos?: string[];
+  /**
+   * El tema visual de la tarjeta.
+   *
+   * Una clasificación, no un dato. La tarjeta que explica una temperatura y la que
+   * explica una chapa se distinguen por aquí, y quien recorre la guía sabe de un
+   * vistazo si tiene delante un número que se mide o un ajuste que se hace.
+   */
+  indicador?: IndicadorTema;
   /** Dos o tres frases. Es una tarjeta, no una sección. */
   cuerpo: string;
   /** Si se pone, la tarjeta sólo aparece si se cumple. Vacío = siempre. */
@@ -182,6 +268,15 @@ export interface Regla {
   id: string;
   /** Qué hacer, en imperativo y corto: «Limpia la chapa». */
   accion: string;
+  /**
+   * El indicador visual de la acción.
+   *
+   * Sale del verbo de la `accion` (`src/lib/indicadores.ts`) y casi nunca hace
+   * falta declararlo. Se declara cuando la derivación se equivoca: «Mantén apagado
+   * el ventilador» es `desactivar`, y sólo quien escribió la acción sabe si quería
+   * decir «desactívalo» o «déjalo así».
+   */
+  indicador?: IndicadorAccion;
   /** El número concreto, cuando lo hay. */
   valor?: string;
   /** Por qué, con su alcance. Una o dos frases: nunca «porque sí». */
@@ -216,6 +311,17 @@ export interface Regla {
    * texto y en número, y `verify:guias` avisa si se separan.
    */
   rango?: RangoFuente;
+  /**
+   * La guía que desarrolla esta acción.
+   *
+   * Es el cuarto sitio donde la wiki se interconecta, y existe para las guías que
+   * **enrutan** en vez de diagnosticar: la ruta de calibración no repite los tests,
+   * los lleva a la guía que sí los explica.
+   *
+   * El `guia` tiene que existir, y `verify:guias` lo comprueba igual que el enlace
+   * de una tarjeta.
+   */
+  enlaza?: { guia: string; etiqueta: string };
 }
 
 /** Lo que esta guía no resuelve. */
@@ -240,8 +346,27 @@ export interface Autor {
 export interface Guia {
   slug: string;
   titulo: string;
-  /** Una frase. Sale en la tarjeta del índice y en el `description`. */
+  /**
+   * Una frase. Sale en la tarjeta del índice y en el `description`.
+   *
+   * **Una frase de verdad.** El contrato lo decía desde el principio y no se
+   * cumplía: la longitud media era de 164 caracteres y 19 de las 32 guías tenían
+   * más de una frase. Una tarjeta de índice con tres frases no es un resumen, y
+   * una cabecera de guía con un párrafo de 124 px de alto es un muro de texto.
+   */
   resumen: string;
+  /**
+   * La segunda mitad del resumen, cuando la había.
+   *
+   * Lo que va después de la primera frase **sigue siendo contenido**: no se
+   * borra, se coloca. Sale en la cabecera de la guía, debajo del resumen, y no en
+   * la tarjeta del índice ni en el `description`, que tienen que caber en una
+   * línea.
+   *
+   * Ninguna guía lo tiene hoy, y está aquí para que la próxima que lo necesite no
+   * tenga que romper el contrato de `resumen` para decirlo.
+   */
+  resumenExtra?: string;
   /**
    * El párrafo de entrada de la guía, en prosa. Es lo primero que se lee al
    * abrirla, bajo la cabecera y antes del diferencial.

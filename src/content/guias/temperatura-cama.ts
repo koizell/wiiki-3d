@@ -21,7 +21,7 @@ import { AUTOR } from './autor.ts';
  * ## Lo que este fichero se niega a hacer
  *
  * A dar **una** cifra. Podría: con `material=pla` y `chapa=cool` sale 35–45 °C, y es
- * la respuesta correcta. Pero lo que no puede hacer es dejar de범 decir que las otras
+ * la respuesta correcta. Pero lo que no puede hacer es dejar de decir que las otras
  * cinco existen, porque el error real de la gente no es no tener la cifra: es tener
  * una —la que ha leído en un foro— y creer que es la única. Por eso las tres
  * tarjetas de cifras están siempre visibles y la última es la que avisa de que el
@@ -31,12 +31,14 @@ export const temperaturaCama: Guia = {
   slug: 'temperatura-cama',
   titulo: 'Temperatura de cama',
   resumen:
-    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es la chapa, no el fabricante. Esta guía te dice cuál es la tuya y qué pasa si te pasas.',
+    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es la chapa, no el fabricante.',
+  resumenExtra:
+    'Esta guía te dice cuál es la tuya y qué pasa si te pasas.',
   sintoma: '¿Qué número de cama pongo?',
   dibujo: 'cama',
   entrada: 'No hay un número de cama: hay seis para el PLA y dependen de la chapa más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 2,
 
   /*
@@ -87,6 +89,7 @@ export const temperaturaCama: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material tiene su fila. No es una variación pequeña: entre el TPU y el PC hay más de sesenta grados.',
       necesaria: true,
       /*
@@ -115,6 +118,7 @@ export const temperaturaCama: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'Esto es lo que hace que dos fuentes con lo mismo puesto den números distintos. Sin chapa, la cifra no está completa.',
       necesaria: true,
       opciones: [
@@ -128,6 +132,7 @@ export const temperaturaCama: Guia = {
     {
       id: 'problema',
       etiqueta: 'Qué te está pasando',
+      indicador: 'general',
       para: 'Una cama demasiado fría y una demasiado caliente dan fallos distintos, y cada una tiene su mitad de la tabla.',
       opciones: [
         { id: 'nada', etiqueta: 'Nada raro, sólo el número' },
@@ -140,15 +145,39 @@ export const temperaturaCama: Guia = {
 
   conocimiento: [
     {
+      /*
+       * La tarjeta de las seis cifras, y el sitio donde se cayó una.
+       *
+       * El título y el `resumen` de la guía dicen seis, y el cuerpo decía cinco:
+       * contaba la fila por chapa de Bambu como una sola vez y no contaba ni el
+       * 35–65 por filamento ni el objetivo de 55–65 de la página de warping de
+       * Bambu. El `cifra` traía un 55 que el cuerpo no mencionaba, y se saltaba el
+       * 45. **Seis apariciones son seis, y los seis números son estos.**
+       */
       id: 'seis',
       titulo: 'Las seis cifras del PLA, y por qué todas son ciertas',
+      puntos: [
+        'No es que los fabricantes se confundan: cada una tiene un alcance distinto.',
+        'La tabla por chapa de Bambu da 35–45 °C para la Cool Plate y 45–65 °C para las otras tres.',
+        'Su tabla por filamento da 35–65 °C; y su página de warping un objetivo de 55–65 °C en Textured PEI.',
+        'Prusa da 50–60 °C en su tabla de materiales y un 60 °C suelto en la ficha del PLA.',
+        'Y el slicer repite el 50–60 de Prusa. Son seis apariciones y ninguna está equivocada.',
+      ],
+      indicador: 'slicer',
       cuerpo:
-        'No es que los fabricantes se confundan: cada una tiene un alcance distinto. Bambu publica dos rangos para el PLA porque son los dos extremos de la misma fila de su tabla por chapa. Prusa da un único 50–60 °C que no está condicionado a ninguna chapa. La ficha del PLA da un 60 °C recomendado que es de la cama, y usa ese mismo número más abajo para hablar de la pieza. Y el slicer repite el 50–60 de Prusa. Son cinco apariciones y ninguna está equivocada.',
-      cifra: { valor: '35 · 50 · 55 · 60 · 65 °C', nota: 'cinco cifras para un solo material' },
+        'No es que los fabricantes se confundan: cada una tiene un alcance distinto. La tabla por chapa de Bambu da 35–45 °C para la Cool Plate y 45–65 °C para las otras tres; su tabla por filamento da 35–65 °C; y su página de warping un objetivo de 55–65 °C en Textured PEI. Prusa da 50–60 °C en su tabla de materiales y un 60 °C suelto en la ficha del PLA. Y el slicer repite el 50–60 de Prusa. Son seis apariciones y ninguna está equivocada.',
+      cifra: { valor: '35 · 45 · 50 · 55 · 60 · 65 °C', nota: 'seis cifras para un solo material' },
     },
     {
       id: 'rango',
       titulo: 'Por qué un rango y no una cifra',
+      puntos: [
+        'La explicación está escrita, y es la única de las tres fuentes que la da.',
+        'La mayoría de los materiales tienen un intervalo óptimo razonablemente amplio, de unos ±5 °C.',
+        'Por eso las tablas dan intervalos y no un número.',
+        'Los diez grados de diferencia entre el margen de Bambu y el de Prusa son una diferencia de margen, no de temperatura.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'La explicación está escrita, y es la única de las tres fuentes que la da: la mayoría de los materiales tienen un intervalo óptimo razonablemente amplio, de unos ±5 °C. Por eso las tablas dan intervalos y no un número. Los diez grados de diferencia entre el margen de Bambu y el de Prusa son una diferencia de margen, no de temperatura.',
       cita: {
@@ -160,6 +189,13 @@ export const temperaturaCama: Guia = {
     {
       id: 'frio',
       titulo: 'Si la cama está demasiado fría',
+      puntos: [
+        'El material puede no adhering bien, y eso lleva a warping, a unión débil entre capas o a despegue completo.',
+        'En casos severos la pieza puede soltar del todo.',
+        'Ojo al alcance: la fuente enumera esas tres cosas con "o", no como una escalera, y el desenlace grave lo marca como potencial.',
+        'No como daño confirmado.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'El material puede no adhering bien, y eso lleva a warping, a unión débil entre capas o a despegue completo. En casos severos la pieza puede soltar del todo. Ojo al alcance: la fuente enumera esas tres cosas con «o», no como una escalera, y el desenlace grave lo marca como potencial, no como daño confirmado.',
       cuando: { problema: 'frio' },
@@ -173,6 +209,13 @@ export const temperaturaCama: Guia = {
     {
       id: 'caliente',
       titulo: 'Si la cama está demasiado caliente',
+      puntos: [
+        'Las capas inferiores se recalientan y reblandecen demasiado, y el resultado es una deformación conocida como elephant foot.',
+        'El borde inferior de la pieza se aplana y se sale del contorno.',
+        'Con PETG, ABS, ASA y materiales similares hay un riesgo añadido.',
+        'La adhesión puede quedar demasiado fuerte y se puede dañar la chapa PEI lisa.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Las capas inferiores se recalientan y reblandecen demasiado, y el resultado es una deformación conocida como elephant foot: el borde inferior de la pieza se aplana y se sale del contorno. Con PETG, ABS, ASA y materiales similares hay un riesgo añadido: la adhesión puede quedar demasiado fuerte y se puede dañar la chapa PEI lisa.',
       cuando: { problema: 'caliente' },
@@ -185,6 +228,12 @@ export const temperaturaCama: Guia = {
     {
       id: 'techo',
       titulo: 'Cómo se calcula un techo, y por qué aquí no se aplica',
+      puntos: [
+        'Existe una regla: usar la temperatura de transición vítrea del material y restarle 5–10 °C para estimar un límite superior seguro de cama.',
+        'Es una regla y no un número, y no se puede aplicar al PLA aquí porque el Tg del PLA no lo da ninguna fuente de esta guía.',
+        'Preferimos decir que falta el dato antes que inventar la cifra que saldría de multiplicarlo.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Existe una regla: usar la temperatura de transición vítrea del material y restarle 5–10 °C para estimar un límite superior seguro de cama. Es una regla y no un número, y no se puede aplicar al PLA aquí porque el Tg del PLA no lo da ninguna fuente de esta guía. Preferimos decir que falta el dato antes que inventar la cifra que saldría de multiplicarlo.',
       cuando: { material: ['pla', 'pla-cf'] },
@@ -192,6 +241,15 @@ export const temperaturaCama: Guia = {
     {
       id: '65',
       titulo: 'El 65 °C no es un techo, y el 60 °C no siempre es de la cama',
+      puntos: [
+        'El 65 °C aparece en un hilo de foro como "max 65 °C", y coincide con el extremo alto del intervalo de Bambu para la Textured PEI.',
+        'Coincidir no es lo mismo: uno es un techo que un usuario le pone a otro en una conversación.',
+        'El otro el extremo de un intervalo de fabricante para esa chapa.',
+        'Y el 60 °C de la ficha del PLA aparece dos veces con dos significados.',
+        'Como cama recomendada y como temperatura a la que la pieza se reblandece.',
+        'Leer el segundo como "no pases de 60 de cama" es el error más fácil de cometer con esta fuente.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'El 65 °C aparece en un hilo de foro como «max 65 °C», y coincide con el extremo alto del intervalo de Bambu para la Textured PEI. Coincidir no es lo mismo: uno es un techo que un usuario le pone a otro en una conversación, el otro el extremo de un intervalo de fabricante para esa chapa. Y el 60 °C de la ficha del PLA aparece dos veces con dos significados: como cama recomendada y como temperatura a la que la pieza se reblandece. Leer el segundo como «no pases de 60 de cama» es el error más fácil de cometer con esta fuente.',
       cuando: { material: ['pla', 'pla-cf'] },
@@ -200,12 +258,27 @@ export const temperaturaCama: Guia = {
     {
       id: 'limpieza',
       titulo: 'La cama también es limpieza',
+      puntos: [
+        'La temperatura de cama no basta por sí sola, y la fuente lo enumera: mantener la cama limpia —sin aceite ni huellas—.',
+        'Una temperatura de cámara estable y una cama bien nivelada dan resultados fiables.',
+        'Ninguna de las tres es la cifra.',
+        'Y sobre PETG lisa hay un riesgo inverso al del apartado de cama caliente: la adhesión puede quedar demasiado fuerte.',
+        'Con un separador como remedio.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La temperatura de cama no basta por sí sola, y la fuente lo enumera: mantener la cama limpia —sin aceite ni huellas—, una temperatura de cámara estable y una cama bien nivelada dan resultados fiables. Ninguna de las tres es la cifra. Y sobre PETG lisa hay un riesgo inverso al del apartado de cama caliente: la adhesión puede quedar demasiado fuerte, con un separador como remedio.',
     },
     {
       id: 'primera-capa',
       titulo: 'La primera capa tiene su propia temperatura',
+      puntos: [
+        'Hay una decisión separada para la primera capa y para el resto, y es por eso que los slicers tienen dos variables y no una por chapa.',
+        'Subir la temperatura de la primera capa mejora la adhesión a la superficie, con el riesgo de deformaciones tipo elephant foot.',
+        'Se aplica al material seleccionado, para primera capa y para el resto.',
+        'Y sólo cuando el soporte de varios tipos de cama está activo en los ajustes de la impresora.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Hay una decisión separada para la primera capa y para el resto, y es por eso que los slicers tienen dos variables y no una por chapa. Subir la temperatura de la primera capa mejora la adhesión a la superficie, con el riesgo de deformaciones tipo elephant foot. Se aplica al material seleccionado, para primera capa y para el resto, y sólo cuando el soporte de varios tipos de cama está activo en los ajustes de la impresora.',
       enlaza: { guia: 'warping-pla', etiqueta: 'Ver el warping' },
@@ -232,7 +305,7 @@ export const temperaturaCama: Guia = {
       valor: '45–65 °C',
       rango: { campo: 'bedTemp', min: 45, max: 65, unidad: '°C' },
       porque:
-        'Las tres chapas comparten el mismo rango para el PLA, y es el otro extremo de la misma fila. Los 50–60 °C de Prusa y del slicer están dentro de él: no contradicen, son el mismo rango con distinta anchura.',
+        'Las tres chapas comparten el mismo rango para el PLA y es el otro extremo de la misma fila. Los 50–60 °C de Prusa y del slicer están dentro: no contradicen, son el mismo rango con distinta anchura.',
       fuente: 'Bambu Lab',
     },
     {
@@ -264,7 +337,7 @@ export const temperaturaCama: Guia = {
       valor: '80–120 °C',
       rango: { campo: 'bedTemp', min: 80, max: 120, unidad: '°C' },
       porque:
-        'PC y PET-CF son las filas más altas de las dos tablas: Bambu da 100–120 °C para el PC y 80–100 para el PET-CF, y Prusa 100–115 para el PC. Es el rango más ancho del lote y el que menos margen deja para equivocarse.',
+        'PC y PET-CF son las filas más altas de las dos tablas: Bambu da 100–120 °C para el PC y 80–100 para el PET-CF, Prusa 100–115 para el PC. Es el rango más ancho del lote y el que deja menos margen.',
       fuente: 'Bambu Lab, Prusa Research',
     },
     {
@@ -302,7 +375,7 @@ export const temperaturaCama: Guia = {
       accion: 'Baja la cama y usa un separador si no puedes despegar la pieza',
       cuando: { problema: 'caliente' },
       porque:
-        'La adhesión demasiado fuerte sobre PEI lisa es un riesgo documentado con PETG, ABS y ASA, y la misma frase que lo advierte propone el separador como remedio. Baja la temperatura antes de forzar la pieza.',
+        'La adhesión demasiado fuerte sobre PEI lisa es un riesgo documentado con PETG, ABS y ASA, y la frase que lo advierte propone el separador como remedio. Baja la temperatura antes de forzar la pieza.',
       fuente: 'Prusa Research',
     },
   ],
@@ -352,6 +425,11 @@ export const temperaturaCama: Guia = {
       url: 'https://help.prusa3d.com/article/first-layer-issues_1804',
       quien: 'Prusa Research',
       que: 'Primera capa: incremento de +5–10 °C y adhesión excesiva en PEI lisa.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/filament-acc/filament/print-quality/warping-falling-off-collapsing',
+      quien: 'Bambu Lab',
+      que: 'Página de warping: objetivo de cama de 55–65 °C para el PLA en Textured PEI, y 35 °C en Cool Plate.',
     },
     {
       url: 'https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/',

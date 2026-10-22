@@ -41,6 +41,7 @@ export const enclosureYWarping: Guia = {
     {
       id: 'material',
       etiqueta: 'Filamento',
+      indicador: 'material',
       para: 'Decide la temperatura de cámara objetivo y el riesgo principal: PLA y PETG temen el calor, ABS y PC temen el frío.',
       necesaria: true,
       campos: ['material'],
@@ -57,6 +58,7 @@ export const enclosureYWarping: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'Decide si la cámara se calienta lo suficiente como para ablandar el filamento: Cool Plate no, Textured PEI sí.',
       opciones: [
         { id: 'cool-plate', etiqueta: 'Cool Plate', detalle: 'Cama ~35 °C, cámara no sube lo suficiente' },
@@ -68,6 +70,7 @@ export const enclosureYWarping: Guia = {
     {
       id: 'ambiente',
       etiqueta: 'Temperatura ambiente',
+      indicador: 'entorno',
       para: 'Decide el lado del problema: ambiente frío empuja a cerrar, ambiente alto empuja a abrir.',
       opciones: [
         { id: 'frio', etiqueta: 'Frío (<20 °C)', detalle: 'Cerrar ayuda a prevenir warping' },
@@ -78,6 +81,7 @@ export const enclosureYWarping: Guia = {
     {
       id: 'cama',
       etiqueta: 'Temperatura de cama',
+      indicador: 'cama',
       para: 'Cuando la cama supera la temperatura de reblandecimiento del filamento, hay que abrir la puerta.',
       campos: ['bedTemp'],
       opciones: [
@@ -91,6 +95,11 @@ export const enclosureYWarping: Guia = {
     {
       id: 'tabla-camara',
       titulo: 'Temperatura de cámara por filamento (Bambu Lab)',
+      puntos: [
+        'Bambu Lab recomienda 0 °C (desactivar calefacción activa) para PLA, PETG, TPU y PVA.',
+        'Para ABS y ASA recomienda 40–50 °C. Para PC, PA-CF, PAHT-CF, PET-CF, PPA-CF, PPS y PPS-CF recomienda 50–60 °C.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu Lab recomienda 0 °C (desactivar calefacción activa) para PLA, PETG, TPU y PVA. Para ABS y ASA recomienda 40–50 °C. Para PC, PA-CF, PAHT-CF, PET-CF, PPA-CF, PPS y PPS-CF recomienda 50–60 °C.',
       cifra: { valor: '0 °C', nota: 'PLA, PETG, TPU, PVA — desactivar calefacción activa' },
       cita: { texto: 'PLA: 0 °C (desactivar calefacción de cámara). ABS: 40–50 °C. PC: 50–60 °C.', fuente: 'Bambu Lab, chamber temperature setting' },
@@ -98,6 +107,12 @@ export const enclosureYWarping: Guia = {
     {
       id: 'reblandecimiento',
       titulo: 'Temperatura de reblandecimiento',
+      puntos: [
+        'La mayoría de los PLA se ablandan a unos 45 °C, y el PETG a unos 70 °C.',
+        'Cuando la cama alcanza o supera esa temperatura.',
+        'El calor de la cámara puede ablandar el filamento antes de que entre en el bloque caliente.',
+      ],
+      indicador: 'cama',
       cuerpo: 'La mayoría de los PLA se ablandan a unos 45 °C, y el PETG a unos 70 °C. Cuando la cama alcanza o supera esa temperatura, el calor de la cámara puede ablandar el filamento antes de que entre en el bloque caliente.',
       cifra: { valor: '45 °C', nota: 'PLA — temperatura de reblandecimiento aproximada' },
       cita: { texto: 'La temperatura de reblandecimiento de la mayoría de los PLA es de aproximadamente 45 °C, y la del PETG es de aproximadamente 70 °C.', fuente: 'Bambu Lab, chamber temperature setting' },
@@ -105,12 +120,24 @@ export const enclosureYWarping: Guia = {
     {
       id: 'heat-creep-mecanismo',
       titulo: 'Qué es el heat creep',
+      puntos: [
+        'El calor del bloque caliente viaja hacia arriba por el tubo de calor (heatbreak).',
+        'Y calienta el filamento por encima de su temperatura de ablandamiento antes de que entre en el bloque caliente.',
+        'El filamento se ablanda y se expande, provocando obstrucciones y sub-extrusión.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'El calor del bloque caliente viaja hacia arriba por el tubo de calor (heatbreak) y calienta el filamento por encima de su temperatura de ablandamiento antes de que entre en el bloque caliente. El filamento se ablanda y se expande, provocando obstrucciones y sub-extrusión.',
       cita: { texto: 'El calor del bloque caliente viaja hacia arriba por el tubo de calor (heatbreak) y calienta el filamento por encima de su temperatura de ablandamiento antes de que entre en el bloque caliente.', fuente: 'Bambu Lab, heat creep' },
     },
     {
       id: 'activa-vs-pasiva',
       titulo: 'Cámara activa frente a pasiva',
+      puntos: [
+        'El "0 °C" de Bambu significa "no calientes la cámara activamente", no "la cámara debe estar a 0 °C".',
+        'El "35–39 °C" del foro es la temperatura que alcanza la cama sin calefacción activa.',
+        'No son lo mismo: una es la consigne de calefacción, la otra es la temperatura real que se alcanza.',
+      ],
+      indicador: 'cama',
       cuerpo: 'El «0 °C» de Bambu significa «no calientes la cámara activamente», no «la cámara debe estar a 0 °C». El «35–39 °C» del foro es la temperatura que alcanza la cama sin calefacción activa. No son lo mismo: una es la consigne de calefacción, la otra es la temperatura real que se alcanza.',
       cuando: { material: ['pla', 'petg', 'tpu'] },
       cita: { texto: '0 °C es la recomendación para la calefacción activa de cámara. 35–39 °C es la temperatura de cámara real que se alcanza con la cama caliente y la puerta cerrada.', fuente: 'Bambu Lab + foro de Bambu' },
@@ -118,12 +145,23 @@ export const enclosureYWarping: Guia = {
     {
       id: 'matiz-cuatro-partes',
       titulo: 'El matiz de cerrar o abrir',
+      puntos: [
+        'La misma puerta se cierra para prevenir corrientes de aire y se abre para prevenir calor excesivo.',
+        'Cuatro factores deciden: la chapa (Cool Plate se puede cerrar, Textured PEI hay que abrir), el ambiente (frío cierra.',
+        'Alto abre), el hotend (V6 de Prusa es más propenso al heat creep) y la temperatura de cama (si supera la de reblandecimiento, abre).',
+      ],
+      indicador: 'cama',
       cuerpo: 'La misma puerta se cierra para prevenir corrientes de aire y se abre para prevenir calor excesivo. Cuatro factores deciden: la chapa (Cool Plate se puede cerrar, Textured PEI hay que abrir), el ambiente (frío cierra, alto abre), el hotend (V6 de Prusa es más propenso al heat creep) y la temperatura de cama (si supera la de reblandecimiento, abre).',
       cita: { texto: 'Con Cool Plate (~35 °C de cama), la cámara no se calienta lo suficiente como para causar heat creep.', fuente: 'Bambu Lab, heat creep' },
     },
     {
       id: 'x1e',
       titulo: 'X1E: enclosure calentado',
+      puntos: [
+        'La X1E ofrece control de calefacción de cámara con un máximo de 60 °C.',
+        'Temperaturas de cámara más altas pueden suprimir el warping de filamentos de alta temperatura y proporcionar mayor resistencia entre capas.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'La X1E ofrece control de calefacción de cámara con un máximo de 60 °C. Temperaturas de cámara más altas pueden suprimir el warping de filamentos de alta temperatura y proporcionar mayor resistencia entre capas.',
       cuando: { material: ['pc', 'pa-cf', 'pet-cf'] },
       cifra: { valor: '60 °C', nota: 'X1E — temperatura de cámara máxima' },
@@ -132,6 +170,12 @@ export const enclosureYWarping: Guia = {
     {
       id: 'foro-pla',
       titulo: 'Foro: PLA en X1C',
+      puntos: [
+        'Un usuario del foro de Bambu recomienda 35–39 °C de cámara con puerta y tapa cerradas para PLA.',
+        'Es una sola fuente secundaria, sin corroboración de fuente oficial.',
+        'La fuente oficial recomienda 0 °C (desactivar calefacción activa).',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Un usuario del foro de Bambu recomienda 35–39 °C de cámara con puerta y tapa cerradas para PLA. Es una sola fuente secundaria, sin corroboración de fuente oficial. La fuente oficial recomienda 0 °C (desactivar calefacción activa).',
       cuando: { material: ['pla'] },
       cifra: { valor: '35–39 °C', nota: 'Foro de Bambu — una sola fuente, sin corroborar' },
@@ -140,6 +184,12 @@ export const enclosureYWarping: Guia = {
     {
       id: 'foro-abs',
       titulo: 'Foro: ABS/ASA',
+      puntos: [
+        'Un usuario del foro de Prusa recomienda 40–50 °C para ABS/ASA para prevenir warping.',
+        'Otra fuente del mismo foro recomienda "cuanto más alto mejor".',
+        'Son dos usuarios del mismo foro, sin corroboración de fuente oficial.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Un usuario del foro de Prusa recomienda 40–50 °C para ABS/ASA para prevenir warping. Otra fuente del mismo foro recomienda «cuanto más alto mejor». Son dos usuarios del mismo foro, sin corroboración de fuente oficial.',
       cuando: { material: ['abs'] },
       cifra: { valor: '40–50 °C', nota: 'Foro de Prusa — una sola fuente, sin corroborar' },

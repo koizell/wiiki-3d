@@ -276,9 +276,10 @@ try {
     const estructura = await page.evaluate(() => ({
       h1: document.querySelectorAll('.canvas-area h1').length,
       etapas: document.querySelectorAll('.etapa').length,
-      pares: document.querySelectorAll('.diferencial-cara').length,
-      comprobaciones: document.querySelectorAll('.diferencial-fila').length,
+      pares: document.querySelectorAll('.comprobacion-cara').length,
+      comprobaciones: document.querySelectorAll('.comprobacion').length,
       salida: document.querySelector('.boton--ruta')?.getAttribute('href') ?? null,
+      botones: document.querySelectorAll('.comprobacion-boton').length,
       fuentes: document.querySelectorAll('.guia-fuentes-lista a').length,
       fuentesExternas: [...document.querySelectorAll('.guia-fuentes-lista a')].every(
         (a) => a.hostname && a.hostname !== new URL(location.href).hostname
@@ -309,11 +310,64 @@ try {
         estructura.pares === guia.diferencial.comprobaciones.length * 2,
       `${estructura.comprobaciones} comprobaciones, ${estructura.pares} caras`
     );
+    /*
+     * La salida del diferencial aparece **cuando hace falta**: si alguna
+     * comprobación se contesta con «no», el problema no es este y tiene que salir
+     * el camino al que sí lo es.
+     *
+     * Antes la salida estaba siempre, que es lo mismo que no estar nunca: un enlace
+     * que aparece en todas las guías y a la misma altura no dice nada. Ahora se
+     * comprueba **contestando**, que es la única forma de que la comprobación
+     * pueda fallar de verdad.
+     */
+    comprobar(
+      'sin contestar, el diferencial no enseña ninguna salida',
+      estructura.salida === null,
+      `${estructura.salida}`
+    );
+    await page.locator('.comprobacion-boton--no').first().click();
+    await page.waitForTimeout(300);
+    const salidaTrasNo = await page.evaluate(
+      () => document.querySelector('.boton--ruta')?.getAttribute('href') ?? null
+    );
     comprobar(
       'el diferencial tiene salida y lleva a la guía que dice',
-      estructura.salida === `/wiki/${guia.diferencial.siNo.guia}`,
-      `${estructura.salida} · esperado /wiki/${guia.diferencial.siNo.guia}`
+      salidaTrasNo === `/wiki/${guia.diferencial.siNo.guia}`,
+      `${salidaTrasNo} · esperado /wiki/${guia.diferencial.siNo.guia}`
     );
+    comprobar(
+      'cada comprobación se puede contestar con los dos botones',
+      estructura.botones === guia.diferencial.comprobaciones.length * 2,
+      `${estructura.botones} botones`
+    );
+    /*
+     * El recorrido marca la etapa en la que se esta.
+     *
+     * Con cuatro etapas apiladas, quien baja a la mitad de la guia no sabe si va
+     * por la segunda o por la tercera. El recorrido lo dice.
+     *
+     * Y aqui esta el detalle que hizo que la primera version no funcionara: en
+     * este sitio **la guia no se desplaza en la ventana**, se desplaza en
+     * `.canvas-area`, que es una columna con altura fija. Los eventos `scroll` no
+     * suben, asi que un oyente en la ventana no se entera de nada.
+     */
+    for (const [indice, ancla] of ['diagnostico', 'montaje', 'conocimiento', 'recomendacion'].entries()) {
+      await page.evaluate((id) => {
+        const elemento = document.getElementById(id);
+        const columna = document.querySelector('.canvas-area');
+        columna.scrollTo({ top: elemento.getBoundingClientRect().top + columna.scrollTop - 80 });
+      }, ancla);
+      await page.waitForTimeout(300);
+      const marcada = await page.evaluate(
+        () => document.querySelector('.guia-paso--activo')?.getAttribute('href') ?? null
+      );
+      comprobar(
+        marcada === `#${ancla}`,
+        `el recorrido marca la etapa ${indice + 1} al llegar a ella: ${marcada}`
+      );
+    }
+    await page.evaluate(() => document.querySelector('.canvas-area').scrollTo({ top: 0 }));
+    await page.waitForTimeout(200);
     comprobar(
       'las fuentes salen al pie y son las declaradas',
       estructura.fuentes === guia.fuentes.length,
@@ -565,6 +619,13 @@ try {
     const antes = await page.locator('.chip--activo').count();
     comprobar('hay respuestas marcadas antes de saltar de guía', antes > 0, `${antes}`);
 
+    /*
+     * La salida del diferencial **aparece al contestar «no»**, así que la
+     * interconexión se comprueba contestando: sin la respuesta, el enlace no está,
+     * y el enlace es justo lo que hay que poder usar.
+     */
+    await page.locator('.comprobacion-boton--no').first().click();
+    await page.waitForTimeout(300);
     await page.locator('.boton--ruta').click();
     await page.waitForTimeout(700);
 

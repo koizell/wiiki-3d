@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState } from "react";
+import VisorTrayectoria from "../components/VisorTrayectoria";
+import { useTrayectoria } from "../state/useTrayectoria";
 import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
@@ -41,13 +43,35 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
-  const { file, fileType, metadata } = useAnalysis();
+  const { file, fileType, metadata, trayectoria } = useAnalysis();
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
   const [errorSubida, setErrorSubida] = useState('');
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === "gcode";
+
+  /*
+   * La trayectoria del G-code.
+   *
+   * El aviso de antes decía, textualmente, «El G-code se analiza; su trayectoria no
+   * se muestra en 3D». Esa frase era cierta y **ya no lo es**: el lector del
+   * cuerpo del archivo sabe dónde va la cabeza en cada momento y qué está
+   * haciendo, y eso se puede dibujar.
+   *
+   * El análisis del cuerpo es asíncrono —un G-code real pesa decenas de megabytes—
+   * así que mientras se lee se dice que se está leyendo, y si falla se dice por
+   * qué, sin dejar un hueco en la pantalla.
+   */
+  /*
+   * Dos trayectorias y no una, porque son dos cosas:
+   *
+   * - `trayectoriaSuelta` es la del **G-code suelto**: se lee aquí, en la ruta,
+   *   y se dibuja en su propio visor.
+   * - `trayectoria` es la del **3MF de proyecto**: viene del contexto —porque
+   *   analizaró el mismo G-code que va dentro— y se dibuja **encima de la malla**.
+   */
+  const trayectoriaSuelta = useTrayectoria(showGcodeNotice ? file : null);
   const showUnsupported = fileType === "obj" || fileType === "unknown";
 
   /*
@@ -218,15 +242,46 @@ function UploadRoute() {
             </>
           }
         >
-          {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} onChooseFile={openFilePicker} />}
+          {viewerFormat && (
+            <LazyViewer3D
+              file={file}
+              fileType={viewerFormat}
+              trayectoria={trayectoria}
+              onChooseFile={openFilePicker}
+            />
+          )}
         </Suspense>
 
         {showGcodeNotice && (
           <>
-            <SeccionAnalisis />
-            <p className="archivo-nota">El G-code se analiza; su trayectoria no se muestra en 3D.</p>
+            {trayectoriaSuelta.fase === "vacia" && (
+              <p className="archivo-nota">El G-code se analiza; su trayectoria se dibuja en 3D.</p>
+            )}
+            {trayectoriaSuelta.fase === "leyendo" && (
+              <div className="visor-trayectoria-cargando" role="status">
+                Leyendo la trayectoria del G-code…
+              </div>
+            )}
+            {trayectoriaSuelta.fase === "error" && (
+              <p className="archivo-nota" role="alert">
+                No se ha podido dibujar la trayectoria: {trayectoriaSuelta.mensaje}
+              </p>
+            )}
+            {trayectoriaSuelta.fase === "lista" && (
+              <VisorTrayectoria trayectoria={trayectoriaSuelta.trayectoria} />
+            )}
           </>
         )}
+
+        {/*
+          El análisis, cuando hay algo que analizar.
+
+          Antes sólo se pintaba para el G-code, porque era el único formato que
+          traía metadatos. Ahora un **3MF de proyecto** también los trae —los
+          lleva dentro—, y su análisis se enseña igual que el de un G-code suelto.
+          La condición es que haya metadatos, no la extensión del archivo.
+        */}
+        {(showGcodeNotice || metadata) && <SeccionAnalisis />}
 
         {showUnsupported && (
           <div className="canvas-placeholder">

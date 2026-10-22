@@ -42,6 +42,7 @@ export const alturaCapa: Guia = {
     {
       id: 'altura',
       etiqueta: 'Altura de capa',
+      indicador: 'altura',
       para: 'Qué altura de capa usas o quieres usar: condiciona el detalle, el tiempo y el límite de boquilla.',
       necesaria: true,
       campos: ['layerHeight'],
@@ -54,6 +55,7 @@ export const alturaCapa: Guia = {
     {
       id: 'boquilla',
       etiqueta: 'Diámetro de boquilla',
+      indicador: 'temperatura',
       para: 'El diámetro de la boquilla pone el techo y el suelo de la altura de capa.',
       opciones: [
         { id: '04', etiqueta: '0,4 mm', detalle: 'Boquilla estándar' },
@@ -66,6 +68,11 @@ export const alturaCapa: Guia = {
     {
       id: 'resolucion-vertical',
       titulo: 'La altura de capa es la resolución vertical',
+      puntos: [
+        'La altura de capa define cuánto detalle tiene la pieza en el eje Z.',
+        'A menor altura, mayor finura, pero el plano XY no se ve afectado.',
+      ],
+      indicador: 'altura',
       cuerpo: 'La altura de capa define cuánto detalle tiene la pieza en el eje Z. A menor altura, mayor finura, pero el plano XY no se ve afectado.',
       cita: {
         texto: 'we also regard the layer height as the vertical resolution of the model, that is, the lower the layer height, the higher the fineness of the model.',
@@ -75,6 +82,11 @@ export const alturaCapa: Guia = {
     {
       id: 'altura-tiempo',
       titulo: 'Altura y tiempo de impresión',
+      puntos: [
+        'Elegir capas más altas acorta significativamente el tiempo a costa de capas más visibles.',
+        'Para el mismo modelo, 0,08 mm tarda 1h 19m y 0,28 mm tarda 28m 27s.',
+      ],
+      indicador: 'general',
       cuerpo: 'Elegir capas más altas acorta significativamente el tiempo a costa de capas más visibles. Para el mismo modelo, 0,08 mm tarda 1h 19m y 0,28 mm tarda 28m 27s.',
       cifra: {
         valor: '1h 19m → 28m 27s',
@@ -88,6 +100,11 @@ export const alturaCapa: Guia = {
     {
       id: 'limite-superior',
       titulo: 'Límite superior: el techo de la boquilla',
+      puntos: [
+        'La altura de capa debe estar dentro de un rango razonable según el diámetro de la boquilla.',
+        'Bambu recomienda el 20 %–70 % del diámetro; Prusa advierte que no debe superar el 80 %.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'La altura de capa debe estar dentro de un rango razonable según el diámetro de la boquilla. Bambu recomienda el 20 %–70 % del diámetro; Prusa advierte que no debe superar el 80 %.',
       cita: {
         texto: 'In general, the reasonable range of layer height should be 20% ~70% of the nozzle diameter.',
@@ -97,6 +114,11 @@ export const alturaCapa: Guia = {
     {
       id: 'limite-inferior',
       titulo: 'Límite inferior: el suelo de la boquilla',
+      puntos: [
+        'Bambu permite bajar hasta el 20 % del diámetro (0,08 mm con boquilla de 0,4 mm).',
+        'Prusa recomienda no bajar de 0,10 mm porque la mejora es menor y el tiempo mucho mayor.',
+      ],
+      indicador: 'temperatura',
       cuerpo: 'Bambu permite bajar hasta el 20 % del diámetro (0,08 mm con boquilla de 0,4 mm). Prusa recomienda no bajar de 0,10 mm porque la mejora es menor y el tiempo mucho mayor.',
       cita: {
         texto: 'Generally, we do not suggest going lower than 0.10 mm as the improvement in print quality with 0.07 or 0.05 mm layers is relatively minor with significantly longer print times.',
@@ -106,6 +128,11 @@ export const alturaCapa: Guia = {
     {
       id: 'altura-variable',
       titulo: 'Altura de capa variable (adaptativa)',
+      puntos: [
+        'La altura variable permite definir regiones del modelo con diferente altura y suavizar la transición.',
+        'Puede acortar significativamente el tiempo con un sacrificio mínimo de calidad.',
+      ],
+      indicador: 'altura',
       cuerpo: 'La altura variable permite definir regiones del modelo con diferente altura y suavizar la transición. Puede acortar significativamente el tiempo con un sacrificio mínimo de calidad.',
       cita: {
         texto: 'This can result in significantly shorter print times with minimal sacrifice to the print quality.',
@@ -115,6 +142,11 @@ export const alturaCapa: Guia = {
     {
       id: 'sin-layerheight',
       titulo: 'Por qué el slicer puede no haber escrito la altura',
+      puntos: [
+        'El campo layerHeight es opcional en el análisis.',
+        'Si el slicer no lo escribió en el G-code, la guía no puede precontestar la variable y tendrás que declararla a mano.',
+      ],
+      indicador: 'slicer',
       cuerpo: 'El campo layerHeight es opcional en el análisis. Si el slicer no lo escribió en el G-code, la guía no puede precontestar la variable y tendrás que declararla a mano.',
     },
   ],

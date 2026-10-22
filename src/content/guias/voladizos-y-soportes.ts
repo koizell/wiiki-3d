@@ -33,12 +33,14 @@ export const voladizosSoportes: Guia = {
   slug: 'voladizos-y-soportes',
   titulo: 'Voladizos y soportes',
   resumen:
-    'Un voladizo que se descuelga, unos soportes que se rompen y una cara apoyada rugosa se ven parecidos pero no se arreglan igual. Aprende a distinguirlos y a decidir si necesitas soportes o con refrigeración y orientación es suficiente.',
+    'Un voladizo que se descuelga, unos soportes que se rompen y una cara apoyada rugosa se ven parecidos pero no se arreglan igual.',
+  resumenExtra:
+    'Aprende a distinguirlos y a decidir si necesitas soportes o si con refrigeración y orientación basta.',
   sintoma: 'Un voladizo cuelga, los soportes fallan o la cara apoyada sale rugosa',
   dibujo: 'voladizo',
   entrada: 'Un voladizo que cuelga, unos soportes que no salen o una cara apoyada rugosa son tres problemas que se confunden. Aquí se distinguen por dónde está el fallo y qué ángulo tiene el saliente.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 4,
 
   /*
@@ -79,7 +81,8 @@ export const voladizosSoportes: Guia = {
     {
       id: 'voladizo',
       etiqueta: '¿Qué ángulo tiene el voladizo más crítico?',
-      para: 'El ángulo decide si necesitas soportes o con refrigeración y orientación es suficiente. Es la variable más importante de la guía.',
+      indicador: 'geometria',
+      para: 'El ángulo decide si necesitas soportes o si con refrigeración y orientación basta. Es la variable más importante de la guía.',
       necesaria: true,
       campos: ['overhangAngle'],
       opciones: [
@@ -92,6 +95,7 @@ export const voladizosSoportes: Guia = {
     {
       id: 'soporte',
       etiqueta: '¿Usas soportes?',
+      indicador: 'geometria',
       para: 'Si usas soportes, la guía te ayuda a ajustarlos. Si no, te ayuda a decidir si los necesitas.',
       necesaria: true,
       campos: ['hasOverhangs'],
@@ -104,6 +108,7 @@ export const voladizosSoportes: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'El material decide la temperatura de boquilla y la velocidad de refrigeración óptimas.',
       opciones: [
         { id: 'pla', etiqueta: 'PLA', detalle: 'El más fácil de enfriar' },
@@ -116,6 +121,7 @@ export const voladizosSoportes: Guia = {
     {
       id: 'orientacion',
       etiqueta: '¿Has probado a rotar la pieza?',
+      indicador: 'geometria',
       para: 'La orientación puede eliminar voladizos o reducir la necesidad de soportes.',
       opciones: [
         { id: 'si', etiqueta: 'Sí, y sigue igual', detalle: 'La orientación no resuelve el problema' },
@@ -128,6 +134,14 @@ export const voladizosSoportes: Guia = {
     {
       id: 'angulo-referencia',
       titulo: 'El ángulo de referencia: 45° y la distinción entre ángulo y umbral',
+      puntos: [
+        'Bambu Lab recomienda añadir soportes cuando el ángulo de voladizo es **menor de 45°** y no cuando es mayor.',
+        'Pero el ángulo de voladizo y el overhang threshold **no son el mismo concepto**: el ángulo es la inclinación de la superficie.',
+        'Y el umbral es la proporción de ancho de extrusión sin soporte dentro de una línea.',
+        'En PrusaSlicer, el overhang threshold es el límite angular —la pendiente más horizontal que se puede imprimir sin soporte—.',
+        'La misma palabra significa cosas distintas en cada sitio.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Bambu Lab recomienda añadir soportes cuando el ángulo de voladizo es **menor de 45°** y no cuando es mayor. Pero el ángulo de voladizo y el overhang threshold **no son el mismo concepto**: el ángulo es la inclinación de la superficie, y el umbral es la proporción de ancho de extrusión sin soporte dentro de una línea. En PrusaSlicer, el overhang threshold es el límite angular —la pendiente más horizontal que se puede imprimir sin soporte—. La misma palabra significa cosas distintas en cada sitio.',
       cifra: { valor: '45°', nota: 'ángulo de referencia para añadir soportes' },
@@ -139,6 +153,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'refrigeracion',
       titulo: 'Refrigeración: la clave para voladizos que ya pasan el umbral',
+      puntos: [
+        'Para voladizos con ángulo **mayor de 45°** —que ya pasan el umbral— se puede bajar ligeramente la temperatura de boquilla para reducir la.',
+        'Necesidad de refrigeración. Para PLA, bajar a **~205 °C** y aumentar la velocidad del ventilador de refrigeración de voladizo al **100%**.',
+        'Para otros filamentos oficiales, bajar **5–10 °C** dentro del rango recomendado.',
+        'Para filamentos de terceros, imprimir una **torre de temperatura** para determinar la temperatura óptima.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Para voladizos con ángulo **mayor de 45°** —que ya pasan el umbral— se puede bajar ligeramente la temperatura de boquilla para reducir la necesidad de refrigeración. Para PLA, bajar a **~205 °C** y aumentar la velocidad del ventilador de refrigeración de voladizo al **100%**. Para otros filamentos oficiales, bajar **5–10 °C** dentro del rango recomendado. Para filamentos de terceros, imprimir una **torre de temperatura** para determinar la temperatura óptima.',
       cifra: { valor: '205 °C', nota: 'temperatura de boquilla para PLA en voladizos' },
@@ -150,6 +171,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'velocidad-voladizo',
       titulo: 'Velocidad de voladizo: más lento para más calidad',
+      puntos: [
+        'Reducir la velocidad de impresión específicamente en regiones de voladizo.',
+        'Las velocidades de voladizo suelen estar entre **10–60 mm/s**.',
+        'Cuanto mayor es el umbral de voladizo, mayor es el área sin soporte y típicamente se requieren velocidades más lentas.',
+        'Aumentar el porcentaje del ventilador de refrigeración de pieza y del ventilador de refrigeración auxiliar según sea necesario.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Reducir la velocidad de impresión específicamente en regiones de voladizo. Las velocidades de voladizo suelen estar entre **10–60 mm/s**; cuanto mayor es el umbral de voladizo, mayor es el área sin soporte y típicamente se requieren velocidades más lentas. Aumentar el porcentaje del ventilador de refrigeración de pieza y del ventilador de refrigeración auxiliar según sea necesario.',
       cifra: { valor: '10–60 mm/s', nota: 'rango de velocidad de voladizo' },
@@ -161,6 +189,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'cara-apoyada',
       titulo: 'La cara sobre soportes: por qué sale rugosa',
+      puntos: [
+        'La superficie sobre los soportes sale **peor que el resto de la impresión** debido al **gap** —separación—.',
+        'Que se deja entre el soporte y la superficie del objeto.',
+        'Reducir el gap puede mejorar la calidad de la superficie, pero los soportes pueden ser **más difíciles de quitar**.',
+        'Ajustar **Contact Z** y **Decrease pattern spacing** en PrusaSlicer para mejorar la calidad de la superficie.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'La superficie sobre los soportes sale **peor que el resto de la impresión** debido al **gap** —separación— que se deja entre el soporte y la superficie del objeto. Reducir el gap puede mejorar la calidad de la superficie, pero los soportes pueden ser **más difíciles de quitar**. Ajustar **Contact Z** y **Decrease pattern spacing** en PrusaSlicer para mejorar la calidad de la superficie.',
       cita: {
@@ -171,6 +206,12 @@ export const voladizosSoportes: Guia = {
     {
       id: 'interface-layers',
       titulo: 'Interface layers: 3–4 para una superficie más sólida',
+      puntos: [
+        'Aumentar el número de **interface layers** a **3–4** proporciona una superficie superior del soporte más sólida.',
+        'Lo que también puede hacer que el punto de contacto del soporte sea **más fácil de quitar**.',
+        'Es el ajuste que más influye en la calidad de la cara apoyada.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'Aumentar el número de **interface layers** a **3–4** proporciona una superficie superior del soporte más sólida, lo que también puede hacer que el punto de contacto del soporte sea **más fácil de quitar**. Es el ajuste que más influye en la calidad de la cara apoyada.',
       cifra: { valor: '3–4', nota: 'interface layers para calidad de cara apoyada' },
@@ -182,6 +223,15 @@ export const voladizosSoportes: Guia = {
     {
       id: 'soportes-fallan',
       titulo: 'Soportes que fallan: causas y soluciones',
+      puntos: [
+        'Si el material de soporte se rompe, es probable que cause el **fallo de toda la impresión**.',
+        'PrusaSlicer muestra un **mensaje de advertencia** si detecta problemas de estabilidad en un modelo.',
+        'En la mayoría de los casos, la solución es añadir material de soporte.',
+        'El material de soporte se añade típicamente en **voladizos grandes o muy inclinados**.',
+        '**Evitar torres de soporte aisladas o escasas**: para soportes **Grid y Snug**, reducir el **pattern spacing**.',
+        'Para soportes **Organic**, aumentar la **branch density**.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Si el material de soporte se rompe, es probable que cause el **fallo de toda la impresión**. PrusaSlicer muestra un **mensaje de advertencia** si detecta problemas de estabilidad en un modelo; en la mayoría de los casos, la solución es añadir material de soporte. El material de soporte se añade típicamente en **voladizos grandes o muy inclinados**. **Evitar torres de soporte aisladas o escasas**: para soportes **Grid y Snug**, reducir el **pattern spacing**; para soportes **Organic**, aumentar la **branch density**.',
       cita: {
@@ -192,6 +242,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'patron-soporte',
       titulo: 'Patrón de soporte: cuál elegir',
+      puntos: [
+        '**Rectilinear** (por defecto): el más fácil de quitar.',
+        '**Rectilinear grid**: más resistente y menos propenso a romperse durante la impresión; más difícil de quitar.',
+        '**Honeycomb**: resistente y algo difícil de quitar.',
+        'Usar **soportes personalizados** —custom supports— adaptados al modelo.',
+      ],
+      indicador: 'general',
       cuerpo:
         '**Rectilinear** (por defecto): el más fácil de quitar. **Rectilinear grid**: más resistente y menos propenso a romperse durante la impresión; más difícil de quitar. **Honeycomb**: resistente y algo difícil de quitar. Usar **soportes personalizados** —custom supports— adaptados al modelo.',
       cita: {
@@ -202,6 +259,12 @@ export const voladizosSoportes: Guia = {
     {
       id: 'brim-soporte',
       titulo: 'Brim alrededor del soporte: estabilidad extra',
+      puntos: [
+        'Usar un **Brim** alrededor del soporte —Print settings → Skirt and Brim— mejora la estabilidad de los soportes.',
+        'Y evita que se despeguen durante la impresión.',
+        'Es especialmente útil para soportes altos o aislados.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Usar un **Brim** alrededor del soporte —Print settings → Skirt and Brim— mejora la estabilidad de los soportes y evita que se despeguen durante la impresión. Es especialmente útil para soportes altos o aislados.',
       cita: {
@@ -212,6 +275,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'orientacion',
       titulo: 'Orientación: la solución más barata',
+      puntos: [
+        '**Rotar el objeto** en PrusaSlicer para encontrar una mejor orientación que requiera menos soportes.',
+        'Usar la **herramienta Cut** para imprimir dos partes más fácilmente y luego pegarlas.',
+        'Considerar **alterar la orientación del modelo** o **dividir el modelo en múltiples partes** para reducir los voladizos y.',
+        'Consecuentemente, la cantidad de soporte generado.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         '**Rotar el objeto** en PrusaSlicer para encontrar una mejor orientación que requiera menos soportes. Usar la **herramienta Cut** para imprimir dos partes más fácilmente y luego pegarlas. Considerar **alterar la orientación del modelo** o **dividir el modelo en múltiples partes** para reducir los voladizos y, consecuentemente, la cantidad de soporte generado.',
       cita: {
@@ -222,6 +292,11 @@ export const voladizosSoportes: Guia = {
     {
       id: 'abrir-puerta',
       titulo: 'Abrir la puerta: refrigeración extra con riesgos',
+      puntos: [
+        '**Abrir la puerta frontal y la cubierta superior** puede mejorar el rendimiento de refrigeración; recomendado solo para **PLA, PETG, TPU**.',
+        'Para filamentos de alta temperatura, esto puede causar warping o mala adhesión de capas.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         '**Abrir la puerta frontal y la cubierta superior** puede mejorar el rendimiento de refrigeración; recomendado solo para **PLA, PETG, TPU**. Para filamentos de alta temperatura, esto puede causar warping o mala adhesión de capas.',
       cuando: { material: ['pla', 'petg', 'tpu'] },
@@ -233,6 +308,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'umbral-bambu-prusa',
       titulo: 'Overhang threshold: la misma palabra significa cosas distintas',
+      puntos: [
+        'En Bambu Studio, cuanto **mayor** es el ángulo de umbral de soporte configurado, **más soportes** se generan.',
+        'En PrusaSlicer, el Overhang Threshold es la pendiente más horizontal —medida desde el plano horizontal—.',
+        'Que se puede imprimir sin material de soporte —90° = vertical—.',
+        '**No son el mismo parámetro** a pesar del nombre idéntico.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'En Bambu Studio, cuanto **mayor** es el ángulo de umbral de soporte configurado, **más soportes** se generan. En PrusaSlicer, el Overhang Threshold es la pendiente más horizontal —medida desde el plano horizontal— que se puede imprimir sin material de soporte —90° = vertical—. **No son el mismo parámetro** a pesar del nombre idéntico.',
       cita: {
@@ -243,6 +325,13 @@ export const voladizosSoportes: Guia = {
     {
       id: 'campos-panel',
       titulo: 'Por qué el slicer puede no haber escrito los campos',
+      puntos: [
+        'Los campos `hasOverhangs` y `overhangAngle` son **opcionales** en `ProjectMetadata`.',
+        'No todos los G-code traen el ángulo de voladizo, y "Soportes en el perfil: No" no es "la pieza no tiene voladizos".',
+        'El slicer puede no haber analizado la geometría o el perfil puede no incluir estos datos.',
+        'Si el panel muestra "—", mide el ángulo manualmente o usa el valor del slicer.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Los campos `hasOverhangs` y `overhangAngle` son **opcionales** en `ProjectMetadata`. No todos los G-code traen el ángulo de voladizo, y «Soportes en el perfil: No» no es «la pieza no tiene voladizos». El slicer puede no haber analizado la geometría o el perfil puede no incluir estos datos. Si el panel muestra «—», mide el ángulo manualmente o usa el valor del slicer.',
     },
@@ -255,7 +344,7 @@ export const voladizosSoportes: Guia = {
       cuando: { voladizo: 'menos-45' },
       valor: 'Ángulo menor de 45°',
       porque:
-        'Bambu Lab recomienda añadir soportes cuando el ángulo de voladizo es menor de 45°. El filamento extruido en un voladizo no se enfría a tiempo y se deforma por gravedad, causando que se descuelgue. Los soportes actúan como una red de seguridad bajo los voladizos, proporcionando estabilidad a las capas superiores.',
+        'Bambu Lab pide soportes bajo 45°. El filamento de un voladizo no se enfría a tiempo y se deforma por gravedad: los soportes evitan que se descuelgue y dan estabilidad a las capas superiores.',
       fuente: 'Bambu Lab',
       alcance:
         'Es una regla general de Bambu Lab. El ángulo de referencia es 45° medido entre la superficie inclinada y la cama caliente. No es una garantía: la refrigeración, el material y la boquilla también influyen.',
@@ -266,7 +355,7 @@ export const voladizosSoportes: Guia = {
       cuando: { voladizo: ['45-60', 'mas-60'], material: 'pla' },
       valor: '205 °C y ventilador al 100%',
       porque:
-        'Para voladizos con ángulo mayor de 45° —que ya pasan el umbral— se puede bajar ligeramente la temperatura de boquilla para reducir la necesidad de refrigeración. Para PLA, bajar a ~205 °C y aumentar la velocidad del ventilador de refrigeración de voladizo al 100%.',
+        'En voladizos que ya pasan el umbral (>45°), bajar ligeramente la temperatura de boquilla reduce la necesidad de refrigeración. Para PLA: ~205 °C y ventilador de voladizo al 100%.',
       fuente: 'Bambu Lab',
       alcance:
         'Estas cifras son para **optimizar voladizos que ya pasan el umbral**, no para definir el umbral. Para otros filamentos oficiales, bajar 5–10 °C dentro del rango recomendado. Para filamentos de terceros, imprimir una torre de temperatura.',
@@ -337,7 +426,7 @@ export const voladizosSoportes: Guia = {
       accion: 'Cambia el patrón de soporte a Rectilinear grid',
       cuando: { soporte: 'si' },
       porque:
-        '**Rectilinear grid** es más resistente y menos propenso a romperse durante la impresión; más difícil de quitar. **Rectilinear** —por defecto— es el más fácil de quitar. **Honeycomb** es resistente y algo difícil de quitar.',
+        '**Rectilinear grid** es más resistente y se rompe menos, pero más difícil de quitar. **Rectilinear** —por defecto— es el más fácil de quitar; **Honeycomb** es resistente y algo difícil de quitar.',
       fuente: 'Prusa Research',
       alcance:
         'Depende de la prioridad: si es más importante que no se rompan, Rectilinear grid. Si es más importante que sean fáciles de quitar, Rectilinear.',
@@ -377,7 +466,7 @@ export const voladizosSoportes: Guia = {
       accion: 'Divide el modelo en múltiples partes',
       cuando: { orientacion: 'no' },
       porque:
-        'Considerar **dividir el modelo en múltiples partes** para reducir los voladizos y, consecuentemente, la cantidad de soporte generado. Usar la **herramienta Cut** para imprimir dos partes más fácilmente y luego pegarlas.',
+        '**Dividir el modelo en múltiples partes** reduce los voladizos y, consecuentemente, la cantidad de soporte generado. La **herramienta Cut** permite imprimir dos partes más fácilmente y luego pegarlas.',
       fuente: 'Prusa Research',
       alcance:
         'Requiere trabajo de post-procesado —pegado— pero puede eliminar la necesidad de soportes.',
@@ -398,7 +487,7 @@ export const voladizosSoportes: Guia = {
       cuando: { soporte: 'si' },
       valor: '3–4 interface layers',
       porque:
-        'Aumentar el número de **interface layers** a **3–4** proporciona una superficie superior del soporte más sólida, lo que también puede hacer que el punto de contacto del soporte sea **más fácil de quitar**.',
+        'Aumentar las **interface layers** a **3–4** da una superficie superior del soporte más sólida y puede hacer el punto de contacto **más fácil de quitar**.',
       fuente: 'Prusa Research',
       alcance:
         'Es el ajuste que más influye en la calidad de la cara apoyada.',

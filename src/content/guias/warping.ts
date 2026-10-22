@@ -23,12 +23,14 @@ export const warping: Guia = {
   slug: 'warping-pla',
   titulo: 'Warping en PLA',
   resumen:
-    'Las esquinas se levantan. Antes de subir la cama, comprueba que es warping y no separación entre capas, y qué chapa usas: la cifra de cama depende de ella más que del fabricante.',
+    'Qué chapa y qué cifra de cama usar en PLA, y cómo distinguir el warping de una separación entre capas.',
+  resumenExtra:
+    'Antes de subir la cama, comprueba que es warping y no separación entre capas, y qué chapa usas: la cifra de cama depende de ella más que del fabricante.',
   sintoma: 'Las esquinas se levantan de la cama',
   dibujo: 'esquinas',
   entrada: 'El PLA es el material rígido que menos warpea, así que cuando sus esquinas se levantan casi nunca es el filamento: es la chapa, la cama o el aire. Esta guía empieza por lo que se ve —una base plana y esquinas que se curvan hacia arriba— y termina con la cifra de cama que toca a tu montaje.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 3,
 
   diferencial: {
@@ -60,6 +62,7 @@ export const warping: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'El PLA es el menos propenso de los siete rígidos, así que si warpea, el ajuste tiene más peso que en otros.',
       necesaria: true,
       /*
@@ -81,6 +84,7 @@ export const warping: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'Esto decide la cifra de cama. Más que el fabricante.',
       necesaria: true,
       opciones: [
@@ -94,6 +98,7 @@ export const warping: Guia = {
     {
       id: 'tamaño',
       etiqueta: 'Tamaño de la pieza',
+      indicador: 'geometria',
       para: 'El warping aparece más en piezas grandes, y eso cambia dónde mirar.',
       necesaria: true,
       opciones: [
@@ -105,6 +110,7 @@ export const warping: Guia = {
     {
       id: 'cama',
       etiqueta: 'Temperatura de cama ahora',
+      indicador: 'cama',
       para: 'La contradicción entre fabricantes —puerta cerrada o abierta— se explica por esto: con la cama alta y el filamento blando, el calor de la cámara pasa a ser un problema propio.',
       /*
        * `bedTemp` es lo que esta guía **lee** del archivo (`leeDelAnalisis`), y esta
@@ -121,6 +127,7 @@ export const warping: Guia = {
     {
       id: 'ventana',
       etiqueta: '¿Dónde está la impresora?',
+      indicador: 'entorno',
       para: 'Por debajo de 20 °C aparece warping incluso en PLA, y una corriente de aire basta para enfriarte un lado.',
       opciones: [
         { id: 'cerrada', etiqueta: 'Estructura cerrada' },
@@ -131,6 +138,7 @@ export const warping: Guia = {
     {
       id: 'camara',
       etiqueta: '¿Estabas imprimiendo con la puerta cerrada?',
+      indicador: 'maquina',
       para: 'La contradicción entre fabricantes se explica por esto, no por la marca.',
       opciones: [
         { id: 'cerrada', etiqueta: 'Sí, cerrada' },
@@ -143,6 +151,13 @@ export const warping: Guia = {
     {
       id: 'mecanismo',
       titulo: 'Por qué se levanta',
+      puntos: [
+        'Es contracción térmica, no un ajuste mal puesto.',
+        'El filamento sale fundido y llega frío a la pieza: ese salto es un choque térmico.',
+        'Durante el enfriamiento el plástico se contrae, y el problema es dónde: los bordes exteriores se enfrían antes que el centro.',
+        'Y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Es contracción térmica, no un ajuste mal puesto. El filamento sale fundido y llega frío a la pieza: ese salto es un choque térmico. Durante el enfriamiento el plástico se contrae, y el problema es dónde: los bordes exteriores se enfrían antes que el centro, y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
       cita: {
@@ -162,6 +177,12 @@ export const warping: Guia = {
        * mandarlas a dos sitios obligaría a escribirla dos veces.
        */
       campos: ['warpingRisk', 'riskLevel'],
+      puntos: [
+        'Bambu ordena por riesgo de warping los filamentos que su propia tabla llama propensos a contraerse.',
+        'PC → PA-CF → PA → ABS → ASA → PETG → PLA.',
+        'Son siete y el PLA es el último. Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Bambu ordena por riesgo de warping los filamentos que su propia tabla llama propensos a contraerse: PC → PA-CF → PA → ABS → ASA → PETG → PLA. Son siete y el PLA es el último. Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
       cifra: { valor: '7 → 1', nota: 'PC es el más propenso; el PLA, el menos' },
@@ -170,6 +191,12 @@ export const warping: Guia = {
       id: 'cama-bambu',
       titulo: 'La cifra de cama depende de la chapa',
       cuando: { material: ['pla', 'pla-cf'] },
+      puntos: [
+        'La tabla por chapa de Bambu da dos rangos para el PLA, y son los dos extremos de la misma fila leídos por columnas distintas.',
+        'No se contradicen: con la Cool Plate pide 35–45 °C, y con la Textured PEI, la Smooth PEI y la Engineering pide 45–65 °C.',
+        'El 35–45 es de la Cool Plate, y si tu chapa es otra no es el tuyo.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'La tabla por chapa de Bambu da dos rangos para el PLA, y son los dos extremos de la misma fila leídos por columnas distintas. No se contradicen: con la Cool Plate pide 35–45 °C, y con la Textured PEI, la Smooth PEI y la Engineering pide 45–65 °C. El 35–45 es de la Cool Plate, y si tu chapa es otra no es el tuyo.',
       cifra: { valor: '35–65 °C', nota: 'todo el PLA de Bambu; el rango depende de la chapa' },
@@ -182,6 +209,12 @@ export const warping: Guia = {
     {
       id: 'cama-prusa',
       titulo: 'Prusa da 50–60 °C, y no está en conflicto',
+      puntos: [
+        'Los 50–60 °C de Prusa y los del slicer Orca están dentro del 45–65 que pide la Textured PEI, y el 60 °C de la ficha del PLA también.',
+        'Son el mismo rango leído con distinta anchura.',
+        'Lo que cambia entre fabricantes es el margen: Bambu da treinta grados para el PLA y Prusa da diez.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Los 50–60 °C de Prusa y los del slicer Orca están dentro del 45–65 que pide la Textured PEI, y el 60 °C de la ficha del PLA también. Son el mismo rango leído con distinta anchura. Lo que cambia entre fabricantes es el margen: Bambu da treinta grados para el PLA y Prusa da diez.',
       cifra: { valor: '50–60 °C', nota: 'Prusa, tabla de materiales' },
@@ -189,6 +222,13 @@ export const warping: Guia = {
     {
       id: 'techo',
       titulo: 'El 65 °C no es un techo',
+      puntos: [
+        'Coincide con el extremo alto del intervalo de Bambu para la Textured PEI.',
+        'Pero no es lo mismo: uno es un techo que un usuario le pone a otro en un foro.',
+        'El otro el extremo de un intervalo de fabricante para esa chapa.',
+        'De las fuentes revisadas, ningún fabricante dice que no se pueda pasar de ahí, y la tabla de Prusa para PLA se queda en 50–60 °C.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Coincide con el extremo alto del intervalo de Bambu para la Textured PEI, pero no es lo mismo: uno es un techo que un usuario le pone a otro en un foro, el otro el extremo de un intervalo de fabricante para esa chapa. De las fuentes revisadas, ningún fabricante dice que no se pueda pasar de ahí, y la tabla de Prusa para PLA se queda en 50–60 °C.',
       cuando: { material: ['pla', 'pla-cf'] },
@@ -198,6 +238,12 @@ export const warping: Guia = {
       id: 'fan-bambu',
       titulo: 'El ventilador: dos fuentes, dos ventiladores',
       cuando: { material: ['pla', 'pla-cf', 'petg'] },
+      puntos: [
+        'Bambu habla del auxiliar y dice dos cosas distintas en dos páginas: en una, bajarlo a 40–50 %; en otra, reducirlo 20–30 %.',
+        'El corpus no resuelve cuál aplicar. Y no es el ventilador de pieza del que habla Prusa, que para PLA y PETG recomienda lo contrario.',
+        'Comprobar que el de pieza está activo y probarlo a subirlo, con el límite de que demasiado ventilador puede bajar la adhesión entre capas.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu habla del auxiliar y dice dos cosas distintas en dos páginas: en una, bajarlo a 40–50 %; en otra, reducirlo 20–30 %. El corpus no resuelve cuál aplicar. Y no es el ventilador de pieza del que habla Prusa, que para PLA y PETG recomienda lo contrario: comprobar que el de pieza está activo y probarlo a subirlo, con el límite de que demasiado ventilador puede bajar la adhesión entre capas.',
     },
@@ -205,6 +251,13 @@ export const warping: Guia = {
       id: 'boquilla-chapa',
       titulo: 'El cambio de chapa también cambia la boquilla',
       cuando: { chapa: 'textured' },
+      puntos: [
+        'La Textured PEI baja la boquilla 0,04 mm automáticamente al nivelar, para asegurar la primera capa.',
+        'Si laminaste para la Cool Plate e imprimes en la Textured.',
+        'Ese descenso no se aplica, la boquilla queda demasiado alta y la primera capa no se pega.',
+        'Son el síntoma del mismo error de una línea de perfil.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La Textured PEI baja la boquilla 0,04 mm automáticamente al nivelar, para asegurar la primera capa. Si laminaste para la Cool Plate e imprimes en la Textured, ese descenso no se aplica, la boquilla queda demasiado alta y la primera capa no se pega. Son el síntoma del mismo error de una línea de perfil.',
       cifra: { valor: '−0,04 mm', nota: 'descenso que no se aplica si el perfil es de otra chapa' },
@@ -213,6 +266,13 @@ export const warping: Guia = {
       id: 'grande-seco',
       titulo: 'Pieza grande y plana: el enclosure pasa a ser la variable',
       cuando: { tamaño: 'grande', material: ['abs', 'pc', 'pa'] },
+      puntos: [
+        'Bambu dice que los modelos grandes y planos en ABS, ASA o PC "casi siempre warpean sin cámara cerrada".',
+        'Y que si no hay cámara la alternativa es cambiar a PLA, PLA-CF, PETG o PETG-CF.',
+        'Es el único sitio de esta guía donde el material decide y decide mucho, y va en la dirección contraria al ranking del principio.',
+        'Allí el PLA era el más seguro, y aquí es la salida cuando la pieza es grande.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Bambu dice que los modelos grandes y planos en ABS, ASA o PC «casi siempre warpean sin cámara cerrada», y que si no hay cámara la alternativa es cambiar a PLA, PLA-CF, PETG o PETG-CF. Es el único sitio de esta guía donde el material decide y decide mucho, y va en la dirección contraria al ranking del principio: allí el PLA era el más seguro, y aquí es la salida cuando la pieza es grande.',
       enlaza: { guia: 'temperatura-cama', etiqueta: 'Ver las cifras de cama' },
@@ -220,6 +280,15 @@ export const warping: Guia = {
     {
       id: 'no-es-warping',
       titulo: 'Cuatro fallos que no son warping',
+      puntos: [
+        'El colapso de piezas altas y finas es mecánico, no térmico: la boquilla tumba un modelo alto por vibración.',
+        'Las correas flojas dan holgura al cabezal.',
+        'La boquilla contra el relleno es otra fila del catálogo.',
+        'Los voladizos inclinados y las piezas pequeñas son condición del consejo de ventilador de Prusa, no un tipo de warping.',
+        'Y la humedad no es warping: si el filamento suena a chasquido.',
+        'Hay que secarlo y reintentar, y ninguna fuente de este lote dice con qué temperatura.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'El colapso de piezas altas y finas es mecánico, no térmico: la boquilla tumba un modelo alto por vibración, las correas flojas dan holgura al cabezal. La boquilla contra el relleno es otra fila del catálogo. Los voladizos inclinados y las piezas pequeñas son condición del consejo de ventilador de Prusa, no un tipo de warping. Y la humedad no es warping: si el filamento suena a chasquido, hay que secarlo y reintentar, y ninguna fuente de este lote dice con qué temperatura.',
     },
@@ -231,7 +300,7 @@ export const warping: Guia = {
       accion: 'Limpia la chapa con agua templada y jabón',
       valor: 'Enjuaga y deja secar al aire',
       porque:
-        'Es el primero de los tres pasos que Bambu atribuye a aproximadamente el 80 % de los fallos de warping y adhesión, y sale también en su lista de correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
+        'Es el primero de los tres pasos que Bambu atribuye al ~80 % de los fallos de warping y adhesión, y está en sus correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
       cuando: { material: ['pla', 'pla-cf', 'petg', 'abs', 'pc', 'pa'] },
       fuente: 'Bambu Lab',
       alcance: 'Los tres pasos resuelven ~80 % según el fabricante. El ventilador no está en esa lista.',
@@ -318,7 +387,7 @@ export const warping: Guia = {
       cuando: { tamaño: ['pequena', 'mediana'], material: ['abs', 'pc', 'pa'] },
       valor: '10–20 %',
       porque:
-        'Prusa pone los voladizos inclinados y las piezas pequeñas como condición de su consejo de ventilador: en esos casos probar a activarlo despacio, incluso con materiales que no necesitan mucha refrigeración. Su objetivo declarado es enfriar la pieza «ni demasiado rápido ni demasiado despacio», así que el punto es probar despacio y comprobar, no subir a fondo.',
+        'Prusa lo dice para voladizos inclinados y piezas pequeñas: pruébalo despacio y comprueba. Su objetivo es enfriar «ni demasiado rápido ni demasiado despacio», aunque el material no lo necesite.',
       fuente: 'Prusa Research',
       alcance:
         'El corpus no dice hacia qué lado se curva un voladizo ni por qué, así que esta guía no lo dice. Y ojo al verbo: es un «you may try», no una recomendación categórica.',
@@ -346,7 +415,7 @@ export const warping: Guia = {
       accion: 'Abre la puerta frontal y quita la tapa superior',
       cuando: { camara: 'cerrada', cama: 'alta' },
       porque:
-        'Para filamentos con temperatura de reblandecimiento por debajo de 60 °C —PLA, PVA, TPU— y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
+        'Para filamentos que reblandecen por debajo de 60 °C —PLA, PVA, TPU— y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa: el calor de la cámara no reblandece el filamento.',
       fuente: 'Bambu Lab',
       alcance: 'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Traducirlo como «las dos cosas» le exigiría una conjunción que no pidió.',
     },

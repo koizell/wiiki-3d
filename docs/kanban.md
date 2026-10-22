@@ -1,6 +1,163 @@
 # Kanban de wiiki-3d
 
-Actualizado: 2026-10-19. Tablero vivo: se actualiza al cerrar cada tarjeta.
+Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
+
+### Estado contrastado el 21 de octubre
+
+- **La guía deja de ser un muro de texto.** El módulo más pesado del sitio se ha
+  rediseñado como un **instrumento**, en la línea de la portada: la pregunta del
+  diferencial manda y el veredicto llega al contestar; las opciones son tarjetas
+  con su detalle; las tarjetas de conocimiento llevan la cifra en grande y el
+  cuerpo en puntos; las acciones son readouts con la cifra mandando, el porqué en
+  una línea y la fuente al lado. Encima, la cabecera de plano con el estado y el
+  recorrido con los contadores en vivo. El diseño está en Figma
+  ([wiiki-3d · design system](https://www.figma.com/design/DTXR8LOlujQXdC6vv4ks3Y),
+  página `02 · Guía redisejada`) y el plan en
+  [`2026-10-21-guia-como-instrumento.md`](superpowers/plans/2026-10-21-guia-como-instrumento.md).
+- **El contenido también se ha ajustado, no sólo la presentación.** El contrato
+  decía que `resumen` era «una frase» y no lo era: media de 164 caracteres y **19 de
+  32 guías con más de una frase**. Ahora `resumen` es la primera frase y el resto
+  va en `resumenExtra`, dentro del desplegable de contexto. **952 palabras de
+  resumen antes y 952 después**: no se ha perdido ni una. Y las 520 tarjetas de
+  conocimiento han pasado a tener **tema** (qué va) y **puntos** (el cuerpo
+  troceado en líneas de una): el troceado es mecánico y el cotejo lo demuestra.
+- **Siete acciones no eran acciones.** «En Prusa, la superficie recomendada es PA
+  Nylon o Satin» y «Lo que ves es el modo Random funcionando, no un fallo» son
+  frases, no instrucciones. Se han reescrito en imperativo **sin cambiar la
+  afirmación, el valor, el porqué ni la fuente**, y las ocho diferencias están
+  declaradas una por una en el cotejo.
+- **`motion` entra, y la spec se ha actualizado.** La spec §2 D5 decía «ninguna
+  dependencia»; ahora admite `motion` para lo que el CSS no cubre, que es la
+  **salida** de una etapa. El chunk de entrada crece **0,19 kB** —la librería se va
+  con la ruta, que ya era `lazy`— y el hover, el foco y el pulso siguen en CSS.
+  `verify:animacion` es la comprobación nueva: 18/18.
+- **El CLS de la guía era de 0,586** y no era culpa de la animación: la spec §4
+  manda `preload` para los pesos de la primera pantalla y **el `preload` no
+  estaba**. Con él, el CLS es de cero.
+- **`verify:ux-tareas` llevaba en rojo desde el 20 de octubre** sin que nadie lo
+  dijera: seguía buscando la clase `.inicio-accesos`, que el rediseño de la
+  portada había borrado. Ahora comprueba el orden —los síntomas antes de la
+  documentación larga— y no una altura que ya no describía el diseño.
+- **La trayectoria del G-code se ve en 3D.** El aviso de la aplicación decía, textual,
+  «El G-code se analiza; su trayectoria no se muestra en 3D». Ahora se lee el **cuerpo**
+  del archivo —movimientos, capas y tipo de rasgo de cada tramo— y se dibuja
+  coloreado por lo que la cabeza está haciendo: perímetros, rellenos, superficies,
+  soportes y puentes. La cortina por capas es un `setDrawRange`, y el archivo se lee
+  por trozos porque uno real pesa decenas de megabytes.
+- **La prueba de que el lector dice la verdad**: los gramos **no se leen**, se derivan
+  de la extrusión que el lector ha visto. 311,01 mm declarados → 310,21 leídos;
+  0,93 g declarados → 0,925 g derivados. `verify:gcode` son 16 comprobaciones contra
+  el fixture real. Y encontró tres fallos de lectura que ya están corregidos: la
+  extrusión es **relativa** (`M83`), el slicer cuenta la extrusión **neta** —las
+  retracciones restan— y la Z de la capa la **anuncia** el slicer en un comentario
+  `;Z:` que llega antes de que la cabeza suba.
+- **El 3MF de proyecto da malla, trayectoria y análisis de un archivo.** Los 3MF de
+  proyecto —Bambu Studio, OrcaSlicer, PrusaSlicer— llevan dentro su G-code, y la
+  malla y el G-code están los dos en coordenadas de cama: la trayectoria se dibuja
+  **encima** de la pieza sin compensar nada. Y como el G-code va dentro, **también
+  se analiza**: el panel ya no dice «los 3MF no se analizan». No hace falta ninguna
+  dependencia nueva —`three` ya trae dentro el `fflate` que usa su propio
+  `3MFLoader`— y el unzip es filtrado y asíncrono, porque un 3MF de proyecto pesa
+  decenas de megabytes.
+- **El visor tiene mapas de calor**: tipo de rasgo, velocidad y **caudal
+  volumétrico**. La escala va del percentil 2 al 98, porque con el mínimo y el
+  máximo de verdad la rampa no informaba de nada: el pico de 68 mm³/s aplastaba
+  la media de 9 y todo salía en el azul frío.
+- **El pico de caudal es el diagnóstico**: «el caudal máximo de tu impresión es de
+  68 mm³/s, en la capa 5 haciendo Internal solid infill». La aplicación no dice
+  si tu máquina puede —eso depende de la impresora, que ella no conoce—: dice
+  cuánto y dónde, y enlaza a la guía que explica qué hacer con ese dato.
+- **La comprobación del G-code es autónoma.** `test-fixtures/` está en el
+  `.gitignore` a propósito —«G-codes reales de usuario, no se suben»—, así que el
+  material de la comprobación **se genera en memoria** y es determinista. El
+  archivo real, si está en la máquina, sigue usándose como comprobación extra.
+  De 16 a 38 comprobaciones.
+- **El recorrido de la guía marca la etapa en la que se está**, y el detalle que
+  hizo falta: en este sitio la guía no se desplaza en la ventana, se desplaza en
+  `.canvas-area`, y los eventos `scroll` no suben. Hay que escucharlos en el
+  documento y en fase de captura.
+- **La vuelta de texto está cerrada: los 213 `porque` largos son cero.** De 583
+  reglas, las que pasaban de 200 caracteres se han acortado, revisado una a una y
+  devueltas donde el matiz se había perdido. El `resumen` de la cabecera es ahora
+  **una frase en las 32 guías** —media de 98 caracteres—, y la segunda mitad, cuando
+  la había, va en `resumenExtra`, dentro del desplegable de contexto.
+  **29.706 palabras de cuerpo antes y 29.706 después**: no se ha perdido ni una.
+- **El contenido se revisó con dos mitades, porque una vuelta escrita por agentes lo
+  necesita.** La **mecánica** (`verify:recorte`) compara cada guía con `HEAD` con el
+  AST de TypeScript y exige que fuera del `porque` no haya cambiado nada, campo por
+  campo. La **editorial** (el revisor) lee si el matiz perdido sigue en el `alcance`,
+  en la condición o en una tarjeta. De las 51 reglas señaladas, 49 eran
+  redundancia, 1 equivalencia y **1 pérdida real**, ya devuelta.
+- **Tres bugs reales encontrados por el camino**, ninguno del acortamiento:
+  `agujeros-ovalados/usar-hole-compensation` había perdido que el parámetro es
+  bidireccional; `esquinas-petg/recinto-abrir` tomaba la fila del PLA en una guía
+  de PETG, con un umbral de 60 °C en vez de 45 °C, y no se disparaba en el rango
+  recomendado; y el **material cocinado** decía «cama por encima de 70 °C», que era
+  otra columna de la tabla de Bambu. Los tres van por el pipeline que les toca.
+- **Investigación de Control3D (César Galera).** Sus siete tests de calibración son
+  **nuestras guías**, una a una; lo que falta es la **entrada por la puerta de
+  atrás**: quien no tiene un síntoma no tiene dónde empezar. Y sus **modelos de test
+  gratuitos** con su licencia. En
+  [`investigacion-control3d-2026-10-21.md`](investigacion-control3d-2026-10-21.md).
+- **La ruta de calibración existe**, y es la primera guía que **enruta** en vez de
+  diagnosticar. Los siete tests de calibración ya eran siete guías; esta lleva a cada
+  uno con un enlace nuevo en las reglas y se queda con lo que nadie más tenía: **el
+  orden**, y que **no hay un orden**. Hay tres métodos publicados que se contradicen y
+  Prusa y Bambu no publican ninguno, y la guía dice exactamente eso.
+  **Diez de sus doce reglas** llevan a la guía que las desarrolla.
+- **Las contradicciones, declaradas y no resueltas**: el orden de los tests; la
+  dirección del síntoma del Pressure Advance —que el material cocinado corrigió,
+  porque Bambu, Prusa y Duet3D **coinciden** y el choque real es con Klipper—; la
+  escala del K, que no es la misma en cinco firmwares; y la retracción en Bowden, que
+  tiene tres valores. Las cifras de Control3D van marcadas como **método de un
+  autor**, no como dato de fabricante.
+- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (220), `ui`
+  (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
+  `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
+  `seo` (463), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72), `guias`
+  (**1124**) y `enlaces` (298). `lint` con **0 errores** y `tsc` sin diagnósticos.
+- **El último repaso encontró cosas que ningún verificador miraba.** El trabajo
+  estaba verde y aun así no estaba bien:
+  - **Los puntos de las tarjetas no eran frases.** El troceado partía por comas y
+    dos puntos y dejaba el separador pegado al punto final: «…se apoya sobre la
+    anterior**,.**». **351 de 537 tarjetas.** El `cuerpo` nunca se tocó —el cotejo
+    lo demuestra—, el fallo era del script, y por eso no lo veía nadie: un punto
+    de 140 con una coma y un punto **sí cabe**. Repunteado desde el `cuerpo`, con
+    el troceado en un solo sitio —`migrar-indicadores.mjs` usa el mismo— y la
+    separación mínima de 40 caracteres entre cortes, que sin ella partía en
+    «Lo | que sí se puede decir es | que…» y acababa en «…al enfriarse— y.».
+  - **Texto corrupto desde el artículo original**: «ambosacted», «sin-improvement»
+    y «Oídos así» en `separaciones.ts`, y un carácter coreano perdido en el
+    comentario de `temperatura-cama.ts`. La conversión de artículo a guía los
+    arrastró y nadie los vio porque `verify:guias` comprueba la estructura del
+    contrato, no la ortografía.
+  - **El CI no miraba la wiki.** El pipeline ejecutaba `eslint`, el build y
+    `verify:revision`. TypeScript compila igual una guía con un `puntos` de 300
+    caracteres o un resumen que dice lo contrario que la tarjeta de al lado.
+    Ahora hay tres capas: `verify:revision`, `verify:contenido` (antes del build,
+    sin red) y `verify:dist` (con el sitio construido).
+  - **Tres fallos que habrían roto el despliegue** —el CI ejecuta `eslint src` y
+    no pasaba—: un hook (`useEtapaActiva`) llamado **después** de un `return`
+    condicional, lo que revienta cuando la guía llega por lazy loading; un
+    `setState` síncrono dentro de un efecto; y una **trayectoria que se leía y
+    no se pintaba**, porque el efecto que construye la escena depende del
+    archivo y no de la trayectoria, que llega después por un análisis aparte.
+  - **Once resúmenes visibles repetían el síntoma** que la tarjeta ya enseña, y
+    en uno eran la misma frase dos veces. Y uno de ellos afirmaba una distinción
+    —stringing frente a oozing— que **las tres fuentes niegan**: las tres usan
+    los dos nombres para el mismo defecto. No estaba en el resumen: estaba en el
+    `diferencial`, que es lo que separa un problema del de al lado.
+  - **Y la ruta de calibración**: Duet3D publicaba **un tramo de tres pasos**, no
+    una ruta, y la guía lo contaba como tercera ruta completa en siete sitios.
+    Ahora cuenta dos rutas completas y un tramo, declara cuál usa y por qué, y
+    separa a Prusa —que no publica ninguno— de Bambu —que tiene una lista pero
+    no la justifica—.
+- **Lo que queda**: el emparejamiento de un G-code suelto con un STL suelto: con
+  un STL no hay marco de cama, así que la superposición no es fiable y no se
+  ofrece. Y `verify:fuentes`, que falla por dos URLs que devuelven 403 —bloqueo
+  de bots, no fuentes muertas— y catorce páginas del corpus que han cambiado;
+  es preexistente y no bloquea el despliegue, porque el pipeline no lo ejecuta a
+  propósito: un 403 ajeno no puede tumbar un despliegue.
 
 ### Estado contrastado el 19 de octubre
 

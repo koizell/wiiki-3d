@@ -46,8 +46,23 @@ jobs:
       - name: Blindaje de la revisión
         run: npm run verify:revision
 
+      # El contenido de la wiki no lo comprueba el compilador. Una guía puede
+      # tener un `puntos` de 300 caracteres, un `porque` que se ha comido un dato
+      # o un resumen que dice lo contrario que la tarjeta de al lado: el build
+      # pasa igual y el sitio sale mal.
+      #
+      # Estos tres no necesitan red ni navegador, así que pueden ir antes del
+      # build. `verify:wiki` contrasta las afirmaciones con `wiki/raw/`.
+      - name: Blindaje del contenido
+        run: npm run verify:contenido
+
       - name: Configurar Pages
         uses: actions/configure-pages@v5
+
+      # Y ya con el sitio construido: los enlaces internos que no dan 200, y el
+      # `description` de cada guía —que es donde se publica el `resumen`.
+      - name: Blindaje de lo construido
+        run: npm run verify:dist
 
       - name: Subir artefacto
         uses: actions/upload-pages-artifact@v3

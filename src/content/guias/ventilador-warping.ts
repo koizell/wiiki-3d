@@ -27,7 +27,9 @@ export const ventiladorWarping: Guia = {
   slug: 'ventilador-warping',
   titulo: 'Ventilador de capa y warping',
   resumen:
-    'El ventilador puede causar warping cuando enfría demasiado rápido, especialmente en las primeras capas o en piezas grandes. Hay dos ventiladores distintos y tres contradicciones sin resolver entre fuentes oficiales.',
+    'El ventilador puede causar warping cuando enfría demasiado rápido, especialmente en las primeras capas o en piezas grandes.',
+  resumenExtra:
+    'Hay dos ventiladores distintos y tres contradicciones sin resolver entre fuentes oficiales.',
   sintoma: 'El ventilador causa o agrava el warping',
   dibujo: 'capas',
   entrada:
@@ -65,6 +67,7 @@ export const ventiladorWarping: Guia = {
     {
       id: 'material',
       etiqueta: 'Material',
+      indicador: 'material',
       para: 'Cada material necesita un nivel de ventilador distinto. El PLA y el PETG necesitan mucho; el ABS necesita poco o ninguno.',
       necesaria: true,
       campos: ['material'],
@@ -79,6 +82,7 @@ export const ventiladorWarping: Guia = {
     {
       id: 'ventilador',
       etiqueta: '¿Qué ventilador está activo?',
+      indicador: 'ventilacion',
       para: 'El de capa y el auxiliar son dos ajustes distintos. Saber cuál está enfriando en exceso decide qué ajuste tocar.',
       necesaria: true,
       opciones: [
@@ -90,6 +94,7 @@ export const ventiladorWarping: Guia = {
     {
       id: 'primerasCapas',
       etiqueta: '¿Ventilador en las primeras capas?',
+      indicador: 'altura',
       para: 'Sin ventilador en las primeras 3 capas la primera capa se pega mejor y el warping temprano disminuye.',
       necesaria: true,
       opciones: [
@@ -100,6 +105,7 @@ export const ventiladorWarping: Guia = {
     {
       id: 'corriente',
       etiqueta: '¿Corrientes de aire cerca?',
+      indicador: 'velocidad',
       para: 'Una corriente de aire enfría un lado más que otro y causa warping asimétrico.',
       opciones: [
         { id: 'no', etiqueta: 'No hay corrientes' },
@@ -109,6 +115,7 @@ export const ventiladorWarping: Guia = {
     {
       id: 'tamaño',
       etiqueta: 'Tamaño de la pieza',
+      indicador: 'geometria',
       para: 'El warping por ventilador aparece más en piezas grandes y en objetos pequeños con voladizos altos.',
       opciones: [
         { id: 'grande', etiqueta: 'Grande y plana', detalle: 'La más propensa' },
@@ -122,6 +129,14 @@ export const ventiladorWarping: Guia = {
     {
       id: 'dos-ventiladores',
       titulo: 'Dos ventiladores distintos',
+      puntos: [
+        'El ventilador de capa enfría toda la pieza.',
+        'El auxiliar —auxiliary part cooling fan— enfría las paredes exteriores y puede causar warping cuando lo hace demasiado rápido.',
+        'Especialmente en objetos pequeños o con voladizos altos.',
+        'El auxiliar se controla con el comando G-code M106 P2 S(0-255).',
+        'Y se desactiva durante las primeras capas definidas por "No cooling for the first X layers".',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'El ventilador de capa enfría toda la pieza. El auxiliar —auxiliary part cooling fan— enfría las paredes exteriores y puede causar warping cuando lo hace demasiado rápido, especialmente en objetos pequeños o con voladizos altos. El auxiliar se controla con el comando G-code M106 P2 S(0-255) y se desactiva durante las primeras capas definidas por «No cooling for the first X layers».',
       cita: {
@@ -132,6 +147,12 @@ export const ventiladorWarping: Guia = {
     {
       id: 'primeras-3-capas',
       titulo: 'Las primeras 3 capas sin ventilador',
+      puntos: [
+        'Desactivar el ventilador de capa durante las primeras capas mejora la adhesión a la cama y reduce el warping temprano.',
+        'Se recomienda "No cooling for the first X layers" = 3 para la mayoría de filamentos comunes (PLA, PETG, TPU).',
+        'En Bambu Studio, el ajuste está en Filament Settings → Cooling tab.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Desactivar el ventilador de capa durante las primeras capas mejora la adhesión a la cama y reduce el warping temprano. Se recomienda «No cooling for the first X layers» = 3 para la mayoría de filamentos comunes (PLA, PETG, TPU). En Bambu Studio, el ajuste está en Filament Settings → Cooling tab.',
       cifra: { valor: '3', nota: 'capas sin ventilador para PLA, PETG, TPU' },
@@ -144,6 +165,14 @@ export const ventiladorWarping: Guia = {
       id: 'auxiliar-contradiccion',
       titulo: 'Ventilador auxiliar: dos cifras que no son lo mismo',
       cuando: { ventilador: ['auxiliar', 'ambos'] },
+      puntos: [
+        'Bambu Lab se contradice en dos páginas oficiales.',
+        'En una, reducir el auxiliar un 20–30 % cuando ya hay warping.',
+        'En otra, bajarlo al 40–50 % de forma preventiva.',
+        'La primera es correctiva —reducir del valor actual— y la segunda es un valor objetivo.',
+        'No son lo mismo, pero ambas deben aparecer.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu Lab se contradice en dos páginas oficiales. En una, reducir el auxiliar un 20–30 % cuando ya hay warping. En otra, bajarlo al 40–50 % de forma preventiva. La primera es correctiva —reducir del valor actual— y la segunda es un valor objetivo. No son lo mismo, pero ambas deben aparecer.',
       cifra: { valor: '40–50 %', nota: 'valor objetivo preventivo; la reducción correctiva es 20–30 % del valor actual' },
@@ -156,6 +185,13 @@ export const ventiladorWarping: Guia = {
       id: 'abs-contradiccion',
       titulo: 'ABS: apagado o 10–20 %',
       cuando: { material: ['abs', 'pc'] },
+      puntos: [
+        'Prusa dice "apagar ventiladores por completo" para ABS en la página de separación de capas.',
+        'Pero en la de warping recomienda un 10–20 % para overhangs abruptos incluso en ABS y PC-Blend.',
+        'El apagado es la regla general; el 10–20 % es una excepción específica para voladizos donde el ventilador es necesario para la calidad.',
+        'No para el warping.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Prusa dice «apagar ventiladores por completo» para ABS en la página de separación de capas, pero en la de warping recomienda un 10–20 % para overhangs abruptos incluso en ABS y PC-Blend. El apagado es la regla general; el 10–20 % es una excepción específica para voladizos donde el ventilador es necesario para la calidad, no para el warping.',
       cifra: { valor: '10–20 %', nota: 'excepción para overhangs; la regla general es apagado' },
@@ -168,6 +204,15 @@ export const ventiladorWarping: Guia = {
       id: 'pla-contradiccion',
       titulo: 'PLA: mucho ventilador, pero no demasiado',
       cuando: { material: ['pla', 'petg'] },
+      puntos: [
+        'Prusa dice que PLA y PETG necesitan mucha refrigeración y que si las esquinas se levantan hay que verificar.',
+        'Que el ventilador funciona y aumentar su velocidad.',
+        'Bambu dice que demasiado enfriamiento en PLA puede causar warping.',
+        'El ventilador ayuda a la adhesión de la primera capa y a la calidad de los voladizos.',
+        'Pero un exceso en las primeras capas o en piezas grandes puede causar warping.',
+        'La clave está en el equilibrio y en el número de capas iniciales sin ventilador.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Prusa dice que PLA y PETG necesitan mucha refrigeración y que si las esquinas se levantan hay que verificar que el ventilador funciona y aumentar su velocidad. Bambu dice que demasiado enfriamiento en PLA puede causar warping. El ventilador ayuda a la adhesión de la primera capa y a la calidad de los voladizos, pero un exceso en las primeras capas o en piezas grandes puede causar warping. La clave está en el equilibrio y en el número de capas iniciales sin ventilador.',
       cita: {
@@ -178,6 +223,12 @@ export const ventiladorWarping: Guia = {
     {
       id: 'corrientes',
       titulo: 'Corrientes de aire: el enemigo silencioso',
+      puntos: [
+        'Una ventana abierta, aire acondicionado o ventilador de mesa cerca puede enfriar un lado de la pieza más rápido que el otro.',
+        'Causando warping asimétrico. Las corrientes de aire enfrían el modelo más rápido, aumentando la tensión entre capas.',
+        'Ventiladores fuertes o ventanas abiertas crean enfriamiento desigual, especialmente en ABS y Nylon.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Una ventana abierta, aire acondicionado o ventilador de mesa cerca puede enfriar un lado de la pieza más rápido que el otro, causando warping asimétrico. Las corrientes de aire enfrían el modelo más rápido, aumentando la tensión entre capas. Ventiladores fuertes o ventanas abiertas crean enfriamiento desigual, especialmente en ABS y Nylon.',
       cita: {
@@ -188,6 +239,13 @@ export const ventiladorWarping: Guia = {
     {
       id: 'cama-material',
       titulo: 'Temperaturas de cama por material',
+      puntos: [
+        'La cama caliente compensa el enfriamiento del ventilador.',
+        'Para PLA en Textured PEI Plate: 55–65 °C.',
+        'Para ABS/ASA: aumentar cama +10–15 °C y usar cerramiento; la cámara debe alcanzar 40 °C+.',
+        'Para ABS: cama 100–120 °C. Si la habitación está por debajo de 20 °C, el warping puede ocurrir incluso con PLA y PETG.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'La cama caliente compensa el enfriamiento del ventilador. Para PLA en Textured PEI Plate: 55–65 °C. Para ABS/ASA: aumentar cama +10–15 °C y usar cerramiento; la cámara debe alcanzar 40 °C+. Para ABS: cama 100–120 °C. Si la habitación está por debajo de 20 °C, el warping puede ocurrir incluso con PLA y PETG.',
       cifra: { valor: '55–65 °C', nota: 'PLA en Textured PEI Plate; ABS: 100–120 °C' },
@@ -199,6 +257,14 @@ export const ventiladorWarping: Guia = {
     {
       id: 'puerta-abierta',
       titulo: 'Abrir la puerta y la cubierta',
+      puntos: [
+        'Abrir la puerta y la cubierta de la impresora mejora la refrigeración, pero solo es recomendable para PLA, PETG y TPU.',
+        'En filamentos de alta temperatura puede causar warping o mala adhesión entre capas.',
+        'Materiales de alta temperatura (PETG, ABS.',
+        'ASA, PA, PC) se imprimen con poca o ninguna refrigeración en impresora cerrada para.',
+        'Que el ambiente esté más caliente y permita enfriamiento lento.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Abrir la puerta y la cubierta de la impresora mejora la refrigeración, pero solo es recomendable para PLA, PETG y TPU. En filamentos de alta temperatura puede causar warping o mala adhesión entre capas. Materiales de alta temperatura (PETG, ABS, ASA, PA, PC) se imprimen con poca o ninguna refrigeración en impresora cerrada para que el ambiente esté más caliente y permita enfriamiento lento.',
       cita: {
@@ -225,7 +291,7 @@ export const ventiladorWarping: Guia = {
       cuando: { ventilador: ['auxiliar', 'ambos'], material: ['pla', 'petg'] },
       valor: '40–50 %',
       porque:
-        'Si hay warping, se recomienda bajar el ventilador auxiliar. El valor objetivo preventivo es 40–50 %; si ya hay warping, reducir 20–30 % del valor actual. El filamento que más se beneficia de un auxiliar alto es PLA, pero principalmente en objetos pequeños o con voladizos altos.',
+        'Si hay warping, se recomienda bajar el auxiliar: 40–50 % preventivo y 20–30 % de reducción del valor actual. El PLA es el que más se beneficia de un auxiliar alto: piezas pequeñas o voladizos altos.',
       fuente: 'Bambu Lab',
       alcance: 'Las dos cifras de Bambu no son lo mismo: una es correctiva (20–30 % del valor actual) y la otra es preventiva (40–50 % del máximo).',
     },
@@ -235,7 +301,7 @@ export const ventiladorWarping: Guia = {
       cuando: { material: ['abs', 'pa', 'pc'] },
       valor: '0 %',
       porque:
-        'ABS es altamente susceptible a la separación de capas cuando sopla aire frío sobre la pieza antes de que se enfríe por completo. Es común desactivar cualquier ventilador externo para que las capas se mantengan calientes más tiempo.',
+        'El ABS es muy susceptible a la separación de capas si sopla aire frío antes de que la pieza se enfríe del todo. De ahí desactivar todo ventilador externo: las capas se mantienen calientes más tiempo.',
       fuente: 'Prusa Research',
       alcance: 'Regla general para ABS. La excepción es 10–20 % para overhangs abruptos, donde el ventilador es necesario para la calidad del voladizo.',
     },
@@ -245,7 +311,7 @@ export const ventiladorWarping: Guia = {
       cuando: { material: ['abs', 'pc'], tamaño: 'pequena' },
       valor: '10–20 %',
       porque:
-        'Para overhangs abruptos en materiales que no requieren mucha refrigeración (ABS, PC-Blend), se puede habilitar el ventilador al 10–20 %. El ventilador es necesario para la calidad del voladizo, no para el warping.',
+        'Para overhangs abruptos en materiales que no requieren mucha refrigeración (ABS, PC-Blend), se puede habilitar al 10–20 %. El ventilador hace falta para la calidad del voladizo, no para el warping.',
       fuente: 'Prusa Research',
       alcance: 'Excepción específica para overhangs. No es la regla general para ABS, que es apagado.',
     },

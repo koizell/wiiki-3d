@@ -43,6 +43,7 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'superficie',
       etiqueta: 'Orientación de la curva',
+      indicador: 'cama',
       para: 'Z contouring sólo gestiona superficies superiores; las curvas invertidas no se corrigen con él.',
       necesaria: true,
       opciones: [
@@ -54,6 +55,7 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'altura',
       etiqueta: 'Altura de capa',
+      indicador: 'altura',
       para: 'La altura de capa es la resolución vertical y decide el detalle en curvas.',
       necesaria: true,
       opciones: [
@@ -65,6 +67,7 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'boquilla',
       etiqueta: 'Diámetro de boquilla',
+      indicador: 'temperatura',
       para: 'La boquilla pone el techo y el suelo de la altura de capa.',
       necesaria: true,
       opciones: [
@@ -76,6 +79,7 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'zContouring',
       etiqueta: 'Z contouring (ZAA)',
+      indicador: 'altura',
       para: 'Si está activo, suaviza superficies superiores curvas sin cambiar la altura de capa nominal.',
       opciones: [
         { id: 'activado', etiqueta: 'Activado' },
@@ -86,6 +90,7 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'desplazamiento',
       etiqueta: '¿Hubo desplazamiento de capa?',
+      indicador: 'calibracion',
       para: 'Si la pieza se ha corrido entera, la causa es mecánica o eléctrica, no la altura.',
       opciones: [
         { id: 'si', etiqueta: 'Sí, se ha corrido' },
@@ -97,6 +102,12 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'altura-y-curvas',
       titulo: 'La altura de capa es la resolución vertical',
+      puntos: [
+        'La altura de capa define cuánto detalle tiene la pieza en el eje Z.',
+        'Usar alturas menores da acabado de superficie más suave.',
+        'Líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
+      ],
+      indicador: 'altura',
       cuerpo:
         'La altura de capa define cuánto detalle tiene la pieza en el eje Z. Usar alturas menores da acabado de superficie más suave, líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
       cifra: { valor: '20 %–80 %', nota: 'del diámetro de boquilla, rango óptimo' },
@@ -109,6 +120,11 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'altura-variables',
       titulo: 'Variables de altura de capa en el slicer',
+      puntos: [
+        'La altura de capa define el grosor vertical de cada capa y afecta tanto a la calidad como a la velocidad.',
+        'En OrcaSlicer se ajusta con las variables layer_height e initial_layer_print_height.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'La altura de capa define el grosor vertical de cada capa y afecta tanto a la calidad como a la velocidad. En OrcaSlicer se ajusta con las variables layer_height e initial_layer_print_height.',
       cita: {
@@ -121,6 +137,11 @@ export const piezasCurvadasZ: Guia = {
       id: 'por-debajo-20',
       titulo: 'Por debajo del 20 %: inconsistencias de flujo',
       cuando: { altura: 'fina' },
+      puntos: [
+        'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones "fish scale".',
+        'Especialmente a altas velocidades.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones "fish scale", especialmente a altas velocidades.',
       cita: {
@@ -133,6 +154,10 @@ export const piezasCurvadasZ: Guia = {
       id: 'por-encima-80',
       titulo: 'Por encima del 80 %: riesgo de adhesión entre capas',
       cuando: { altura: 'gruesa' },
+      puntos: [
+        'Por encima del 80 % del diámetro de boquilla hay mayor riesgo de problemas de adhesión entre capas y reducción de calidad de impresión.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Por encima del 80 % del diámetro de boquilla hay mayor riesgo de problemas de adhesión entre capas y reducción de calidad de impresión.',
       cita: {
@@ -143,6 +168,11 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'z-contouring-que-es',
       titulo: 'Z contouring (ZAA) suaviza curvas superiores',
+      puntos: [
+        'Z contouring reduce el escalonado visible en superficies curvas.',
+        'Y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para que el toolpath siga mejor la superficie del modelo.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Z contouring reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para que el toolpath siga mejor la superficie del modelo.',
       cita: {
@@ -154,6 +184,12 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'z-contouring-limite',
       titulo: 'Z contouring no gestiona curvas invertidas',
+      puntos: [
+        'La implementación actual apunta a superficies curvas o pendientes orientadas hacia arriba (top-facing).',
+        'Las curvas orientadas hacia abajo o invertidas no se gestionan.',
+        'Por eso la orientación de la curva decide si Z contouring sirve o no.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'La implementación actual apunta a superficies curvas o pendientes orientadas hacia arriba (top-facing). Las curvas orientadas hacia abajo o invertidas no se gestionan. Por eso la orientación de la curva decide si Z contouring sirve o no.',
       cita: {
@@ -166,6 +202,12 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-min-wall',
       titulo: 'Minimize wall height angle',
       cuando: { zContouring: 'activado' },
+      puntos: [
+        'Reduce la altura de los perímetros de superficie superior para ajustarse mejor al borde del modelo en pendientes más pronunciadas.',
+        'Que ese ángulo; afecta a perímetros internos y externos.',
+        'Poner 0 para desactivar.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Reduce la altura de los perímetros de superficie superior para ajustarse mejor al borde del modelo en pendientes más pronunciadas que ese ángulo; afecta a perímetros internos y externos. Poner 0 para desactivar.',
       cifra: { valor: '35°', nota: 'valor por defecto, punto de partida razonable' },
@@ -179,6 +221,10 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-min-z',
       titulo: 'Minimum z height',
       cuando: { zContouring: 'activado' },
+      puntos: [
+        'Valores menores permiten un contouring más fuerte pero dejan menos grosor mínimo de capa.',
+      ],
+      indicador: 'altura',
       cuerpo:
         'Valores menores permiten un contouring más fuerte pero dejan menos grosor mínimo de capa.',
       cita: {
@@ -191,6 +237,12 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-fill',
       titulo: "Don't alternate fill direction",
       cuando: { zContouring: 'activado' },
+      puntos: [
+        'Mantiene la dirección de relleno consistente de capa a capa.',
+        'Ayuda a un patrón de superficie más consistente en superficies superiores curvas.',
+        'Sólo tiene efecto cuando Z contouring está habilitado para esa región.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Mantiene la dirección de relleno consistente de capa a capa; ayuda a un patrón de superficie más consistente en superficies superiores curvas. Sólo tiene efecto cuando Z contouring está habilitado para esa región.',
       cita: {
@@ -202,6 +254,11 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'voladizos',
       titulo: 'Altura de capa y voladizos',
+      puntos: [
+        'Las alturas de capa menores permiten voladizos más pronunciados al reducir la distancia no soportada entre capas.',
+        'Las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
+      ],
+      indicador: 'altura',
       cuerpo:
         'Las alturas de capa menores permiten voladizos más pronunciados al reducir la distancia no soportada entre capas; las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
       cita: {
@@ -213,6 +270,12 @@ export const piezasCurvadasZ: Guia = {
     {
       id: 'primera-capa',
       titulo: 'Altura de primera capa',
+      puntos: [
+        'La altura de primera capa controla el grosor de la capa inicial.',
+        'Una primera capa más gruesa mejora la adhesión a la cama y compensa imperfecciones de la superficie de construcción.',
+        'Recomendado 0,25 mm para boquilla de 0,4 mm, máximo 65 % del diámetro de boquilla.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La altura de primera capa controla el grosor de la capa inicial; una primera capa más gruesa mejora la adhesión a la cama y compensa imperfecciones de la superficie de construcción. Recomendado 0,25 mm para boquilla de 0,4 mm, máximo 65 % del diámetro de boquilla.',
       cifra: { valor: '0,25 mm', nota: 'boquilla de 0,4 mm (62,5 % del diámetro)' },
@@ -225,6 +288,13 @@ export const piezasCurvadasZ: Guia = {
       id: 'desplazamiento-causas',
       titulo: 'Desalineación de capas: causa mecánica o eléctrica',
       cuando: { desplazamiento: 'si' },
+      puntos: [
+        'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal.',
+        'Si algo se desvía, la impresión sigue como si nada.',
+        'Si el cabezal se mueve demasiado rápido.',
+        'Los motores pueden no seguir el ritmo (se oye un clic al fallar la posición) y el resto de la impresión queda desalineado.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal; si algo se desvía, la impresión sigue como si nada. Si el cabezal se mueve demasiado rápido, los motores pueden no seguir el ritmo (se oye un clic al fallar la posición) y el resto de la impresión queda desalineado.',
       cita: {

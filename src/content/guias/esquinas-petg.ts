@@ -5,13 +5,15 @@ export const esquinasPetg: Guia = {
   slug: 'esquinas-petg',
   titulo: 'Esquinas levantadas en PETG (warping)',
   resumen:
-    'El PETG ensombrece el warping del PLA pero sus esquinas se levantan igual. Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
+    'El PETG es algo más propenso a warpear que el PLA, y sus esquinas se levantan igual.',
+  resumenExtra:
+    'Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
   sintoma: 'Esquinas levantadas en PETG',
   dibujo: 'esquinas',
   entrada:
     'El PETG es menos propenso a warpear que ABS, ASA, PC o PA, pero sus esquinas se levantan igual cuando la base no sujeta o el enfriamiento es inadecuado. Aquí casi nunca es el filamento: es la chapa, la cama, el aire y el ventilador. Antes de subir la cama, confirma que el daño son esquinas levantadas y no un deslizamiento de la pieza o un colapso.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 5,
   diferencial: {
     contra: 'fallo de adhesión a la cama y colapso estructural',
@@ -42,6 +44,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'chapa',
       etiqueta: 'Chapa',
+      indicador: 'cama',
       para: 'Decide si PETG está recomendado y la cifra de cama; más que el fabricante.',
       necesaria: true,
       opciones: [
@@ -55,6 +58,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'tamaño',
       etiqueta: 'Tamaño o forma de la pieza',
+      indicador: 'geometria',
       para: 'Los modelos grandes y planos warpean más; los altos y delgados se tumban.',
       necesaria: true,
       opciones: [
@@ -67,6 +71,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'cama',
       etiqueta: 'Temperatura de cama ahora',
+      indicador: 'cama',
       para: 'Bambu da 60–80 °C y Prusa/Prusament 70–90 °C; la acción depende de si estás por encima o por debajo.',
       necesaria: true,
       opciones: [
@@ -78,6 +83,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'ambiente',
       etiqueta: 'Temperatura ambiente',
+      indicador: 'entorno',
       para: 'Por debajo de 20 °C aparece warping incluso en PETG y conviene actuar; el aire alto o con corriente también.',
       necesaria: true,
       opciones: [
@@ -90,6 +96,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'recinto',
       etiqueta: '¿Trabajabas con el recinto cerrado?',
+      indicador: 'entorno',
       para: 'Proteger de corrientes ayuda, pero PETG necesita cooling y no debe superar ~40 °C de ambiente.',
       opciones: [
         { id: 'abierto', etiqueta: 'Abierto o sin tapa' },
@@ -100,6 +107,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'fan',
       etiqueta: 'Ventilador de pieza / auxiliar',
+      indicador: 'ventilacion',
       para: 'Dos fuentes dicen direcciones opuestas: Bambu baja el cooling, Prusa comprueba que esté activo y sube.',
       opciones: [
         { id: 'desconocido', etiqueta: 'No lo sé' },
@@ -111,6 +119,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'infill',
       etiqueta: 'Patrón de relleno',
+      indicador: 'velocidad',
       para: 'Grid y Triangle generan tensión lineal interna; Gyroid se encoge de forma más uniforme.',
       opciones: [
         { id: 'cruzado', etiqueta: 'Grid o Triangle' },
@@ -121,6 +130,7 @@ export const esquinasPetg: Guia = {
     {
       id: 'humedad',
       etiqueta: 'Humedad del filamento',
+      indicador: 'entorno',
       para: 'PETG absorbe humedad; los síntomas son crujidos, burbujas, stringing y capas internas débiles.',
       opciones: [
         { id: 'seco', etiqueta: 'Seco y bien guardado' },
@@ -133,12 +143,23 @@ export const esquinasPetg: Guia = {
     {
       id: 'mecanismo',
       titulo: 'Por qué se levanta en PETG',
+      puntos: [
+        'Es contracción térmica.',
+        'Los bordes exteriores se enfrían antes que el centro, y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
+        'PETG tiene baja expansión térmica y raramente warpea, pero un enfriamiento desigual o una base que no sujetó basta para levantarlo.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'Es contracción térmica. Los bordes exteriores se enfrían antes que el centro, y esa diferencia genera una tensión que tira de las esquinas hacia arriba. PETG tiene baja expansión térmica y raramente warpea, pero un enfriamiento desigual o una base que no sujetó basta para levantarlo.',
     },
     {
       id: 'ranking',
       titulo: 'El ranking de riesgo de warping',
+      puntos: [
+        'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC, PA-CF, PA, ABS, ASA, PETG, PLA.',
+        'PETG queda justo por encima del PLA. Son siete materiales del propio filtro de Bambu, no todos los rígidos.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC, PA-CF, PA, ABS, ASA, PETG, PLA. PETG queda justo por encima del PLA. Son siete materiales del propio filtro de Bambu, no todos los rígidos.',
       cifra: { valor: '7 -> 1', nota: 'PC el mas propenso; PLA el menos' },
@@ -146,6 +167,12 @@ export const esquinasPetg: Guia = {
     {
       id: 'cama-bambu',
       titulo: 'Cama para PETG segun Bambu',
+      puntos: [
+        'Bambu da 60-80 °C en la tabla por filamento, con glue stick o liquid glue en el mismo rango.',
+        'En la tabla por placa, las placas PEI (Engineering, Smooth, High-Temp y Textured) piden 60-80 °C para PETG.',
+        'La Cool Plate no está recomendada.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Bambu da 60-80 °C en la tabla por filamento, con glue stick o liquid glue en el mismo rango. En la tabla por placa, las placas PEI (Engineering, Smooth, High-Temp y Textured) piden 60-80 °C para PETG; la Cool Plate no está recomendada.',
       cifra: { valor: '60-80 °C', nota: 'PETG en placas PEI (Bambu)' },
@@ -153,6 +180,11 @@ export const esquinasPetg: Guia = {
     {
       id: 'cama-prusa',
       titulo: 'Cama para PETG segun Prusa y Prusament',
+      puntos: [
+        'Prusa da 70-90 °C para PETG en la guía de materiales, y Prusament PETG afina el mismo rango como 80 ± 10 °C.',
+        'Las tres bandas solapan entre 70 y 80 °C.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Prusa da 70-90 °C para PETG en la guía de materiales, y Prusament PETG afina el mismo rango como 80 ± 10 °C. Las tres bandas solapan entre 70 y 80 °C.',
       cifra: { valor: '70-90 °C', nota: 'PETG (Prusa / Prusament)' },
@@ -160,12 +192,25 @@ export const esquinasPetg: Guia = {
     {
       id: 'cama-contradiccion',
       titulo: 'Las dos cifras no son un único número',
+      puntos: [
+        'Bambu mide sobre sus placas propias y deja un margen de ±5 °C admitido por OrcaSlicer.',
+        'Prusa y Prusament sobre PEI estándar y redondean distinto.',
+        'Lo útil es dar el rango propio de cada fabricante y placa.',
+        'El acuerdo está en 70-80 °C.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Bambu mide sobre sus placas propias y deja un margen de ±5 °C admitido por OrcaSlicer; Prusa y Prusament sobre PEI estándar y redondean distinto. Lo útil es dar el rango propio de cada fabricante y placa. El acuerdo está en 70-80 °C.',
     },
     {
       id: 'recinto-matiz',
       titulo: 'Recinto: util y limitado para PETG',
+      puntos: [
+        'PETG no necesita temperatura ambiente obligatoria y tolera grandes objetos sin recinto.',
+        'El recinto protege de corrientes y ambiente frío, pero PETG necesita mucho cooling y una cámara demasiado caliente lo dificulta.',
+        'Las piezas de la impresora son de PETG y se deforman por encima de 40-50 °C, así que el ambiente no debe pasar de ahí.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'PETG no necesita temperatura ambiente obligatoria y tolera grandes objetos sin recinto. El recinto protege de corrientes y ambiente frío, pero PETG necesita mucho cooling y una cámara demasiado caliente lo dificulta. Las piezas de la impresora son de PETG y se deforman por encima de 40-50 °C, así que el ambiente no debe pasar de ahí.',
       cuando: { ambiente: ['frio', 'alto'] },
@@ -173,6 +218,12 @@ export const esquinasPetg: Guia = {
     {
       id: 'recinto-sin-corroborar',
       titulo: 'Banda razonable de ambiente en recinto',
+      puntos: [
+        'Un usuario del foro de Prusa propone 20-40 °C de ambiente para PETG en recinto.',
+        'Es una sola fuente secundaria, sin corroborar.',
+        'El extremo alto choca con los 40-50 °C a partir de los cuales las piezas PETG de la impresora se deforman.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Un usuario del foro de Prusa propone 20-40 °C de ambiente para PETG en recinto. Es una sola fuente secundaria, sin corroborar; el extremo alto choca con los 40-50 °C a partir de los cuales las piezas PETG de la impresora se deforman.',
       cifra: { valor: '20-40 °C', nota: 'Una sola fuente, sin corroborar' },
@@ -181,6 +232,15 @@ export const esquinasPetg: Guia = {
     {
       id: 'fan-contradiccion',
       titulo: 'Ventilador: dos direcciones segun qué ventilador',
+      puntos: [
+        'Bambu habla del auxiliar: exceso de cooling enfría las paredes exteriores demasiado rápido y desencadena warping.',
+        'Recomendado 40-50 %, bajarlo a 20-30 % si hay warping, y sin ventilador en las 3 primeras capas.',
+        'Prusa habla del ventilador de pieza: PETG necesita mucho cooling y.',
+        'Si las esquinas se levantan, hay que comprobar que esté activo y sin obstrucciones y probar a subir la velocidad.',
+        'Ambas pueden ser ciertas según qué ventilador y qué ha fallado: comprobar primero si está activo y sin obstrucciones.',
+        'Si ya está alto, bajarlo.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu habla del auxiliar: exceso de cooling enfría las paredes exteriores demasiado rápido y desencadena warping; recomendado 40-50 %, bajarlo a 20-30 % si hay warping, y sin ventilador en las 3 primeras capas. Prusa habla del ventilador de pieza: PETG necesita mucho cooling y, si las esquinas se levantan, hay que comprobar que esté activo y sin obstrucciones y probar a subir la velocidad. Ambas pueden ser ciertas según qué ventilador y qué ha fallado: comprobar primero si está activo y sin obstrucciones; si ya está alto, bajarlo.',
       cuando: { fan: ['desconocido', 'apagado', 'bajo', 'alto'] },
@@ -188,6 +248,11 @@ export const esquinasPetg: Guia = {
     {
       id: 'fan-desacuerdo',
       titulo: 'No hay una unica respuesta sobre el ventilador auxiliar',
+      puntos: [
+        'Bambu escribe dos cifras en dos paginas para el mismo ventilador auxiliar: bajarlo a 40-50 % en una, y reducirlo 20-30 % en otra.',
+        'El material cocinado no resuelve cuál aplicar; ambas se exponen y no se promedian.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu escribe dos cifras en dos paginas para el mismo ventilador auxiliar: bajarlo a 40-50 % en una, y reducirlo 20-30 % en otra. El material cocinado no resuelve cuál aplicar; ambas se exponen y no se promedian.',
       cifra: { valor: '40-50 % o 20-30 %', nota: 'Bambu, dos paginas, sin resolver' },
@@ -196,6 +261,11 @@ export const esquinasPetg: Guia = {
     {
       id: 'primeras-3',
       titulo: 'Sin ventilador en las tres primeras capas',
+      puntos: [
+        'Mantener apagado el enfriamiento en las primeras 3 capas mejora la adhesión y el enfriamiento lento de las capas, evitando warping.',
+        'Es el ajuste que Bambu señala como el mas importante para el warping.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Mantener apagado el enfriamiento en las primeras 3 capas mejora la adhesión y el enfriamiento lento de las capas, evitando warping. Es el ajuste que Bambu señala como el mas importante para el warping.',
       cifra: { valor: '0 %', nota: 'Enfriamiento en las primeras 3 capas' },
@@ -203,6 +273,11 @@ export const esquinasPetg: Guia = {
     {
       id: 'placa-offset',
       titulo: 'La Textured PEI baja la boquilla 0,04 mm',
+      puntos: [
+        'En la placa Textured PEI, la impresora baja la boquilla 0,04 mm tras la nivelación para garantizar la adhesión de la primera capa.',
+        'Si laminaste para otra placa, ese descenso no se aplica y la boquilla queda demasiado alta.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'En la placa Textured PEI, la impresora baja la boquilla 0,04 mm tras la nivelación para garantizar la adhesión de la primera capa. Si laminaste para otra placa, ese descenso no se aplica y la boquilla queda demasiado alta.',
       cifra: { valor: '-0,04 mm', nota: 'Offset automatico en PEI texturizada' },
@@ -211,6 +286,12 @@ export const esquinasPetg: Guia = {
     {
       id: 'petg-extrusor',
       titulo: 'Temperatura de boquilla para PETG',
+      puntos: [
+        'Bambu da 240-270 °C, Prusa 215-270 °C y Prusament 250 ± 10 °C.',
+        'El rango propio depende del filamento y del hotend.',
+        'Si el ventilador excesivo ha levantado la pieza, subir la temperatura de boquilla recupera la union entre capas.',
+      ],
+      indicador: 'ventilacion',
       cuerpo:
         'Bambu da 240-270 °C, Prusa 215-270 °C y Prusament 250 ± 10 °C. El rango propio depende del filamento y del hotend. Si el ventilador excesivo ha levantado la pieza, subir la temperatura de boquilla recupera la union entre capas.',
       cifra: { valor: '240-270 °C', nota: 'PETG según Bambu Lab' },
@@ -218,6 +299,12 @@ export const esquinasPetg: Guia = {
     {
       id: 'infill-patron',
       titulo: 'Relleno y patron para PETG',
+      puntos: [
+        'Modelos planos grandes: Gyroid a unas 25 % como techo; Grid y Triangle generan tension lineal interna.',
+        'Gyroid se encoge de forma mas uniforme. Piezas estructurales: 5 paredes y unos 25 %; no estructurales: 2 paredes y 15 %.',
+        'Evitar mas de 50 %. Para partes duraderas, aumentar primero el número de perimetros, no el porcentaje de relleno.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Modelos planos grandes: Gyroid a unas 25 % como techo; Grid y Triangle generan tension lineal interna, Gyroid se encoge de forma mas uniforme. Piezas estructurales: 5 paredes y unos 25 %; no estructurales: 2 paredes y 15 %. Evitar mas de 50 %. Para partes duraderas, aumentar primero el número de perimetros, no el porcentaje de relleno.',
       cifra: { valor: '≤25 %', nota: 'Gyroid, techo recomendado' },
@@ -226,6 +313,12 @@ export const esquinasPetg: Guia = {
     {
       id: 'brim-alcance',
       titulo: 'Brim completo o brim ears',
+      puntos: [
+        'Bambu recomienda un brim de 8-10 mm o brim ears pintados solo en las esquinas que levantan.',
+        'Prusa propone un brim normal para aumentar la adhesion.',
+        'No se contradicen: el brim completo es la salida basica; los brim ears son la versión dirigida a esquinas concretas.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Bambu recomienda un brim de 8-10 mm o brim ears pintados solo en las esquinas que levantan. Prusa propone un brim normal para aumentar la adhesion. No se contradicen: el brim completo es la salida basica; los brim ears son la versión dirigida a esquinas concretas.',
       cifra: { valor: '8-10 mm', nota: 'Brim para esquinas que levantan' },
@@ -234,12 +327,24 @@ export const esquinasPetg: Guia = {
     {
       id: 'superficie',
       titulo: 'Superficie limpia y adhesion excesiva',
+      puntos: [
+        'PETG tiene adhesión fuerte a la cama; IPA puede dejarla demasiado fuerte.',
+        'Limpiar con limpiacristales o agua con detergente cuando la cama esta fría.',
+        'Bambu da agua templada y jabon, enjuagar y secar al aire; no tocar con las manos desnudas.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'PETG tiene adhesión fuerte a la cama; IPA puede dejarla demasiado fuerte. Limpiar con limpiacristales o agua con detergente cuando la cama esta fría. Bambu da agua templada y jabon, enjuagar y secar al aire; no tocar con las manos desnudas.',
     },
     {
       id: 'ambiente-20',
       titulo: 'Ambiente por debajo de 20 °C',
+      puntos: [
+        'Si la habitacion esta por debajo de 20 °C, aparecen problemas de warping incluso con PLA y PETG, que son materiales permisivos.',
+        'Las corrientes de aire enfrían un lado antes que el otro y aumentan la tensión entre capas.',
+        'Conviene bloquear el flujo alrededor de la impresora.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Si la habitacion esta por debajo de 20 °C, aparecen problemas de warping incluso con PLA y PETG, que son materiales permisivos. Las corrientes de aire enfrían un lado antes que el otro y aumentan la tensión entre capas; conviene bloquear el flujo alrededor de la impresora.',
       cuando: { ambiente: ['frio', 'corriente'] },
@@ -247,6 +352,11 @@ export const esquinasPetg: Guia = {
     {
       id: 'humedad-secado',
       titulo: 'Humedad en PETG y secado',
+      puntos: [
+        'PETG absorbe humedad. Filamento húmedo da sonidos de crujido o popping, superficies rugosas, burbujas, stringing y resistencia reducida.',
+        'Secar antes de reintentar: 70 °C durante 8 h en horno de secado, o 65 °C durante 12 h en AMS.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'PETG absorbe humedad. Filamento húmedo da sonidos de crujido o popping, superficies rugosas, burbujas, stringing y resistencia reducida. Secar antes de reintentar: 70 °C durante 8 h en horno de secado, o 65 °C durante 12 h en AMS.',
       cifra: { valor: '70 °C/8 h o 65 °C/12 h', nota: 'Secado de PETG' },
@@ -352,8 +462,8 @@ export const esquinasPetg: Guia = {
       id: 'recinto-abrir',
       accion: 'Abre la puerta frontal y/o quita la tapa',
       porque:
-        'Para filamentos con temperatura de reblandecimiento por debajo de 60 °C y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
-      cuando: { cama: 'alta', recinto: 'cerrado' },
+        'PETG reblandece entre 60 y 80 °C: con la cama por encima de 60 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
+      cuando: { cama: ['media', 'alta'], recinto: 'cerrado' },
       fuente: 'Bambu Lab',
       alcance: 'Es un y/o de la fuente; traducirlo como "las dos cosas" exigiría una conjunción que no pidió.',
     },

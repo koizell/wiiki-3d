@@ -61,7 +61,9 @@ export const zSeam: Guia = {
   slug: 'z-seam',
   titulo: 'La costura Z',
   resumen:
-    'La costura Z es el punto donde cada perímetro empieza y acaba: es normal y con FFF no se puede eliminar. Esta guía dice dónde ponerla para que estorbe menos y qué se puede mejorar.',
+    'La costura Z es el punto donde cada perímetro empieza y acaba: es normal y con FFF no se puede eliminar.',
+  resumenExtra:
+    'Esta guía dice dónde ponerla para que estorbe menos y qué se puede mejorar.',
   sintoma: 'Una línea vertical que sube por la pared',
   dibujo: 'capas',
   entrada:
@@ -113,6 +115,7 @@ export const zSeam: Guia = {
     {
       id: 'forma',
       etiqueta: '¿De qué forma es la pieza?',
+      indicador: 'geometria',
       para: 'Decide si la costura se puede esconder: en una esquina sí, en un cilindro no. Y decide qué modo de posición conviene.',
       necesaria: true,
       opciones: [
@@ -124,6 +127,7 @@ export const zSeam: Guia = {
     {
       id: 'posicion',
       etiqueta: '¿Dónde cae la costura?',
+      indicador: 'geometria',
       para: 'Es lo que separa los tres casos: que no haya nada que hacer, que haya que moverla o que haya que pintar dónde cae.',
       necesaria: true,
       opciones: [
@@ -136,6 +140,7 @@ export const zSeam: Guia = {
     {
       id: 'slicer',
       etiqueta: '¿Qué programa usas?',
+      indicador: 'slicer',
       para: 'Las dos casas llaman igual a tres modos y distinto al cuarto, y el hueco de la costura se ajusta de forma distinta en cada una.',
       opciones: [
         { id: 'bambu', etiqueta: 'Bambu Studio', detalle: 'Nearest · Aligned · Back · Random' },
@@ -146,6 +151,7 @@ export const zSeam: Guia = {
     {
       id: 'material',
       etiqueta: 'Filamento',
+      indicador: 'material',
       para: 'La retracción es el mecanismo por el que la costura se nota, y con material flexible esa retracción encoge el filamento y puede atascar.',
       /*
        * `campos: ['material']` aquí y `campos: []` en la guía entera.
@@ -172,6 +178,14 @@ export const zSeam: Guia = {
     {
       id: 'que-es',
       titulo: 'La costura es el final de cada perímetro',
+      puntos: [
+        'La costura Z es el punto donde el perímetro de una capa **empieza y acaba**.',
+        'El cabezal no puede cerrar un círculo, así que ahí la extrusión se detiene y vuelve a empezar.',
+        'La definición más fina es la de Bambu Studio y la de Prusa.',
+        'Que hablan de **cada perímetro**; la sección de calidad de Bambu habla de "each layer", de cada capa.',
+        'La diferencia importa: una pieza con varios perímetros por capa tiene más de un punto de costura en cada capa.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'La costura Z es el punto donde el perímetro de una capa **empieza y acaba**: el cabezal no puede cerrar un círculo, así que ahí la extrusión se detiene y vuelve a empezar. La definición más fina es la de Bambu Studio y la de Prusa, que hablan de **cada perímetro**; la sección de calidad de Bambu habla de «each layer», de cada capa. La diferencia importa: una pieza con varios perímetros por capa tiene más de un punto de costura en cada capa.',
       cita: {
@@ -182,6 +196,13 @@ export const zSeam: Guia = {
     {
       id: 'no-es-defecto',
       titulo: 'Es normal, y con FFF no se puede eliminar',
+      puntos: [
+        'Las dos casas lo dicen con las mismas palabras: es un fenómeno normal y **no se puede eliminar**.',
+        'Prusa lo formula sin rodeos —"it is not possible to eliminate the seam.',
+        'It will always be somewhat visible"— y Bambu lo llama "unavoidable in FDM 3D printing".',
+        'Lo que sí se puede es **moverla** y **reducir cuánto se nota**, y eso es lo que se publica aquí.',
+      ],
+      indicador: 'general',
       cuerpo:
         'Las dos casas lo dicen con las mismas palabras: es un fenómeno normal y **no se puede eliminar**. Prusa lo formula sin rodeos —«it is not possible to eliminate the seam. It will always be somewhat visible»— y Bambu lo llama «unavoidable in FDM 3D printing». Lo que sí se puede es **moverla** y **reducir cuánto se nota**, y eso es lo que se publica aquí.',
       cita: {
@@ -192,6 +213,14 @@ export const zSeam: Guia = {
     {
       id: 'forma-pieza',
       titulo: 'Cuánto se nota depende de la forma, no del material',
+      puntos: [
+        'En una superficie con vértices cóncavos y convexos la costura se esconde bien.',
+        'En una superficie circular **no se puede esconder y será muy evidente**.',
+        'Las dos casas lo dicen.',
+        'Ninguna fuente de este lote da un porcentaje de cuánto se nota, y ninguna dice que un material la haga más visible que otro.',
+        'Lo que decide es la forma de la pieza.',
+      ],
+      indicador: 'material',
       cuerpo:
         'En una superficie con vértices cóncavos y convexos la costura se esconde bien; en una superficie circular **no se puede esconder y será muy evidente**. Las dos casas lo dicen. Ninguna fuente de este lote da un porcentaje de cuánto se nota, y ninguna dice que un material la haga más visible que otro: lo que decide es la forma de la pieza.',
       cita: {
@@ -203,6 +232,16 @@ export const zSeam: Guia = {
     {
       id: 'pos-nearest',
       titulo: 'Nearest: esconderla en una esquina',
+      puntos: [
+        'Las dos casas lo llaman **Nearest**.',
+        'Los tres primeros niveles de la búsqueda de candidatos son los mismos en las dos: primero un vértice cóncavo sin voladizo.',
+        'Después uno convexo sin voladizo, después cualquier vértice sin voladizo.',
+        '**Bambu añade un cuarto, el vértice con voladizo, como último recurso; Prusa no lo publica** y su texto termina en el tercero.',
+        'Con esquinas vivas la costura queda efectivamente invisible, según las dos casas.',
+        'Bambu añade que el modo optimiza el camino de viaje para minimizar el *stringing*; Prusa, que está pensado para velocidad.',
+        'Poco desplazamiento y resistencia aceptable.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Las dos casas lo llaman **Nearest**. Los tres primeros niveles de la búsqueda de candidatos son los mismos en las dos: primero un vértice cóncavo sin voladizo, después uno convexo sin voladizo, después cualquier vértice sin voladizo. **Bambu añade un cuarto, el vértice con voladizo, como último recurso; Prusa no lo publica** y su texto termina en el tercero. Con esquinas vivas la costura queda efectivamente invisible, según las dos casas. Bambu añade que el modo optimiza el camino de viaje para minimizar el *stringing*; Prusa, que está pensado para velocidad, poco desplazamiento y resistencia aceptable.',
       cita: {
@@ -214,6 +253,13 @@ export const zSeam: Guia = {
     {
       id: 'pos-aligned',
       titulo: 'Aligned: la costura casi siempre en el mismo sitio',
+      puntos: [
+        'También se llama **Aligned** en las dos casas.',
+        'Usa la misma búsqueda de candidatos que *Nearest*, pero elige el que está más cerca del punto de inicio de la capa anterior.',
+        'De modo que la costura queda **casi siempre alineada** a lo largo de toda la pieza.',
+        'Se sabe más o menos dónde está, que es justo lo contrario de dispersarla.',
+      ],
+      indicador: 'general',
       cuerpo:
         'También se llama **Aligned** en las dos casas. Usa la misma búsqueda de candidatos que *Nearest*, pero elige el que está más cerca del punto de inicio de la capa anterior, de modo que la costura queda **casi siempre alineada** a lo largo de toda la pieza: se sabe más o menos dónde está, que es justo lo contrario de dispersarla.',
       cita: {
@@ -224,6 +270,13 @@ export const zSeam: Guia = {
     {
       id: 'pos-back',
       titulo: 'Back (Bambu) y Rear (Prusa): dos operaciones distintas',
+      puntos: [
+        'La cuarta posición se llama **Back** en Bambu Studio y **Rear** en PrusaSlicer.',
+        'Y **no hacen lo mismo**: Bambu pone la costura "behind the model".',
+        'Detrás de la pieza; Prusa la lleva "close to max Y (rear of the print bed)", hacia el fondo de la cama, y dice que funciona como *Aligned*.',
+        'Las dos casas la justifican por lo mismo: dejar una superficie lisa en la cara que se mira.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'La cuarta posición se llama **Back** en Bambu Studio y **Rear** en PrusaSlicer, y **no hacen lo mismo**: Bambu pone la costura «behind the model», detrás de la pieza; Prusa la lleva «close to max Y (rear of the print bed)», hacia el fondo de la cama, y dice que funciona como *Aligned*. Las dos casas la justifican por lo mismo: dejar una superficie lisa en la cara que se mira.',
       cita: {
@@ -234,6 +287,14 @@ export const zSeam: Guia = {
     {
       id: 'pos-random',
       titulo: 'Random: un sitio distinto en cada capa',
+      puntos: [
+        'La costura cae en un punto distinto en cada capa, y así se ve menos de forma uniforme.',
+        'El precio lo pagan las dos casas: Bambu avisa de que provoca efectos de "zits" en la superficie.',
+        'Y Prusa de que deja pequeños bultos repartidos por ella.',
+        '**Según Prusa**, además, este modo aumenta la resistencia total de la impresión.',
+        'Bambu no publica nada de resistencia de la pieza en su apartado de costura.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'La costura cae en un punto distinto en cada capa, y así se ve menos de forma uniforme. El precio lo pagan las dos casas: Bambu avisa de que provoca efectos de «zits» en la superficie y Prusa de que deja pequeños bultos repartidos por ella. **Según Prusa**, además, este modo aumenta la resistencia total de la impresión; Bambu no publica nada de resistencia de la pieza en su apartado de costura.',
       cita: {
@@ -244,6 +305,14 @@ export const zSeam: Guia = {
     {
       id: 'seam-gap',
       titulo: 'El hueco de la costura: dos parametrizaciones',
+      puntos: [
+        'Para disimularla, Bambu Studio **detiene la extrusión por adelantado** en las paredes interior.',
+        'Y exterior y deja un hueco que aloja el material sobrante.',
+        'Esa longitud se expresa como **porcentaje del diámetro actual de la boquilla**, y el valor por defecto es **15 %**.',
+        'El PrusaSlicer usa otra cosa: la distancia entre los extremos del perímetro.',
+        '**Con signo**, y si se usa en porcentajes se deriva del diámetro de la boquilla.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Para disimularla, Bambu Studio **detiene la extrusión por adelantado** en las paredes interior y exterior y deja un hueco que aloja el material sobrante. Esa longitud se expresa como **porcentaje del diámetro actual de la boquilla**, y el valor por defecto es **15 %**. El PrusaSlicer usa otra cosa: la distancia entre los extremos del perímetro, **con signo**, y si se usa en porcentajes se deriva del diámetro de la boquilla.',
       cifra: {
@@ -258,6 +327,13 @@ export const zSeam: Guia = {
     {
       id: 'seam-gap-prusa',
       titulo: 'El signo: interrumpir el lazo o solaparlo',
+      puntos: [
+        'En PrusaSlicer el valor **positivo acorta e interrumpe** el lazo del perímetro, para reducir la costura, y el **negativo lo prolonga**.',
+        'De modo que los extremos se solapen un poco.',
+        'Ponerlo a **0 desactiva la función**. Es otra parametrización del mismo ajuste: el 15 % de Bambu y esta distancia con signo no se suman.',
+        'No se promedian y no se traducen entre sí.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'En PrusaSlicer el valor **positivo acorta e interrumpe** el lazo del perímetro, para reducir la costura, y el **negativo lo prolonga**, de modo que los extremos se solapen un poco. Ponerlo a **0 desactiva la función**. Es otra parametrización del mismo ajuste: el 15 % de Bambu y esta distancia con signo no se suman, no se promedian y no se traducen entre sí.',
       cita: {
@@ -269,6 +345,14 @@ export const zSeam: Guia = {
     {
       id: 'mecanismo',
       titulo: 'Por qué se nota: la retracción al cambiar de capa',
+      puntos: [
+        'La retracción se hace antes del desplazamiento y el filamento se vuelve a cargar en el hotend al final del desplazamiento.',
+        'Justo donde acaba una capa y empieza la siguiente.',
+        'Ese punto de recarga es el que se ve como costura.',
+        'Existe un interruptor que fuerza la retracción ahí: **Retract on layer change**.',
+        'Y la página de costura de Bambu lo conecta con la limpieza de la boquilla: al retraer se hace un pequeño *wiping*.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'La retracción se hace antes del desplazamiento y el filamento se vuelve a cargar en el hotend al final del desplazamiento, justo donde acaba una capa y empieza la siguiente. Ese punto de recarga es el que se ve como costura. Existe un interruptor que fuerza la retracción ahí: **Retract on layer change**. Y la página de costura de Bambu lo conecta con la limpieza de la boquilla: al retraer se hace un pequeño *wiping*.',
       cita: {
@@ -279,6 +363,12 @@ export const zSeam: Guia = {
     {
       id: 'retraccion-alcance',
       titulo: 'La retracción no es el ajuste de la costura',
+      puntos: [
+        'El alcance real de la retracción, según su propia página, es evitar el *stringing* y el *oozing*, no la costura.',
+        'Por eso **los hilos tienen su propia guía** y aquí no se repite ninguna cifra de retracción.',
+        'Lo que se publica es el mecanismo por el que la costura se nota, no una receta para eliminarla.',
+      ],
+      indicador: 'general',
       cuerpo:
         'El alcance real de la retracción, según su propia página, es evitar el *stringing* y el *oozing*, no la costura. Por eso **los hilos tienen su propia guía** y aquí no se repite ninguna cifra de retracción: lo que se publica es el mecanismo por el que la costura se nota, no una receta para eliminarla.',
       enlaza: { guia: 'stringing', etiqueta: 'Hilos y goteo' },
@@ -290,6 +380,13 @@ export const zSeam: Guia = {
     {
       id: 'no-retract-before-wipe',
       titulo: 'La única vez que la documentación escribe «Z-seam»',
+      puntos: [
+        'Hay un parámetro de Bambu que nombra el efecto tal cual, y es el único sitio donde la palabra aparece así en su documentación.',
+        '**Retract amount before wipe**.',
+        'Es la longitud de la retracción rápida antes de la limpieza, expresada como porcentaje de la longitud de retracción.',
+        'Y su valor por defecto es 0. La propia página dice que **si no se retrae antes de limpiar, el efecto Z-seam en la pared exterior mejora**.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Hay un parámetro de Bambu que nombra el efecto tal cual, y es el único sitio donde la palabra aparece así en su documentación: **Retract amount before wipe**. Es la longitud de la retracción rápida antes de la limpieza, expresada como porcentaje de la longitud de retracción, y su valor por defecto es 0. La propia página dice que **si no se retrae antes de limpiar, el efecto Z-seam en la pared exterior mejora**.',
       cifra: {
@@ -305,6 +402,12 @@ export const zSeam: Guia = {
       id: 'retraccion-flexible',
       titulo: 'Con TPU, la retracción encoge el filamento',
       cuando: { material: 'tpu' },
+      puntos: [
+        'Con materiales flexibles como el TPU, la retracción **afecta al diámetro del filamento y lo encoge**.',
+        'Lo que puede llevar a atascos y a otros problemas de extrusión.',
+        'O sea: el ajuste que en otros materiales mejora el acabado es aquí un problema nuevo, y no una solución.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Con materiales flexibles como el TPU, la retracción **afecta al diámetro del filamento y lo encoge**, lo que puede llevar a atascos y a otros problemas de extrusión. O sea: el ajuste que en otros materiales mejora el acabado es aquí un problema nuevo, y no una solución.',
       cita: {
@@ -317,6 +420,15 @@ export const zSeam: Guia = {
       id: 'retraccion-rigidos',
       titulo: 'Con PLA, ABS y PETG la retracción activada imprime mejor',
       cuando: { material: ['pla', 'petg', 'abs'] },
+      puntos: [
+        'La misma página de retracción dice que "for all other materials such as PLA.',
+        'ABS, and PETG, the printing effect is better when the retraction is enabled" —para todos los demás materiales.',
+        'Como PLA, ABS y PETG, el resultado de impresión es mejor con la retracción activada—.',
+        'Y la regla de la fuente es la de todos los demás materiales, así que el filamento de la casilla ABS o ASA cae en ella por la misma frase.',
+        'Aunque la fuente no lo nombre. La conclusión es directa: **la retracción no se desactiva para arreglar una costura**.',
+        'Lo que se puede cambiar es *cuándo* se limpia la boquilla, que es otra cosa.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'La misma página de retracción dice que «for all other materials such as PLA, ABS, and PETG, the printing effect is better when the retraction is enabled» —para todos los demás materiales, como PLA, ABS y PETG, el resultado de impresión es mejor con la retracción activada—. Y la regla de la fuente es la de todos los demás materiales, así que el filamento de la casilla ABS o ASA cae en ella por la misma frase, aunque la fuente no lo nombre. La conclusión es directa: **la retracción no se desactiva para arreglar una costura**; lo que se puede cambiar es *cuándo* se limpia la boquilla, que es otra cosa.',
       cita: {
@@ -328,6 +440,13 @@ export const zSeam: Guia = {
     {
       id: 'bambu-metodos',
       titulo: 'Los cuatro métodos que da Bambu',
+      puntos: [
+        'La sección de calidad de impresión de Bambu da cuatro cosas para que la costura se note menos.',
+        '**Tres perímetros de pared**, **no imprimir varias piezas en la misma placa** para reducir el desplazamiento del cabezal.',
+        '**Subir la temperatura de boquilla y bajar la velocidad de la pared exterior** —sin cifras— y el **modo Spiral vase** para algunos modelos.',
+        'Los dos últimos: el primero no trae número, y el segundo tiene condiciones que lo dejan fuera de casi todo.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'La sección de calidad de impresión de Bambu da cuatro cosas para que la costura se note menos: **tres perímetros de pared**, **no imprimir varias piezas en la misma placa** para reducir el desplazamiento del cabezal, **subir la temperatura de boquilla y bajar la velocidad de la pared exterior** —sin cifras— y el **modo Spiral vase** para algunos modelos. Los dos últimos: el primero no trae número, y el segundo tiene condiciones que lo dejan fuera de casi todo.',
       cita: {
@@ -338,6 +457,13 @@ export const zSeam: Guia = {
     {
       id: 'prusa-metodos',
       titulo: 'Lo que dice Prusa: dos ajustes, no una lista',
+      puntos: [
+        'Prusa no da una lista de métodos, sino dos ajustes: el **avance lineal** y la **calibración del multiplicador de extrusión**.',
+        'Sus perfiles originales ya vienen ajustados.',
+        'Si afinas un perfil propio, el camino que da la casa es bajar el multiplicador de extrusión y calibrar el avance lineal.',
+        'Ninguna de las dos fuentes da cifras aquí: las cifras de flow y de presión avanzada son de otra guía.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Prusa no da una lista de métodos, sino dos ajustes: el **avance lineal** y la **calibración del multiplicador de extrusión**. Sus perfiles originales ya vienen ajustados; si afinas un perfil propio, el camino que da la casa es bajar el multiplicador de extrusión y calibrar el avance lineal. Ninguna de las dos fuentes da cifras aquí: las cifras de flow y de presión avanzada son de otra guía.',
       enlaza: { guia: 'flow-rate', etiqueta: 'Flujo y subextrusión' },
@@ -350,6 +476,13 @@ export const zSeam: Guia = {
     {
       id: 'scarf-que-es',
       titulo: 'Scarf seam (Bambu) y scarf joint (Prusa): la misma idea',
+      puntos: [
+        'Es la misma cosa con dos nombres: Bambu Studio la llama **scarf seam** desde la versión 1.9 y Prusa la llama **scarf joint**.',
+        'En vez de interrumpir el perímetro en la costura, **solapa la extrusión del final con la del principio**, como una bufanda.',
+        'Bambu dice que así se reduce la visibilidad "in most cases", es decir en la mayoría de los casos; Prusa.',
+        'Que reduce las costuras visibles, sobre todo en superficies curvas.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Es la misma cosa con dos nombres: Bambu Studio la llama **scarf seam** desde la versión 1.9 y Prusa la llama **scarf joint**. En vez de interrumpir el perímetro en la costura, **solapa la extrusión del final con la del principio**, como una bufanda. Bambu dice que así se reduce la visibilidad «in most cases», es decir en la mayoría de los casos; Prusa, que reduce las costuras visibles, sobre todo en superficies curvas.',
       cita: {
@@ -360,12 +493,27 @@ export const zSeam: Guia = {
     {
       id: 'scarf-tipos',
       titulo: 'Los menús no son equivalentes',
+      puntos: [
+        'Los conjuntos de opciones **no coinciden**.',
+        'Bambu ofrece **None / Contour / Contour and Hole**, y desde la versión 1.10 se puede decidir por filamento.',
+        'Prusa ofrece **Nowhere / Contour / Everywhere**, donde *Everywhere* cubre también las paredes interiores que rodean los huecos de la pieza.',
+        'Cada casa publica sus nombres y sus tipos: no hay un menú común al que traducirlos, y *Contour and Hole* no tiene equivalente en Prusa.',
+      ],
+      indicador: 'material',
       cuerpo:
         'Los conjuntos de opciones **no coinciden**. Bambu ofrece **None / Contour / Contour and Hole**, y desde la versión 1.10 se puede decidir por filamento. Prusa ofrece **Nowhere / Contour / Everywhere**, donde *Everywhere* cubre también las paredes interiores que rodean los huecos de la pieza. Cada casa publica sus nombres y sus tipos: no hay un menú común al que traducirlos, y *Contour and Hole* no tiene equivalente en Prusa.',
     },
     {
       id: 'scarf-cuando',
       titulo: 'Dónde se aplica: sólo donde la costura no se puede esconder',
+      puntos: [
+        'Bambu decide solo: aplica la bufanda **sólo donde la costura tradicional no se puede esconder**.',
+        'Y no la activa por defecto en superficies con ángulos vivos.',
+        'Porque ahí la costura se esconde sola; el umbral de ese ángulo es configurable.',
+        'Prusa tiene lo mismo como opción por defecto: **"Scarf joint only on smooth perimeters"**.',
+        'Si se desmarca, también se aplica a las superficies que no son lisas.',
+      ],
+      indicador: 'cama',
       cuerpo:
         'Bambu decide solo: aplica la bufanda **sólo donde la costura tradicional no se puede esconder**, y no la activa por defecto en superficies con ángulos vivos, porque ahí la costura se esconde sola; el umbral de ese ángulo es configurable. Prusa tiene lo mismo como opción por defecto: **«Scarf joint only on smooth perimeters»**. Si se desmarca, también se aplica a las superficies que no son lisas.',
       cita: {
@@ -377,6 +525,13 @@ export const zSeam: Guia = {
     {
       id: 'scarf-contra',
       titulo: 'El scarf no es un ajuste sin coste',
+      puntos: [
+        'Las dos casas publican su contraindicación, y **no son la misma**.',
+        'Bambu: extender la bufanda a toda la pared ("Scarf around entire wall") **reduce la extrusión de todo el perímetro**.',
+        'Lo que puede dar mala adhesión entre líneas y defectos de superficie; y en la zona volada las líneas pueden no unir bien.',
+        'Prusa: **aumenta el tiempo de impresión** y es menos eficaz en esquinas y voladizos.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Las dos casas publican su contraindicación, y **no son la misma**. Bambu: extender la bufanda a toda la pared («Scarf around entire wall») **reduce la extrusión de todo el perímetro**, lo que puede dar mala adhesión entre líneas y defectos de superficie; y en la zona volada las líneas pueden no unir bien. Prusa: **aumenta el tiempo de impresión** y es menos eficaz en esquinas y voladizos.',
       cita: {
@@ -388,6 +543,15 @@ export const zSeam: Guia = {
     {
       id: 'spiral-vase',
       titulo: 'Spiral vase: el único modo que quita la costura de la pared',
+      puntos: [
+        'Es el único modo en el que la costura **no aparece en la pared exterior**.',
+        'La pieza se imprime en una espiral lineal y las costuras sólo quedan en las capas del fondo.',
+        'El precio lo escribe **Bambu**, con cuatro condiciones: **una sola pared exterior, sin relleno ni tapa superior**.',
+        'Y **sólo modelos simples**, porque los complejos no se pueden imprimir con una sola línea.',
+        '**Prusa** pone dos de esas condiciones: un solo perímetro y nada de relleno.',
+        'El modo es de la guía de relleno.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Es el único modo en el que la costura **no aparece en la pared exterior**: la pieza se imprime en una espiral lineal y las costuras sólo quedan en las capas del fondo. El precio lo escribe **Bambu**, con cuatro condiciones: **una sola pared exterior, sin relleno ni tapa superior**, y **sólo modelos simples**, porque los complejos no se pueden imprimir con una sola línea. **Prusa** pone dos de esas condiciones: un solo perímetro y nada de relleno. El modo es de la guía de relleno.',
       enlaza: { guia: 'relleno-patrones', etiqueta: 'Relleno y patrones' },
@@ -400,6 +564,15 @@ export const zSeam: Guia = {
     {
       id: 'pintado',
       titulo: 'Pintar la costura a mano',
+      puntos: [
+        'Las dos casas permiten decidir el punto exacto.',
+        'Bambu dice que "Sometimes the auto seam position may be not ideal, you can customize the seam position by manually painting the method".',
+        'A veces la posición automática no es ideal, y se puede personalizar pintando el método a mano.',
+        'Prusa, desde PrusaSlicer 2.3: la herramienta de *seam painting* permite pintar **seam enforcers** (obligar a.',
+        'Que caiga ahí) o **seam blockers** (impedir que caiga en esa zona).',
+        'Y lo importante, **según Prusa**: **el pintado no anula el modo elegido, lo restringe**; esa lógica no la publica Bambu.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Las dos casas permiten decidir el punto exacto. Bambu dice que «Sometimes the auto seam position may be not ideal, you can customize the seam position by manually painting the method»: a veces la posición automática no es ideal, y se puede personalizar pintando el método a mano. Prusa, desde PrusaSlicer 2.3: la herramienta de *seam painting* permite pintar **seam enforcers** (obligar a que caiga ahí) o **seam blockers** (impedir que caiga en esa zona). Y lo importante, **según Prusa**: **el pintado no anula el modo elegido, lo restringe**; esa lógica no la publica Bambu.',
       cita: {
@@ -410,6 +583,15 @@ export const zSeam: Guia = {
     {
       id: 'resistencia',
       titulo: 'La resistencia: un dato de una sola casa',
+      puntos: [
+        'Prusa es la única de las dos que habla de resistencia, y lo dice en dos sitios: **las costuras son puntos débiles de la impresión**.',
+        'Y por eso descuadrar la costura interior de la exterior hace la pieza más fuerte; y el modo *Random* **aumenta la resistencia total**.',
+        'Bambu **no publica nada de resistencia de la pieza en su apartado de costura** —ni en la página de ajustes de costura.',
+        'Ni en la de calidad de impresión, ni en el apartado de costura de la página de problemas comunes—.',
+        'Su marco es el de la costura como hueco inevitable.',
+        'En otras secciones de su wiki sí habla de resistencia, pero de warping y de grietas entre capas, no de la costura.',
+      ],
+      indicador: 'entorno',
       cuerpo:
         'Prusa es la única de las dos que habla de resistencia, y lo dice en dos sitios: **las costuras son puntos débiles de la impresión**, y por eso descuadrar la costura interior de la exterior hace la pieza más fuerte; y el modo *Random* **aumenta la resistencia total**. Bambu **no publica nada de resistencia de la pieza en su apartado de costura** —ni en la página de ajustes de costura, ni en la de calidad de impresión, ni en el apartado de costura de la página de problemas comunes—: su marco es el de la costura como hueco inevitable. En otras secciones de su wiki sí habla de resistencia, pero de warping y de grietas entre capas, no de la costura.',
       cita: {
@@ -420,6 +602,14 @@ export const zSeam: Guia = {
     {
       id: 'wipe-speed',
       titulo: 'El wipe speed: un porcentaje de la velocidad de viaje',
+      puntos: [
+        'Bambu Studio aplica el *wipe speed* a **todos los tipos de costura** y lo expresa como porcentaje de la velocidad de desplazamiento.',
+        'La página pone el ejemplo de un 80 %, que significa que la velocidad de limpieza es el 80 % de la velocidad de viaje.',
+        'Ese 80 % es **el ejemplo de la página, no un valor recomendado**.',
+        'La misma página nombra un "Role-Based Wipe Speed" del que **no describe qué hace**.',
+        'Eso no se publica, porque no hay nada detrás del nombre.',
+      ],
+      indicador: 'velocidad',
       cuerpo:
         'Bambu Studio aplica el *wipe speed* a **todos los tipos de costura** y lo expresa como porcentaje de la velocidad de desplazamiento: la página pone el ejemplo de un 80 %, que significa que la velocidad de limpieza es el 80 % de la velocidad de viaje. Ese 80 % es **el ejemplo de la página, no un valor recomendado**. La misma página nombra un «Role-Based Wipe Speed» del que **no describe qué hace**: eso no se publica, porque no hay nada detrás del nombre.',
       cita: {
@@ -434,7 +624,7 @@ export const zSeam: Guia = {
       id: 'costura-normal',
       accion: 'Acepta la costura: no hay ningún ajuste que la borre',
       porque:
-        'Las dos casas lo dicen con las mismas palabras: es inevitable en FFF y **no se puede eliminar**. Lo que se puede es moverla y reducir cuánto se nota, y eso es lo que hacen el resto de las reglas de esta guía.',
+        'Las dos casas lo dicen con las mismas palabras: es inevitable en FFF y **no se puede eliminar**. Lo que se puede es moverla y reducir cuánto se nota.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Vale para cualquier material, cualquier forma y cualquier ajuste, y por eso no se condiciona a ninguna variable: es el marco del tema, no el consejo de un caso concreto. Las dos fuentes son documentación oficial de cada casa, y ninguna de las dos promete una costura invisible.',
@@ -465,7 +655,7 @@ export const zSeam: Guia = {
       accion: 'Orienta la pieza para que la costura caiga en una cara que no se vea',
       cuando: { posicion: 'cara-visible' },
       porque:
-        'Es el motivo que dan las dos casas para el modo de detrás: Bambu lo propone con «If you want to get a smooth surface in the front», para tener una superficie lisa en la cara que se mira, y Prusa lo dice útil con «This option is useful for objects that will be displayed with a specific orientation», para objetos que se muestran con una orientación concreta.',
+        'Es el motivo de las dos casas para el modo de detrás: Bambu quiere una superficie lisa en la cara que se mira y Prusa lo dice útil para objetos que se muestran con una orientación concreta.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'La orientación es un parámetro del corte, no un ajuste de la costura: su guía es su dueña. Y si la cara visible no tiene esquinas donde esconder la costura, girar la pieza no basta: hace falta decidir el punto exacto.',
@@ -475,7 +665,7 @@ export const zSeam: Guia = {
       accion: 'Pinta la costura a mano para llevarla a otro punto',
       cuando: { slicer: 'bambu', posicion: 'cara-visible' },
       porque:
-        'Bambu Studio lo tiene en su página de ajustes de costura: «Sometimes the auto seam position may be not ideal, you can customize the seam position by manually painting the method». Es decir: a veces la posición automática no es ideal, y se puede personalizar pintando el método a mano.',
+        'Bambu Studio lo tiene en su página de ajustes de costura: «Sometimes the auto seam position may be not ideal, you can customize the seam position by manually painting the method».',
       fuente: 'Bambu Lab',
       alcance:
         'Es la herramienta de pintado de Bambu Studio, y el corpus no describe el procedimiento ni los modos del cursor. Su página **no publica la lógica de la herramienta**: no dice qué son los *seam enforcers* ni los *seam blockers*, ni qué pasa con el modo de posición elegido. Eso, y el hecho de que el pintado restrinja el modo en vez de sustituirlo, es un dato **sólo de Prusa**.',
@@ -508,7 +698,7 @@ export const zSeam: Guia = {
       valor: 'Random (las dos casas)',
       cuando: { forma: 'curva', posicion: ['pared', 'cara-visible'] },
       porque:
-        'En una pieza cilíndrica sin esquinas la costura no se puede esconder en ninguna parte, y Prusa dice que ahí *Random* es una opción viable: al cambiar de punto en cada capa la marca deja de ser una línea continua.',
+        'En una pieza cilíndrica sin esquinas la costura no se puede esconder, y Prusa dice que ahí *Random* es viable: al cambiar de punto en cada capa la marca deja de ser una línea continua.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'El precio lo pagan las dos casas: pequeños bultos («zits») repartidos por la superficie. **Las condiciones de uso del modo las publica sólo Prusa** —que no tiene sentido en piezas con esquinas y sí en piezas cilíndricas sin aristas—: Bambu no dice para qué formas conviene. El aumento de resistencia también es un dato **sólo de Prusa**.',
@@ -526,10 +716,10 @@ export const zSeam: Guia = {
     },
     {
       id: 'random-ya-activo',
-      accion: 'Lo que ves es el modo Random funcionando, no un fallo',
+      accion: 'Comprueba que el modo Random está funcionando antes de tocar nada',
       cuando: { posicion: 'repartida' },
       porque:
-        'Las dos casas describen ese modo igual: un punto distinto en cada capa, para que la costura se vea menos de forma uniforme. Lo que notas disperso es la costura repartida, y lo que se ve en la superficie son los pequeños bultos que ese modo deja.',
+        'Las dos casas lo describen igual: un punto distinto en cada capa, para que la costura se vea menos uniforme. Lo que notas disperso es la costura, y en la superficie los bultos que deja el modo.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'El coste son los «zits», pequeños bultos repartidos: lo dicen las dos casas. El aumento de resistencia es un dato sólo de Prusa.',
@@ -539,7 +729,7 @@ export const zSeam: Guia = {
       accion: 'Mantén Random: según Prusa, refuerza la pieza',
       cuando: { slicer: 'prusa', posicion: 'repartida', forma: 'curva' },
       porque:
-        'Prusa dice que *Random* «This option increases the overall strength of the print», que aumenta la resistencia total de la impresión, y su otro dato sobre resistencia es que **las costuras son puntos débiles** de la pieza.',
+        'Prusa dice que *Random* «This option increases the overall strength of the print», y su otro dato sobre resistencia es que **las costuras son puntos débiles** de la pieza.',
       fuente: 'Prusa Research',
       alcance:
         'Es un dato de Prusa y sólo de Prusa: **Bambu no publica nada de resistencia de la pieza en su apartado de costura** (en otras secciones de su wiki sí habla de resistencia, pero de warping y de grietas entre capas). La guía no lo convierte en una propiedad general de la costura. Y sólo tiene sentido donde Prusa lo dice: en piezas sin aristas vivas.',
@@ -559,7 +749,7 @@ export const zSeam: Guia = {
       accion: 'Combina: esconde la costura en las esquinas y usa scarf en las zonas lisas',
       cuando: { forma: 'mixta' },
       porque:
-        'En una pieza que tiene zonas angulares y zonas lisas, cada zona tiene su solución: en el vértice el modo *Nearest* deja la costura invisible, y en la pared lisa la costura bufanda es lo que las dos casas señalan para las superficies curvas.',
+        'En una pieza con zonas angulares y zonas lisas, cada zona tiene su solución: en el vértice *Nearest* deja la costura invisible, y en la pared lisa las dos casas señalan la costura bufanda.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Ninguna fuente da un procedimiento para combinar los dos modos: es la lectura de las dos recomendaciones, cada una con su alcance. El *scarf* se aplica donde la costura tradicional no se puede esconder. Y son dos zonas distintas de la misma pieza: en el vértice no hay nada que hacer, y la bufanda entra en la pared lisa.',
@@ -590,7 +780,7 @@ export const zSeam: Guia = {
       accion: 'Sube la temperatura de boquilla y baja la velocidad de la pared exterior',
       cuando: { slicer: 'bambu' },
       porque:
-        'Es el tercer método de Bambu, y la página lo dice sin cifras: «Appropriately raise the nozzle temperature and reduce the printing speed of the outer wall». Es decir: subir adecuadamente la temperatura de la boquilla y reducir la velocidad de impresión de la pared exterior.',
+        'Es el tercer método de Bambu, y la página lo dice sin cifras: «Appropriately raise the nozzle temperature and reduce the printing speed of the outer wall».',
       fuente: 'Bambu Lab',
       alcance:
         'Bambu no da número para ninguna de las dos cosas, y esta guía no los inventa: las cifras de temperatura de boquilla y de velocidad de pared exterior están en sus guías. La dirección es la de la casa, la cantidad es tuya.',
@@ -600,7 +790,7 @@ export const zSeam: Guia = {
       accion: 'Baja el multiplicador de extrusión y calibra el avance lineal',
       cuando: { slicer: 'prusa' },
       porque:
-        'Prusa dice que lo que afecta a la visibilidad de la costura es el avance lineal y la calibración del multiplicador de extrusión, y que con un perfil propio el camino es bajar el multiplicador y calibrar el avance lineal.',
+        'Prusa dice que afecta a la visibilidad de la costura el avance lineal y el multiplicador de extrusión, y con un perfil propio el camino es bajar el multiplicador y calibrar el avance lineal.',
       fuente: 'Prusa Research',
       alcance:
         'Prusa no da cifras aquí: la calibración de flujo y de presión avanzada, con sus procedimientos, son de la guía de flujo. Sus perfiles originales ya vienen ajustados, así que esto es para afinar un perfil propio.',
@@ -611,7 +801,7 @@ export const zSeam: Guia = {
       valor: '15 %',
       cuando: { slicer: 'bambu' },
       porque:
-        'Para disimular la costura, Bambu Studio detiene la extrusión por adelantado en las paredes interior y exterior y deja un hueco que aloja el material sobrante. Esa longitud se expresa como porcentaje del diámetro actual de la boquilla, y el valor por defecto es 15 %.',
+        'Para disimular la costura, Bambu Studio detiene la extrusión por adelantado en las paredes interior y exterior y deja un hueco para el sobrante, en % del diámetro de la boquilla: 15 % por defecto.',
       fuente: 'Bambu Lab',
       alcance:
         'Es el valor por defecto del seam gap de **Bambu Studio**, en porcentaje del diámetro de la boquilla: no es una medida en milímetros, no es una propiedad del material y no es el parámetro del PrusaSlicer, que es una distancia con signo.',
@@ -621,7 +811,7 @@ export const zSeam: Guia = {
       accion: 'Ajusta el seam gap: positivo interrumpe el lazo, negativo lo solapa',
       cuando: { slicer: 'prusa' },
       porque:
-        'En PrusaSlicer el seam gap es la distancia entre los extremos del perímetro cerrado: positiva acorta e interrumpe el lazo para reducir la costura, negativa lo prolonga para que los extremos se solapen. Si se expresa en porcentajes, se deriva del diámetro de la boquilla. **Ponerlo a 0 desactiva la función.**',
+        'En PrusaSlicer, positiva acorta e interrumpe el lazo y reduce la costura, negativa lo prolonga y solapa. Si se expresa en %, sale del diámetro de la boquilla. **A 0 se desactiva la función.**',
       fuente: 'Prusa Research',
       alcance:
         'Es otra parametrización del mismo ajuste que el 15 % de Bambu: no se traducen entre sí y no se promedian. Prusa **no publica un valor por defecto**, así que aquí no se da ninguno.',
@@ -632,7 +822,7 @@ export const zSeam: Guia = {
       valor: '0 %',
       cuando: { slicer: 'bambu' },
       porque:
-        'Es el único sitio donde la documentación de Bambu escribe «Z-seam» tal cual: si no se retrae antes de limpiar, el efecto Z-seam en la pared exterior mejora. El parámetro es la longitud de la retracción rápida antes de la limpieza, en porcentaje de la longitud de retracción.',
+        'Bambu escribe «Z-seam» sólo aquí: si no se retrae antes de limpiar, el efecto Z-seam en la pared exterior mejora. Es la longitud de la retracción rápida antes de la limpieza, en % de la retracción.',
       fuente: 'Bambu Lab',
       alcance:
         'El resultado depende del orden de impresión por defecto, interior-exterior, y **no es una propiedad del material**. Prusa no publica nada equivalente en este lote. Y la retracción, en general, es de la guía de hilos.',
@@ -642,7 +832,7 @@ export const zSeam: Guia = {
       accion: 'No bajes la retracción para arreglar la costura si imprimes material flexible',
       cuando: { material: 'tpu' },
       porque:
-        'Con materiales flexibles como el TPU, la retracción puede afectar al diámetro del filamento y hacerlo encoger, lo que lleva a atascos y a otros problemas de extrusión. El ajuste que en otros materiales mejora el acabado es aquí un problema nuevo.',
+        'Con materiales flexibles como el TPU, la retracción puede encoger el filamento y lleva a atascos y a problemas de extrusión: el ajuste que en otros materiales mejora el acabado es aquí un problema.',
       fuente: 'Bambu Lab',
       alcance:
         'Es la advertencia de Bambu sobre materiales flexibles; Prusa no publica nada equivalente en este lote. Para el resto de materiales, la misma página dice que con la retracción activada se imprime mejor.',
@@ -653,7 +843,7 @@ export const zSeam: Guia = {
       valor: 'None · Contour · Contour and Hole',
       cuando: { slicer: 'bambu' },
       porque:
-        'Bambu Studio introdujo el *scarf seam* en la versión 1.9: en vez de interrumpir el perímetro, solapa la extrusión del final con la del principio —«making it overlap like a scarf», como una bufanda— y así reduce la visibilidad de la costura «in most cases», en la mayoría de los casos. Desde la 1.10 se puede decidir por filamento.',
+        'Bambu Studio introdujo el *scarf seam* en la 1.9: en vez de interrumpir el perímetro, solapa el final y el principio, como una bufanda, y reduce la visibilidad de la costura «in most cases».',
       fuente: 'Bambu Lab',
       alcance:
         'Los tipos de Bambu son None, Contour y Contour and Hole, y no son los mismos que los de Prusa. Su aplicación automática se limita a donde la costura tradicional no se puede esconder, y no se activa por defecto en superficies con ángulos vivos.',
@@ -664,7 +854,7 @@ export const zSeam: Guia = {
       valor: 'Nowhere · Contour · Everywhere',
       cuando: { slicer: 'prusa' },
       porque:
-        'El *scarf joint* de Prusa solapa las extrusiones del final y del principio del perímetro, lo que esconde las costuras visibles en los perímetros lisos y, según Prusa, mejora la resistencia de la pieza.',
+        'El *scarf joint* de Prusa solapa las extrusiones del final y del principio del perímetro: esconde las costuras visibles en los perímetros lisos y, según Prusa, mejora la resistencia de la pieza.',
       fuente: 'Prusa Research',
       alcance:
         'Los tipos de Prusa son Nowhere, Contour y Everywhere, y no son los mismos que los de Bambu. Por defecto sólo se aplica en perímetros lisos. Prusa avisa de que **aumenta el tiempo de impresión** y de que es menos eficaz en esquinas y voladizos; la mejora de resistencia es un dato sólo de Prusa.',
@@ -674,7 +864,7 @@ export const zSeam: Guia = {
       accion: 'No fuerces el scarf en las zonas con esquinas: ahí la costura se esconde sola',
       cuando: { forma: ['esquinas', 'mixta'] },
       porque:
-        'Bambu tiene una selección automática que no aplica la bufanda cuando la pared tiene un ángulo vivo donde la costura tradicional se puede esconder, y su umbral de ángulo es configurable. Prusa trae lo mismo como opción por defecto: el scarf joint no se aplica en superficies que no son lisas.',
+        'Bambu no aplica la bufanda en paredes con ángulo vivo, donde la costura se puede esconder, y su umbral es configurable. Prusa también por defecto: el scarf joint no se aplica en superficies no lisas.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Las dos casas lo limitan a las superficies donde la costura **no** se puede esconder. Ninguna de las dos recomienda forzarlo en una esquina, y su alcance publicado es el contrario del que se suele suponer.',
@@ -683,7 +873,7 @@ export const zSeam: Guia = {
       id: 'scarf-no-voladizos',
       accion: 'No extiendas el scarf a los voladizos',
       porque:
-        'Bambu avisa de que, por la pequeña extrusión de la costura bufanda, las líneas pueden no unir bien en la zona volada, y por eso la opción de colocarla lejos de los voladizos sólo se aplica en zonas con poco voladizo. Prusa lo dice de otro modo: el scarf joint es menos eficaz en esquinas y voladizos.',
+        'Bambu: por la pequeña extrusión de la bufanda las líneas pueden no unir bien en la zona volada, y la opción de alejarla sólo aplica con poco voladizo. Prusa: menos eficaz en esquinas y voladizos.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Vale para cualquier pieza con voladizos, y no se condiciona a ninguna variable porque esta guía no declara si la pieza los tiene: el aviso es de las dos casas y no depende del material ni del modo de costura.',
@@ -692,7 +882,7 @@ export const zSeam: Guia = {
       id: 'spiral-vase-alcance',
       accion: 'No cuentes con el modo Spiral vase para quitar la costura',
       porque:
-        'Es el único modo en el que la costura no aparece en la pared exterior, pero las condiciones **no son las mismas** en las dos casas: **Bambu** le pone cuatro —una sola pared exterior, sin relleno ni tapa superior, y sólo modelos simples, porque los complejos no se pueden imprimir con una sola línea— y **Prusa** dos: un solo perímetro y nada de relleno.',
+        'Es el único modo sin costura en la pared exterior, y **Bambu** y **Prusa** difieren: Bambu pone cuatro (una pared, sin relleno ni tapa, sólo modelos simples) y Prusa dos (un perímetro, sin relleno).',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'No elimina la costura de la pieza: en Bambu las capas del fondo la siguen teniendo. El modo es de la guía de relleno y allí está su explicación completa; aquí sólo se publica su alcance, que es lo que decide si te sirve.',

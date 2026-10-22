@@ -36,6 +36,8 @@ export function useGuiaEstado(): EstadoGuia {
       alternar: () => {},
       setElegidas: () => {},
       limpiar: () => {},
+      diferencial: {},
+      alternarDiferencial: () => {},
     };
   }
   return estado;

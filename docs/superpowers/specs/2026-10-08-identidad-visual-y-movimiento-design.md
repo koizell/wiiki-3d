@@ -14,7 +14,7 @@ Origen: sesión de brainstorming con el autor del proyecto
 > | §3 · Tokens del motivo de plano y del movimiento | ✅ Hechos (`--plano-rejilla`, `--plano-paso`, `--plano-linea`, `--plano-esquina`, `--dur-*`, `--curva-*`) |
 > | §5 · Rejilla, marcas de esquina, numeración `01 ·` | ✅ Hechos **en la portada**, con la frontera respetada: la rejilla no aparece en el cuerpo de lectura de las guías |
 > | §7.1 · El lienzo deja de centrar | ✅ Hecho |
-> | §7.2 · Cabecera de plano por ruta (`01 · INICIO` + estado) | ✅ En la portada; **pendiente** en Taller, Wiki 3D y Proyectos |
+> | §7.2 · Cabecera de plano por ruta (`01 · INICIO` + estado) | ✅ En la portada y **en las guías**; pendiente en Taller, Wiki 3D y Proyectos |
 > | §7.3 · Resultados como *readouts* | ⏳ Pendiente |
 > | §7.4 · Ningún bloque suelto | ✅ En la portada; **pendiente** en las otras rutas |
 > | §7.5 · El botón X como control fantasma | ⏳ Pendiente |
@@ -57,7 +57,7 @@ acción del usuario**; nada se mueve solo.
 | D2 | Tipografía | **IBM Plex Sans** (texto) + **IBM Plex Mono** (datos), autoalojadas |
 | D3 | Movimiento de resultados | **Instrumento**: aparece en su sitio + trazo azul que se dibuja |
 | D4 | Movimiento de controles | **Preciso**: 140 ms, `ease-out`, 6 px |
-| D5 | Dependencias | Ninguna. CSS nativo + Web Animations API si hiciera falta |
+| D5 | Dependencias | **Se admite `motion`** (motiondivision) para lo que el CSS no cubre: salida, gestos y valores continuos. El hover, el foco y el pulso de progreso siguen en CSS |
 | D6 | UI/UX | **Pasada sobre la estructura**: anclar, jerarquizar, convertir resultados en readouts y recolocar bloques sueltos. No cambian rutas ni lógica de dominio |
 | D7 | Moneda | **USD estándar**: `$0.02`, punto decimal, coma = millares. Sólo en Taller |
 
@@ -123,6 +123,13 @@ las cabeceras de sección y las zonas de acción.
 frontera que separa `wiki/raw/` de `wiki/cooked/`: estructura y contenido no se
 mezclan.
 
+**Matiz del 21 de octubre de 2026.** La frontera no se ha movido: sigue siendo
+«estructura y contenido no se mezclan». Lo que ha cambiado es **qué es
+estructura**. En la guía rediseñada, las tarjetas de comprobación, de variable y
+de acción **son** estructura —son instrumentos, no prosa— y la rejilla puede
+aparecer en ellas. Lo que no puede es aparecer detrás de un párrafo, ni en la
+tarjeta de conocimiento, que es texto con una cifra al lado.
+
 | Elemento | Dónde | Cómo |
 |---|---|---|
 | Rejilla | Lienzo de trabajo | Dos `linear-gradient`, paso `--plano-paso` |
@@ -140,6 +147,17 @@ Cuatro primitivas, y ninguna más.
 | `confirmar` | Subir archivo, calcular, marcar variable | Aparece en su sitio (sin desplazamiento) + trazo azul con `scaleX`. `--dur-resultado` + `--dur-trazo` |
 | `control` | `:hover`, `:focus-visible`, `:active` | 140 ms, 6 px, `--curva-estandar` |
 | `progreso` | «Analizando…» | El **único** bucle permitido (`panel-pulse` ya existe) |
+
+**El motor, desde el 21 de octubre de 2026.** Las cuatro primitivas las implementa
+`motion` (motiondivision) en la guía, y el CSS donde ya estaba. El motivo está
+escrito en el plan: el CSS no tiene **salida**. Una tarjeta que entra con
+`@keyframes` sabe entrar; una etapa que desaparece al cambiar de etapa no sabe, y
+`AnimatePresence` sí. El hover, el foco y el pulso **no** se han tocado: el CSS
+los hace más barato y sin JavaScript.
+
+La librería entra por la ruta, que ya es `lazy`: el chunk de entrada no crece
+—medido, +0,19 kB— y `motion` se va con la guía. La comprobación es
+`verify:animacion`.
 
 **Reglas duras, comprobables:**
 
@@ -253,7 +271,8 @@ de que cada ruta abre con su cabecera de plano y su estado.
 - Cambiar las rutas o los puntos de ruptura.
 - Tocar la lógica de dominio, salvo el formato de coste de D7 (`coste.ts`).
 - Tocar el contenido de las guías (`src/content/guias/*.ts`).
-- Añadir dependencias de animación.
+- Añadir dependencias de animación. *(Levantado el 21 de octubre de 2026: `motion`
+  entra para lo que el CSS no cubre —la salida de una etapa— y sólo ahí. Ver D5.)*
 - Rediseñar el visor 3D.
 
 ## 13 · Criterios de aceptación

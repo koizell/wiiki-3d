@@ -48,7 +48,7 @@ export default function WikiIndexRoute() {
     if (!limpio) return GUIAS;
     const palabras = limpio.split(/\s+/).filter(Boolean);
     return GUIAS.filter((g) => {
-      const heno = [g.sintoma, g.titulo, g.resumen, g.diferencial.contra, ...g.campos ?? []]
+      const heno = [g.sintoma, g.titulo, g.resumen, g.resumenExtra ?? '', g.diferencial.contra, ...g.campos ?? []]
         .join(' ')
         .toLowerCase();
       return palabras.every((p) => heno.includes(p));

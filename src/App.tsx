@@ -1,5 +1,6 @@
 import './App.css';
 import './estilos/ux-tareas.css';
+import './estilos/guia.css';
 import { Suspense, lazy, useLayoutEffect } from 'react';
 import {
   BrowserRouter,

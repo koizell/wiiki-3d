@@ -201,11 +201,60 @@
       "storagePolicy": "permitted-excerpts",
       "status": "blocked",
       "notas": "Rechazado el 15/10/2026. Las fuentes que se habían bajado de este dominio (reviews del catálogo de máquinas) se borraron de wiki/raw/ antes de revisar sus condiciones. El dominio queda anotado para que no se vuelva a bajar de él sin una revisión explícita del propietario."
+    },
+    {
+      "id": "orcaslicer-wiki-github",
+      "origin": "https://github.com/OrcaSlicer",
+      "sourceType": "oficial-fabricante",
+      "allowedPathPrefixes": [
+        "/OrcaSlicer/OrcaSlicer/wiki/"
+      ],
+      "robotsCheckedAt": null,
+      "robotsResult": "Sin comprobar: es la wiki oficial del proyecto, que cuelga de su propio repositorio en GitHub.",
+      "termsUrl": "https://github.com/OrcaSlicer/OrcaSlicer/blob/main/LICENSE",
+      "termsReviewed": false,
+      "rightsEvidenceUrl": null,
+      "storagePolicy": "permitted-excerpts",
+      "status": "allowed",
+      "notas": "Documentacion tecnica oficial del laminador, que es donde estan los tests de calibracion de OrcaSlicer. La guia de calibracion del wiki es de donde sale el orden de los tests. Faltan por leer las condiciones de uso."
+    },
+    {
+      "id": "duet3d-docs",
+      "origin": "https://docs.duet3d.com",
+      "sourceType": "oficial-fabricante",
+      "allowedPathPrefixes": [
+        "/User_manual/"
+      ],
+      "robotsCheckedAt": null,
+      "robotsResult": "Sin comprobar: documentacion oficial del firmware.",
+      "termsUrl": "https://www.duet3d.com/terms-and-conditions",
+      "termsReviewed": false,
+      "rightsEvidenceUrl": null,
+      "storagePolicy": "permitted-excerpts",
+      "status": "allowed",
+      "notas": "Manual oficial del firmware Duet. Aporta la tercera variante de Pressure Advance (M572) y un orden de calibracion propio, que contradice al de los otros. Faltan por leer las condiciones de uso."
+    },
+    {
+      "id": "control3d",
+      "origin": "https://control3d.net",
+      "sourceType": "terceros-educacion",
+      "allowedPathPrefixes": [
+        "/como-calibrar-una-impresora-3d-los-7-tests-imprescindibles/"
+      ],
+      "robotsCheckedAt": null,
+      "robotsResult": "Sin comprobar: academia privada de formacion en impresion 3D.",
+      "termsUrl": null,
+      "termsReviewed": false,
+      "rightsEvidenceUrl": null,
+      "storagePolicy": "permitted-excerpts",
+      "status": "allowed",
+      "notas": "Academia comercial (Cesar Galera, +17.000 alumnos). Es la fuente del metodo de los siete tests y del orden recommended. NO es un fabricante: sus cifras —los intervalos de 0,2 mm, los 2 mm en directo, los 6-7 mm en Bowden, los 75 grados— son el metodo de un autor y no un dato de fabricante, y la guia que salga de aqui tiene que marcarlos como fuente unica. Ademas su orden de los tests contradice el de OrcaSlicer, y las dos cosas quedan capturadas. Se limita a un unico articulo. Faltan por leer las condiciones de uso y por decidir el derechos de archivo y redistribucion, porque wiki/raw/ esta versionado."
     }
   ],
   "pendientes": [
     "termsReviewed es false en los dos dominios: las condiciones de uso no se han leido. Es una decision del propietario, no del agente.",
     "rightsEvidenceUrl es null: no se ha comprobado si el archivo y la redistribucion del texto estan permitidos. wiki/raw/ es versionado, asi que esto debe resolverse antes de que el repositorio sea publico o se comparta.",
-    "La discrepancia de Crawl-delay en prusa-kb esta pendiente de decision."
+    "La discrepancia de Crawl-delay en prusa-kb esta pendiente de decision.",
+    "El 21 de octubre de 2026 se anadieron tres dominios para la ruta de calibracion: la wiki de OrcaSlicer en GitHub, el manual de Duet y el articulo de Control3D. Los tres tienen termsReviewed en false y rightsEvidenceUrl en null: las condiciones de uso no se han leido y el archivo y la redistribucion del texto no estan comprobados. wiki/raw/ esta versionado, asi que eso debe resolverse antes de que el repositorio sea publico o se comparta. Y el de Control3D es una academia comercial: es una fuente de metodo, no de datos de fabricante, y el texto que se cita tiene que llevar su atribucion."
   ]
 }

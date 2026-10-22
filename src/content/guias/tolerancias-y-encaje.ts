@@ -12,13 +12,15 @@ export const toleranciasYEncaje: Guia = {
   slug: 'tolerancias-y-encaje',
   titulo: 'Tolerancias y encaje en impresión 3D FDM',
   resumen:
-    'La pieza sale más grande o más pequeña de lo diseñado, o no encaja con otra. Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
+    'Qué ajuste corresponde a cada causa de que una pieza no salga a medida: diseño, slicer, máquina o post-procesado.',
+  resumenExtra:
+    'Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
   sintoma: 'La pieza no sale a medida o no encaja',
   dibujo: 'slicer',
   entrada:
     'Una pieza impresa en FDM casi nunca sale exactamente a la medida diseñada: el plástico se contrae al enfriar, el slicer deposita más material en el lado cóncavo de las curvas y los errores mecánicos (backlash, steps/mm) producen desviaciones. Esta guía explica qué es una tolerancia y una holgura, qué tipos de encaje existen, cómo medir la tolerancia real de tu máquina y qué ajustar por diseño, software, máquina y post-procesado para que las piezas encajen.',
   autor: AUTOR,
-  actualizado: '2026-10-17',
+  actualizado: '2026-10-21',
   minutos: 7,
 
   diferencial: {
@@ -57,6 +59,7 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'slicer',
       etiqueta: 'Slicer',
+      indicador: 'slicer',
       para: 'Cada slicer tiene parámetros de compensación distintos y no se mezclan entre ecosistemas.',
       necesaria: true,
       opciones: [
@@ -71,6 +74,7 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'problema',
       etiqueta: 'Problema principal',
+      indicador: 'general',
       para: 'La dirección del ajuste depende de si el problema es de agujeros, de dimensiones generales o de encaje entre piezas.',
       opciones: [
         { id: 'agujeros', etiqueta: 'Agujeros pequeños' },
@@ -85,6 +89,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'tolerancia-vs-holgura',
       titulo: 'Tolerancia vs. holgura',
+      puntos: [
+        'Una tolerancia es el rango de desviación aceptable respecto a un valor nominal (ejemplo: filamento de 1,75 mm ±0,02 mm, es decir.',
+        'Entre 1,73 y 1,77 mm). Una holgura (clearance) es el espacio entre dos piezas que deben encajar.',
+        'Las tolerancias de las máquinas de impresión 3D indican cuánto puede desviarse una pieza de sus dimensiones nominales.',
+        'Una tolerancia más estrecha (más cercana a cero) indica mayor precisión dimensional consistente.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Una tolerancia es el rango de desviación aceptable respecto a un valor nominal (ejemplo: filamento de 1,75 mm ±0,02 mm, es decir, entre 1,73 y 1,77 mm). Una holgura (clearance) es el espacio entre dos piezas que deben encajar. Las tolerancias de las máquinas de impresión 3D indican cuánto puede desviarse una pieza de sus dimensiones nominales; una tolerancia más estrecha (más cercana a cero) indica mayor precisión dimensional consistente.',
       cifra: { valor: '1,75 mm ±0,02 mm', nota: 'ejemplo de tolerancia de filamento' },
@@ -96,6 +107,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'no-dos-iguales',
       titulo: 'No hay dos máquinas iguales',
+      puntos: [
+        'No hay dos impresoras con la misma tolerancia.',
+        'Ni siquiera del mismo modelo; hay que calibrar la propia máquina y no confiar en valores ajenos.',
+        'Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil.',
+        'Las tolerancias varían de una impresora a otra.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'No hay dos impresoras con la misma tolerancia, ni siquiera del mismo modelo; hay que calibrar la propia máquina y no confiar en valores ajenos. Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil, las tolerancias varían de una impresora a otra.',
       cita: {
@@ -106,6 +124,14 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'tipos-encaje',
       titulo: 'Tipos de encaje (fits)',
+      puntos: [
+        'Para una unión eje-agujero de diámetro nominal 50 mm.',
+        'All3DP da tres tipos de encaje con valores de ejemplo para un nozzle estándar de 0,4 mm (las cifras son ejemplos, no valores absolutos).',
+        'Encaje con holgura: el eje es sensiblemente menor que el agujero; entra y sale con facilidad.',
+        'Encaje por interferencia: el eje es igual o ligeramente mayor; no entra sin mucha fuerza.',
+        'Encaje de transición: el eje es ligeramente menor o mayor; entra con presión mínima y mantiene concentricidad.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'Para una unión eje-agujero de diámetro nominal 50 mm, All3DP da tres tipos de encaje con valores de ejemplo para un nozzle estándar de 0,4 mm (las cifras son ejemplos, no valores absolutos). Encaje con holgura: el eje es sensiblemente menor que el agujero; entra y sale con facilidad. Encaje por interferencia: el eje es igual o ligeramente mayor; no entra sin mucha fuerza. Encaje de transición: el eje es ligeramente menor o mayor; entra con presión mínima y mantiene concentricidad.',
       cita: {
@@ -116,6 +142,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'clearance-fit',
       titulo: 'Encaje con holgura (clearance fit)',
+      puntos: [
+        'El diámetro del eje es sensiblemente menor que el del agujero (ejemplo 49,8 mm y 50,2 mm).',
+        'El eje entra y sale con facilidad y gira dentro del agujero.',
+        'Regla de pulgar: diferencia de 0,5 mm o más entre diámetros, lo que deja un gap teórico de al menos 0,25 mm.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'El diámetro del eje es sensiblemente menor que el del agujero (ejemplo 49,8 mm y 50,2 mm); el eje entra y sale con facilidad y gira dentro del agujero. Regla de pulgar: diferencia de 0,5 mm o más entre diámetros, lo que deja un gap teórico de al menos 0,25 mm.',
       cifra: { valor: '≥ 0,5 mm diferencia', nota: 'gap teórico ≥ 0,25 mm' },
@@ -127,6 +159,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'interference-fit',
       titulo: 'Encaje por interferencia (interference fit)',
+      puntos: [
+        'El eje es igual o ligeramente mayor que el agujero (ejemplo 50,2 mm y 49,8 mm); no entra sin mucha fuerza y, una vez entrado.',
+        'No sale sin romper las piezas. Regla de pulgar: diferencia de 0,1 mm o menos, gap teórico de 0,05 mm o menos.',
+        'Se usa cuando se requiere alta concentricidad y movimiento mutuo (p. ej. eje en rodamiento).',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'El eje es igual o ligeramente mayor que el agujero (ejemplo 50,2 mm y 49,8 mm); no entra sin mucha fuerza y, una vez entrado, no sale sin romper las piezas. Regla de pulgar: diferencia de 0,1 mm o menos, gap teórico de 0,05 mm o menos. Se usa cuando se requiere alta concentricidad y movimiento mutuo (p. ej. eje en rodamiento).',
       cifra: { valor: '≤ 0,1 mm diferencia', nota: 'gap teórico ≤ 0,05 mm' },
@@ -138,6 +176,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'transition-fit',
       titulo: 'Encaje de transición (transition fit)',
+      puntos: [
+        'El eje es ligeramente menor o ligeramente mayor que el agujero (ejemplo 49,9 mm y 50,0 mm).',
+        'Entra con presión mínima y mantiene concentricidad relativa.',
+        'Regla de pulgar: diferencia de 0,15–0,4 mm, gap teórico de 0,08–0,2 mm.',
+      ],
+      indicador: 'geometria',
       cuerpo:
         'El eje es ligeramente menor o ligeramente mayor que el agujero (ejemplo 49,9 mm y 50,0 mm); entra con presión mínima y mantiene concentricidad relativa. Regla de pulgar: diferencia de 0,15–0,4 mm, gap teórico de 0,08–0,2 mm.',
       cifra: { valor: '0,15–0,4 mm diferencia', nota: 'gap teórico 0,08–0,2 mm' },
@@ -149,6 +193,14 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'contraccion-termica',
       titulo: 'Contracción térmica (shrinkage)',
+      puntos: [
+        'El plástico se contrae al enfriar; diferentes materiales exhiben diferente contracción, que también depende de la temperatura.',
+        'La contracción térmica es un problema común en materiales de alta temperatura como ABS.',
+        'El error dimensional que aumenta con el tamaño de la pieza es atribuible a la contracción térmica.',
+        'El porcentaje de contracción = error / tamaño.',
+        'Ejemplo: 0,1 mm en 20 mm = 0,5 %.',
+      ],
+      indicador: 'temperatura',
       cuerpo:
         'El plástico se contrae al enfriar; diferentes materiales exhiben diferente contracción, que también depende de la temperatura. La contracción térmica es un problema común en materiales de alta temperatura como ABS. El error dimensional que aumenta con el tamaño de la pieza es atribuible a la contracción térmica; el porcentaje de contracción = error / tamaño. Ejemplo: 0,1 mm en 20 mm = 0,5 %.',
       cifra: { valor: '0,1 mm en 20 mm = 0,5 %', nota: 'ejemplo de cálculo de contracción' },
@@ -160,6 +212,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'orientacion-pieza',
       titulo: 'Orientación de la pieza',
+      puntos: [
+        'Los agujeros se imprimen mejor en horizontal (paralelos al plano XY de la impresora).',
+        'Si hay que imprimir un agujero vertical.',
+        'Usar la técnica del teardrop: la parte superior del agujero se diseña en forma puntiaguda en lugar de completamente redonda.',
+        'Eliminando inexactitudes por voladizo del filamento al cerrar la parte superior.',
+        'Por la naturaleza por capas de la impresión FDM, los rasgos verticales suelen ser menos precisos (solo tan finos como la altura de capa).',
+        'Los rasgos horizontales (XY) tienden a ser más precisos.',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'Los agujeros se imprimen mejor en horizontal (paralelos al plano XY de la impresora). Si hay que imprimir un agujero vertical, usar la técnica del teardrop: la parte superior del agujero se diseña en forma puntiaguda en lugar de completamente redonda, eliminando inexactitudes por voladizo del filamento al cerrar la parte superior. Por la naturaleza por capas de la impresión FDM, los rasgos verticales suelen ser menos precisos (solo tan finos como la altura de capa); los rasgos horizontales (XY) tienden a ser más precisos.',
       cita: {
@@ -170,6 +231,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'causas-software',
       titulo: 'Causas de software',
+      puntos: [
+        'Al convertir un modelo digital a STL se pierden detalles.',
+        'Los objetos redondos se facultan y se convierten en superficies y vértices rectos.',
+        'A mayor resolución de conversión, menor error dimensional.',
+        'Las curvas se aproximan por polígonos en el STL; aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error.',
+        'Los slicers introducen sus propios errores según sus algoritmos y ajustes.',
+        'La forma en que alteran los vértices del STL afecta al G-code y al comportamiento de la impresora.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Al convertir un modelo digital a STL se pierden detalles: los objetos redondos se facultan y se convierten en superficies y vértices rectos; a mayor resolución de conversión, menor error dimensional. Las curvas se aproximan por polígonos en el STL; aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error. Los slicers introducen sus propios errores según sus algoritmos y ajustes; la forma en que alteran los vértices del STL afecta al G-code y al comportamiento de la impresora.',
       cita: {
@@ -180,8 +250,20 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'causas-maquina',
       titulo: 'Causas de máquina',
+      puntos: [
+        'Los motores paso a paso tienen resolución de movimiento finita.',
+        'La precisión de una trayectoria es solo tan buena como la resolución máxima de los motores.',
+        'Los motores típicos de FDM no tienen bucle de control de posición.',
+        'Así que pequeños errores de posición pueden acumularse en trabajos largos.',
+        'Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados.',
+        'Si los ejes no son suficientemente ortogonales entre sí.',
+        'Aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo).',
+        'En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash.',
+        'Las correas también sufren creep y elongación con el tiempo, que reducen la tensión y pueden provocar resbalones y pasos perdidos.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
-        'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores. Los motores típicos de FDM no tienen bucle de control de posición, así que pequeños errores de posición pueden acumularse en trabajos largos. Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados. Si los ejes no son suficientemente ortogonales entre sí, aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo). En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash.',
+        'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores. Los motores típicos de FDM no tienen bucle de control de posición, así que pequeños errores de posición pueden acumularse en trabajos largos. Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados. Si los ejes no son suficientemente ortogonales entre sí, aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo). En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash. Las correas también sufren creep y elongación con el tiempo, que reducen la tensión y pueden provocar resbalones y pasos perdidos.',
       cita: {
         texto: 'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores.',
         fuente: 'All3DP',
@@ -190,6 +272,14 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'materiales-contraccion',
       titulo: 'Materiales y contracción',
+      puntos: [
+        'El plástico se contrae al enfriar; diferentes materiales exhiben diferente contracción, que también depende de la temperatura.',
+        'La contracción del material puede hacer los agujeros más pequeños.',
+        'El pie de elefante por exceso de aplastamiento en la primera capa afecta las dimensiones.',
+        'Filamento húmedo causa extrusión inconsistente.',
+        'Agujeros con diámetro cercano al tamaño de la boquilla (menores de 1 mm) son difíciles de ajustar.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El plástico se contrae al enfriar; diferentes materiales exhiben diferente contracción, que también depende de la temperatura. La contracción del material puede hacer los agujeros más pequeños. El pie de elefante por exceso de aplastamiento en la primera capa afecta las dimensiones. Filamento húmedo causa extrusión inconsistente. Agujeros con diámetro cercano al tamaño de la boquilla (menores de 1 mm) son difíciles de ajustar.',
       cita: {
@@ -200,6 +290,16 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'compensacion-xy',
       titulo: 'Compensación XY en el slicer',
+      puntos: [
+        'Los slicers ofrecen parámetros para compensar la expansión o contracción del material en XY.',
+        'Bambu Studio: XY Hole Compensation ajusta el tamaño de los agujeros (áreas cerradas, huecas) en cada capa; solo afecta a agujeros.',
+        'No cambia el tamaño exterior del modelo.',
+        'XY Contour Compensation ajusta el contorno exterior del modelo.',
+        'La compensación del agujero se aplica por radio: el diámetro del agujero aumentará el doble del valor de compensación.',
+        'OrcaSlicer: X-Y hole compensation y X-Y contour compensation, valores positivos hacen agujeros/contornos más grandes.',
+        'Negativos más pequeños.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Los slicers ofrecen parámetros para compensar la expansión o contracción del material en XY. Bambu Studio: XY Hole Compensation ajusta el tamaño de los agujeros (áreas cerradas, huecas) en cada capa; solo afecta a agujeros, no cambia el tamaño exterior del modelo. XY Contour Compensation ajusta el contorno exterior del modelo. La compensación del agujero se aplica por radio: el diámetro del agujero aumentará el doble del valor de compensación. OrcaSlicer: X-Y hole compensation y X-Y contour compensation, valores positivos hacen agujeros/contornos más grandes, negativos más pequeños.',
       cita: {
@@ -210,6 +310,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'signo-compensacion',
       titulo: 'Convención del signo de la compensación',
+      puntos: [
+        'En Slic3r, para agujeros 0,1 mm pequeños se introduce −0,05 (negativo = encoger hacia dentro).',
+        'Se compensa la mitad del error porque actúa en cada lado.',
+        'En OrcaSlicer y Bambu Studio, valores positivos hacen agujeros más grandes y negativos más pequeños.',
+        'No se contradicen en el efecto, solo en la convención del signo: en Slic3r el signo se refiere a la dirección de encogimiento del contorno.',
+        'En Orca/Bambu el signo se refiere al cambio del agujero.',
+        'No presentar un único valor de compensación sin decir qué slicer y qué convención de signo.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'En Slic3r, para agujeros 0,1 mm pequeños se introduce −0,05 (negativo = encoger hacia dentro); se compensa la mitad del error porque actúa en cada lado. En OrcaSlicer y Bambu Studio, valores positivos hacen agujeros más grandes y negativos más pequeños. No se contradicen en el efecto, solo en la convención del signo: en Slic3r el signo se refiere a la dirección de encogimiento del contorno; en Orca/Bambu el signo se refiere al cambio del agujero. No presentar un único valor de compensación sin decir qué slicer y qué convención de signo.',
       cita: {
@@ -220,6 +329,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'formula-bambu',
       titulo: 'Fórmula de calibración de Bambu',
+      puntos: [
+        'Fórmula de calibración de contorno en Bambu: (55 − valor medido) / 2.',
+        'La calibración de compensación es específica para cada filamento; debe repetirse al cambiar de material.',
+        'Un tornillo M6 nominal tiene un diámetro real de ~5,9 mm por la norma ISO 6g (la rosca es ligeramente menor para facilitar el ensamblaje).',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Fórmula de calibración de contorno en Bambu: (55 − valor medido) / 2. La calibración de compensación es específica para cada filamento; debe repetirse al cambiar de material. Un tornillo M6 nominal tiene un diámetro real de ~5,9 mm por la norma ISO 6g (la rosca es ligeramente menor para facilitar el ensamblaje).',
       cifra: { valor: '(55 − valor medido) / 2', nota: 'fórmula de Bambu Lab' },
@@ -231,6 +346,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'limitaciones-caminos',
       titulo: 'Limitación: caminos cerrados',
+      puntos: [
+        'XY Hole Compensation solo aplica a caminos cerrados.',
+        'Si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas.',
+        'Aplicarla en ese caso produce una separación de capa notable en las ubicaciones de los agujeros.',
+        'Solo XY Contour Compensation puede aplicarse a capas con caminos no cerrados.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'XY Hole Compensation solo aplica a caminos cerrados; si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas; aplicarla en ese caso produce una separación de capa notable en las ubicaciones de los agujeros. Solo XY Contour Compensation puede aplicarse a capas con caminos no cerrados.',
       cita: {
@@ -241,6 +363,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'calibracion-medicion',
       titulo: 'Calibración: medición de tolerancia',
+      puntos: [
+        'Para probar las tolerancias de la impresora: calibrar la impresora y el extrusor, imprimir 3 a 5 cubos de calibración.',
+        'Medir cada impresión en el mismo lugar con calibre.',
+        'Anotar la orientación del modelo, registrar al menos 3 mediciones por cada una de las 3 direcciones (X, Y, Z).',
+        'Para cada dirección, restar la medición más pequeña de la más grande; ese número es un buen punto de partida para diseñar holguras.',
+        'La tolerancia de la impresora será ± la mitad del valor de la holgura.',
+        'Ejemplo: mediciones 20,1 / 20,0 / 19,9 mm en Y → holgura = 0,2 mm → tolerancia ±0,1 mm.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Para probar las tolerancias de la impresora: calibrar la impresora y el extrusor, imprimir 3 a 5 cubos de calibración, medir cada impresión en el mismo lugar con calibre, anotar la orientación del modelo, registrar al menos 3 mediciones por cada una de las 3 direcciones (X, Y, Z). Para cada dirección, restar la medición más pequeña de la más grande; ese número es un buen punto de partida para diseñar holguras. La tolerancia de la impresora será ± la mitad del valor de la holgura. Ejemplo: mediciones 20,1 / 20,0 / 19,9 mm en Y → holgura = 0,2 mm → tolerancia ±0,1 mm.',
       cifra: { valor: '± holgura / 2', nota: 'tolerancia a partir de la holgura medida' },
@@ -252,6 +383,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'primera-capa-medicion',
       titulo: 'Minimizar el impacto de la primera capa',
+      puntos: [
+        'Para minimizar el impacto de la primera capa en la medición: imprimir un modelo con 50–100 capas y medir solo las 20 superiores.',
+        'Si la boquilla está demasiado baja en la primera capa, el plástico extra crea capas más grandes en la base que afectan las dimensiones.',
+        'La configuración de la primera capa puede afectar las siguientes 10–20 capas de la pieza.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Para minimizar el impacto de la primera capa en la medición: imprimir un modelo con 50–100 capas y medir solo las 20 superiores. Si la boquilla está demasiado baja en la primera capa, el plástico extra crea capas más grandes en la base que afectan las dimensiones. La configuración de la primera capa puede afectar las siguientes 10–20 capas de la pieza.',
       cifra: { valor: '20 capas superiores', nota: 'de 50–100 capas impresas' },
@@ -263,6 +400,12 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'steps-mm',
       titulo: 'Pasos por milímetro (steps/mm)',
+      puntos: [
+        'Los valores de steps/mm deben ser exactos según correas, poleas y husillos; no calibrar por ensayo y error.',
+        'Usar la calculadora de Josef Prusa.',
+        'No hay ningún hack de software que pueda compensar razonablemente una impresora mal ensamblada (backlash): hay que apretar la correa.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Los valores de steps/mm deben ser exactos según correas, poleas y husillos; no calibrar por ensayo y error. Usar la calculadora de Josef Prusa. No hay ningún hack de software que pueda compensar razonablemente una impresora mal ensamblada (backlash): hay que apretar la correa.',
       cita: {
@@ -273,6 +416,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'orca-tolerance-test',
       titulo: 'Orca Tolerance Test',
+      puntos: [
+        'OrcaSlicer incluye modelos handy accesibles con clic derecho en la placa en modo Prepare → "Add Handy Model".',
+        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0.',
+        '0,05, 0,1, 0,2, 0,3 Y 0,4 mm, además de un probador hexagonal.',
+        'Se puede comprobar la tolerancia con una llave Allen de 6 mm o con el probador impreso.',
+        'Medir con calibre los agujeros y el probador interior; a partir de los resultados ajustar X-Y hole compensation y X-Y contour compensation.',
+        'Repetir hasta lograr la precisión deseada.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'OrcaSlicer incluye modelos handy accesibles con clic derecho en la placa en modo Prepare → "Add Handy Model". El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0, 0,05, 0,1, 0,2, 0,3 y 0,4 mm, además de un probador hexagonal. Se puede comprobar la tolerancia con una llave Allen de 6 mm o con el probador impreso; medir con calibre los agujeros y el probador interior; a partir de los resultados ajustar X-Y hole compensation y X-Y contour compensation; repetir hasta lograr la precisión deseada.',
       cifra: { valor: '0,0–0,4 mm', nota: 'tolerancias del modelo de prueba' },
@@ -284,6 +436,17 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'precision-settings',
       titulo: 'Ajustes de precisión del slicer (OrcaSlicer)',
+      puntos: [
+        'Slice gap closing radius: las grietas menores que 2× el radio de cierre de huecos se rellenan durante el slicing.',
+        'Resolution: el camino G-code se genera simplificando el contorno del modelo.',
+        'Valores más pequeños = mayor resolución y más tiempo de slicing.',
+        'Arc fitting: sustituye muchos movimientos rectos cortos por menos comandos de arco circular (G2/G3).',
+        'Reduce el tamaño del G-code pero introduce aproximación.',
+        'Precise Wall: aumenta ligeramente la separación entre la pared exterior y la interior, poniendo el solape entre ambas en cero.',
+        'Mejora la precisión dimensional y la consistencia de capas sin afectar la resistencia.',
+        'Precise Z Height: asegura la altura Z exacta del modelo tras el slicing, ajustando la altura de las últimas 5 capas.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Slice gap closing radius: las grietas menores que 2× el radio de cierre de huecos se rellenan durante el slicing. Resolution: el camino G-code se genera simplificando el contorno del modelo; valores más pequeños = mayor resolución y más tiempo de slicing. Arc fitting: sustituye muchos movimientos rectos cortos por menos comandos de arco circular (G2/G3); reduce el tamaño del G-code pero introduce aproximación. Precise Wall: aumenta ligeramente la separación entre la pared exterior y la interior, poniendo el solape entre ambas en cero; mejora la precisión dimensional y la consistencia de capas sin afectar la resistencia. Precise Z Height: asegura la altura Z exacta del modelo tras el slicing, ajustando la altura de las últimas 5 capas.',
       cita: {
@@ -294,6 +457,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'poliholes',
       titulo: 'Poliholes y aproximación poligonal',
+      puntos: [
+        'Un polyhole representa el agujero como un polígono de pocos lados planos, forzando al slicer a tratar cada segmento como línea recta.',
+        'Que se imprime de forma más fiable. Idea y matemáticas de Hydraraptor (nophead); implementación original en SuperSlicer.',
+        'OpenSCAD ofrece la función polyhole() de nophead, que calcula el número óptimo de segmentos.',
+        'Aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error de aproximación poligonal.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Un polyhole representa el agujero como un polígono de pocos lados planos, forzando al slicer a tratar cada segmento como línea recta, que se imprime de forma más fiable. Idea y matemáticas de Hydraraptor (nophead); implementación original en SuperSlicer. OpenSCAD ofrece la función polyhole() de nophead, que calcula el número óptimo de segmentos. Aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error de aproximación poligonal.',
       cita: {
@@ -304,6 +474,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'modelo-flujo',
       titulo: 'Modelo de flujo: ovalado vs rectangular',
+      puntos: [
+        'Slic3r y sus forks (PrusaSlicer, SuperSlicer, OrcaSlicer) asumen que el camino de extrusión tiene forma ovalada.',
+        'Lo que explica los solapes (dos paredes de 0,4 mm con capa de 0,2 mm = 0,714 mm combinados en lugar de 0,8 mm).',
+        'Cura asume que el camino de extrusión es rectangular y no incluye solape (dos paredes de 0,4 mm = 0,8 mm).',
+        'Esto explica por qué los agujeros salen pequeños en Slic3r/Orca y no en Cura.',
+      ],
+      indicador: 'slicer',
       cuerpo:
         'Slic3r y sus forks (PrusaSlicer, SuperSlicer, OrcaSlicer) asumen que el camino de extrusión tiene forma ovalada, lo que explica los solapes (dos paredes de 0,4 mm con capa de 0,2 mm = 0,714 mm combinados en lugar de 0,8 mm). Cura asume que el camino de extrusión es rectangular y no incluye solape (dos paredes de 0,4 mm = 0,8 mm). Esto explica por qué los agujeros salen pequeños en Slic3r/Orca y no en Cura.',
       cifra: { valor: '0,714 mm vs 0,8 mm', nota: 'espesor combinado de dos paredes de 0,4 mm' },
@@ -315,6 +492,14 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'soluciones-diseno',
       titulo: 'Soluciones por diseño',
+      puntos: [
+        'En casi todos los casos, si dos piezas deben encajar, hay que diseñar una más pequeña que la otra.',
+        'No se puede esperar que una impresora FDM común acierte una dimensión a 100 micras (0,1 mm) de forma consistente.',
+        'Todas las dimensiones deben diseñarse asumiendo que pueden salir mayores o menores en ese valor (All3DP, corroborado).',
+        'Para piezas con agujeros que deben ser exactos, diseñar los agujeros de forma que se puedan ream/taladrar a la medida exacta (foro.',
+        'Sin corroborar). Tener en cuenta el encogimiento posterior a la impresión (foro, sin corroborar).',
+      ],
+      indicador: 'maquina',
       cuerpo:
         'En casi todos los casos, si dos piezas deben encajar, hay que diseñar una más pequeña que la otra. No se puede esperar que una impresora FDM común acierte una dimensión a 100 micras (0,1 mm) de forma consistente; todas las dimensiones deben diseñarse asumiendo que pueden salir mayores o menores en ese valor (All3DP, corroborado). Para piezas con agujeros que deben ser exactos, diseñar los agujeros de forma que se puedan ream/taladrar a la medida exacta (foro, sin corroborar). Tener en cuenta el encogimiento posterior a la impresión (foro, sin corroborar).',
       cifra: { valor: '±0,1 mm', nota: 'desviación asumible en FDM' },
@@ -326,6 +511,17 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'soluciones-software',
       titulo: 'Soluciones por software (slicer)',
+      puntos: [
+        'Para imprimir con máxima precisión: usar cinemática más lenta (velocidad de impresión < 60 mm/s.',
+        'Aceleración < 3.000 mm/s², jerk < 15 mm/s), alturas de capa más pequeñas y enfriamiento activo de la pieza.',
+        'Outer before inner walls: imprimir las paredes exteriores primero mejora teóricamente la precisión dimensional.',
+        'Coasting: el extrusor deja de extruir hacia el final de un movimiento y se apoya en la presión residual de la boquilla.',
+        'Linear advance (Marlin y otros firmwares): ajusta el flujo del filamento según los movimientos previstos.',
+        'Horizontal expansion: aumenta o disminuye las dimensiones de la pieza en un porcentaje específico.',
+        'Útil solo si toda la pieza sale demasiado pequeña o grande.',
+        'La compensación reduce el error, no lo elimina: es corrección posterior, no garantía de precisión.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Para imprimir con máxima precisión: usar cinemática más lenta (velocidad de impresión < 60 mm/s, aceleración < 3.000 mm/s², jerk < 15 mm/s), alturas de capa más pequeñas y enfriamiento activo de la pieza. Outer before inner walls: imprimir las paredes exteriores primero mejora teóricamente la precisión dimensional. Coasting: el extrusor deja de extruir hacia el final de un movimiento y se apoya en la presión residual de la boquilla. Linear advance (Marlin y otros firmwares): ajusta el flujo del filamento según los movimientos previstos. Horizontal expansion: aumenta o disminuye las dimensiones de la pieza en un porcentaje específico; útil solo si toda la pieza sale demasiado pequeña o grande. La compensación reduce el error, no lo elimina: es corrección posterior, no garantía de precisión.',
       cifra: { valor: '< 60 mm/s', nota: 'velocidad de impresión recomendada' },
@@ -337,6 +533,16 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'extrusion-multiplier',
       titulo: 'Extrusion Multiplier y compensación',
+      puntos: [
+        'El Extrusion Multiplier afecta al caudal de toda la impresión; demasiado bajo → huecos entre perímetros.',
+        'Agujeros en superficies superiores y piezas más pequeñas; demasiado alto → capas superiores que abomban hacia arriba y piezas más grandes.',
+        'El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es la solución ideal para ajustar dimensiones.',
+        'Constant dimensional error: si la pieza siempre sale 0,1 mm grande, independientemente del tamaño del modelo.',
+        'Usar compensación de tamaño horizontal.',
+        'Increasing dimensional error: si el error crece con el tamaño de la pieza, la causa probable es la contracción térmica.',
+        'Determinar el porcentaje de contracción (error / tamaño) y escalar el modelo.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'El Extrusion Multiplier afecta al caudal de toda la impresión; demasiado bajo → huecos entre perímetros, agujeros en superficies superiores y piezas más pequeñas; demasiado alto → capas superiores que abomban hacia arriba y piezas más grandes. El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es la solución ideal para ajustar dimensiones. Constant dimensional error: si la pieza siempre sale 0,1 mm grande, independientemente del tamaño del modelo, usar compensación de tamaño horizontal. Increasing dimensional error: si el error crece con el tamaño de la pieza, la causa probable es la contracción térmica; determinar el porcentaje de contracción (error / tamaño) y escalar el modelo.',
       cita: {
@@ -347,6 +553,17 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'soluciones-maquina',
       titulo: 'Soluciones por máquina',
+      puntos: [
+        'La forma más importante de lograr la máxima precisión es calibrar la propia impresora.',
+        'Ninguna impresora de sobremesa viene perfectamente calibrada de fábrica.',
+        'Ni siquiera las pre-ensambladas; requieren calibración adicional con el tiempo como mantenimiento rutinario.',
+        'Los elementos más importantes a calibrar son el extrusor y los E-steps; siempre es vital empezar con una buena primera capa.',
+        'Seleccionar boquillas y filamento de buena calidad.',
+        'La precisión dimensional depende de que el filamento extruido tenga el ancho que debería.',
+        'Los componentes deteriorados hacen la impresora menos precisa.',
+        'Asegurar que las correas estén tensas y que haya mínimo desgaste en varillas o rodamientos.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'La forma más importante de lograr la máxima precisión es calibrar la propia impresora; ninguna impresora de sobremesa viene perfectamente calibrada de fábrica, ni siquiera las pre-ensambladas; requieren calibración adicional con el tiempo como mantenimiento rutinario. Los elementos más importantes a calibrar son el extrusor y los E-steps; siempre es vital empezar con una buena primera capa. Seleccionar boquillas y filamento de buena calidad; la precisión dimensional depende de que el filamento extruido tenga el ancho que debería. Los componentes deteriorados hacen la impresora menos precisa: asegurar que las correas estén tensas y que haya mínimo desgaste en varillas o rodamientos.',
       cita: {
@@ -357,6 +574,15 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'post-procesado',
       titulo: 'Post-procesado',
+      puntos: [
+        'Incluso tras calibración, diseño y configuración de slicing, las piezas pueden seguir fuera de tolerancia y requerir post-procesado.',
+        'El post-procesado suele ser sustractivo, por lo que es más relevante para piezas sobredimensionadas que para infradimensionadas.',
+        'Lijar y limar piezas para eliminar elephant foot, restos de soportes y otros artefactos de impresión.',
+        'Medir las piezas continuamente durante el post-procesado hasta alcanzar las dimensiones deseadas.',
+        'Taladrar o ream cualquier agujero impreso en 3D.',
+        'Intentar evitar soportes si es posible; es mucho más fácil re-taladrar un agujero que extraer soportes pequeños con alicates.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Incluso tras calibración, diseño y configuración de slicing, las piezas pueden seguir fuera de tolerancia y requerir post-procesado. El post-procesado suele ser sustractivo, por lo que es más relevante para piezas sobredimensionadas que para infradimensionadas. Lijar y limar piezas para eliminar elephant foot, restos de soportes y otros artefactos de impresión. Medir las piezas continuamente durante el post-procesado hasta alcanzar las dimensiones deseadas. Taladrar o ream cualquier agujero impreso en 3D. Intentar evitar soportes si es posible; es mucho más fácil re-taladrar un agujero que extraer soportes pequeños con alicates.',
       cita: {
@@ -367,6 +593,13 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'dimensiones-z',
       titulo: 'Dimensiones verticales (eje Z)',
+      puntos: [
+        'Si las dimensiones verticales son incorrectas (a lo largo de Z) y el objeto suele salir más corto de lo esperado.',
+        'Significa que la boquilla está demasiado baja y la primera capa se prensa demasiado contra la cama.',
+        'Para corregirlo: subir el endstop Z o aumentar la opción Z offset en Slic3r.',
+        'Precise Z Height (OrcaSlicer) corrige la altura Z final cuando la altura del modelo no es múltiplo de la altura de capa.',
+      ],
+      indicador: 'calibracion',
       cuerpo:
         'Si las dimensiones verticales son incorrectas (a lo largo de Z) y el objeto suele salir más corto de lo esperado, significa que la boquilla está demasiado baja y la primera capa se prensa demasiado contra la cama. Para corregirlo: subir el endstop Z o aumentar la opción Z offset en Slic3r. Precise Z Height (OrcaSlicer) corrige la altura Z final cuando la altura del modelo no es múltiplo de la altura de capa.',
       cita: {
@@ -377,6 +610,16 @@ export const toleranciasYEncaje: Guia = {
     {
       id: 'flujo-matematica',
       titulo: 'Flujo y matemática de extrusión',
+      puntos: [
+        'La matemática de flujo usada en Slic3r desempeña un buen papel en hacer dimensiones correctas.',
+        'Ya que intenta adivinar la forma del material extruido y el grosor de la extrusión en el plano horizontal.',
+        'Al ser una aproximación, lleva error.',
+        'La forma habitual de lidiar con estos problemas es ajustar el Extrusion Multiplier para aumentar/reducir la cantidad de plástico.',
+        'Haciendo las extrusiones más gruesas o más finas; pero esto también afecta a las superficies sólidas.',
+        'Imprimir perímetros externos primero evita el desplazamiento causado por el solape de extrusión.',
+        'Imprimir perímetros internos primero oculta mejor las costuras.',
+      ],
+      indicador: 'altura',
       cuerpo:
         'La matemática de flujo usada en Slic3r desempeña un buen papel en hacer dimensiones correctas, ya que intenta adivinar la forma del material extruido y el grosor de la extrusión en el plano horizontal; al ser una aproximación, lleva error. La forma habitual de lidiar con estos problemas es ajustar el Extrusion Multiplier para aumentar/reducir la cantidad de plástico, haciendo las extrusiones más gruesas o más finas; pero esto también afecta a las superficies sólidas. Imprimir perímetros externos primero evita el desplazamiento causado por el solape de extrusión; imprimir perímetros internos primero oculta mejor las costuras.',
       cita: {
@@ -392,7 +635,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Mide la tolerancia real de tu máquina antes de compensar',
       valor: 'calibre',
       porque:
-        'No hay dos impresoras con la misma tolerancia, ni siquiera del mismo modelo; hay que calibrar la propia máquina y no confiar en valores ajenos. Cada combinación de filamento e impresora puede resultar en tolerancias diferentes.',
+        'No hay dos impresoras con la misma tolerancia, ni siquiera del mismo modelo: hay que calibrar la propia máquina y no confiar en valores ajenos. Cada combinación de filamento e impresora varía.',
       fuente: 'All3DP, OrcaSlicer',
       alcance:
         'La medición debe hacerse con un instrumento de precisión (calibre). El valor obtenido no es permanente: depende del estado actual de la impresora y del material usado. No puede condicionarse porque es el primer paso de cualquier calibración.',
@@ -402,7 +645,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Imprime 3 a 5 cubos de calibración y mide en X, Y, Z',
       valor: '3–5 cubos',
       porque:
-        'Para probar las tolerancias de la impresora: calibrar la impresora y el extrusor, imprimir 3 a 5 cubos de calibración, medir cada impresión en el mismo lugar con calibre, anotar la orientación del modelo, registrar al menos 3 mediciones por cada una de las 3 direcciones (X, Y, Z).',
+        'Para probar las tolerancias: calibrar la impresora y el extrusor, imprimir 3 a 5 cubos, medirlos en el mismo lugar con calibre y registrar al menos 3 mediciones por cada dirección (X, Y, Z).',
       fuente: 'All3DP',
       alcance:
         'El protocolo requiere al menos 3 mediciones por dirección. La tolerancia de la impresora será ± la mitad de la holgura medida. No puede condicionarse porque es un protocolo de medición universal.',
@@ -412,7 +655,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Mide solo las capas superiores de la pieza',
       valor: '20 capas superiores de 50-100',
       porque:
-        'Para minimizar el impacto de la primera capa en la medición: imprimir un modelo con 50–100 capas y medir solo las 20 superiores. Si la boquilla está demasiado baja en la primera capa, el plástico extra crea capas más grandes en la base que afectan las dimensiones.',
+        'Para minimizar el impacto de la primera capa: imprime 50–100 capas y mide las 20 superiores. Con la boquilla demasiado baja en la primera capa, el plástico extra agranda la base y falsea la medida.',
       fuente: 'Simplify3D',
       alcance:
         'La medición debe hacerse en las capas superiores, no en la base. La primera capa y las siguientes 10-20 pueden tener dimensiones distintas debido a la configuración de la primera capa. No puede condicionarse porque es una regla general de medición.',
@@ -431,7 +674,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Corrige el backlash mecánicamente antes de compensar',
       cuando: { problema: 'dimensiones' },
       porque:
-        'No hay ningún hack de software que pueda compensar razonablemente una impresora mal ensamblada (backlash). El backlash produce errores dimensionales distintos en X e Y. A menor tensión de la correa, mayor backlash.',
+        'Ningún hack de software compensa razonablemente una impresora mal ensamblada (backlash). El backlash produce errores distintos en X e Y, y a menor tensión de la correa, mayor backlash.',
       fuente: 'Slic3r Manual',
       alcance:
         'El backlash es un problema mecánico (generalmente correas flojas) que debe corregirse físicamente. La compensación de software no puede arreglar un problema mecánico. Esta regla se dispara cuando el problema principal son dimensiones incorrectas.',
@@ -441,7 +684,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Usa XY Hole Compensation, no XY Contour Compensation',
       cuando: { problema: 'agujeros' },
       porque:
-        'XY Hole Compensation ajusta el tamaño de agujeros (áreas cerradas, huecas) en cada capa; solo afecta agujeros, no cambia el tamaño exterior del modelo. XY Contour Compensation ajusta el contorno exterior del modelo.',
+        'XY Hole Compensation ajusta el tamaño de agujeros (áreas cerradas, huecas) en cada capa: solo afecta a agujeros, no al tamaño exterior. XY Contour Compensation ajusta el contorno exterior del modelo.',
       fuente: 'Bambu Lab',
       alcance:
         'Esta regla solo aplica cuando el problema principal son agujeros pequeños. Si el agujero tiene aberturas laterales, la compensación no se aplica.',
@@ -451,7 +694,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Calcula la mitad del error como valor de compensación',
       valor: 'error / 2',
       porque:
-        'La compensación del agujero se aplica por radio: el diámetro del agujero aumentará el doble del valor de compensación. Si los agujeros salen 0,1 mm pequeños, se introduce -0,05 (signo negativo = encoger hacia dentro); se compensa la mitad del error porque actúa en cada lado.',
+        'Se aplica por radio: el diámetro aumentará el doble del valor. Si salen 0,1 mm pequeños, introduce -0,05 (negativo = encoger hacia dentro); la mitad del error: actúa en cada lado.',
       fuente: 'Bambu Lab, Slic3r Manual',
       alcance:
         'El valor es la mitad del error diametral porque actúa por radio. El signo lo fija la convención del slicer. Es aritmética, no depende del material. No puede condicionarse porque es una regla matemática que se aplica independientemente del material o el slicer.',
@@ -503,7 +746,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'No uses XY Hole Compensation en agujeros con aberturas laterales',
       cuando: { problema: 'agujeros' },
       porque:
-        'X-Y Hole Compensation solo aplica a caminos cerrados: si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas. Si se aplica X-Y Hole Compensation a un modelo con caminos no cerrados, se produce una separación de capa notable en las ubicaciones de los agujeros.',
+        'X-Y Hole Compensation sólo aplica a caminos cerrados: con aberturas laterales no se aplica a las capas con caminos no cerrados, y produce una separación de capa notable en los agujeros.',
       fuente: 'Bambu Lab',
       alcance:
         'Los agujeros con aberturas laterales producen caminos no cerrados en algunas capas. En esos casos, solo X-Y Contour Compensation puede aplicarse. Esta regla se dispara cuando el problema principal son agujeros pequeños.',
@@ -512,7 +755,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'calibrar-por-filamento',
       accion: 'Calibra la compensación para cada filamento',
       porque:
-        'Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil, las tolerancias varían de una impresora a otra. La calibración de compensación es específica para cada filamento; debe repetirse cuando se cambia de material.',
+        'Cada combinación de filamento e impresora da tolerancias diferentes, aun con el mismo filamento y perfil. La compensación es específica de cada filamento: repetir al cambiar de material.',
       fuente: 'OrcaSlicer, Bambu Lab',
       alcance:
         'La calibración debe repetirse cada vez que se cambia de filamento. No hay un valor universal que sirva para todos los materiales.',
@@ -532,7 +775,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Aumenta el número de segmentos en el CAD antes de exportar el STL',
       valor: '≈ 2 × diámetro agujero (mm)',
       porque:
-        'Aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error de aproximación poligonal. El número de lados se calcula a partir del tamaño del agujero y el diámetro de la boquilla (aproximadamente el doble del diámetro del agujero en mm con boquilla de 0,4 mm, nunca menos de 3).',
+        'Más segmentos en el CAD antes de exportar el STL reducen el error de aproximación poligonal. Los lados: el doble del diámetro del agujero en mm con boquilla de 0,4 mm, nunca menos de 3.',
       fuente: 'Slic3r Manual, OrcaSlicer',
       alcance:
         'La fórmula aproximada es 2 × diámetro del agujero en mm para boquilla de 0,4 mm. El mínimo es 3 lados. Esto reduce el error de aproximación poligonal pero no lo elimina por completo. No puede condicionarse porque es una regla general de diseño.',
@@ -543,7 +786,7 @@ export const toleranciasYEncaje: Guia = {
       valor: '0,0–0,4 mm',
       cuando: { slicer: 'orca' },
       porque:
-        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0, 0,05, 0,1, 0,2, 0,3 y 0,4 mm, además de un probador hexagonal. Este modelo permite calibrar la compensación de agujeros de forma sistemática.',
+        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0 a 0,4 mm, además de un probador hexagonal. Permite calibrar la compensación de agujeros de forma sistemática.',
       fuente: 'OrcaSlicer',
       alcance:
         'El modelo de prueba tiene tolerancias de 0,0 a 0,4 mm. Es una herramienta de calibración específica para OrcaSlicer.',
@@ -553,7 +796,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Orienta los agujeros en horizontal (paralelos a XY)',
       cuando: { problema: 'agujeros' },
       porque:
-        'Los agujeros se imprimen mejor en horizontal (paralelos al plano XY de la impresora). Por la naturaleza por capas de la impresión FDM, los rasgos verticales suelen ser menos precisos (solo tan finos como la altura de capa); los rasgos horizontales (XY) tienden a ser más precisos.',
+        'Los agujeros se imprimen mejor en horizontal (paralelos al plano XY): los rasgos verticales son menos precisos, solo tan finos como la altura de capa, por la naturaleza por capas del FDM.',
       fuente: 'All3DP',
       alcance:
         'La orientación horizontal aprovecha la mayor precisión del plano XY. Si hay que imprimir un agujero vertical, usar la técnica del teardrop. Esta regla se dispara cuando el problema principal son agujeros pequeños.',
@@ -564,7 +807,7 @@ export const toleranciasYEncaje: Guia = {
       valor: '±0,1 mm',
       cuando: { problema: 'encaje' },
       porque:
-        'En casi todos los casos, si dos piezas deben encajar, hay que diseñar una más pequeña que la otra. No se puede esperar que una impresora FDM común acierte una dimensión a 100 micras (0,1 mm) de forma consistente.',
+        'En casi todos los casos, si dos piezas deben encajar, hay que diseñar una más pequeña: una FDM común no acierta una dimensión a 100 micras (0,1 mm) de forma consistente.',
       fuente: 'All3DP',
       alcance:
         'Regla de diseño general: asumir desviación de ±0,1 mm en todas las dimensiones. Esta regla se dispara cuando el problema principal es que las piezas no encajan.',
@@ -583,7 +826,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Ajusta el Z offset si las dimensiones verticales son incorrectas',
       cuando: { problema: 'dimensiones' },
       porque:
-        'Si las dimensiones verticales son incorrectas (a lo largo de Z) y el objeto suele salir más corto de lo esperado, significa que la boquilla está demasiado baja y la primera capa se prensa demasiado contra la cama. Para corregirlo: subir el endstop Z o aumentar la opción Z offset en Slic3r.',
+        'Si las dimensiones en Z son incorrectas y el objeto sale más corto, la boquilla está demasiado baja y la primera capa se prensa contra la cama. Corrige subiendo el endstop Z o el Z offset de Slic3r.',
       fuente: 'Slic3r Manual',
       alcance:
         'El problema vertical se debe a que la boquilla está demasiado baja en la primera capa. Precise Z Height (OrcaSlicer) corrige la altura Z final cuando la altura del modelo no es múltiplo de la altura de capa. Esta regla se dispara cuando el problema principal son dimensiones incorrectas.',
@@ -593,7 +836,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'Reduce velocidad, aceleración y jerk para máxima precisión',
       valor: '< 60 mm/s',
       porque:
-        'Para imprimir con máxima precisión: usar cinemática más lenta (velocidad de impresión < 60 mm/s, aceleración < 3.000 mm/s², jerk < 15 mm/s), alturas de capa más pequeñas y enfriamiento activo de la pieza.',
+        'Para imprimir con máxima precisión: cinemática más lenta (velocidad < 60 mm/s, aceleración < 3.000 mm/s², jerk < 15 mm/s), alturas de capa más pequeñas y enfriamiento activo de la pieza.',
       fuente: 'All3DP',
       alcance:
         'La reducción de velocidad mejora la precisión dimensional. No puede condicionarse porque es una recomendación general de precisión.',
@@ -602,7 +845,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'outer-before-inner',
       accion: 'Imprime los perímetros exteriores primero',
       porque:
-        'Outer before inner walls: imprimir las paredes exteriores primero mejora teóricamente la precisión dimensional al no ser empujadas por las paredes internas o el relleno. External Perimeters First (Slic3r): previene el desplazamiento causado por el solape de extrusión.',
+        'Imprimir primero las paredes exteriores mejora la precisión dimensional: no las empujan las internas ni el relleno. En Slic3r, External Perimeters First previene el desplazamiento por el solape.',
       fuente: 'All3DP, Slic3r Manual',
       alcance:
         'Imprimir perímetros externos primero puede mejorar la precisión dimensional pero puede hacer las costuras más visibles. No puede condicionarse porque es una recomendación general de precisión.',
@@ -612,7 +855,7 @@ export const toleranciasYEncaje: Guia = {
       accion: 'No uses Extrusion Multiplier para ajustar dimensiones',
       cuando: { problema: 'dimensiones' },
       porque:
-        'El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es la solución ideal para ajustar dimensiones. Ajustar el Extrusion Multiplier afecta toda la pieza, no solo los agujeros.',
+        'El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es la solución ideal para ajustar dimensiones: afecta toda la pieza, no solo los agujeros.',
       fuente: 'Slic3r Manual',
       alcance:
         'El Extrusion Multiplier afecta toda la pieza, no solo los agujeros. No es la herramienta adecuada para ajustar dimensiones específicas. Esta regla se dispara cuando el problema principal son dimensiones incorrectas.',
@@ -633,7 +876,7 @@ export const toleranciasYEncaje: Guia = {
       valor: 'últimas 5 capas',
       cuando: { slicer: 'orca' },
       porque:
-        'Precise Z Height (OrcaSlicer): asegura la altura Z exacta del modelo tras el slicing, incluso si la altura del modelo no es múltiplo de la altura de capa; ajusta la altura de las últimas 5 capas para que la altura final coincida.',
+        'Precise Z Height (OrcaSlicer) asegura la altura Z exacta tras el slicing, aunque la altura no sea múltiplo de la de capa: ajusta las últimas 5 capas para que la final coincida.',
       fuente: 'OrcaSlicer',
       alcance:
         'Precise Z Height ajusta las últimas 5 capas. Solo aplica a OrcaSlicer. Ejemplo: cubo de 20,1 mm con capa de 0,2 mm → sin la opción resulta 20,2 mm; con ella, 20,1 mm.',
@@ -652,7 +895,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'calibrar-extrusor',
       accion: 'Calibra el extrusor y los E-steps',
       porque:
-        'Los elementos más importantes a calibrar son el extrusor y los E-steps; siempre es vital empezar con una buena primera capa. Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados.',
+        'Los elementos más importantes a calibrar son el extrusor y los E-steps, y siempre es vital una buena primera capa. Los E-steps sin calibrar causan inexactitudes dimensionales.',
       fuente: 'All3DP',
       alcance:
         'La calibración del extrusor afecta la precisión dimensional. Debe hacerse antes de cualquier compensación de software. No puede condicionarse porque es una verificación mecánica previa.',
@@ -661,7 +904,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'componentes-tensos',
       accion: 'Asegura que las correas estén tensas y los componentes sin desgaste',
       porque:
-        'Los componentes deteriorados hacen la impresora menos precisa: asegurar que las correas estén tensas y que haya mínimo desgaste en varillas o rodamientos; si no, apretar o sustituir. Las correas también sufren creep y elongación con el tiempo, que reducen la tensión y pueden provocar resbalones y pasos perdidos.',
+        'Componentes deteriorados restan precisión: tensa las correas y revisa varillas o rodamientos; si no, aprieta o sustituye. Las correas sufren creep y elongación con el tiempo, y pierden tensión.',
       fuente: 'All3DP',
       alcance:
         'El mantenimiento de los componentes mecánicos es previo a cualquier compensación de software. No puede condicionarse porque es una verificación mecánica universal.',
@@ -670,7 +913,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'post-procesado-lijar',
       accion: 'Lija y lima las piezas para eliminar artefactos',
       porque:
-        'El post-procesado suele ser sustractivo, por lo que es más relevante para piezas sobredimensionadas que para infradimensionadas. Lijar y limar piezas para eliminar elephant foot, restos de soportes y otros artefactos de impresión. Medir las piezas continuamente durante el post-procesado hasta alcanzar las dimensiones deseadas.',
+        'El post-procesado es sustractivo, así que sirve para piezas sobredimensionadas. Lijar y limar para eliminar elephant foot y restos de soportes, midiendo hasta las dimensiones deseadas.',
       fuente: 'All3DP',
       alcance:
         'El post-procesado es sustractivo: más relevante para piezas sobredimensionadas. Medir continuamente durante el proceso. No puede condicionarse porque es una recomendación general de post-procesado.',
