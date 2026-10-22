@@ -144,6 +144,64 @@ export interface Regla {
       `resumenExtra` y por qué `porque` es de una línea.
 - [ ] `wiki/reviews/` deja constancia de la vuelta.
 
+## La vuelta de texto, y lo que encontró
+
+**El problema.** La etapa 4 de la guía —«qué cambiar»— pintaba el `porque` de cada
+acción como un párrafo. De 583 reglas, **213 lo tenían de más de 200 caracteres**,
+y el `resumen` de la cabecera, que el contrato dice que es «una frase», era de
+media 164 caracteres y en 19 guías tenía más de una.
+
+**Lo que se hizo, por el pipeline de siempre.** Seis tandas del **redactor**, que
+acortó los `porque` a 200 caracteres sin tocar `accion`, `valor`, `alcance`,
+`fuente` ni `cuando`; y el **revisor** sobre cada tanda, con las reglas que el
+redactor había señalado una por una.
+
+**Las dos mitades de la comprobación**, porque una vuelta de contenido escrita por
+agentes necesita las dos:
+
+| | Qué comprueba | Resultado |
+|---|---|---|
+| `verify:recorte` (mecánica) | Que **fuera del `porque` no ha cambiado nada**, campo por campo, con el AST de TypeScript | 24 guías, 213 reglas, **todo lo demás idéntico** |
+| El revisor (editorial) | Que el matiz perdido siga en el `alcance`, en la condición o en una tarjeta | De las 51 reglas señaladas, **49 eran redundancia**, 1 equivalencia y **1 pérdida real** |
+
+**La pérdida real** estaba en `agujeros-ovalados/usar-hole-compensation`: al
+acortar se cayó «aumenta o disminuye el tamaño XY», y el revisor lo buscó en el
+`alcance`, en la `cuando` y en las tarjetas antes de darlo por perdido. No estaba
+en ninguna parte. Devuelta.
+
+**Dos bugs preexistentes** que la revisión encontró de paso y que también van al
+redactor:
+
+- `esquinas-petg/recinto-abrir` explica una cosa y se dispara en otra. La fuente
+  de Bambu tiene dos filas: la de PLA/PVA/TPU dice cama por encima de 45 °C y la
+  de **PETG** —esta guía— dice por encima de 60 °C. La regla tomó la fila
+  equivocada, y su condición hace que no se dispare en el rango recomendado del
+  PETG.
+- `elephant-foot/enfriamiento`: el `valor` dice «desde capa 2–3» y el `porque`
+  «Con PLA desde el inicio». Dos cifras para el mismo ajuste.
+
+**El freno.** `verify:texto` mide la deuda y **sólo puede bajar**: si crece,
+falla; y si baja, también falla, porque un freno que no se actualiza deja de avisar
+de las subidas siguientes.
+
+## El hueco de contenido que salió de la investigación
+
+La investigación de [Control3D](../investigacion-control3d-2026-10-21.md) —César
+Galera, arquitecto, canal desde 2017, +17.000 alumnos— dejó claro un hueco que no
+era de un test suelto:
+
+Sus siete tests de calibración son **nuestras guías**, una a una. Lo que falta es
+**la entrada por la puerta de atrás**: wiiki-3d está organizado por síntoma, y
+quien no tiene un síntoma —quien quiere una impresora bien calibrada— no tiene
+dónde empezar. Falta una guía que **enrute** a las que sí diagnostican y explique
+por qué ese orden, que es lo que casi nadie dice. Y falta el paso 8: la **pieza
+final de comprobación**.
+
+La investigación también ha dejado los **modelos de test gratuitos** con su
+licencia, y la advertencia de que una calibración automática puede variar entre
+trabajos: un perfil calibrado a mano es **una referencia con la que comparar**,
+que es lo que sostiene el `alcance` de nuestras reglas.
+
 ## Fuera de alcance
 
 - Reescribir a mano las 32 guías restantes: la migración de la tarea 2 es
