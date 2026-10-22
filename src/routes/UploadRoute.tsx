@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState } from "react";
+import VisorTrayectoria from "../components/VisorTrayectoria";
+import { useTrayectoria } from "../state/useTrayectoria";
 import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
@@ -48,6 +50,20 @@ function UploadRoute() {
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === "gcode";
+
+  /*
+   * La trayectoria del G-code.
+   *
+   * El aviso de antes decía, textualmente, «El G-code se analiza; su trayectoria no
+   * se muestra en 3D». Esa frase era cierta y **ya no lo es**: el lector del
+   * cuerpo del archivo sabe dónde va la cabeza en cada momento y qué está
+   * haciendo, y eso se puede dibujar.
+   *
+   * El análisis del cuerpo es asíncrono —un G-code real pesa decenas de megabytes—
+   * así que mientras se lee se dice que se está leyendo, y si falla se dice por
+   * qué, sin dejar un hueco en la pantalla.
+   */
+  const trayectoria = useTrayectoria(showGcodeNotice ? file : null);
   const showUnsupported = fileType === "obj" || fileType === "unknown";
 
   /*
@@ -223,8 +239,21 @@ function UploadRoute() {
 
         {showGcodeNotice && (
           <>
+            {trayectoria.fase === "vacia" && (
+              <p className="archivo-nota">El G-code se analiza; su trayectoria se dibuja en 3D.</p>
+            )}
+            {trayectoria.fase === "leyendo" && (
+              <div className="visor-trayectoria-cargando" role="status">
+                Leyendo la trayectoria del G-code…
+              </div>
+            )}
+            {trayectoria.fase === "error" && (
+              <p className="archivo-nota" role="alert">
+                No se ha podido dibujar la trayectoria: {trayectoria.mensaje}
+              </p>
+            )}
+            {trayectoria.fase === "lista" && <VisorTrayectoria trayectoria={trayectoria.trayectoria} />}
             <SeccionAnalisis />
-            <p className="archivo-nota">El G-code se analiza; su trayectoria no se muestra en 3D.</p>
           </>
         )}
 
