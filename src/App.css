@@ -2193,6 +2193,117 @@ body {
   color: var(--text-tertiary);
 }
 
+/* ==========================================================================
+ * Comprobaciones previas (pre-flight): cruzan los datos del G-code con la
+ * máquina que lo va a imprimir. Van como una sección propia, entre el
+ * veredicto y el visor, para que se lean antes de mirar la trayectoria.
+ * ========================================================================== */
+.preflight {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  background: var(--bg-panel);
+  max-width: 44rem;
+}
+
+.preflight-maquina {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.preflight-etiqueta {
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.preflight-select {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  font-family: inherit;
+  font-size: var(--texto-md);
+  cursor: pointer;
+}
+
+.preflight-ayuda {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.preflight-ok {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.preflight-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.preflight-aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border-radius: var(--radio-sm);
+  border-left: 3px solid var(--border);
+}
+
+.preflight-aviso--bloqueante {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.preflight-aviso--importante {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.preflight-aviso--atencion {
+  border-left-color: var(--text-tertiary);
+  background: var(--bg-hover);
+}
+
+.preflight-nivel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.preflight-texto {
+  font-size: var(--texto-sm);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.preflight-enlace {
+  font-size: var(--texto-sm);
+  color: var(--accent-text);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.preflight-enlace:hover {
+  text-decoration: underline;
+}
+
 /* --- El historial: lista, recientes y confirmaciones ------------------------- *
  *
  * `.recientes` y `.historial` comparten la fila porque es la misma información
