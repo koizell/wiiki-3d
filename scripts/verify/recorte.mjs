@@ -159,12 +159,43 @@ function datosDe(sourceFile) {
   };
 }
 
+/**
+ * Los cambios **fuera del `porque`** que están declarados.
+ *
+ * La vuelta de acortamiento no toca nada más, y esa es la regla. Pero hubo **un**
+ * arreglo que sí tenía que tocar algo más: la condición de una regla que no se
+ * disparaba donde debía, y que la revisión de la vuelta encontró. Ese cambio va
+ * declarado aquí, con su motivo, y la comprobación lo acepta **sólo** si coincide
+ * exactamente con lo declarado.
+ *
+ * Lo demás sigue fallando: un cambio no declarado fuera del `porque` es un fallo.
+ */
+const EXCEPCIONES = {
+  'esquinas-petg.ts': {
+    'recinto-abrir': {
+      campo: 'cuando',
+      motivo:
+        'La regla tomaba la fila ① de la fuente de Bambu —PLA/PVA/TPU, cama por encima ' +
+        'de 45 °C— en una guía sobre PETG, cuya fila ② dice cama por encima de 60 °C. ' +
+        'Con la condición anterior (cama alta, que aquí es «por encima de 80 °C») la ' +
+        'regla no se disparaba nunca en el rango recomendado del PETG. Lo encontró la ' +
+        'revisión de la vuelta de acortamiento.',
+    },
+  },
+};
+
 /** El diff de una guía, sin el `porque` de las reglas. */
 function sinPorque(guia) {
   return {
     ...guia,
     reglas: guia.reglas.map(({ porque, ...resto }) => resto),
   };
+}
+
+/** Los campos de una regla que han cambiado, sin contar el `porque`. */
+function camposDistintos(antes, despues) {
+  const campos = ['id', 'accion', 'valor', 'alcance', 'fuente', 'cuando', 'rango', 'indicador'];
+  return campos.filter((campo) => antes[campo] !== despues[campo]);
 }
 
 const ficheros = readdirSync(CARPETA).filter((f) => f.endsWith('.ts'));
@@ -191,17 +222,39 @@ for (const fichero of ficheros) {
     continue;
   }
 
-  const antesJson = JSON.stringify(sinPorque(a));
-  const despuesJson = JSON.stringify(sinPorque(d));
+  // Fuera de las reglas, nada puede cambiar.
+  const antesSinReglas = JSON.stringify({ ...sinPorque(a), reglas: [] });
+  const despuesSinReglas = JSON.stringify({ ...sinPorque(d), reglas: [] });
   comprobar(
-    antesJson === despuesJson,
-    `${fichero}: fuera del \`porque\`, nada ha cambiado`
+    antesSinReglas === despuesSinReglas,
+    `${fichero}: fuera de las reglas, nada ha cambiado`
   );
 
   if (a.reglas.length !== d.reglas.length) {
     fallos.push(`${fichero}: el número de reglas cambia`);
     continue;
   }
+
+  // Y dentro de las reglas, sólo el `porque`, salvo lo declarado.
+  const excepciones = EXCEPCIONES[fichero] ?? {};
+  const fueraDelPorque = [];
+  for (let i = 0; i < a.reglas.length; i++) {
+    const campos = camposDistintos(a.reglas[i], d.reglas[i]);
+    const declarados = campos.filter((campo) => campo !== 'porque');
+    if (declarados.length === 0) continue;
+    const excepcion = excepciones[a.reglas[i].id];
+    const permitida =
+      excepcion && declarados.length === 1 && declarados[0] === excepcion.campo;
+    if (!permitida) {
+      fueraDelPorque.push(
+        `la regla «${a.reglas[i].id}» cambia ${declarados.join(', ')} sin que esté declarado`
+      );
+    }
+  }
+  comprobar(
+    fueraDelPorque.length === 0,
+    `${fichero}: sólo cambia el \`porque\`, salvo lo declarado${fueraDelPorque.length ? ': ' + fueraDelPorque.join('; ') : ''}`
+  );
   const cambios = a.reglas.filter((r, i) => r.porque !== d.reglas[i].porque).length;
   porqueCambiados += cambios;
   comprobar(
