@@ -202,6 +202,57 @@ licencia, y la advertencia de que una calibración automática puede variar entr
 trabajos: un perfil calibrado a mano es **una referencia con la que comparar**,
 que es lo que sostiene el `alcance` de nuestras reglas.
 
+## La ruta de calibración, que salió de la investigación
+
+La investigación de Control3D no dejó una idea: dejó una **guía**.
+
+Los siete tests de calibración **ya eran** siete guías de este sitio. Lo que no
+existía era la entrada por la puerta de atrás: wiiki-3d está organizado **por
+síntoma**, y quien no tiene un síntoma —quien quiere una impresora bien calibrada,
+o recalibra porque ha cambiado de bobina— no tiene dónde empezar.
+
+La guía nueva se llama `ruta-de-calibracion` y **enruta** en vez de diagnosticar:
+
+| | |
+|---|---|
+| **Diez de sus doce reglas** | llevan `enlaza` a la guía que las desarrolla, con el campo nuevo `Regla.enlaza` |
+| **Cuatro reglas que no son tests** | cambiar de bobina, cambiar de boquilla, qué ajustes rehacer, y qué hacer si no has cambiado nada |
+| **Dieciséis tarjetas** | y la mayoría son contradicciones **declaradas, no resueltas** |
+
+Lo que la guía dice, y es lo que nadie más tenía:
+
+- **El orden no es un dato de fabricante, es un método.** Hay tres que se
+  contradicen —el de Control3D, el de OrcaSlicer y el de Duet3D— y **Prusa y
+  Bambu no publican ninguno**. La guía declara las tres y **no dice cuál es el
+  bueno**; dice cuál usa ella, que es el de Control3D, y por qué.
+- **La dirección del síntoma del Pressure Advance**: el material cocinado corrigió
+  lo que se le había dicho. Bambu, Prusa y Duet3D **coinciden** en que el abombado
+  está en el lado bajo; el desacuerdo real es el vocabulario y el punto de
+  observación, y un choque frontal con **Klipper**, que llama «rounded corners» al
+  PA **alto** mientras Bambu llama «esquina redondeada» al K **bajo**.
+- **La escala del K no es la misma en cinco firmwares**, y no se traduce ni se
+  compara.
+- **La retracción en Bowden tiene tres valores** según quién los da.
+
+Las cifras de Control3D van marcadas como **el método de un autor**, y su
+atribución dice que es una academia comercial.
+
+## La comprobación que faltaba: los campos protegidos
+
+`verify:recorte` compara una vuelta de acortamiento contra `HEAD`, y en cuanto
+se commitea **se queda vacío**: en el CI no comprobaría nada.
+
+Lo que lo sustituye es `verify:protegidos`, con una **base de las huellas** de
+los campos que no pueden cambiar en silencio —el `accion`, el `valor`, el
+`alcance`, la `fuente` y el `cuando` de cada regla, y el `titulo`, el `cuerpo` y
+la `cita` de cada tarjeta—. La regla que impone es del propio repositorio: un
+cambio en un campo protegido **tiene que actualizar la fecha de la guía**, porque
+una fecha que no se toca es una fecha decorativa.
+
+Es lo que esta vuelta necesitaba y no tenía: veinte y cuatro ficheros escritos
+por agentes, donde un `alcance` que se mueve o una `fuente` que cambia de nombre
+**no se ven leyendo**.
+
 ## Fuera de alcance
 
 - Reescribir a mano las 32 guías restantes: la migración de la tarea 2 es
