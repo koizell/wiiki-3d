@@ -82,31 +82,19 @@ jobs:
 
       # Y la wiki renderizada, que es lo que lee la gente.
       #
-      # **Esta no bloquea el despliegue**, a propósito. En el runner falla de
-      # una forma que no se puede reproducir en ningún otro sitio: falla en el
-      # primer segundo, sin imprimir ni una comprobación, y en un contenedor
-      # limpio con Node 22 y `npm ci` pasa las 220. Lo que falla es el entorno
-      # del runner, no el sitio.
+      # Esta puerta estaba cerrada y no era culpa del sitio: la wiki y el SEO
+      # compartían el **puerto 4173**, y el preview que levanta el SEO se queda
+      # huérfano al terminar su paso. La wiki lo heredaba, y en el runner
+      # —donde el proceso huérfano no sobrevive como sobrevive en un portátil—
+      # se quedaba sin servidor al que hablar. Con su propio puerto, pasa las
+      # 220.
       #
-      # Un portón que siempre da falso no es un portón: entrena al que lo mira a
-      # ignorar las luces. Así que **informa** y deja pasar. El despliegue lo
-      # cierran las comprobaciones que sí funcionan: la revisión, el contenido,
-      # los enlaces y el SEO.
+      # El paso va aparte y su salida se queda en el log, porque cuando una
+      # comprobación se cuelga el paso tiene que decir cuál es.
       - name: Wiki renderizada
-        id: wiki
-        continue-on-error: true
         run: |
           set -o pipefail
-          if npm run verify:wiki 2>&1 | tee wiki-verificacion.log; then
-            exit 0
-          fi
-          {
-            echo '### La wiki renderizada falla'
-            echo '```'
-            tail -40 wiki-verificacion.log
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit 1
+          npm run verify:wiki 2>&1 | tee wiki-verificacion.log
 
       - name: Subir artefacto
         uses: actions/upload-pages-artifact@v3
