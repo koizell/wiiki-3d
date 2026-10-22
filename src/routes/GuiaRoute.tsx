@@ -24,6 +24,7 @@ import {
 import { useAnalysis } from '../state/useAnalysis';
 import { useGuiaEstado } from '../state/useGuia';
 import { ContextoMovimiento } from '../state/movimiento-contexto';
+import { useEtapaActiva } from '../state/useEtapaActiva';
 import type { Guia, Regla, Variable } from '../content/guias/tipos';
 import type { ProjectMetadata } from '../services/types';
 
@@ -174,6 +175,14 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
 
   const contestadas = guia.variables.filter((v) => elegidas[v.id] !== undefined).length;
 
+  /**
+   * En qué etapa se está leyendo.
+   *
+   * El recorrido de arriba no sólo dice dónde está cada etapa: dice **dónde
+   * estás**, que con cuatro etapas apiladas es lo que se pierde al bajar.
+   */
+  const etapaActiva = useEtapaActiva(['diagnostico', 'montaje', 'conocimiento', 'recomendacion']);
+
   const contenido = (
     <div className="guia" key={guia.slug}>
       <Cabecera guia={guia} />
@@ -191,6 +200,7 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
         totalVariables={guia.variables.length}
         acciones={reglas.length}
         tarjetas={tarjetas.length}
+        activa={etapaActiva}
       />
 
       <TuArchivo guia={guia} />

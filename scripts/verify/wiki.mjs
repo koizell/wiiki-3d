@@ -340,6 +340,34 @@ try {
       estructura.botones === guia.diferencial.comprobaciones.length * 2,
       `${estructura.botones} botones`
     );
+    /*
+     * El recorrido marca la etapa en la que se esta.
+     *
+     * Con cuatro etapas apiladas, quien baja a la mitad de la guia no sabe si va
+     * por la segunda o por la tercera. El recorrido lo dice.
+     *
+     * Y aqui esta el detalle que hizo que la primera version no funcionara: en
+     * este sitio **la guia no se desplaza en la ventana**, se desplaza en
+     * `.canvas-area`, que es una columna con altura fija. Los eventos `scroll` no
+     * suben, asi que un oyente en la ventana no se entera de nada.
+     */
+    for (const [indice, ancla] of ['diagnostico', 'montaje', 'conocimiento', 'recomendacion'].entries()) {
+      await page.evaluate((id) => {
+        const elemento = document.getElementById(id);
+        const columna = document.querySelector('.canvas-area');
+        columna.scrollTo({ top: elemento.getBoundingClientRect().top + columna.scrollTop - 80 });
+      }, ancla);
+      await page.waitForTimeout(300);
+      const marcada = await page.evaluate(
+        () => document.querySelector('.guia-paso--activo')?.getAttribute('href') ?? null
+      );
+      comprobar(
+        marcada === `#${ancla}`,
+        `el recorrido marca la etapa ${indice + 1} al llegar a ella: ${marcada}`
+      );
+    }
+    await page.evaluate(() => document.querySelector('.canvas-area').scrollTo({ top: 0 }));
+    await page.waitForTimeout(200);
     comprobar(
       'las fuentes salen al pie y son las declaradas',
       estructura.fuentes === guia.fuentes.length,

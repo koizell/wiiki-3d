@@ -21,11 +21,14 @@ export default function StepperEtapas({
   totalVariables,
   acciones,
   tarjetas,
+  activa,
 }: {
   contestadas: number;
   totalVariables: number;
   acciones: number;
   tarjetas: number;
+  /** La etapa en la que se está leyendo ahora. */
+  activa: number;
 }) {
   const { animar, entrada } = useMovimiento();
 
@@ -52,9 +55,15 @@ export default function StepperEtapas({
       variants={entrada}
     >
       <ol className="guia-recorrido-lista">
-        {etapas.map((etapa) => (
+        {etapas.map((etapa, indice) => {
+          const esActiva = indice === activa;
+          return (
           <li key={etapa.numero}>
-            <a className="guia-paso" href={`#${etapa.ancla}`}>
+            <a
+              className={`guia-paso${esActiva ? ' guia-paso--activo' : ''}`}
+              href={`#${etapa.ancla}`}
+              aria-current={esActiva ? 'step' : undefined}
+            >
               <span className="guia-paso-numero" aria-hidden="true">
                 {etapa.numero}
               </span>
@@ -64,7 +73,8 @@ export default function StepperEtapas({
               </span>
             </a>
           </li>
-        ))}
+          );
+        })}
       </ol>
     </motion.nav>
   );
