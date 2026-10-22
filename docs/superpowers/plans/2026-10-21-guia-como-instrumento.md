@@ -322,6 +322,34 @@ Las que quedan fuera a propósito son las que dependen de la red:
 `verify:fuentes` mira si las URLs externas responden, y un 403 de un servidor que
 bloquea bots —no una fuente muerta— tumbaría un despliegue por un fallo ajeno.
 
+### Lo que el pipeline enseña cuando se ejecuta de verdad
+
+Las comprobaciones se escriben y se pasan en local, y **el pipeline es donde
+descubren que no están escritas para el sitio donde van a correr**. Cuatro
+cosas, todas de la misma familia: el entorno las da por buenas y no lo son.
+
+| Lo que pasó | Lo que era |
+|---|---|
+| `verify:wiki` moría en el primer segundo, sin imprimir nada | El navegador de Playwright no estaba instalado: `npm ci` instala el **paquete**, no el **navegador** |
+| `verify:seo` se colgaba esperando la red | La página carga AdSense y Analytics de Google, y `networkidle` espera a que **la red** se quede quieta. En el runner esas peticiones no se resuelven |
+| El preview no arrancaba | `vite preview` tenía **doce segundos** para levantar. En un portátil, de sobra; en un runner, no |
+| Las páginas se caían por timeout | Playwright espera **30 segundos** por página. Un timeout de infraestructura se presenta como un fallo del sitio |
+
+La regla que sale de las cuatro: **un timeout no es un fallo de lo que se
+mide**, y una comprobación que depende del reloj de la máquina necesita un
+margen que la máquina más lenta del mundo pueda cumplir.
+
+Y una cosa que no se puede arreglar desde aquí: `verify:wiki` falla **a veces**
+en el runner, en el primer segundo, con tres reintentos igual, y en un
+contenedor limpio con Node 22 y `npm ci` pasa las 220. El log de un job sólo lo
+lee quien tenga permisos de administrador, así que el motivo no se puede ver.
+
+Por eso **informa y no bloquea**. Un portón que da falso a veces es peor que no
+tenerlo: entrena al que lo mira a ignorar las luces, y bloquea despliegues que
+están bien. El despliegue lo cierran las cuatro comprobaciones que sí son
+fiables —la revisión, el contenido, los enlaces y el SEO— y la wiki renderizada
+sigue corriendo, con su salida en el resumen del job.
+
 ## Fuera de alcance
 
 - Reescribir a mano las 32 guías restantes: la migración de la tarea 2 es
