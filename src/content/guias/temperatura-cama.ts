@@ -9,7 +9,7 @@ import { AUTOR } from './autor.ts';
  * ## Por qué esta guía no puede ser un artículo
  *
  * Su contenido es, casi entero, una tabla. Las cifras de cama del PLA son seis, y
- * todas son ciertas; lo que las separa no es el fabricante sino la chapa, el
+ * todas son ciertas; lo que las separa no es el fabricante sino el alcance, el
  * intervalo frente al objetivo, y si el número es de la cama o de la pieza. Ese
  * contenido en prosa son seis párrafos con las cifras incrustadas en frases, y
  * quien busca «qué número pongo» tiene que leerlos todos para descubrir que la
@@ -31,12 +31,12 @@ export const temperaturaCama: Guia = {
   slug: 'temperatura-cama',
   titulo: 'Temperatura de cama',
   resumen:
-    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es la chapa, no el fabricante.',
+    'El PLA admite seis cifras de cama y todas son ciertas: lo que las separa es el alcance de cada fuente, no el fabricante.',
   resumenExtra:
     'Esta guía te dice cuál es la tuya y qué pasa si te pasas.',
   sintoma: '¿Qué número de cama pongo?',
   dibujo: 'cama',
-  entrada: 'No hay un número de cama: hay seis para el PLA y dependen de la chapa más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',
+  entrada: 'No hay un número de cama: hay seis para el PLA y dependen del alcance de cada fuente más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',
   autor: AUTOR,
   actualizado: '2026-10-21',
   minutos: 2,
@@ -190,14 +190,14 @@ export const temperaturaCama: Guia = {
       id: 'frio',
       titulo: 'Si la cama está demasiado fría',
       puntos: [
-        'El material puede no adhering bien, y eso lleva a warping, a unión débil entre capas o a despegue completo.',
+        'El material puede no adherir bien, y eso lleva a warping, a unión débil entre capas o a despegue completo.',
         'En casos severos la pieza puede soltar del todo.',
         'Ojo al alcance: la fuente enumera esas tres cosas con "o", no como una escalera, y el desenlace grave lo marca como potencial.',
         'No como daño confirmado.',
       ],
       indicador: 'cama',
       cuerpo:
-        'El material puede no adhering bien, y eso lleva a warping, a unión débil entre capas o a despegue completo. En casos severos la pieza puede soltar del todo. Ojo al alcance: la fuente enumera esas tres cosas con «o», no como una escalera, y el desenlace grave lo marca como potencial, no como daño confirmado.',
+        'El material puede no adherir bien, y eso lleva a warping, a unión débil entre capas o a despegue completo. En casos severos la pieza puede soltar del todo. Ojo al alcance: la fuente enumera esas tres cosas con «o», no como una escalera, y el desenlace grave lo marca como potencial, no como daño confirmado.',
       cuando: { problema: 'frio' },
       cita: {
         texto:
@@ -231,18 +231,18 @@ export const temperaturaCama: Guia = {
       puntos: [
         'Existe una regla: usar la temperatura de transición vítrea del material y restarle 5–10 °C para estimar un límite superior seguro de cama.',
         'Es una regla y no un número, y no se puede aplicar al PLA aquí porque el Tg del PLA no lo da ninguna fuente de esta guía.',
-        'Preferimos decir que falta el dato antes que inventar la cifra que saldría de multiplicarlo.',
+        'Preferimos decir que falta el dato antes que inventar la cifra que saldría de restarle.',
       ],
       indicador: 'cama',
       cuerpo:
-        'Existe una regla: usar la temperatura de transición vítrea del material y restarle 5–10 °C para estimar un límite superior seguro de cama. Es una regla y no un número, y no se puede aplicar al PLA aquí porque el Tg del PLA no lo da ninguna fuente de esta guía. Preferimos decir que falta el dato antes que inventar la cifra que saldría de multiplicarlo.',
+        'Existe una regla: usar la temperatura de transición vítrea del material y restarle 5–10 °C para estimar un límite superior seguro de cama. Es una regla y no un número, y no se puede aplicar al PLA aquí porque el Tg del PLA no lo da ninguna fuente de esta guía. Preferimos decir que falta el dato antes que inventar la cifra que saldría de restarle.',
       cuando: { material: ['pla', 'pla-cf'] },
     },
     {
       id: '65',
       titulo: 'El 65 °C no es un techo, y el 60 °C no siempre es de la cama',
       puntos: [
-        'El 65 °C aparece en un hilo de foro como "max 65 °C", y coincide con el extremo alto del intervalo de Bambu para la Textured PEI.',
+        'El 65 °C aparece en un hilo de foro como «(max 65°C)», y coincide con el extremo alto del intervalo de Bambu para la Textured PEI.',
         'Coincidir no es lo mismo: uno es un techo que un usuario le pone a otro en una conversación.',
         'El otro el extremo de un intervalo de fabricante para esa chapa.',
         'Y el 60 °C de la ficha del PLA aparece dos veces con dos significados.',
@@ -251,7 +251,7 @@ export const temperaturaCama: Guia = {
       ],
       indicador: 'cama',
       cuerpo:
-        'El 65 °C aparece en un hilo de foro como «max 65 °C», y coincide con el extremo alto del intervalo de Bambu para la Textured PEI. Coincidir no es lo mismo: uno es un techo que un usuario le pone a otro en una conversación, el otro el extremo de un intervalo de fabricante para esa chapa. Y el 60 °C de la ficha del PLA aparece dos veces con dos significados: como cama recomendada y como temperatura a la que la pieza se reblandece. Leer el segundo como «no pases de 60 de cama» es el error más fácil de cometer con esta fuente.',
+        'El 65 °C aparece en un hilo de foro como «(max 65°C)», y coincide con el extremo alto del intervalo de Bambu para la Textured PEI. Coincidir no es lo mismo: uno es un techo que un usuario le pone a otro en una conversación, el otro el extremo de un intervalo de fabricante para esa chapa. Y el 60 °C de la ficha del PLA aparece dos veces con dos significados: como cama recomendada y como temperatura a la que la pieza se reblandece. Leer el segundo como «no pases de 60 de cama» es el error más fácil de cometer con esta fuente.',
       cuando: { material: ['pla', 'pla-cf'] },
       enlaza: { guia: 'warping-pla', etiqueta: 'Warping en PLA' },
     },
@@ -318,7 +318,7 @@ export const temperaturaCama: Guia = {
         'Bambu da ese rango por filamento. La tabla del slicer no tiene fila de PETG, así que no cuenta como una tercera voz a favor ni en contra.',
       fuente: 'Bambu Lab',
       alcance:
-        'La ficha de Prusa da 70–90 °C para PETG y su tabla 60–80 °C. Los dos son de la misma casa y no coinciden; el corpus no lo resuelve.',
+        'Prusa da 70–90 °C para PETG (tabla de materiales) y Bambu da 60–80 °C. Son fabricantes distintos y no coinciden; el corpus no lo resuelve.',
     },
     {
       id: 'abs',

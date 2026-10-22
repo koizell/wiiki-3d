@@ -146,11 +146,11 @@ export const rutaDeCalibracion: Guia = {
         'Duet3D no publica una ruta: sólo un tramo, Input Shaping, PA y retracción.',
         'La contradicción está en lo que va antes: el flujo es segundo en un orden y cuarto en el otro.',
         'Las tolerancias van sextas en un orden y las últimas en el otro.',
-        'El segundo desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
+        'El tercer desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Control3D: temperatura, flujo, PA, velocidad volumétrica, retracciones, tolerancias, voladizos y pieza final. OrcaSlicer: temperatura, velocidad volumétrica máxima, PA, flujo, retracciones, grupo avanzado y tolerancias al final. Duet3D no publica una ruta: sólo un tramo, Input Shaping, PA y retracción. La contradicción está en lo que va antes: el flujo es segundo en un orden y cuarto en el otro. Las tolerancias van sextas en un orden y las últimas en el otro. El segundo desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
+        'Control3D: temperatura, flujo, PA, velocidad volumétrica, retracciones, tolerancias, voladizos y pieza final. OrcaSlicer: temperatura, velocidad volumétrica máxima, PA, flujo, retracciones, grupo avanzado y tolerancias al final. Duet3D no publica una ruta: sólo un tramo, Input Shaping, PA y retracción. La contradicción está en lo que va antes: el flujo es segundo en un orden y cuarto en el otro. Las tolerancias van sextas en un orden y las últimas en el otro. El tercer desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
       cita: {
         texto: 'Do it last, as the result depends on every calibration above',
         fuente: 'OrcaSlicer',
@@ -578,6 +578,11 @@ export const rutaDeCalibracion: Guia = {
       url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/calibration_guide',
       quien: 'OrcaSlicer',
       que: 'Documentación oficial: el orden de calibración con la dependencia de cada paso, y los tests de filamento y de impresora.',
+    },
+    {
+      url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/material_flow_ratio_and_pressure_advance',
+      quien: 'OrcaSlicer',
+      que: 'Flow Ratio y Pressure Advance: las variables `enable_pressure_advance` y `pressure_advance` del panel, y la calibración del flujo. Es la fuente de las variables de PA que usa la tarjeta de Bambu/Orca.',
     },
     {
       url: 'https://help.prusa3d.com/article/linear-advance_2252',
