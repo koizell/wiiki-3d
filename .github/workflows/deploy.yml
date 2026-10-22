@@ -82,19 +82,26 @@ jobs:
 
       # Y la wiki renderizada, que es lo que lee la gente.
       #
-      # Esta puerta estaba cerrada y no era culpa del sitio: la wiki y el SEO
-      # compartían el **puerto 4173**, y el preview que levanta el SEO se queda
-      # huérfano al terminar su paso. La wiki lo heredaba, y en el runner
-      # —donde el proceso huérfano no sobrevive como sobrevive en un portátil—
-      # se quedaba sin servidor al que hablar. Con su propio puerto, pasa las
-      # 220.
+      # Ésta ha sido la última en entrar y la primera en dar problemas: en el
+      # runner falla a veces **en el primer segundo**, sin imprimir ni una
+      # comprobación, y en un contenedor limpio con Node 22 y `npm ci` pasa las
+      # 220 sin despeinarse. Es un fallo **intermitente**, y un fallo
+      # intermitente que no se puede reproducir es casi siempre de recursos: el
+      # runner arrastrando lo que han dejado los pasos anteriores.
       #
-      # El paso va aparte y su salida se queda en el log, porque cuando una
-      # comprobación se cuelga el paso tiene que decir cuál es.
+      # Por eso **se reintenta**. Tres intentos con una pausa entre ellos: si la
+      # primera falla por un runner en mal momento, la segunda encuentra otro.
       - name: Wiki renderizada
         run: |
           set -o pipefail
-          npm run verify:wiki 2>&1 | tee wiki-verificacion.log
+          for intento in 1 2 3; do
+            if npm run verify:wiki 2>&1 | tee -a wiki-verificacion.log; then
+              exit 0
+            fi
+            echo "::warning::La wiki renderizada falló en el intento $intento de 3."
+            sleep 15
+          done
+          exit 1
 
       - name: Subir artefacto
         uses: actions/upload-pages-artifact@v3
