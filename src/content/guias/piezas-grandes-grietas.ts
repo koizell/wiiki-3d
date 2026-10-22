@@ -695,7 +695,7 @@ export const piezasGrandesGrietas: Guia = {
       accion: 'Prueba a activar algo de ventilador de pieza, bajo y a baja velocidad',
       valor: '10-20 %',
       porque:
-        'Si lo que se curva son voladizos inclinados o piezas pequeñas, Prusa propone probar a activarlo despacio incluso en materiales que no requieren mucha refrigeración. El punto es probar despacio y comprobar, no subir a tope.',
+        'Si se curvan voladizos inclinados o piezas pequeñas, Prusa propone probarlo despacio, incluso en materiales que no requieren mucha refrigeración. El punto es probar y comprobar, no subir a tope.',
       cuando: { material: 'abs', tamaño: ['pequeña'] },
       fuente: 'Prusa Research',
       alcance: 'Es un you may try, no una recomendación categórica; demasiado ventilador puede deformar toda la pieza.',
@@ -744,7 +744,7 @@ export const piezasGrandesGrietas: Guia = {
       accion: 'Sube la temperatura de boquilla en incrementos de 5 °C',
       valor: '+5 °C por paso',
       porque:
-        'PLA con temperatura de boquilla insuficiente puede sufrir cracking y separación de capas; subir en incrementos de 5 °C hasta obtener buena adhesión de capa. Es también el enfoque de Prusa para interlayer cracking frente al de Bambu (cama y cámara).',
+        'PLA con boquilla insuficiente puede sufrir cracking y separación de capas: sube en pasos de 5 °C hasta buena adhesión. Es el enfoque de Prusa para interlayer cracking, frente a Bambu (cama y cámara).',
       cuando: { material: ['pla', 'petg', 'abs', 'pc', 'pa', 'petg-cf'] },
       fuente: 'Prusa Research',
       alcance: 'Incremento por prueba, no una cifra absoluta; el rango propio depende del filamento y del hotend.',
@@ -754,7 +754,7 @@ export const piezasGrandesGrietas: Guia = {
       accion: 'Aplica el protocolo de interlayer cracking (ABS)',
       valor: 'Cama +5-10 °C, cámara +5 °C, fan máx. 60 %, velocidad 150/100 mm/s',
       porque:
-        'En interlayer cracking en ABS: aumentar la temperatura de la boquilla o bajar la velocidad (pared interior a 150 mm/s, exterior a 100 mm/s), reducir el ventilador de pieza (ventilador máximo del 60 % en paredes) y subir la cama 5-10 °C y la cámara 5 °C si hay calefacción activa.',
+        'En interlayer cracking en ABS: sube la boquilla o baja la velocidad (150 mm/s interior, 100 exterior), ventilador de pieza al 60 % máximo en paredes, cama +5-10 °C y cámara +5 °C si hay calefacción.',
       cuando: { material: 'abs', tamaño: 'grande' },
       fuente: 'Bambu Lab',
       alcance: 'Protocolo de Bambu para interlayer cracking en ABS; no sustituye el enfoque de boquilla de Prusa.',

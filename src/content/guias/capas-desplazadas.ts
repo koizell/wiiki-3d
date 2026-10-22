@@ -417,7 +417,7 @@ export const capasDesplazadas: Guia = {
       indicador: 'activar',
       cuando: { hold: 'z-dedicado' },
       porque:
-        'Los motores Z que no participan en la impresión normal (sin bed_mesh, bed_tilt, skew en Z ni vase mode) se mantienen más fríos con hold_current, calculando el movimiento no ordenado en nivelación y sondeo.',
+        'Los motores Z inactivos en la impresión normal (sin bed_mesh, bed_tilt, skew en Z ni vase mode) se mantienen más fríos con hold_current, calculando el movimiento no ordenado en nivelación y sondeo.',
       fuente: 'Klipper TMC',
       alcance:
         'Excepción documentada al caso general. Si no estás seguro, preferir no especificar hold_current.',
@@ -457,7 +457,7 @@ export const capasDesplazadas: Guia = {
       accion: 'Revisa cables y fuente ante reset, Undervoltage o pérdida de comunicación con la MCU',
       cuando: { firmware: 'klipper' },
       porque:
-        'reset=1/CS_ACTUAL=0/SE=0 y uv_cp=1 pueden deberse a problemas de tensión o cableado. Lost communication with MCU suele venir de cable USB, 5 V mezclados, fuente sobrecargada o cables plegados/deshilachados.',
+        'reset=1/CS_ACTUAL=0/SE=0 y uv_cp=1 pueden deberse a tensión o cableado. Lost communication with MCU suele venir de cable USB, 5 V mezclados, fuente sobrecargada o cables plegados/deshilachados.',
       fuente: 'Klipper TMC, Klipper FAQ',
       alcance:
         'No siempre implica pasos perdidos en la pieza: el driver deshabilitado deja de mantener posición y deja de responder a comandos.',

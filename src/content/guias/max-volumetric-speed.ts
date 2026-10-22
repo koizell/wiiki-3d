@@ -278,7 +278,7 @@ export const maxVolumetricSpeed: Guia = {
       id: 'calibrar-por-impresora',
       accion: 'Calibra el MVS por impresora y por filamento antes de subir la velocidad',
       porque:
-        'El MVS depende de material, máquina, diámetro de boquilla y montaje del extrusor; incluso dentro del mismo tipo (PLA), marca y color afectan de forma significativa. No hay un número único que valga para todos.',
+        'El MVS depende de material, máquina, diámetro de boquilla y montaje del extrusor; dentro del mismo tipo (PLA) marca y color afectan de forma significativa. No hay un número único para todos.',
       fuente: 'OrcaSlicer, Prusa Research',
       alcance: 'Regla general: el procedimiento concreto depende del slicer (OrcaSlicer o Simplify3D); no se puede condicionar a una variable porque aplica a cualquier montaje.',
     },
@@ -287,7 +287,7 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Calibra el MVS midiendo la altura justo antes de los defectos',
       valor: '5 mm³/s inicio, 20 mm³/s fin, paso 0,5 (ej. 5 + 19 × 0,5 = 14,5 mm³/s)',
       porque:
-        'Imprimir el patrón de caudal, anotar dónde empiezan a fallar las capas y dónde baja la calidad (un cambio de brillo brillante/mate es pista), y medir con calibre la altura justo antes de los defectos. Aplicar inicio + (altura medida × paso) y fijar el valor en los ajustes del filamento. Verificar cruzado en la pestaña Preview, esquema de color "flow".',
+        'El MVS es el caudal que el hotend aguanta: se mide con calibre la altura justo antes de los defectos y se aplica inicio + (altura × paso). El brillo brillante/mate avisa de que la calidad baja.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'La prueba es el mejor caso: no tiene en cuenta retracciones ni otros ajustes que pueden aumentar atascos o subextrusión.',
@@ -297,7 +297,7 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Reduce el valor calculado un 10–20 %, o más, por seguridad',
       valor: '-10 a -20 %',
       porque:
-        'La prueba de caudal volumétrico es el mejor caso y no tiene en cuenta retracciones ni otros ajustes que pueden aumentar atascos o subextrusión. Imprimir a alto caudal puede dar mala adhesión entre capas o atascos en la boquilla.',
+        'La prueba de caudal volumétrico es el mejor caso: no tiene en cuenta retracciones ni otros ajustes que aumentan atascos o subextrusión. Imprimir a alto caudal puede dar mala adhesión o atascos.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'No es una pérdida de rendimiento: es el margen frente a retracciones y cambios de caudal.',
@@ -306,7 +306,7 @@ export const maxVolumetricSpeed: Guia = {
       id: 'orca-no-adaptive',
       accion: 'No uses Adaptive volumetric speed como ajuste definitivo',
       porque:
-        'Es experimental e incompleto (importado de BBS) y funcional sólo para algunos perfiles. Con él habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo del usuario; con él deshabilitado, sólo se aplica el máximo del usuario. Conviente medir primero el MVS y usarlo como base.',
+        'Es experimental e incompleto (importado de BBS) y sólo funciona en algunos perfiles. Habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo del usuario: mide antes el MVS.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'Puede usarse como complemento, no como sustituto del valor medido.',
@@ -316,7 +316,7 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Haz el test del cubo de 20 mm: gaps entre los 3 perímetros indican subextrusión',
       valor: 'cubo de 20 mm, al menos 3 perímetros',
       porque:
-        'Si hay gaps entre los 3 perímetros en la parte superior, hay subextrusión. El extrusion multiplier se ajusta por extrusor en la pestaña Extruder; aumentar un 5 % y reimprimir el cubo de prueba. El diámetro de filamento se fija en la pestaña Other (valores comunes 1,75 y 2,85 mm).',
+        'Gaps entre los 3 perímetros arriba indican subextrusión. El extrusion multiplier se ajusta por extrusor en la pestaña Extruder: +5 % y reimprimir el cubo. El diámetro va en Other: 1,75 y 2,85 mm.',
       cuando: { slicer: 'simplify3d' },
       fuente: 'Simplify3D',
       alcance: 'El extrusion multiplier es un factor de flujo, no un techo de velocidad por capacidad de fusión; no confundir con el MVS.',
@@ -325,7 +325,7 @@ export const maxVolumetricSpeed: Guia = {
       id: 'highflow-aprovechar',
       accion: 'Para aprovechar un hotend de alto flujo, sube las velocidades, el MVS en el slicer y, si hace falta, la altura de capa o el ancho de línea',
       porque:
-        'Sin esos cambios, es "conducir un coche más rápido con el mismo límite de velocidad". El movimiento de la boquilla se rige por velocidad, aceleración y jerk; en la mayoría de perfiles estándar el sistema de movimiento, no el hotend, ya es el cuello de botella.',
+        'Sin ellos es conducir un coche más rápido con el mismo límite: el movimiento se rige por velocidad, aceleración y jerk, y en la mayoría de perfiles estándar ése es el cuello de botella, no el hotend.',
       cuando: { hotend: 'highflow' },
       fuente: 'E3D',
       alcance: 'Aprovecha el alto flujo sólo si el sistema de movimiento (speed/accel/jerk) y el ventilador acompañan; si no, las impresiones siguen lentas o de mala calidad.',
@@ -345,7 +345,7 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Si buscas velocidad con PLA, valora un PLA de alto flujo (MFI alto y shear-thinning)',
       valor: '28 mm³/s · ahorro 20-40 %',
       porque:
-        'Prusament PLA High Speed alcanza 28 mm³/s en CORE One+ a 220 °C y permite empujar la impresora a sus límites sin clogs ni hardware especializado, gracias a su MFI alto y shear-thinning. El ahorro real de tiempo depende de la forma y el tamaño del modelo (Prusa acota 20–40 %).',
+        'Prusament PLA High Speed alcanza 28 mm³/s en CORE One+ a 220 °C: su MFI alto y shear-thinning llevan la impresora al límite sin clogs. El ahorro depende de la forma y el tamaño (Prusa acota 20–40 %).',
       cuando: { material: 'pla' },
       fuente: 'Prusa Research',
       alcance: 'Dato de fabricante, sin corroborar; el MVS depende del hardware y la forma del modelo, y comparar números entre fabricantes no es válido.',

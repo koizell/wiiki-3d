@@ -301,7 +301,7 @@ export const warping: Guia = {
       accion: 'Limpia la chapa con agua templada y jabón',
       valor: 'Enjuaga y deja secar al aire',
       porque:
-        'Es el primero de los tres pasos que Bambu atribuye a aproximadamente el 80 % de los fallos de warping y adhesión, y sale también en su lista de correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
+        'Es el primero de los tres pasos que Bambu atribuye al ~80 % de los fallos de warping y adhesión, y está en sus correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
       cuando: { material: ['pla', 'pla-cf', 'petg', 'abs', 'pc', 'pa'] },
       fuente: 'Bambu Lab',
       alcance: 'Los tres pasos resuelven ~80 % según el fabricante. El ventilador no está en esa lista.',
@@ -388,7 +388,7 @@ export const warping: Guia = {
       cuando: { tamaño: ['pequena', 'mediana'], material: ['abs', 'pc', 'pa'] },
       valor: '10–20 %',
       porque:
-        'Prusa pone los voladizos inclinados y las piezas pequeñas como condición de su consejo de ventilador: en esos casos probar a activarlo despacio, incluso con materiales que no necesitan mucha refrigeración. Su objetivo declarado es enfriar la pieza «ni demasiado rápido ni demasiado despacio», así que el punto es probar despacio y comprobar, no subir a fondo.',
+        'Prusa lo dice para voladizos inclinados y piezas pequeñas: pruébalo despacio y comprueba. Su objetivo es enfriar «ni demasiado rápido ni demasiado despacio», aunque el material no lo necesite.',
       fuente: 'Prusa Research',
       alcance:
         'El corpus no dice hacia qué lado se curva un voladizo ni por qué, así que esta guía no lo dice. Y ojo al verbo: es un «you may try», no una recomendación categórica.',
@@ -416,7 +416,7 @@ export const warping: Guia = {
       accion: 'Abre la puerta frontal y quita la tapa superior',
       cuando: { camara: 'cerrada', cama: 'alta' },
       porque:
-        'Para filamentos con temperatura de reblandecimiento por debajo de 60 °C —PLA, PVA, TPU— y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
+        'Para filamentos que reblandecen por debajo de 60 °C —PLA, PVA, TPU— y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa: el calor de la cámara no reblandece el filamento.',
       fuente: 'Bambu Lab',
       alcance: 'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Traducirlo como «las dos cosas» le exigiría una conjunción que no pidió.',
     },

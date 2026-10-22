@@ -465,8 +465,8 @@ export const esquinasPetg: Guia = {
       id: 'recinto-abrir',
       accion: 'Abre la puerta frontal y/o quita la tapa',
       porque:
-        'Para filamentos con temperatura de reblandecimiento por debajo de 60 °C y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
-      cuando: { cama: 'alta', recinto: 'cerrado' },
+        'PETG reblandece entre 60 y 80 °C: con la cama por encima de 60 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
+      cuando: { cama: ['media', 'alta'], recinto: 'cerrado' },
       fuente: 'Bambu Lab',
       alcance: 'Es un y/o de la fuente; traducirlo como "las dos cosas" exigiría una conjunción que no pidió.',
     },

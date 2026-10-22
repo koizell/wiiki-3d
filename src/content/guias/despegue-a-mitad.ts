@@ -571,7 +571,7 @@ export const despegueAMitad: Guia = {
       accion: 'Limpia la chapa con agua templada y jabón',
       valor: 'Enjuaga y deja secar al aire',
       porque:
-        'Es el primero de los tres pasos que Bambu atribuye a aproximadamente el 80 % de los fallos de warping y adhesión, y sale también en la lista de correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
+        'Es el primero de los tres pasos que Bambu atribuye al 80 % de los fallos de warping y adhesión, y sale en la lista de correcciones rápidas. Después de limpiar, no toques la superficie con las manos.',
       cuando: { material: ['pla', 'pla-cf', 'petg', 'abs', 'pa', 'pc'], fallo: ['esquinas', 'cama', 'colapso'] },
       fuente: 'Bambu Lab',
       alcance: 'Los tres pasos resuelven ~80 % según el fabricante. El ventilador no está en esa lista.',
@@ -606,7 +606,7 @@ export const despegueAMitad: Guia = {
       accion: 'Baja ligeramente la boquilla o sube el Z-offset',
       valor: 'Primer layer ligeramente aplastado',
       porque:
-        'La primera capa debe quedar ligeramente aplastada, no flotando; la boquilla demasiado lejos empeora la adhesión. Bajar el Z-offset aumenta el aplastamiento. Simplify3D lo expresa al revés: −0,05 mm acerca 0,05 mm.',
+        'La primera capa debe quedar ligeramente aplastada, no flotando; la boquilla demasiado lejos empeora la adhesión. Bajar el Z-offset aumenta el aplastamiento. Simplify3D: −0,05 mm acerca 0,05 mm.',
       cuando: { fallo: ['cama', 'esquinas'], material: ['pla', 'pla-cf', 'petg', 'abs', 'pa', 'pc'] },
       fuente: 'Bambu Lab, Simplify3D',
       alcance: 'Si el primer layer ya está sobrecoplado, invertir: subir 0,05–0,1 mm.',
@@ -643,7 +643,7 @@ export const despegueAMitad: Guia = {
       id: 'seco',
       accion: 'Seca el filamento',
       porque:
-        'Si se oyen crujidos o petardeos, o se ven superficies ásperas, burbujeantes o stringy, el filamento ha absorbido humedad; secar y reintentar. Nylon y PC absorben humedad en pocas horas en ambiente húmedo.',
+        'Si se oyen crujidos o petardeos, o se ven superficies ásperas, burbujeantes o stringy, el filamento ha absorbido humedad: secar y reintentar. Nylon y PC absorben humedad en pocas horas.',
       cuando: { fallo: ['cama', 'esquinas'], material: ['pa', 'pc', 'petg'] },
       fuente: 'Bambu Lab',
       alcance: 'Sin temperatura de secado respaldada por estas fuentes; se deja la instrucción al secador del fabricante.',
@@ -722,7 +722,7 @@ export const despegueAMitad: Guia = {
       accion: 'Baja la temperatura de cama si la base sale blanda',
       valor: 'PETG: bajar ~5 °C por prueba',
       porque:
-        'Si la primera capa sobresale por calor, el reblandecimiento se corrige reduciendo la cama en incrementos de unos 5 °C. Con materiales que exigen cama alta, los fixes mecánicos van antes que la compensación.',
+        'Si la primera capa sobresale por calor, el reblandecimiento se corrige bajando la cama en incrementos de 5 °C. Con materiales que exigen cama alta, van antes los fixes mecánicos que la compensación.',
       cuando: { material: 'petg', fallo: 'esquinas', cama: 'alta', tamaño: 'grande' },
       fuente: 'Creality',
     },
@@ -741,7 +741,7 @@ export const despegueAMitad: Guia = {
       accion: 'Ajusta el ventilador auxiliar',
       valor: '40–50 % o −20–30 %',
       porque:
-        'Bambu lo dice de dos maneras en dos páginas: bajarlo a 40–50 %, o reducirlo 20–30 %. El corpus no resuelve cuál aplicar. El auxiliar a alta velocidad enfría las paredes exteriores demasiado rápido, sobre todo en objetos pequeños o con voladizos.',
+        'Bambu lo dice de dos maneras en dos páginas: bajarlo a 40–50 %, o reducirlo 20–30 %. El corpus no resuelve cuál aplicar. El auxiliar a alta velocidad enfría demasiado rápido las paredes exteriores.',
       cuando: { material: ['pla', 'pla-cf', 'petg'], fallo: 'esquinas' },
       fuente: 'Bambu Lab',
       alcance: 'Dos cifras de la misma fuente en dos páginas; no se promedian.',
@@ -751,7 +751,7 @@ export const despegueAMitad: Guia = {
       accion: 'Activa ventilador de pieza bajo y lento en voladizos',
       valor: '10–20 %',
       porque:
-        'Prusa pone los voladizos inclinados y las piezas pequeñas como condición: activarlo despacio, incluso en materiales que no necesitan mucha refrigeración. El objetivo declarado es enfriar «ni demasiado rápido ni demasiado despacio».',
+        'Prusa pone los voladizos inclinados y las piezas pequeñas como condición: activarlo despacio, aunque el material no necesite refrigeración. El objetivo: «ni demasiado rápido ni demasiado despacio».',
       cuando: { tamaño: 'alta-delgada', material: ['abs', 'pc', 'pa'], fallo: 'esquinas' },
       fuente: 'Prusa Research',
       alcance: 'Es un «you may try», no una recomendación categórica; demasiada velocidad puede levantar el objeto entero.',
@@ -806,7 +806,7 @@ export const despegueAMitad: Guia = {
       id: 'abierta',
       accion: 'Abre la puerta frontal y quita la tapa superior',
       porque:
-        'Para filamentos con temperatura de reblandecimiento por debajo de 60 °C (PLA, PVA, TPU) y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
+        'Con filamentos que se reblandecen por debajo de 60 °C (PLA, PVA, TPU) y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa: así el calor no reblandece el filamento.',
       cuando: { material: ['pla', 'pla-cf'], camara: 'cerrada', cama: 'alta', fallo: ['esquinas', 'cama'] },
       fuente: 'Bambu Lab',
       alcance: 'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Traducirlo como «las dos cosas» le exigiría una conjunción que no pidió.',
@@ -834,7 +834,7 @@ export const despegueAMitad: Guia = {
       accion: 'Sube la temperatura de cama si imprimes en frío con material de alta temperatura',
       valor: '+10 °C',
       porque:
-        'En impresoras con el filamento expuesto al aire en el portabobinas, el ambiente por debajo de 20 °C agrava el warping incluso en PLA y PETG. Bloquear las corrientes y cerrar la máquina es el primer gesto.',
+        'Con el filamento expuesto al aire en el portabobinas, el ambiente por debajo de 20 °C agrava el warping incluso en PLA y PETG. Bloquear las corrientes y cerrar la máquina es el primer gesto.',
       cuando: { ventana: 'abierta', fallo: ['esquinas', 'cama'], material: ['abs', 'pa', 'pc'] },
       fuente: 'Bambu Lab, Prusa Research',
     },

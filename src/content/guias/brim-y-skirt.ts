@@ -279,7 +279,7 @@ export const brimYSkirt: Guia = {
       valor: 'brim_width manual (mm)',
       cuando: { objetivo: 'adhesion' },
       porque:
-        'El brim es una capa plana alrededor de la base pensada para modelos con poca superficie de apoyo o propensos a warping; ensancharlo a mano mejora la adhesion a costa de mas material (a diferencia de auto_brim, que la calcula).',
+        'El brim es una capa plana alrededor de la base, para modelos con poca superficie de apoyo o propuestos a warping. Ensancharlo a mano mejora la adhesion a costa de mas material; auto_brim la calcula.',
       fuente: 'OrcaSlicer Wiki, Brim',
       alcance:
         'El brim ayuda a la adhesion y a la estabilizacion, pero no corrige por si solo el warping severo ni una nivelacion mal hecha. No hay una anchura manual universal: brim_width fija la distancia entre el modelo y la linea exterior y cada mm la ensancha (mejora adhesion, mas material). Para el calculo automatico usar usa-auto-brim, que aplica los topes de 18 mm y 1,5x la longitud termica.',
@@ -333,7 +333,7 @@ export const brimYSkirt: Guia = {
       accion: 'Controla la velocidad del skirt',
       valor: 'skirt_speed = 0',
       porque:
-        'A 0 usa la velocidad First layer infill en la primera capa y la velocidad de Support en las superiores; velocidades de skirt muy rapidas pueden no adherir bien, desprenderse y causar problemas con la pieza.',
+        'A 0 usa la velocidad First layer infill en la primera capa y la de Support en las superiores; un skirt muy rapido puede no adherir bien, desprenderse y dar problemas con la pieza.',
       fuente: 'OrcaSlicer Wiki, Skirt',
       alcance:
         'Aplica a skirt y, por herencia, al primer comportamiento de purga. No fija un mm/s concreto: depende de las velocidades declaradas en el perfil.',
@@ -344,7 +344,7 @@ export const brimYSkirt: Guia = {
       valor: 'draft_shield = enabled',
       cuando: { entorno: 'open', material: 'abs' },
       porque:
-        'El escudo es una pared continua tan alta como el modelo mas alto de la cama y protege de corrientes y cambios bruscos de temperatura, especialmente en ABS y ASA; en maquinas open-frame es donde mas aporta.',
+        'El escudo es una pared continua tan alta como el modelo mas alto de la cama y protege de corrientes y cambios bruscos de temperatura, sobre todo en ABS y ASA. En maquinas open-frame aporta mas.',
       fuente: 'OrcaSlicer Wiki, Skirt',
       alcance:
         'Con draft_shield habilitado el skirt usa la altura del modelo mas alto y no skirt_height. single_loop_draft_shield ahorra material pero hace el escudo menos robusto y mas propenso a warping o cracking.',
@@ -365,7 +365,7 @@ export const brimYSkirt: Guia = {
       accion: 'Considera un raft en lugar de un brim',
       cuando: { superficie: 'pequena', material: ['abs', 'pa', 'pc'], impresora: 'normal' },
       porque:
-        'El raft ayuda cuando el material tiende a warpear o levantar esquinas (ABS, ASA, PC, Nylon), cuando el contacto con la cama es pequeno o con features finas, o cuando la placa esta desigual o desgastada.',
+        'El raft ayuda si el material tiende a warpear o levantar esquinas (ABS, ASA, PC, Nylon), si el contacto con la cama es pequeno o con features finas, o si la placa esta desigual o desgastada.',
       fuente: 'OrcaSlicer Wiki, Raft',
       alcance:
         'El raft deja el fondo mas rugoso, tarda mas, gasta mas material y hay que retirarlo. No se puede imprimir en maquinas belt. Si el problema es solo adhesion o warping, probar brim primero.',
@@ -407,7 +407,7 @@ export const brimYSkirt: Guia = {
       accion: 'Activa brim use EFC outline solo si la compensacion altera la huella',
       valor: 'brim_use_efc_outline',
       porque:
-        'El ajuste alinea el brim con el perimetro de la primera capa tras aplicar la compensacion de pie de elefante; esta pensado para casos en los que la compensacion cambia mucho la huella. Si el setup ya funciona bien, habilitarlo puede ser innecesario y hacer que el brim se fusione con las capas superiores.',
+        'Alinea el brim con el perimetro tras la compensacion de pie de elefante, cuando cambia mucho la huella. Con el setup ya bien, activarlo es innecesario y funde el brim con las capas superiores.',
       fuente: 'OrcaSlicer Wiki, Brim',
       alcance:
         'Ayuda a la anexion del brim con compensacion alta o cuando la previsualizacion muestra el brim despegado; un setup ya calibrado puede no necesitarlo. Con EFC alto, el brim despegado en preview puede ser esperable y no un fallo.',

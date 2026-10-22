@@ -297,7 +297,7 @@ export const temperaturaCama: Guia = {
       valor: '45–65 °C',
       rango: { campo: 'bedTemp', min: 45, max: 65, unidad: '°C' },
       porque:
-        'Las tres chapas comparten el mismo rango para el PLA, y es el otro extremo de la misma fila. Los 50–60 °C de Prusa y del slicer están dentro de él: no contradicen, son el mismo rango con distinta anchura.',
+        'Las tres chapas comparten el mismo rango para el PLA y es el otro extremo de la misma fila. Los 50–60 °C de Prusa y del slicer están dentro: no contradicen, son el mismo rango con distinta anchura.',
       fuente: 'Bambu Lab',
     },
     {
@@ -329,7 +329,7 @@ export const temperaturaCama: Guia = {
       valor: '80–120 °C',
       rango: { campo: 'bedTemp', min: 80, max: 120, unidad: '°C' },
       porque:
-        'PC y PET-CF son las filas más altas de las dos tablas: Bambu da 100–120 °C para el PC y 80–100 para el PET-CF, y Prusa 100–115 para el PC. Es el rango más ancho del lote y el que menos margen deja para equivocarse.',
+        'PC y PET-CF son las filas más altas de las dos tablas: Bambu da 100–120 °C para el PC y 80–100 para el PET-CF, Prusa 100–115 para el PC. Es el rango más ancho del lote y el que deja menos margen.',
       fuente: 'Bambu Lab, Prusa Research',
     },
     {
@@ -367,7 +367,7 @@ export const temperaturaCama: Guia = {
       accion: 'Baja la cama y usa un separador si no puedes despegar la pieza',
       cuando: { problema: 'caliente' },
       porque:
-        'La adhesión demasiado fuerte sobre PEI lisa es un riesgo documentado con PETG, ABS y ASA, y la misma frase que lo advierte propone el separador como remedio. Baja la temperatura antes de forzar la pieza.',
+        'La adhesión demasiado fuerte sobre PEI lisa es un riesgo documentado con PETG, ABS y ASA, y la frase que lo advierte propone el separador como remedio. Baja la temperatura antes de forzar la pieza.',
       fuente: 'Prusa Research',
     },
   ],

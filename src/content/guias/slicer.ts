@@ -373,7 +373,7 @@ export const slicer: Guia = {
       id: 'perfil-aplicado',
       accion: 'Confirma que el perfil aplicado es el de tu impresora y tu material',
       porque:
-        'El perfil es el conjunto completo de ajustes de una categoría, y todo lo que el programa calcula después se calcula para el montaje que ese perfil describe. Si el desplegable sigue en otro material u otra máquina, el fichero sale bien laminado para otra cosa: hasta la estimación de tiempo, que es de lo más preciso del programa, depende de que el perfil de impresora sea el correcto.',
+        'Todo lo que el programa calcula se hace para el montaje que describe el perfil: con otro material u otra máquina, el fichero sale bien laminado para otra cosa, hasta la estimación de tiempo.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'No depende de ninguna variable de esta guía: es la comprobación previa a todas las demás. Y un perfil de impresión no es propiedad del fabricante del slicer —Prusa trae presets integrados para muchos materiales, pero se puede importar el de otra casa—.',
@@ -382,7 +382,7 @@ export const slicer: Guia = {
       id: 'revisa-salida',
       accion: 'Revisa la salida del G-code antes de enviarla a la impresora',
       porque:
-        'Cura lo marca con dos avisos en su página de Start/End G-code: editar el G-code a mano puede dañar la impresora, y hay que comprobar siempre la salida antes de enviarla a la máquina. Es la comprobación que casi nadie hace y la única que ve el fichero real que va a correr.',
+        'Cura avisa en su página de Start/End G-code: editar el G-code a mano puede dañar la impresora, y hay que comprobar la salida antes de enviarla. Es la única que ve el fichero que va a correr.',
       fuente: 'Ultimaker Cura',
       alcance:
         'Es un aviso de Cura sobre su propia salida, no una lista de comentarios. Y aquí está el hueco de esta guía: ninguna de las nueve fuentes enumera la cabecera ni qué comentarios escribe el slicer por su cuenta. Cómo se lee esa cabecera en esta app es cosa del analizador, no de Cura —está en la tarjeta «Si el archivo no trae firma».',
@@ -391,7 +391,7 @@ export const slicer: Guia = {
       id: 'vista-de-capas',
       accion: 'Inspecciona la vista de capas antes de exportar',
       porque:
-        'Prusa lo pone como buena práctica literal, y en esa vista se comprueba que la forma general coincide con el modelo y se detectan las piezas que empezarían a imprimirse en el aire; si las hay, hay que activar soportes. Bambu dice lo mismo desde el otro lado: inspeccionando la ruta capa a capa se ve si el G-code es el esperado y se corrigen los problemas por adelantado.',
+        'Prusa lo pone como buena práctica literal: en esa vista se ve si la forma coincide con el modelo y se detectan las piezas en el aire. Bambu: la ruta capa a capa muestra si el G-code es el esperado.',
       fuente: 'Prusa Research, Bambu Lab',
       alcance:
         'Es una condición del recorrido, no de un material ni de un síntoma: se hace antes de exportar, con el perfil ya elegido.',
@@ -400,7 +400,7 @@ export const slicer: Guia = {
       id: 'relaminar',
       accion: 'Vuelve a laminar y a exportar después de cada cambio',
       porque:
-        'Es literal: si modificas cualquier parámetro, hay que laminar el modelo otra vez. Un ajuste cambiado en el proyecto no viaja al fichero que ya exportaste, así que el G-code de la tarjeta SD sigue siendo el de antes del cambio.',
+        'Es literal: si modificas cualquier parámetro, hay que laminar otra vez. Un ajuste cambiado en el proyecto no viaja al fichero exportado: el G-code de la tarjeta SD sigue siendo el de antes.',
       fuente: 'Bambu Lab',
       alcance:
         'No depende de ninguna variable de esta guía: es cierta para cualquier programa y cualquier material, porque lo que se vuelve a laminar es el fichero, no el perfil. Un ajuste cambiado en el proyecto no viaja al G-code ya exportado.',
@@ -410,7 +410,7 @@ export const slicer: Guia = {
       accion: 'Activa Verbose G-code si vas a leer el fichero',
       valor: '--gcode-comments=1',
       porque:
-        'Orca documenta el booleano `gcode_comments`, en modo Advanced: incluye comentarios descriptivos en líneas y bloques para que el fichero sea legible y fácil de depurar. Su página da el coste en la misma ficha: ficheros mucho más grandes y posible lentitud al imprimir desde SD.',
+        'Orca documenta el booleano `gcode_comments` (modo Advanced): añade comentarios para que el fichero sea legible. Su página da el coste: ficheros mucho más grandes y lentitud al imprimir desde SD.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance:
@@ -420,7 +420,7 @@ export const slicer: Guia = {
       id: 'bambu-visor',
       accion: 'Abre la información de laminado y revísala capa a capa',
       porque:
-        'Bambu muestra por capa el tipo de línea, el filamento, la velocidad y la ruta, y con eso se comprueba si el G-code se ha generado como se esperaba. Es también el sitio donde se añaden pausas y G-code propio por capa, que es como se monta una torre de temperaturas.',
+        'Bambu muestra por capa el tipo de línea, el filamento, la velocidad y la ruta: así se ve si el G-code es el esperado. Es donde se añaden pausas y G-code propio por capa, la torre de temperaturas.',
       cuando: { slicer: 'bambu' },
       fuente: 'Bambu Lab',
       alcance:
@@ -430,7 +430,7 @@ export const slicer: Guia = {
       id: 'cura-plantillas',
       accion: 'Revisa el Start y End G-code de tu máquina',
       porque:
-        'Cura documenta cuatro puntos de inserción —Machine Start, Machine End y Extruder Start y End— y dos avisos marcados con ⚠️: editar el G-code a mano puede dañar la impresora, y algunos fabricantes ponen comandos propios que sólo se deben quitar si se sabe para qué valen.',
+        'Cura documenta cuatro puntos de inserción y dos avisos con ⚠️: editar el G-code a mano puede dañar la impresora, y hay comandos propios que sólo se deben quitar si se sabe para qué valen.',
       cuando: { slicer: 'cura' },
       fuente: 'Ultimaker Cura',
       alcance:
@@ -450,7 +450,7 @@ export const slicer: Guia = {
       id: 'sin-firma',
       accion: 'Vuelve a exportar el G-code desde el slicer con la cabecera puesta',
       porque:
-        'Si la cabecera no trae la firma de ninguna de las tres familias que el analizador sabe leer, el análisis se detiene: no hay material, ni temperaturas, ni altura de capa que mostrar. Las dos causas que el aviso admite son un fichero truncado y un programa que no escribe cabecera, y la solución es la misma.',
+        'Sin la firma de las tres familias que el analizador lee, el análisis se detiene: no hay material, ni temperaturas, ni altura de capa. Fichero truncado o programa sin cabecera: la misma solución.',
       cuando: { slicer: 'desconocido' },
       fuente: 'El analizador de esta app',
       alcance:
@@ -460,7 +460,7 @@ export const slicer: Guia = {
       id: 'binario-convertir',
       accion: 'Convierte el fichero a texto antes de revisarlo',
       porque:
-        'El `.bgcode` es codificación y compresión del ASCII, y no es texto: no se abre con un editor ni se revisa como un G-code. En PrusaSlicer se desactiva en Printers → General → Support binary G-code, o para todos los perfiles en Configuration → Preferences → Other, y la conversión en los dos sentidos está en File → Convert.',
+        'El `.bgcode` es el ASCII codificado y comprimido: no es texto, no se abre con un editor. En PrusaSlicer se desactiva en Printers → General → Support binary G-code, y se convierte en File → Convert.',
       cuando: { formato: 'binario' },
       fuente: 'Prusa Research',
       alcance:

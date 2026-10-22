@@ -327,6 +327,9 @@ for (const guia of GUIAS) {
     const destinos = [
       guia.diferencial.siNo?.guia,
       ...guia.conocimiento.map((c) => c.enlaza?.guia),
+      // El cuarto sitio: el enlace de una regla, que es lo que permite que una
+      // guia enrute a las que diagnostican sin repetirlas.
+      ...guia.reglas.map((r) => r.enlaza?.guia),
       ...guia.fueraDeAlcance.map((f) => f.guia),
     ].filter(Boolean);
     for (const d of destinos) {

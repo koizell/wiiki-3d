@@ -263,7 +263,7 @@ export const separaciones: Guia = {
       accion: 'Corta la pieza en la altura donde se abre y mira el corte',
       valor: 'Antes de tocar nada',
       porque:
-        'Es la comprobación que decide el resto. El tipo de corte separa los dos fallos que se parecen: si viene limpio, faltó adhesión; si viene desgarrado, no llegó material y cambiar la temperatura no lo arregla.',
+        'Es la comprobación que decide el resto. El tipo de corte separa los dos fallos parecidos: si viene limpio faltó adhesión; si viene desgarrado, no llegó material y cambiar la temperatura no lo arregla.',
       cuando: { material: ['pla', 'petg', 'abs', 'pa', 'pc'] },
       fuente: 'Prusa, Bambu',
       alcance: 'Aplica a los dos fallos de esta guía. Es el primer paso de ambos protocolos.',
@@ -282,7 +282,7 @@ export const separaciones: Guia = {
       accion: 'Reduce el enfriamiento si la adhesión entre capas cae',
       cuando: { material: ['pla', 'petg'] },
       porque:
-        'Es el término inverso del anterior y aplica al otro extremo del mismo problema: demasiado enfriamiento abre la unión, demasiado poco la reblandece. El objetivo declarado de la fuente es cools la pieza «ni demasiado rápido ni demasiado despacio».',
+        'Es el término inverso del anterior: demasiado enfriamiento abre la unión, demasiado poco la reblandece. El objetivo de la fuente es cools la pieza «ni demasiado rápido ni demasiado despacio».',
       fuente: 'Prusa',
       alcance: 'Es un ensayo con su remedio, no una exclusión: no dice que no haya que bajar el ventilador.',
     },
@@ -300,7 +300,7 @@ export const separaciones: Guia = {
       accion: 'Sube la temperatura de cama',
       cuando: { material: ['pla', 'petg'], enfriamiento: 'alto' },
       porque:
-        'Es lo que recomienda Bambu para la separación entre capas, y va en la dirección contraria a Prusa. El desacuerdo es real y esta guía no lo resuelve por ti: prueba una y comprueba el corte antes de pasar a la otra.',
+        'Es lo que recomienda Bambu para la separación entre capas, en dirección contraria a Prusa. El desacuerdo es real y esta guía no lo resuelve: prueba una y comprueba el corte antes de pasar a la otra.',
       fuente: 'Bambu',
       alcance: 'Prusa sube la boquilla en este mismo caso. Desacuerdo sin resolver.',
     },
@@ -309,7 +309,7 @@ export const separaciones: Guia = {
       accion: 'Revisa la tasa de flujo si el corte sale desgarrado',
       cuando: { material: ['pla', 'petg', 'abs', 'pa', 'pc'] },
       porque:
-        'Un corte que viene con material arrancado no es un problema de adhesión: es que no llegó filamento. Subir temperatura lo hace peor, no mejor. El ajuste que corresponde es de flujo, y no está en esta guía.',
+        'Un corte con material arrancado no es un problema de adhesión: es que no llegó filamento. Subir temperatura lo hace peor. El ajuste que corresponde es de flujo, y no está en esta guía.',
       fuente: 'Prusa',
     },
     {

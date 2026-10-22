@@ -519,7 +519,7 @@ export const tpuFlexible: Guia = {
       valor: '85A',
       cuando: { maquina: 'bambu' },
       porque:
-        'Por debajo de 85A los engranajes del extrusor no muerden el filamento, y el resultado no es una impresión mala: es que la máquina no lo alimenta. Bambu lo dice sin rodeos, y su página de diagnóstico añade el mecanismo: el material es demasiado blando para que los engranajes lo agarren bien y la extrusión falla.',
+        'Por debajo de 85A los engranajes no muerden el filamento: es demasiado blando para que lo agarren bien y la extrusión falla, así que la máquina no lo alimenta en vez de imprimir mal.',
       fuente: 'Bambu Lab',
       alcance:
         'El umbral es de las impresoras Bambu, no del material: Prusa no enuncia ninguno y por eso aquí no se escribe que por debajo de 85A ninguna impresora pueda con TPU. La guía general de Bambu recomienda 85A o más duro para una impresión estable, porque un TPU más blando se dobla durante la alimentación y se enreda.',
@@ -530,7 +530,7 @@ export const tpuFlexible: Guia = {
       valor: '0,6 · 0,8 mm',
       cuando: { maquina: 'bambu', material: '85a' },
       porque:
-        'La guía de TPU de Bambu lo dice en texto: «85A TPU filaments cannot be printed with 0.4mm nozzles», y su tabla de boquillas deja el 0,2 y el 0,4 en la columna de no compatibles para el 85A. Con el 90A, el 95A HF y el «TPU for AMS» la columna compatible sí llega al 0,4.',
+        'Bambu lo dice: «85A TPU filaments cannot be printed with 0.4mm nozzles», y su tabla deja el 0,2 y el 0,4 en no compatibles con el 85A. Con el 90A, el 95A HF y el «TPU for AMS» el 0,4 sí es compatible.',
       fuente: 'Bambu Lab',
       alcance:
         'Es la fila del 85A de la guía general de TPU de Bambu y de la guía de la serie P, que la repite. La tabla general de materiales marca el 0,4 mm como «Compatible» para el 85A: el corpus no explica la discrepancia y aquí se publican las dos, con el 0,2 además en un grado distinto —«Not Recommended» en la tabla, «Not compatible» en la guía.',
@@ -540,7 +540,7 @@ export const tpuFlexible: Guia = {
       accion: 'Carga el 85A directamente en el extrusor, sin pasar por el tubo PTFE',
       cuando: { maquina: 'bambu', material: '85a' },
       porque:
-        'En la serie P, con 85A «loading through the PTFE tube is not supported»: hay que quitar la tapa de cristal, desconectar el tubo PTFE del cabezal y meter el filamento directamente desde arriba al extrusor. Con el 90A sí se puede: se empuja por el PTFE y luego se introduce a mano en el cabezal.',
+        'En la serie P, con 85A «loading through the PTFE tube is not supported»: quitar la tapa de cristal, desconectar el tubo PTFE y cargar el filamento al extrusor. Con el 90A sí se puede, por el PTFE.',
       fuente: 'Bambu Lab',
       alcance:
         'Es el procedimiento de la serie P. La A2L marca el 85A como compatible en la tabla, pero ninguna fuente de este tema da su procedimiento de carga, así que no se puede dar por válido ahí. Es una diferencia de trazado, no de ajuste.',
@@ -550,7 +550,7 @@ export const tpuFlexible: Guia = {
       accion: 'Saca el TPU del AMS: ese aparato no lo va a alimentar',
       cuando: { maquina: 'bambu', ams: 'ams', material: ['tpu', '85a', '90a', '95a'] },
       porque:
-        'La fila «TPU» de la tabla de materiales marca «Not Compatible» en la columna de AMS y AMS lite, y la guía de TPU lo dice igual de claro: el AMS, el AMS lite y el AMS 2 Pro no son compatibles con TPU. La razón es del canal del aparato, no del filamento: un TPU demasiado blando no lo recorre.',
+        'La fila «TPU» de la tabla marca «Not Compatible» en la columna de AMS y AMS lite, y la guía lo dice del AMS 2 Pro. La razón es del canal, no del filamento: un TPU demasiado blando no lo recorre.',
       fuente: 'Bambu Lab',
       alcance:
         'Es una limitación del aparato. El AMS tiene un engranaje de transmisión que el AMS lite no tiene, y por eso puede con algunos filamentos blandos o rugosos. Y la tabla de materiales no menciona el AMS HT en ninguna fila: no lo contradice, no habla de él. La excepción es el filamento «TPU for AMS», que sí alimenta por el canal normal de cualquier AMS: con ese carrete no aplica esta regla.',
@@ -560,7 +560,7 @@ export const tpuFlexible: Guia = {
       accion: 'Con el AMS HT, alimenta el filamento por la salida TPU de la parte de atrás',
       cuando: { maquina: 'bambu', ams: 'amsht' },
       porque:
-        'El AMS HT es el único de la serie que admite TPU, y su función se reduce a una: «functions solely as a sealed enclosure — its standard outlet and automatic feeding functionality cannot be used». El filamento entra por la salida TPU dedicada, en la parte de atrás del aparato.',
+        'El AMS HT es el único que admite TPU y sólo funciona como «sealed enclosure — its standard outlet and automatic feeding functionality cannot be used». El filamento entra por la salida TPU de atrás.',
       fuente: 'Bambu Lab',
       alcance:
         'El AMS HT no alimenta por su canal normal: como cámara estanca y de secado sí. La tabla de materiales no lo menciona en ninguna fila, así que no lo contradice —no habla de él—, y la excepción de producto del «TPU for AMS» es la que sí alimenta por cualquier AMS.',
@@ -570,7 +570,7 @@ export const tpuFlexible: Guia = {
       accion: 'Con el filamento «TPU for AMS», alimenta por el canal normal de cualquier AMS',
       cuando: { material: 'tpu-ams' },
       porque:
-        'La guía de Bambu reserva una excepción de producto: «TPU for AMS filament is compatible with the standard feeding functionality of all AMS series models for loading and printing». Por eso funciona donde el TPU corriente no pasa, y la tabla de materiales no dice lo contrario.',
+        'Excepción de Bambu: «TPU for AMS filament is compatible with the standard feeding functionality of all AMS series models for loading and printing». Por eso alimenta donde el TPU corriente no.',
       fuente: 'Bambu Lab',
       alcance:
         'Es un filamento distinto del TPU corriente, y de ahí la tensión interna de la misma página, que a la vez dice que AMS, AMS lite y AMS 2 Pro no son compatibles con TPU. Aquí no se elige una de las dos frases. Lo que no se dice es que el 85A de la gama normal sea inyectable en el AMS.',
@@ -580,7 +580,7 @@ export const tpuFlexible: Guia = {
       accion: 'Imprime despacio y no subas la velocidad',
       valor: '20 mm/s',
       porque:
-        'Prusa lo dice primero: «Print slowly. The slower, the better», con 20 mm/s como velocidad típica y 30–40 mm/s como máximo recomendado, porque a más velocidad se tapa la boquilla o el filamento se enreda en los engranajes.',
+        'Prusa lo dice primero: «Print slowly. The slower, the better», con 20 mm/s como típica y 30–40 mm/s como máximo: a más velocidad se tapa la boquilla o el filamento se enreda en los engranajes.',
       fuente: 'Prusa Research',
       alcance:
         'La cifra es de Prusa para material flexible en general, no de un modelo. Bambu da la misma dirección sin número, y en inglés literal: la serie P pide «Please keep the default volumetric speed limit during printing, and it is not recommended to increase the print speed», y la serie A, «Please keep the default max volumetric speed limit during printing, and avoid increasing the print speed». El límite de flujo máximo tiene su propia guía. No se condiciona a la máquina ni al síntoma porque es una pauta de base del material, no un remedio para una avería concreta.',
@@ -610,7 +610,7 @@ export const tpuFlexible: Guia = {
       id: 'soporte-pla',
       accion: 'Usa PLA como filamento de soporte, no TPU',
       porque:
-        'Bambu lo recomienda explícitamente: «When printing TPU, PLA is recommended as the support filament», porque usar el propio TPU como soporte «is often difficult to remove, easily causing surface scratches or deformation».',
+        'Bambu lo recomienda: «When printing TPU, PLA is recommended as the support filament», porque el TPU como soporte «is often difficult to remove, easily causing surface scratches or deformation».',
       fuente: 'Bambu Lab',
       alcance:
         'Para manchar menos, Bambu pide PLA de color claro o del mismo color que la pieza. Los voladizos y soportes tienen su propia guía. No se condiciona a la máquina ni al síntoma porque es una decisión de material de soporte que aplica siempre que la pieza lleve soportes.',
@@ -621,7 +621,7 @@ export const tpuFlexible: Guia = {
       valor: '250 °C',
       cuando: { maquina: 'bambu' },
       porque:
-        'Es la temperatura que las tres páginas de Bambu dan para el proceso de carga: el módulo de asistencia la llama «standard temperature for loading TPU», y las guías de serie P y A dan los mismos 250 °C en sus procedimientos de carga y descarga, con «It is recommended to heat the hotend to 250°C» y «Preheat the hotend to 250℃».',
+        'Es la temperatura de carga de Bambu, no de impresión: el módulo la llama «standard temperature for loading TPU» y las guías de serie P y A dan los mismos 250 °C al precalentar el hotend.',
       fuente: 'Bambu Lab',
       alcance:
         'El 250 °C es del proceso de carga y descarga, no de impresión: la temperatura de impresión en las guías de serie de Bambu es 225 °C. Las cuatro cifras de boquilla que da el corpus tienen alcances distintos y no se funden en una.',
@@ -642,7 +642,7 @@ export const tpuFlexible: Guia = {
       accion: 'Comprueba el engranaje del extrusor: si está gastado, cámbialo',
       cuando: { maquina: 'bambu', sintoma: ['ruido', 'atasco'] },
       porque:
-        'La guía de la serie A avisa del desgaste del engranaje en su apartado del extrusor: «If the extruder gear is worn, it needs to be replaced (Otherwise, there may be issues with filament slipping)». El desgaste del engranaje explica el deslizamiento del filamento, que es una de las causas de infraextrusión que la guía general lista.',
+        'Serie A: «If the extruder gear is worn, it needs to be replaced (Otherwise, there may be issues with filament slipping)». Por eso el filamento se desliza, causa de infraextrusión.',
       fuente: 'Bambu Lab',
       alcance:
         'Es desgaste de la máquina, no del filamento. La frase citada está en el apartado del extrusor de la serie A, no en la lista de los tres problemas del material, que es otra cosa. Y es distinto del módulo de asistencia, que es un accesorio: aquí se habla del engranaje del extrusor de la impresora.',
@@ -652,7 +652,7 @@ export const tpuFlexible: Guia = {
       accion: 'Baja el engranaje del módulo de asistencia en modo alimentación',
       cuando: { maquina: 'bambu', sintoma: ['ruido', 'atasco'] },
       porque:
-        'El módulo TPU Feed Assist es un accesorio que existe por el TPU, y su ajuste importa: tras la calibración hay que reducir el engranaje en modo alimentación para no deformar el filamento por asistencia excesiva. Si el TPU se deforma y se acumula en la salida del módulo, el remedio es el modo de descarga, cambiar el tramo de filamento y recalibrar.',
+        'Tras la calibración del módulo, reduce el engranaje en modo alimentación: la asistencia excesiva deforma el TPU. Si se acumula en la salida, cambia el tramo de filamento, pon en descarga y recalibra.',
       fuente: 'Bambu Lab',
       alcance:
         'La calibración del módulo no está en el corpus de este tema: lo que se publica es el ajuste posterior a la calibración y el remedio. El accesorio es para H, X y P.',
@@ -662,7 +662,7 @@ export const tpuFlexible: Guia = {
       accion: 'Cambia el tubo PTFE si tiene abolladuras o polvo dentro',
       cuando: { maquina: 'bambu', sintoma: 'atasco' },
       porque:
-        'Bambu nombra la causa por su nombre: «Dents, deformation or accumulated filament dust inside the PTFE tube leading to increased resistance». Los dos remedios son de máquina: subir el nivel de engranaje del módulo de asistencia o poner un tubo PTFE nuevo de la misma longitud.',
+        'Bambu la nombra: «Dents, deformation or accumulated filament dust inside the PTFE tube leading to increased resistance». Los remedios son de máquina: subir el engranaje del módulo o cambiar el tubo.',
       fuente: 'Bambu Lab',
       alcance:
         'Es resistencia del tubo, no del filamento. Prusa cuenta un rodeo del mismo tipo desde el otro extremo: en el CORE One hay que desconectar el tubo PTFE del lado del Nextruder para poder cargar el filamento.',
@@ -672,7 +672,7 @@ export const tpuFlexible: Guia = {
       accion: 'Haz un cold pull antes de empezar: un TPU no expulsa el resto de filamento',
       cuando: { sintoma: 'atasco' },
       porque:
-        'Bambu lo explica con una frase: «TPU isn\'t stiff enough to push the previous filament out the nozzle, so it jams». Un resto de filamento atascado en la entrada del hotend no lo saca un material blando.',
+        'Bambu lo explica con una frase: «TPU isn\'t stiff enough to push the previous filament out the nozzle, so it jams». Un resto de filamento atascado en el hotend no lo saca un material blando.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Bambu, página de diagnóstico del módulo. Prusa pide lo mismo en otro lenguaje: «Make sure the nozzle is unobstructed. If you’re not sure, do a cold pull to clean it completely». Los tutoriales de cold pull no están en el corpus: aquí sólo se cita la recomendación.',
@@ -682,7 +682,7 @@ export const tpuFlexible: Guia = {
       accion: 'Pulsa el botón de extrusión de uno en uno',
       cuando: { maquina: 'bambu', sintoma: 'atasco' },
       porque:
-        'La guía de la serie P avisa del gesto: «When clicking the extrusion button, do not click continuously, as this could cause the TPU to get caught in the extruder gears, leading to a clog». Es el mismo mecanismo que el engranaje que no muerde: el filamento se queda atrapado entre los dientes.',
+        'Serie P: «When clicking the extrusion button, do not click continuously, as this could cause the TPU to get caught in the extruder gears, leading to a clog». El filamento se atrapa en los dientes.',
       fuente: 'Bambu Lab',
       alcance:
         'Bambu, serie P. La página de diagnóstico del módulo TPU Feed Assist cuenta la otra mitad de lo mismo: la protección de extrusión en seco del accesorio, con sus tres escenarios de disparo.',
@@ -692,7 +692,7 @@ export const tpuFlexible: Guia = {
       accion: 'Descarga el filamento a mano, con el hotend calentado',
       cuando: { maquina: 'bambu' },
       porque:
-        'Bambu lo dice en las dos familias: en la serie P «Automatic unloading with a cutter is not supported», y en la serie A «For A1 series printers, manual unloading is required after heating up the hotend. Automatic unloading using the cutter is not supported».',
+        'Bambu, en las dos familias: en la serie P «Automatic unloading with a cutter is not supported» y en la serie A «manual unloading is required after heating up the hotend». El cutter no corta el TPU.',
       fuente: 'Bambu Lab',
       alcance:
         'Es una limitación de la máquina: el cutter automático no corta el TPU. Prusa tiene la suya y es del mismo tipo —«automatic filament change might not work properly with flexible filaments»—, así que en las dos casas el cambio automático de filamento no es una vía fiable con este material.',
@@ -712,7 +712,7 @@ export const tpuFlexible: Guia = {
       accion: 'Prueba a desactivar la retracción',
       cuando: { sintoma: 'hilos' },
       porque:
-        'Prusa publica el caso aparte, no una cifra menor: «With lower retractions, there is a lower risk of clogging the nozzle or filament tangling. It’s alright to turn the retractions off completely and then try to raise them and watch the results».',
+        'Prusa publica el caso aparte: «It’s alright to turn the retractions off completely and then try to raise them and watch the results»: con menos retracción hay menos riesgo de atasco o de enredado.',
       fuente: 'Prusa Research',
       alcance:
         'Es la recomendación de Prusa para material flexible en general, y va contra el atasco y el enredado. Bambu atiende el goteo severo en el sentido contrario, con su propio +0,2 mm: son dos síntomas distintos, no dos reglas que se contradigan. Y no se escribe «baja la retracción a 0,2 mm», que ninguna fuente dice.',
@@ -723,7 +723,7 @@ export const tpuFlexible: Guia = {
       valor: '0,2 mm',
       cuando: { sintoma: 'goteo' },
       porque:
-        'Bambu da el remedio junto al síntoma: «If severe leaking occurs, try increasing the retraction distance by 0.2 mm from the original value». El TPU gotea porque tiene mucha fluidez, y la retracción es lo que corta el hilo entre capas.',
+        'Bambu da el remedio: «If severe leaking occurs, try increasing the retraction distance by 0.2 mm from the original value». El TPU gotea por su fluidez: la retracción corta el hilo entre capas.',
       fuente: 'Bambu Lab',
       alcance:
         'Son 0,2 mm sobre el valor original, y sólo para goteo severo. Con hilos finos la salida es la contraria: desactivar la retracción, como recomienda Prusa. La retracción en general tiene su propia guía.',
@@ -734,7 +734,7 @@ export const tpuFlexible: Guia = {
       valor: '5 °C · 0,4 mm³/s',
       cuando: { sintoma: 'goteo' },
       porque:
-        'El TPU tiene mucha fluidez y el exceso de temperatura se convierte en goteo: «Lower the nozzle temperature… You can slightly reduce the nozzle temperature (by about 5 °C from the original setting) to decrease filament flow», y en el mismo consejo, «decrease the maximum volumetric flow rate by 0.4 mm³/s».',
+        'El exceso de temperatura da goteo: «reduce the nozzle temperature (by about 5 °C from the original setting) to decrease filament flow» y «decrease the maximum volumetric flow rate by 0.4 mm³/s».',
       fuente: 'Bambu Lab',
       alcance:
         'Son unos 5 °C sobre el ajuste original y 0,4 mm³/s sobre el flujo máximo, no una temperatura de impresión: las cuatro cifras de boquilla del corpus tienen alcances distintos y no se funden. El flujo máximo tiene su propia guía.',
@@ -764,7 +764,7 @@ export const tpuFlexible: Guia = {
       accion: 'Cambia de chapa: la Cool Plate SuperTack no sirve con TPU',
       cuando: { maquina: 'bambu' },
       porque:
-        'La regla general es que valen todas las chapas salvo una: «Except for the Cool Plate SuperTack, all other types of plates are compatible with TPU filaments». La serie A la marca como no compatible porque «may result in overly strong adhesion».',
+        'Valen todas salvo una: «Except for the Cool Plate SuperTack, all other types of plates are compatible with TPU filaments». La serie A la descarta por «may result in overly strong adhesion».',
       fuente: 'Bambu Lab',
       alcance:
         'La serie A recomienda Cool Plate, Engineering Plate y HT/Smooth PEI, y avisa de que la Textured PEI no admite adhesivo, porque «may become overly sticky after applying adhesive». Las chapas y sus temperaturas tienen su propia guía.',
@@ -774,7 +774,7 @@ export const tpuFlexible: Guia = {
       accion: 'Elige PA Nylon o Satin como superficie en Prusa',
       cuando: { maquina: 'prusa' },
       porque:
-        'El catálogo del Prusament TPU 95A da PA Nylon y Satin como «The most recommended print surface», y marca Smooth PEI como «Not recommended»: si se usa, con capa separadora, porque la adhesión es demasiado fuerte y al despegar la pieza se daña la lámina.',
+        'El catálogo del Prusament 95A da PA Nylon y Satin como «The most recommended print surface» y Smooth PEI como «Not recommended»: si se usa, con capa separadora: la adhesión es demasiado fuerte.',
       fuente: 'Prusa Research',
       alcance:
         'El corpus tiene dos grados distintos sobre la lámina satinada: el artículo general de flexibles pide una capa separadora en ella y la guía del 95A la da como la más recomendada sin mencionarla. Para materiales muy blandos, Prusa propone la Textured con muelle como alternativa. Las chapas tienen su propia guía.',
@@ -785,7 +785,7 @@ export const tpuFlexible: Guia = {
       valor: '45 °C',
       cuando: { maquina: 'bambu' },
       porque:
-        'Bambu ata cámara y material en la misma regla: los filamentos que reblandecen por debajo de 60 °C —como el TPU— con la cama por encima de 45 °C obligan a «opening the front door and/or removing the upper glass cover plate».',
+        'Bambu ata cámara y material: los que reblandecen por debajo de 60 °C, como el TPU, con la cama por encima de 45 °C obligan a «opening the front door and/or removing the upper glass cover plate».',
       fuente: 'Bambu Lab',
       alcance:
         'Es una regla de cámara de Bambu, y su valor es de cámara, no de cama. El TPU no exige impresora cerrada: su tabla dice «Not prone to warping» y admite «Open-frame or enclosed printer». La cifra de cama del TPU en Bambu cambia con el filamento y con la chapa —no con el adhesivo, que es un requisito de superficie—, y está en la guía de temperatura de cama.',
@@ -795,7 +795,7 @@ export const tpuFlexible: Guia = {
       accion: 'Usa el perfil de PrusaSlicer del material',
       cuando: { maquina: 'prusa', material: '95a' },
       porque:
-        'Para el Prusament TPU 95A el perfil viene en el slicer: «You can find print profiles for this material in PrusaSlicer». Para materiales de terceros, Prusa nombra tres: Semiflex o Flexfill 98A, y Filatech FilaFlex40.',
+        'El Prusament TPU 95A trae perfil en el slicer: «You can find print profiles for this material in PrusaSlicer». Para materiales de terceros, Prusa nombra Semiflex o Flexfill 98A y Filatech FilaFlex40.',
       fuente: 'Prusa Research',
       alcance:
         'Prusa. El perfil del 95A es del filamento de Prusa; los tres nombres de terceros son de otros fabricantes y el corpus no da sus ajustes. La temperatura de cada perfil está en la guía de hotend.',

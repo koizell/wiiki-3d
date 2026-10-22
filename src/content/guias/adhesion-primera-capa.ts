@@ -396,7 +396,7 @@ export const adhesion: Guia = {
       id: 'chapa-perfil',
       accion: 'Comprueba que el perfil dice la chapa que tienes montada',
       porque:
-        'La Textured PEI tiene superficie granular y la impresora baja la boquilla 0,04 mm al nivelar para asegurar la adhesión. Si el perfil dice otra chapa, ese descenso no se aplica y la boquilla queda demasiado alta. Es la causa más silenciosa de las cuatro, porque la impresora **no puede detectar qué chapa está instalada** y no avisa.',
+        'Si el perfil dice otra chapa, el descenso de 0,04 mm de la Textured PEI para asegurar la adhesión no se aplica y la boquilla queda demasiado alta. Y no avisa: **no puede detectar la chapa montada**.',
       /*
        * Sólo cuando la respuesta es «no, o no lo sé».
        *
@@ -418,7 +418,7 @@ export const adhesion: Guia = {
       accion: 'Deja de apretar la boquilla para forzar la adhesión',
       cuando: { sintoma: ['fragil', 'nada'] },
       porque:
-        'Acercar la boquilla deja la primera capa apretada de más y el filamento deja de poder empujarse a través. El resultado es una pieza que sí pega pero sale **infraextruida**: frágil y con las capas rotas por dentro. Es un cambio de fallo, no una solución, y la dirección de Prusa es un imperativo: no lo hagas.',
+        'Acercar la boquilla deja la primera capa apretada de más y el filamento no puede empujarse: la pieza sí pega pero sale **infraextruida**, frágil y con capas rotas. Es otro fallo, no una solución.',
       fuente: 'Prusa Research',
       alcance:
         'No compensa por lo que la falta de adhesión te estaba dando: te da otro problema distinto. La calibración correcta es la que hace que el plástico se pegue y se vea ligeramente comprimido.',
@@ -428,7 +428,7 @@ export const adhesion: Guia = {
       accion: 'Limpia la chapa',
       valor: 'Agua templada y jabón; no toques la superficie después',
       porque:
-        'Bambu recomienda lavar con agua caliente y detergente para quitar restos y contaminantes, y evitar tocar la superficie. Su eficacia está **condicionada**: resuelve la mayoría de los problemas de adhesión **siempre que los ajustes sean los correctos para el material y el tipo de chapa del slicer sea el correcto**. Sin esas dos condiciones, la frase deja de ser cierta.',
+        'Bambu recomienda lavar con agua caliente y detergente y no tocar la superficie. Su eficacia está **condicionada**: resuelve la mayoría **sólo si los ajustes y la chapa del slicer son correctos**.',
       cuando: { sintoma: ['nada', 'esquina', 'huecos'], donde: ['toda', 'inconsistente', 'punto'] },
       fuente: 'Bambu Lab',
       alcance:
@@ -453,7 +453,7 @@ export const adhesion: Guia = {
        * sigue contando el síntoma, que es lo que se necesita para diagnosticar.
        */
       porque:
-        'Un residuo en la punta falsea la nivelación entera: si golpea la cama antes de que el sensor dispare, la calibración se interrumpe y avisa. Y Bambu pone la limpieza de la punta como condición previa a nivelar, no como un paso aparte.',
+        'Un residuo en la punta falsea la nivelación: si golpea la cama antes de que el sensor dispare, la calibración se interrumpe y avisa. Bambu la pone como condición previa a nivelar, no como un paso.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'Es una condición previa, no un remedio: se cumple siempre, y por eso la acción no se filtra por ninguna variable. Y el aviso de Prusa salta también si tocas la cama mientras está sondeando, sin distinguir las dos causas.',
@@ -463,7 +463,7 @@ export const adhesion: Guia = {
       accion: 'Nivela la cama',
       cuando: { donde: ['toda', 'inconsistente', 'punto'] },
       porque:
-        'La nivelación es una de las cuatro salidas que da Prusa cuando la calibración se ve bien y el problema persiste. La razón es geométrica: una malla mal hecha deja zonas de la base más lejos de la boquilla de lo que deberían.',
+        'Una de las cuatro salidas de Prusa cuando la calibración se ve bien y el problema persiste: la razón es geométrica, una malla mal hecha deja zonas de la base más lejos de la boquilla de lo debido.',
       fuente: 'Prusa Research, Bambu Lab',
       alcance:
         '**Bambu la sitúa como causa rara y lo dice con su propio adjetivo:** *«in some rare cases»*, y describe una adhesión **inconsistente**, no una esquina levantada. Es la única de las ocho fuentes que menciona la nivelación como causa, y por eso el «raro» viene con la acción y no puede separarse de ella.',
@@ -474,7 +474,7 @@ export const adhesion: Guia = {
       cuando: { donde: 'inconsistente' },
       valor: '49 puntos en vez de 9',
       porque:
-        'Prusa propone subir la densidad cuando **sigue habiendo adhesión irregular** en la primera capa. Los puntos de más cerca de los imanes están bastante cerca: la lectura puede desviarse hasta 80 µm, y la compensación de imanes los descarta. Prusa sugiere dejar esa función activada.',
+        'Prusa propone subir la densidad cuando **sigue habiendo adhesión irregular** en la primera capa. Cerca de los imanes la lectura se desvía hasta 80 µm y la compensación los descarta: dejarla activada.',
       fuente: 'Prusa Research',
       alcance:
         'La condición es «adhesión irregular». **No** es un recurso para cuando la base no pega en absoluto, ni para una esquina levantada. Y sólo está en el bloque de máquinas con sensor PINDA y SuperPINDA; el MINI usa malla 4×4 y los modelos con LoadCell miden dentro del área de la impresión.',
@@ -497,7 +497,7 @@ export const adhesion: Guia = {
        * PEI lisa.
        */
       porque:
-        'Las chapas tienen grosor distinto y por eso cada una necesita su propia calibración. Tres páginas de Prusa lo dicen y ninguna da el milímetro. En las impresoras que tienen esta calibración se pueden guardar hasta ocho perfiles de chapa, cada uno con su valor.',
+        'Las chapas tienen grosor distinto y cada una necesita su propia calibración; tres páginas de Prusa lo dicen y ninguna da el milímetro. Hasta ocho perfiles de chapa guardables, cada uno con su valor.',
       fuente: 'Prusa Research',
       alcance:
         'El aviso de la fuente es una **prohibición**: no puedes usar la misma calibración de primera capa si cambias entre la lisa y la texturizada. La acción no se filtra por ninguna variable porque el motivo —el grosor— es de la chapa, no del material ni del síntoma. Ninguna de las tres páginas da el grosor en milímetros, así que el motivo está escrito en palabras y en ningún número.',
@@ -507,7 +507,7 @@ export const adhesion: Guia = {
       accion: 'Repite la calibración si has movido la impresora o has cambiado la boquilla',
       cuando: { calibrada: ['no', 'hecha', 'si'] },
       porque:
-        'Dos páginas de Prusa escriben los mismos dos desencadenantes: cambiar de boquilla y mover la impresora a otro sitio. Y hay un buen filtro antes de nada: las impresoras de fábrica ya vienen ajustadas y esta calibración hace falta sobre todo si montaste el kit en casa o si has cambiado la boquilla.',
+        'Prusa da dos desencadenantes: cambiar de boquilla y mover la impresora. Las de fábrica ya vienen ajustadas, así que la calibración hace falta sobre todo si montaste el kit o cambiaste la boquilla.',
       fuente: 'Prusa Research',
       alcance:
         '**Ninguna de las dos páginas dice «cada impresión».** Son dos desencadenantes concretos, no una obligación periódica.',
@@ -518,7 +518,7 @@ export const adhesion: Guia = {
       cuando: { sintoma: ['nada', 'esquina', 'huecos'] },
       valor: 'Al menos 3 mm',
       porque:
-        'El ala aumenta la superficie de la primera capa. Es la única prioridad escrita en las ocho fuentes del lote, y dice dos cosas: que el ala va antes que los materiales adhesivos, y que Prusa la recomienda para objetos altos con base pequeña y para varios objetos pequeños a la vez.',
+        'El ala aumenta la superficie de la primera capa. Es la única prioridad escrita: va antes que los adhesivos, y Prusa la recomienda para objetos altos con base pequeña y varios objetos pequeños.',
       fuente: 'Prusa Research',
       alcance:
         'La prioridad cubre **sólo esos dos casos**. No dice que el ala vaya antes que limpiar la chapa ni que antes que nivelar: sólo dice que va antes que el pegamento.',

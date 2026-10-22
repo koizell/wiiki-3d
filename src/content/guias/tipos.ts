@@ -311,6 +311,17 @@ export interface Regla {
    * texto y en número, y `verify:guias` avisa si se separan.
    */
   rango?: RangoFuente;
+  /**
+   * La guía que desarrolla esta acción.
+   *
+   * Es el cuarto sitio donde la wiki se interconecta, y existe para las guías que
+   * **enrutan** en vez de diagnosticar: la ruta de calibración no repite los tests,
+   * los lleva a la guía que sí los explica.
+   *
+   * El `guia` tiene que existir, y `verify:guias` lo comprueba igual que el enlace
+   * de una tarjeta.
+   */
+  enlaza?: { guia: string; etiqueta: string };
 }
 
 /** Lo que esta guía no resuelve. */

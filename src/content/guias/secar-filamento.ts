@@ -484,7 +484,7 @@ export const secarFilamento: Guia = {
       valor: '45 °C · 12 h',
       cuando: { material: ['pla', 'pla-cf'], dispositivo: ['ams2pro', 'amsht'] },
       porque:
-        'Es la celda de la tabla de Bambu para el PLA y el PLA-CF, que dan los mismos 45 °C y las mismas 12 horas en el AMS. El PLA es el material que menos necesita secarse, y aun así la casa lo marca como recomendado.',
+        'Es la celda de la tabla de Bambu para el PLA y el PLA-CF: 45 °C y 12 horas en el AMS. El PLA es el material que menos necesita secarse y aun así la casa lo marca como recomendado.',
       fuente: 'Bambu Lab',
       alcance:
         'Prusa da 45 °C para el PLA pero 6 h, y su tabla no dice en qué método se aplican. Los 12 h son los del AMS de Bambu: no son una verdad sobre el material.',
@@ -495,7 +495,7 @@ export const secarFilamento: Guia = {
       valor: '50 °C · 8 h',
       cuando: { material: 'pla', dispositivo: 'horno' },
       porque:
-        'Es la fila del PLA Basic y el PLA Matte de la tabla de Bambu: 50 °C y 8 horas en horno de convección forzada. Es el único horno que la casa acepta —el de cocina está descartado por su reparto irregular de calor— y da 5 °C más que el AMS a cambio de 4 h menos.',
+        'Es la fila del PLA Basic y el PLA Matte de la tabla de Bambu: 50 °C y 8 horas en horno de convección forzada, el único horno que la casa acepta. Da 5 °C más que el AMS a cambio de 4 h menos.',
       fuente: 'Bambu Lab',
       alcance:
         'La fila del PLA Basic y del PLA Matte. En el horno las demás variantes de PLA suben: el Silk, el Aero y el Galaxy dan 55 °C, y el Wood 55–65 °C; el PLA-CF/GF tiene su propia fila, de 50–60 °C. En la cama el Aero **no** cambia —60–70 °C, como el Basic—, y los que suben ahí son el Silk, el Galaxy, el Wood y el PLA-CF/GF. El Wood es el único PLA que marca el secado como obligatorio.',
@@ -506,7 +506,7 @@ export const secarFilamento: Guia = {
       valor: '50–60 °C · 8 h',
       cuando: { material: 'pla-cf', dispositivo: 'horno' },
       porque:
-        'El PLA con fibra tiene su propia fila en la tabla de Bambu, con un rango más ancho que el PLA normal: 50–60 °C en el horno y 8 horas. La diferencia con el PLA sin fibra no es de método sino de unos grados: cinco en la cama y hasta diez en el horno.',
+        'El PLA con fibra tiene su propia fila en la tabla de Bambu, más ancha que la del PLA normal: 50–60 °C en el horno y 8 horas. La diferencia son grados: cinco en la cama y hasta diez en el horno.',
       fuente: 'Bambu Lab',
       alcance:
         'La fila «PLA-CF / GF» de la tabla de Bambu: filamento de Bambu con fibra, no cualquier PLA con fibra. En el AMS esa fila da los mismos 45 °C y 12 h que el PLA sin fibra; en la cama, 65–75 °C.',
@@ -528,7 +528,7 @@ export const secarFilamento: Guia = {
       valor: '65–75 °C · 12 h',
       cuando: { material: 'pla-cf', dispositivo: 'cama' },
       porque:
-        'El PLA-CF y el PLA-GF suben la fila del PLA en la cama: 65–75 °C durante 12 horas. La diferencia con la fila del PLA Basic es de 5 °C, y las dos coinciden en las 12 horas; lo que no coincide es el procedimiento: la fila del PLA Basic pide voltear cada 6 horas y tapar con la caja de embalaje o una tapa de PC, y la del PLA-CF/GF no lleva ninguna de las dos.',
+        'El PLA-CF y el PLA-GF suben la del PLA en la cama: 65–75 °C y 12 h, 5 °C más que el PLA Basic. En el procedimiento no coinciden: el PLA Basic pide voltear cada 6 h y tapar el carrete; el PLA-CF/GF no.',
       fuente: 'Bambu Lab',
       alcance:
         'Cama al servicio del secado, no cama de impresión. El carrete tiene que aguantar el calor: el negro viejo de Prusa sólo llega a 45 °C.',
@@ -550,7 +550,7 @@ export const secarFilamento: Guia = {
       valor: '60–65 °C · 8 h',
       cuando: { material: 'petg', dispositivo: 'horno' },
       porque:
-        'La tabla de Bambu da 60–65 °C y 8 horas en horno de convección forzada para el PETG. Su página de diagnóstico da, en cambio, 65–75 °C durante unas 8 horas como remedio para el PETG húmedo, y el corpus no explica por qué el horno de una página pide más que el de la otra.',
+        'La tabla de Bambu da 60–65 °C y 8 horas en horno de convección para el PETG. Su página de diagnóstico da 65–75 °C durante unas 8 horas, y el corpus no explica por qué un horno pide más que el otro.',
       fuente: 'Bambu Lab',
       alcance:
         'Los 60–65 °C son la tabla del fabricante. El 65–75 °C es una cifra de la página de diagnóstico de calidad, no de la tabla: el corpus no resuelve la diferencia y aquí no se promedian.',
@@ -572,7 +572,7 @@ export const secarFilamento: Guia = {
       valor: '75–85 °C · 8 h',
       cuando: { material: ['abs', 'pc'], dispositivo: 'ams2pro' },
       porque:
-        'El AMS 2 Pro sólo sirve para filamentos que no piden más de 65 °C, y estos piden 75–85 °C en el horno. En la tabla del fabricante salen como «no compatible», que es una limitación del aparato y no una prohibición del material.',
+        'El AMS 2 Pro sólo sirve para filamentos que no piden más de 65 °C, y estos piden 75–85 °C en el horno: en la tabla salen como «no compatible», una limitación del aparato y no del material.',
       fuente: 'Bambu Lab',
       alcance:
         'El ABS y el ASA piden 8 h en el horno, y el PC 8 h también. Si tu AMS es el HT, no necesitas este rodeo: ese llega a 80–85 °C.',
@@ -583,7 +583,7 @@ export const secarFilamento: Guia = {
       valor: '75–85 °C · 8–12 h',
       cuando: { material: 'pa', dispositivo: 'ams2pro' },
       porque:
-        'El AMS 2 Pro sólo llega a 65 °C, y la poliamida con fibra de la tabla de Bambu pide 75–85 °C en el horno, así que tampoco cabe: sale como «no compatible», que es un límite del aparato y no del material.',
+        'El AMS 2 Pro sólo llega a 65 °C, y la poliamida con fibra de la tabla de Bambu pide 75–85 °C en el horno, así que tampoco cabe: sale como «no compatible», un límite del aparato y no del material.',
       fuente: 'Bambu Lab',
       alcance:
         'Son las cifras de la poliamida **con fibra**; para el PA sin refuerzo ninguna fuente da parámetros. Si tu AMS es el HT, no necesitas este rodeo: ese da 85 °C durante 12 h.',
@@ -638,7 +638,7 @@ export const secarFilamento: Guia = {
       valor: '75–85 °C · 8 h',
       cuando: { material: ['abs', 'pc'], dispositivo: 'horno' },
       porque:
-        'El ABS y el ASA comparten fila en la tabla de Bambu y el PC tiene fila propia, y las dos dan 75–85 °C durante 8 horas en el horno de convección forzada. El AMS HT da 80 °C para estos materiales y la cama 90–100 °C: el horno se queda en medio.',
+        'ABS y ASA comparten fila en la tabla de Bambu y el PC tiene fila propia: las dos dan 75–85 °C y 8 h en el horno de convección. El AMS HT da 80 °C y la cama 90–100 °C: el horno se queda en medio.',
       fuente: 'Bambu Lab',
       alcance:
         'La fila «ABS, ASA» de la tabla de Bambu; el PC tiene fila propia con las mismas cifras. Las variantes ASA-CF, ABS-GF y ASA Aero dan **80 °C** en el horno, no 75–85 °C.',
@@ -649,7 +649,7 @@ export const secarFilamento: Guia = {
       valor: '75–85 °C · 8–12 h',
       cuando: { material: 'pa', dispositivo: 'horno' },
       porque:
-        'La poliamida con fibra de la tabla de Bambu da 75–85 °C en el horno, con un tiempo de 8 a 12 horas. Y es el método que la propia casa descarta para el PA que lleva meses abierto: a los 3 meses, un horno de convección a 80–90 °C puede no bastar.',
+        'La poliamida con fibra de Bambu da 75–85 °C en el horno, en 8 a 12 horas. Es el método que la casa descarta para el PA que lleva meses abierto: a los 3 meses un horno a 80–90 °C puede no bastar.',
       fuente: 'Bambu Lab',
       alcance:
         'Son las cifras de la poliamida **con fibra**; para el PA sin refuerzo no hay parámetros publicados. Prusa da 90 °C y 6 h para su PA11 Carbon Fiber, sin método asignado.',
@@ -671,7 +671,7 @@ export const secarFilamento: Guia = {
       valor: '90–100 °C · 12 h',
       cuando: { material: ['abs', 'pc', 'pa'], dispositivo: 'cama' },
       porque:
-        'El ABS y el ASA comparten fila en la tabla de Bambu, y el PC y la poliamida con fibra tienen filas propias: las cuatro dan 90–100 °C durante 12 horas en la cama usada como secador. Es la más alta de todo el lote y la que más pone a prueba al carrete.',
+        'ABS y ASA comparten fila en Bambu, y el PC y la poliamida con fibra tienen filas propias: las cuatro dan 90–100 °C y 12 h en la cama. Es la más alta del lote y la que más pone a prueba al carrete.',
       fuente: 'Bambu Lab',
       alcance:
         'Cama al servicio del secado, no cama de impresión. A 90–100 °C el carrete negro viejo de Prusa no aguanta: su límite son 45 °C, y el gris nuevo llega a 150 °C. Las cifras de la poliamida son las de la poliamida **con fibra**: para el PA sin refuerzo ninguna fuente da parámetros.',
@@ -692,7 +692,7 @@ export const secarFilamento: Guia = {
       accion: 'Seca en un deshidratador de comida o en una caja secadora',
       cuando: { dispositivo: 'ninguno' },
       porque:
-        'Prusa describe los dos aparatos y avisa de lo único que hay que comprobar: que su temperatura case con la del filamento, porque los deshidratadores suelen ser de temperaturas bajas. **Ninguna fuente les asigna cifras** de tiempo ni de temperatura.',
+        'Prusa describe los dos aparatos: lo único que hay que comprobar es que su temperatura case con la del filamento, porque los deshidratadores son de baja temperatura. **Ninguna fuente les da cifras.**',
       fuente: 'Prusa Research',
       alcance:
         'Sin método asignado no hay cifra que publicar. Los 55 °C y 6 h de Prusa para el PETG son de su tabla de Prusament, no del deshidratador, y el horno de cocina no es equivalente al horno de convección.',
@@ -702,7 +702,7 @@ export const secarFilamento: Guia = {
       accion: 'Guarda el carrete en un recipiente sellado, con desecante',
       valor: '20 % RH · 2–7 días · 55 % RH · 2–12 h',
       porque:
-        'Secar y guardar son la mitad del trabajo: el filamento seco aguanta un tiempo limitado en un ambiente normal, y ese tiempo lo fija la humedad del sitio donde se guarda, no el material. Prusa pide un espacio cerrado o una caja con desecante, y también una bolsa al vacío con desecante dentro.',
+        'Secar y guardar son la mitad del trabajo: el filamento seco aguanta un tiempo limitado, que lo fija la humedad del sitio, no el material. Prusa pide espacio cerrado o bolsa al vacío, con desecante.',
       fuente: 'Bambu Lab, Prusa Research',
       alcance:
         'El 20 % RH es una condición del entorno de guardado, no una medida del filamento: ninguna fuente dice cuánto agua lleva un filamento seco. Las cuatro cifras son de Bambu; Prusa publica el procedimiento y ninguna cifra. Para los materiales que la tabla de Bambu marca con desecante requerido —TPU, PC, PVA, los reforzados con fibra y las poliamidas— la fuente pide además una caja estanca o un dry box, y Prusa pide lo mismo para su PA11 Carbon Fiber entre impresiones. La regla no se condiciona a un material porque el procedimiento es el mismo en todos los casos.',
@@ -712,7 +712,7 @@ export const secarFilamento: Guia = {
       accion: 'Comprueba el límite de temperatura de tu carrete antes de calentarlo',
       valor: '45 · 90 · 150 °C',
       porque:
-        'Los límites son del carrete y no del filamento: el negro viejo de Prusa sólo se puede calentar hasta 45 °C porque por encima el plástico se expande, el cartón se queda expandido al enfriar y el carrete queda flojo. La alternativa para ese caso es el tornillo M4×65 que sujeta las dos tapas.',
+        'Los límites son del carrete, no del filamento: el negro viejo sólo llega a 45 °C, porque al enfriar el plástico se encoge, el cartón se queda expandido y el carrete queda flojo. Alternativa: un tornillo M4×65.',
       fuente: 'Prusa Research',
       alcance:
         'Cuatro límites distintos: negro viejo 45 °C, gris viejo 90 °C, negro nuevo 90 °C y gris nuevo 150 °C. El color no basta para saber cuál tienes, y por eso la regla no se puede condicionar a una variable.',
@@ -721,7 +721,7 @@ export const secarFilamento: Guia = {
       id: 'no-exceder',
       accion: 'No pases de la temperatura de la tabla ni alargues el tiempo',
       porque:
-        'Prusa avisa de las dos cosas: no exceder la temperatura al secar, o el filamento se ablanda y se pega, y atenerse a los tiempos recomendados para evitar el secado excesivo. Es la advertencia que protege al filamento en todos los métodos.',
+        'Prusa avisa de las dos cosas: no exceder la temperatura al secar, o el filamento se ablanda y se pega, y atenerse a los tiempos recomendados para evitar el secado excesivo.',
       fuente: 'Prusa Research',
       alcance:
         'Advertencia general de Prusa para cualquier filamento y cualquier método, y por eso no se puede condicionar a un material ni a un aparato concreto. Ninguna fuente de este lote describe cómo se ve un filamento secado de más.',
@@ -731,7 +731,7 @@ export const secarFilamento: Guia = {
       accion: 'Prueba con otro carrete antes de secar',
       cuando: { sintoma: 'hilos' },
       porque:
-        'Es la prueba que da Prusa: si con otro carrete los hilos desaparecen, el viejo es el culpable. Y el mecanismo del PETG húmedo lo explica: el agua que viaja con el filamento se expande dentro de la boquilla y sale a chorros.',
+        'Es la prueba de Prusa: si con otro carrete los hilos desaparecen, el viejo es el culpable. El mecanismo del PETG húmedo lo explica: el agua del filamento se expande en la boquilla y sale a chorros.',
       fuente: 'Prusa Research',
       alcance:
         'La humedad es una causa de hilos entre varias: Bambu la lista la primera en su apartado de hilos y Prusa casi la última, porque cada página ordena según lo que viene a arreglar. Ninguna de las dos dice que sea la causa más frecuente.',
@@ -741,7 +741,7 @@ export const secarFilamento: Guia = {
       accion: 'Ajusta el flujo: esto no es humedad',
       cuando: { sintoma: 'huecos' },
       porque:
-        'Las tres familias de causas que da la página de subextrusión son resistencia a la extrusión, volumen de extrusión insuficiente y valor de PA mal ajustado. **La humedad no está en ninguna de las tres**, así que secar el carrete no cambia nada de esto.',
+        'Las tres causas que da la página de subextrusión son resistencia a la extrusión, volumen insuficiente y PA mal ajustado. **La humedad no está en ninguna**, así que secar el carrete no cambia nada.',
       fuente: 'Bambu Lab',
       alcance:
         'El ajuste del flujo y el ratio de extrusión están en la guía de flujo. Aquí sólo se descarta la humedad como causa, que es lo que la fuente permite decir.',
@@ -751,7 +751,7 @@ export const secarFilamento: Guia = {
       accion: 'Si tras secar la boquilla sigue pegajosa, comprueba si está gastada',
       cuando: { material: 'petg', sintoma: 'goteo' },
       porque:
-        'Bambu da el orden completo para el PETG húmedo: secar el carrete y, si el problema sigue, comprobar si la boquilla está gastada y cambiarla; y si no lo está, bajar el ratio de flujo. Es el «si el síntoma no es humedad, que se vaya a otra guía» del propio fabricante.',
+        'Bambu da el orden completo para el PETG húmedo: secar el carrete y, si el problema sigue, comprobar si la boquilla está gastada y cambiarla; y si no lo está, bajar el ratio de flujo.',
       fuente: 'Bambu Lab',
       alcance:
         'El ratio de flujo y sus cifras son de la guía de flujo y no se repiten aquí: lo que se conserva es el orden, que es lo que hace falta para decidir.',

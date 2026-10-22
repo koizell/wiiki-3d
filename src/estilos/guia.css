@@ -946,3 +946,14 @@
   font-variant-numeric: tabular-nums;
   color: var(--accent-text);
 }
+
+/*
+ * El enlace de una acción a la guía que la desarrolla.
+ *
+ * Es la cuarta interconexión de la wiki, y la que hace posible una guía que
+ * enruta sin repetir.
+ */
+.accion-enlace {
+  margin: 8px 0 0;
+  font-size: 13px;
+}

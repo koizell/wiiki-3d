@@ -83,6 +83,23 @@ export default function ReadoutAccion({
       >
         <span>FUENTE · {regla.fuente}</span>
       </motion.p>
+
+      {/*
+        El enlace a la guía que desarrolla esta acción.
+
+        Es lo que permite que una guía **enrute** en vez de repetir: la ruta de
+        calibración no reescribe los tests, lleva a la guía que sí los explica. Sin
+        este enlace, una guía que enruta tendría que calcar el contenido, y calcar
+        el contenido es exactamente lo que esta wiki no hace.
+      */}
+      {regla.enlaza && (
+        <p className="accion-enlace">
+          <a className="enlace-guia" href={regla.enlaza.guia}>
+            {regla.enlaza.etiqueta}
+            <span aria-hidden="true"> →</span>
+          </a>
+        </p>
+      )}
     </motion.li>
   );
 }

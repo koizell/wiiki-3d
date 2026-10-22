@@ -571,7 +571,7 @@ export const mallaDeCama: Guia = {
       valor: 'Agua templada y jabón; no toques la superficie después',
       cuando: { sintoma: ['irregular', 'nopega'] },
       porque:
-        'Bambu recomienda lavar con agua caliente y detergente para quitar restos y contaminantes. Su eficacia está condicionada: resuelve la mayoría de los problemas de adhesión **siempre que los ajustes sean los correctos para el material y el tipo de chapa del slicer sea el correcto**.',
+        'Bambu recomienda lavar con agua caliente y detergente: quita restos y contaminantes. Resuelve la mayoría de los casos de adhesión **siempre que los ajustes y la chapa del slicer sean los correctos**.',
       fuente: 'Bambu Lab',
       alcance:
         'Prusa dice lo contrario en el mismo registro: si no tocas la superficie, no hace falta limpiarla antes de cada impresión. Las dos están escritas y no se promedian.',
@@ -601,7 +601,7 @@ export const mallaDeCama: Guia = {
       valor: '49 puntos en vez de 9',
       cuando: { donde: 'inconsistente', sensor: 'pinda' },
       porque:
-        'Prusa propone subir la densidad cuando sigue habiendo adhesión irregular en la primera capa. Tres de los 49 puntos están tan cerca de los imanes que la lectura puede desviarse hasta 80 µm, y la compensación de imanes los descarta.',
+        'Prusa propone subir la densidad si la adhesión sigue irregular en la primera capa. De los 49, tres están tan cerca de los imanes que la lectura puede desviarse hasta 80 µm; la compensación los quita.',
       fuente: 'Prusa Research',
       alcance:
         'La condición es «adhesión irregular». **No** es un recurso para cuando la base no pega en absoluto ni para una esquina levantada. Y sólo está en el bloque de máquinas con sensor PINDA y SuperPINDA.',
@@ -610,7 +610,7 @@ export const mallaDeCama: Guia = {
       id: 'comprobar-chapa-slicer',
       accion: 'Comprueba en el slicer el tipo de chapa seleccionado',
       porque:
-        'Seleccionar mal el tipo de chapa puede dar adhesión insuficiente porque la temperatura de cama resultante es demasiado baja. El mismo material se imprime a distintas temperaturas de cama según la chapa, y ninguna malla arregla un perfil mal puesto.',
+        'Seleccionar mal la chapa puede dar adhesión insuficiente: la temperatura de cama resultante es demasiado baja. El mismo material va a distintas temperaturas según la chapa, y ninguna malla lo arregla.',
       fuente: 'Bambu Lab',
       alcance:
         'Es un diagnóstico de configuración, no de geometría: si la chapa seleccionada no es la montada, el remedio es cambiar el perfil, no nivelear.',
@@ -620,7 +620,7 @@ export const mallaDeCama: Guia = {
       accion: 'Nivela siempre a la misma temperatura y espera minutos',
       cuando: { sensor: 'klipper' },
       porque:
-        'El sesgo térmico hace que muchos sensores disparen a otra altura según su temperatura. Klipper recomienda usar las herramientas siempre a la misma condición, fría o caliente, esperando varios minutos tras alcanzarla.',
+        'El sesgo térmico hace que muchos sensores disparen a otra altura según su temperatura. Klipper recomienda nivelar siempre en la misma condición, fría o caliente, esperando minutos tras alcanzarla.',
       fuente: 'Klipper',
       alcance:
         'Es por el sensor, no por la cama. Consistencia de la sonda, no temperatura objetivo de nivelado: ninguna fuente da una cifra de cama para nivelar.',
@@ -630,7 +630,7 @@ export const mallaDeCama: Guia = {
       accion: 'No aprietes la boquilla para forzar la adhesión',
       cuando: { offset: 'bajo' },
       porque:
-        'Prusa advierte: con la boquilla demasiado cerca se puede tener «extrusion problems and clogging and poor print quality, or even damage to the hardware, like the Flexible steel sheet due to the print sticking too much». El problema no se corrige empujando: la calibración correcta deja el plástico ligeramente comprimido, no apretado del todo.',
+        'Con la boquilla demasiado cerca, Prusa advierte de «extrusion problems and clogging… or even damage to the hardware, like the Flexible steel sheet». Apretar cambia el fallo, no lo arregla.',
       fuente: 'Prusa Research',
       alcance:        'Es un cambio de fallo, no una solución. La calibración correcta hace que el plástico se pegue y se vea ligeramente comprimido, no apretado del todo.',
     },
@@ -639,7 +639,7 @@ export const mallaDeCama: Guia = {
       accion: 'Pasa a nivelación manual si el probe no es repetible',
       cuando: { probe: 'no' },
       porque:
-        'Si el probe no da resultados repetibles o tiene sesgo por ubicación por encima de 25 µm, Klipper recomienda usar las herramientas manuales en vez de la sonda. La malla automática construida sobre esos números no vale.',
+        'Si el probe no es repetible o tiene sesgo por ubicación por encima de 25 µm, Klipper recomienda las herramientas manuales: la malla construida sobre esos números no vale.',
       fuente: 'Klipper',
       alcance:
         'El umbral de 25 µm (y los 5 µm normales) sólo está documentado en Klipper; ningún otro crudo del lote da cifra comparable.',
@@ -650,7 +650,7 @@ export const mallaDeCama: Guia = {
       cuando: { chapa: 'textured' },
       valor: '0,04 mm',
       porque:
-        'La Textured PEI tiene superficie granular y la impresora baja la boquilla automáticamente esos 0,04 mm tras el nivelado. Si el perfil dice otra chapa, el descenso no se aplica y la boquilla queda demasiado alta.',
+        'La Textured PEI tiene superficie granular y la impresora baja la boquilla 0,04 mm tras el nivelado. Si el perfil dice otra chapa, el descenso no se aplica y la boquilla queda demasiado alta.',
       fuente: 'Bambu Lab',
       alcance:
         'El 0,04 mm es de la Textured PEI y de su superficie granular. La fuente no dice que haya un descenso equivalente para las otras chapas.',
@@ -659,7 +659,7 @@ export const mallaDeCama: Guia = {
       id: 'al-cambiar-chapa',
       accion: 'Recalibra el offset al cambiar de chapa',
       porque:
-        'Las chapas tienen grosor distinto y cada una necesita su propia calibración de primera capa. En las impresoras que lo permiten se guardan hasta ocho perfiles de chapa, cada uno con su offset. La máquina no detecta qué chapa hay montada y no avisa de cambiar de perfil.',
+        'Cada chapa tiene grosor distinto y necesita su calibración propia. Donde se permiten, se guardan hasta ocho perfiles con su offset, y la máquina no detecta la chapa ni avisa de cambiar de perfil.',
       fuente: 'Prusa Research',
       alcance:
         'Es una prohibición, no una recomendación: no se puede usar la misma calibración de primera capa si se cambia entre la lisa y la texturizada. El motivo, el grosor, está escrito en palabras y en ningún número: ninguna de las fuentes da el milímetro.',
@@ -669,7 +669,7 @@ export const mallaDeCama: Guia = {
       accion: 'Repite la calibración si has movido la impresora o has cambiado la boquilla',
       cuando: { calibrada: 'no' },
       porque:
-        'Prusa repite la calibración ante cambios importantes de montaje: cambiar boquilla, cambiar extrusor, cambios en un eje o mover la impresora. Las impresoras de fábrica ya vienen afinadas; la calibración se necesita sobre todo si montaste el kit en casa o cambiaste la boquilla.',
+        'Prusa repite la calibración tras cambios de montaje: boquilla, extrusor, un eje o mover la impresora. Las de fábrica vienen afinadas; hace falta más si montaste el kit en casa o cambiaste la boquilla.',
       fuente: 'Prusa Research',
       alcance:
         'Dos desencadenantes concretos, no una obligación periódica: ninguna de las fuentes dice «cada impresión».',
@@ -679,7 +679,7 @@ export const mallaDeCama: Guia = {
       accion: 'Repite BED_MESH_CALIBRATE tras cambiar algo del probe o de la cama',
       cuando: { sensor: 'klipper' },
       porque:
-        'Cambiar el sistema de movimiento, la posición del hotend o la ubicación del probe invalida la calibración; cambiar la inclinación de la cama también. Al invalidar el probe, la malla de cama anterior queda invalidada y hay que repetirla.',
+        'Cambiar el sistema de movimiento, el hotend o la ubicación del probe invalida la calibración; la inclinación de la cama también. Al invalidar el probe, la malla anterior queda invalidada: repetirla.',
       fuente: 'Klipper',
       alcance:
         'La invalidación es en cascada: el probe primero, y la malla después. Hacer una sin la otra deja una malla construida sobre números ya viejos.',

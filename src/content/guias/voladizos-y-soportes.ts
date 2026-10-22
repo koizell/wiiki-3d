@@ -342,7 +342,7 @@ export const voladizosSoportes: Guia = {
       cuando: { voladizo: 'menos-45' },
       valor: 'Ángulo menor de 45°',
       porque:
-        'Bambu Lab recomienda añadir soportes cuando el ángulo de voladizo es menor de 45°. El filamento extruido en un voladizo no se enfría a tiempo y se deforma por gravedad, causando que se descuelgue. Los soportes actúan como una red de seguridad bajo los voladizos, proporcionando estabilidad a las capas superiores.',
+        'Bambu Lab pide soportes bajo 45°. El filamento de un voladizo no se enfría a tiempo y se deforma por gravedad: los soportes evitan que se descuelgue y dan estabilidad a las capas superiores.',
       fuente: 'Bambu Lab',
       alcance:
         'Es una regla general de Bambu Lab. El ángulo de referencia es 45° medido entre la superficie inclinada y la cama caliente. No es una garantía: la refrigeración, el material y la boquilla también influyen.',
@@ -353,7 +353,7 @@ export const voladizosSoportes: Guia = {
       cuando: { voladizo: ['45-60', 'mas-60'], material: 'pla' },
       valor: '205 °C y ventilador al 100%',
       porque:
-        'Para voladizos con ángulo mayor de 45° —que ya pasan el umbral— se puede bajar ligeramente la temperatura de boquilla para reducir la necesidad de refrigeración. Para PLA, bajar a ~205 °C y aumentar la velocidad del ventilador de refrigeración de voladizo al 100%.',
+        'En voladizos que ya pasan el umbral (>45°), bajar ligeramente la temperatura de boquilla reduce la necesidad de refrigeración. Para PLA: ~205 °C y ventilador de voladizo al 100%.',
       fuente: 'Bambu Lab',
       alcance:
         'Estas cifras son para **optimizar voladizos que ya pasan el umbral**, no para definir el umbral. Para otros filamentos oficiales, bajar 5–10 °C dentro del rango recomendado. Para filamentos de terceros, imprimir una torre de temperatura.',
@@ -424,7 +424,7 @@ export const voladizosSoportes: Guia = {
       accion: 'Cambia el patrón de soporte a Rectilinear grid',
       cuando: { soporte: 'si' },
       porque:
-        '**Rectilinear grid** es más resistente y menos propenso a romperse durante la impresión; más difícil de quitar. **Rectilinear** —por defecto— es el más fácil de quitar. **Honeycomb** es resistente y algo difícil de quitar.',
+        '**Rectilinear grid** es más resistente y se rompe menos, pero más difícil de quitar. **Rectilinear** —por defecto— es el más fácil de quitar; **Honeycomb** es resistente y algo difícil de quitar.',
       fuente: 'Prusa Research',
       alcance:
         'Depende de la prioridad: si es más importante que no se rompan, Rectilinear grid. Si es más importante que sean fáciles de quitar, Rectilinear.',
@@ -464,7 +464,7 @@ export const voladizosSoportes: Guia = {
       accion: 'Divide el modelo en múltiples partes',
       cuando: { orientacion: 'no' },
       porque:
-        'Considerar **dividir el modelo en múltiples partes** para reducir los voladizos y, consecuentemente, la cantidad de soporte generado. Usar la **herramienta Cut** para imprimir dos partes más fácilmente y luego pegarlas.',
+        '**Dividir el modelo en múltiples partes** reduce los voladizos y, consecuentemente, la cantidad de soporte generado. La **herramienta Cut** permite imprimir dos partes más fácilmente y luego pegarlas.',
       fuente: 'Prusa Research',
       alcance:
         'Requiere trabajo de post-procesado —pegado— pero puede eliminar la necesidad de soportes.',
@@ -485,7 +485,7 @@ export const voladizosSoportes: Guia = {
       cuando: { soporte: 'si' },
       valor: '3–4 interface layers',
       porque:
-        'Aumentar el número de **interface layers** a **3–4** proporciona una superficie superior del soporte más sólida, lo que también puede hacer que el punto de contacto del soporte sea **más fácil de quitar**.',
+        'Aumentar las **interface layers** a **3–4** da una superficie superior del soporte más sólida y puede hacer el punto de contacto **más fácil de quitar**.',
       fuente: 'Prusa Research',
       alcance:
         'Es el ajuste que más influye en la calidad de la cara apoyada.',

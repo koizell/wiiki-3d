@@ -393,7 +393,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Mide el error dimensional antes de compensar',
       valor: 'calibre o micrómetro',
       porque:
-        'No hay un truco único para compensar agujeros; depende de la geometría, las tolerancias de la impresora y las propiedades del material. Medir el error permite calcular la compensación exacta necesaria.',
+        'No hay un truco único para compensar agujeros; depende de la geometría, las tolerancias de la impresora y del material. Medir el error permite calcular la compensación exacta necesaria.',
       fuente: 'OrcaSlicer, Simplify3D',
       alcance:
         'La medición debe hacerse con un instrumento de precisión (calibre o micrómetro). El error se calcula como la diferencia entre el diámetro diseñado y el diámetro medido. No puede condicionarse porque es el primer paso de cualquier calibración: sin medida no hay compensación posible.',
@@ -403,7 +403,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Usa XY Hole Compensation, no XY Contour Compensation',
       cuando: { 'tipo-agujero': 'cerrado' },
       porque:
-        'XY Hole Compensation ajusta el tamaño de agujeros (áreas cerradas, huecas) en cada capa; solo afecta agujeros, no cambia el tamaño exterior del modelo. XY Contour Compensation ajusta el contorno exterior del modelo; aumenta o disminuye el tamaño XY manteniendo los agujeros sin cambios.',
+        'XY Hole Compensation ajusta los agujeros (áreas cerradas) en cada capa y no cambia el exterior. XY Contour Compensation aumenta o disminuye el tamaño XY del contorno y deja los agujeros sin cambios.',
       fuente: 'Bambu Lab',
       alcance:
         'Esta regla solo aplica a agujeros cerrados (anillo completo). Si el agujero tiene aberturas laterales, la compensación no se aplica.',
@@ -413,7 +413,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Calcula la mitad del error como valor de compensación',
       valor: 'error / 2',
       porque:
-        'La compensación del agujero se aplica por radio: el diámetro del agujero aumentará el doble del valor de compensación. Si los agujeros salen 0,1 mm pequeños, se introduce -0,05 (signo negativo = encoger hacia dentro); se compensa la mitad del error porque actúa en cada lado.',
+        'Se aplica por radio: el diámetro del agujero aumentará el doble del valor. Si sale 0,1 mm pequeño, se introduce -0,05 (negativo = encoger), porque se compensa la mitad del error: actúa en cada lado.',
       fuente: 'Bambu Lab, Slic3r Manual',
       alcance:
         'El valor es la mitad del error diametral porque actúa por radio. El signo lo fija la convención del slicer: en Slic3r, negativo encoge el contorno, así que un agujero pequeño se compensa con un valor negativo (p. ej. -0,05). Es aritmética, no depende del material.',
@@ -473,7 +473,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Aumenta el número de segmentos en el CAD antes de exportar el STL',
       valor: '≈ 2 × diámetro agujero (mm)',
       porque:
-        'Aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error de aproximación poligonal. El número de lados se calcula a partir del tamaño del agujero y el diámetro de la boquilla (aproximadamente el doble del diámetro del agujero en mm con boquilla de 0,4 mm, nunca menos de 3).',
+        'Más segmentos en el CAD antes de exportar el STL reducen el error de aproximación poligonal. Los lados son unas 2 × el diámetro del agujero en mm con boquilla de 0,4 mm, nunca menos de 3.',
       fuente: 'Slic3r Manual, OrcaSlicer',
       alcance:
         'La fórmula aproximada es 2 × diámetro del agujero en mm para boquilla de 0,4 mm. El mínimo es 3 lados. Esto reduce el error de aproximación poligonal pero no lo elimina por completo. No puede condicionarse porque es una regla general de diseño que se aplica independientemente del material o el slicer.',
@@ -483,7 +483,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Calibra la compensación para cada filamento',
       cuando: { material: ['abs', 'pa', 'pc'] },
       porque:
-        'Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil, las tolerancias varían de una impresora a otra. La calibración de compensación es específica para cada filamento; debe repetirse cuando se cambia de material.',
+        'Con el mismo filamento y perfil las tolerancias varían de una impresora a otra, y la compensación es específica de cada filamento: se repite al cambiar de material.',
       fuente: 'OrcaSlicer, Bambu Lab',
       alcance:
         'La calibración debe repetirse cada vez que se cambia de filamento. No hay un valor universal que sirva para todos los materiales. Esta regla se aplica a materiales con mayor contracción (ABS, PA, PC).',
@@ -493,7 +493,7 @@ export const agujerosOvalados: Guia = {
       accion: 'No uses XY Hole Compensation en agujeros con aberturas laterales',
       cuando: { 'tipo-agujero': 'abierto' },
       porque:
-        'X-Y Hole Compensation solo aplica a caminos cerrados: si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas. Si se aplica X-Y Hole Compensation a un modelo con caminos no cerrados, se produce una separación de capa notable en las ubicaciones de los agujeros.',
+        'X-Y Hole Compensation solo aplica a caminos cerrados: con aberturas laterales, esas capas no se compensan. Aplicarlo a caminos no cerrados produce una separación de capa notable en los agujeros.',
       fuente: 'Bambu Lab',
       alcance:
         'Los agujeros con aberturas laterales producen caminos no cerrados en algunas capas. En esos casos, solo X-Y Contour Compensation puede aplicarse.',
@@ -513,7 +513,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Mide solo las capas superiores de la pieza',
       valor: '20 capas superiores de 50-100',
       porque:
-        'La configuración de la primera capa puede afectar las siguientes 10-20 capas de la pieza. Para minimizar el impacto de la primera capa, imprimir un modelo con 50-100 capas y medir solo las 20 superiores.',
+        'La configuración de la primera capa puede afectar las siguientes 10-20 capas. Para minimizar su impacto, imprimir un modelo de 50-100 capas y medir sólo las 20 superiores.',
       fuente: 'Simplify3D',
       alcance:
         'La medición debe hacerse en las capas superiores, no en la base. La primera capa y las siguientes 10-20 pueden tener dimensiones distintas debido a la configuración de la primera capa. No puede condicionarse porque es una regla general de medición que se aplica independientemente del material o el slicer.',
@@ -575,7 +575,7 @@ export const agujerosOvalados: Guia = {
       valor: 'M6 → ~5,9 mm',
       cuando: { sintoma: 'no-encaja' },
       porque:
-        'Un tornillo M6 nominal tiene un diámetro real de ~5,9 mm por la norma ISO 6g (la rosca es ligeramente menor para facilitar el ensamblaje). Esto explica por qué un agujero de 6 mm puede no encajar con un tornillo M6.',
+        'Un tornillo M6 nominal mide ~5,9 mm de diámetro real por la norma ISO 6g (la rosca es menor para facilitar el ensamblaje). Por eso un agujero de 6 mm puede no encajar con un M6.',
       fuente: 'Bambu Lab',
       alcance:
         'El diámetro real de un tornillo M6 es ~5,9 mm según la norma ISO 6g. Esto es relevante al diseñar agujeros para tornillos M6.',
@@ -585,7 +585,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Usa el modelo Orca Tolerance Test para calibrar',
       cuando: { slicer: 'orca' },
       porque:
-        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0, 0,05, 0,1, 0,2, 0,3 y 0,4 mm, además de un probador hexagonal. Este modelo permite calibrar la compensación de agujeros de forma sistemática.',
+        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0 a 0,4 mm y un probador hexagonal. Permite calibrar la compensación de agujeros de forma sistemática.',
       fuente: 'OrcaSlicer',
       alcance:
         'El modelo de prueba tiene tolerancias de 0,0 a 0,4 mm. Es una herramienta de calibración específica para OrcaSlicer.',
@@ -595,7 +595,7 @@ export const agujerosOvalados: Guia = {
       accion: 'No uses Extrusion Multiplier para ajustar dimensiones',
       cuando: { sintoma: 'pequeno' },
       porque:
-        'El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es la solución ideal para ajustar dimensiones. Ajustar el Extrusion Multiplier afecta toda la pieza, no solo los agujeros.',
+        'El Extrusion Multiplier también afecta a las superficies sólidas, por lo que no es ideal para ajustar dimensiones: afecta a toda la pieza, no solo a los agujeros.',
       fuente: 'Slic3r Manual',
       alcance:
         'El Extrusion Multiplier afecta toda la pieza, no solo los agujeros. No es la herramienta adecuada para ajustar dimensiones específicas.',
@@ -605,7 +605,7 @@ export const agujerosOvalados: Guia = {
       accion: 'Considera External Perimeters First para mejorar precisión',
       cuando: { slicer: ['prusa', 'orca'] },
       porque:
-        'External Perimeters First previene el desplazamiento causado por el solape de extrusión; imprimir perímetros internos primero oculta mejor las costuras. Esto puede mejorar la precisión dimensional de los agujeros.',
+        'External Perimeters First previene el desplazamiento por el solape de extrusión; imprimir perímetros internos primero oculta mejor las costuras. Puede mejorar la precisión dimensional de los agujeros.',
       fuente: 'Slic3r Manual',
       alcance:
         'Este parámetro afecta el orden de impresión de los perímetros. Puede mejorar la precisión dimensional pero no es una solución directa al problema de agujeros pequeños.',

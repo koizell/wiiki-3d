@@ -388,7 +388,7 @@ export const stringing: Guia = {
       accion: 'Ajusta la velocidad de retracción dentro de 1200–6000 mm/min',
       valor: '1200–6000 mm/min',
       porque:
-        'Si es demasiado lenta, el plástico goteará lentamente a través de la boquilla antes de que el extrusor termine de moverse. Si es demasiado rápida, el filamento puede separarse del plástico caliente o el engranaje puede desgastar trozos.',
+        'Demasiado lenta: el plástico goteará por la boquilla antes de que el extrusor termine. Demasiado rápida: el filamento puede separarse del plástico caliente o el engranaje puede desgastar trozos.',
       alcance:
         'Simplify3D: rango óptimo 1200–6000 mm/min (20–100 mm/s). El mismo rango se aplica a direct drive y Bowden, por eso no depende del tipo de extrusor ni del material.',
       fuente: 'Simplify3D',

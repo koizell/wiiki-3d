@@ -558,7 +558,7 @@ export const flowRate: Guia = {
       accion: 'Calibra el Extrusion Multiplier midiendo la pared de un cubo en Vase Mode',
       valor: 'EM = 0,45 / espesor medio medido',
       porque:
-        'Método preciso de Prusa: cubo en modo vaso con la altura de capa más usada; tomar tres o más medidas en medio de cada pared y calcular el espesor medio. Reimprimir con el valor nuevo y repetir si hace falta. Las calibradoras baratas pueden no dar medidas fiables de una sola pared de perímetro.',
+        'Método preciso de Prusa: cubo en modo vaso a la altura de capa más usada; tres o más medidas en medio de cada pared y el espesor medio. Reimprime con el valor nuevo. Las calibradoras baratas fallan.',
       cuando: { slicer: 'prusa' },
       fuente: 'Prusa Research',
       alcance: 'Pide altura de capa habitual y ancho de extrusión 0,45 del preset base.',
@@ -568,7 +568,7 @@ export const flowRate: Guia = {
       accion: 'Ajusta por ojo el PLA a 0,20 mm: capa superior lisa y brillante, sin material junto a los perímetros',
       valor: 'sube o baja el EM en 1–2 % por iteración',
       porque:
-        'Método visual de Prusa: cubo con los presets por defecto de PLA a 0,20 mm de capa. Si hay demasiado material cerca de los perímetros, bajar el EM; si hay huecos visibles entre líneas, subirlo (los huecos microscópicos cerca de los perímetros son aceptables).',
+        'Método visual de Prusa: cubo con los presets de PLA a 0,20 mm de capa. Sobra material junto a los perímetros, baja el EM; huecos entre líneas, súbelo. Los huecos microscópicos son aceptables.',
       cuando: { slicer: 'prusa', material: 'pla' },
       fuente: 'Prusa Research',
       alcance: 'Aplica a PLA con preset base. Sobre/subextrusión también diagnostica defectos.',
@@ -588,7 +588,7 @@ export const flowRate: Guia = {
       accion: 'Sube el multiplicador si hay huecos, bájalo si hay blobs o solape',
       valor: '1–2 % por iteración',
       porque:
-        'La dirección del ajuste depende de si falta o sobra material: subextrusión leve se ve como huecos entre líneas o perímetros; sobreextrusión como marcas en capas inferiores y acumulación en las superiores.',
+        'La dirección del ajuste depende de si falta o sobra material: subextrusión leve, huecos entre líneas o perímetros; sobreextrusión, marcas en capas inferiores y acumulación en las superiores.',
       cuando: { defecto: ['sub', 'sobre'] },
       fuente: 'Prusa Research, Bambu Lab',
       alcance: 'Los valores de iteración salen del método visual de Prusa; Bambu describe el mismo síntoma sin cifra de paso.',
@@ -598,7 +598,7 @@ export const flowRate: Guia = {
       accion: 'Usa M221 sólo como ajuste temporal durante la impresión',
       valor: '90–110 % habitual; M221 S150 = 150 %',
       porque:
-        'M221 S<percent> fija el porcentaje de flujo aplicado a todos los movimientos del extrusor, y T<index> selecciona extrusor en máquinas multieje. No cambia el Extrusion Multiplier del slicer: el efecto total es el producto de los dos, y cada fuente calibra en su propia capa.',
+        'M221 S<percent> fija el porcentaje de flujo de los movimientos del extrusor; T<index> elige extrusor en multieje. No cambia el Extrusion Multiplier del slicer: el efecto total es el producto.',
       cuando: { firmware: ['marlin'] },
       fuente: 'Marlin Firmware, Prusa Research',
       alcance: 'M221 es el mismo valor que Prusa llama Flow rate en Tune; Marlin sólo documenta el comando, no una calibración.',
@@ -607,7 +607,7 @@ export const flowRate: Guia = {
       id: 'bambu-previo',
       accion: 'Haz primero otras calibraciones (Flow Dynamics) antes de tocar el Flow Rate',
       porque:
-        'El flow rate requiere calibraciones previas. También conviene filamento seco, boquilla limpia por dentro y por fuera, extrusor limpio y chapa lavada antes de empezar, y no calibrar con extrusor sucio ni boquilla semitapada.',
+        'El flow rate requiere calibraciones previas. Conviene filamento seco, boquilla limpia, extrusor limpio y chapa lavada antes de empezar, y no calibrar con extrusor sucio ni boquilla semitapada.',
       cuando: { slicer: 'bambu' },
       fuente: 'Bambu Lab',
       alcance: 'Flow Dynamics no está documentado en este lote; sólo se cita como paso previo.',
@@ -617,7 +617,7 @@ export const flowRate: Guia = {
       accion: 'Usa Auto Flow Rate Calibration si tu impresora es serie X1',
       valor: 'sólo boquilla 0,4 mm con OTA 01.06.00.00',
       porque:
-        'Auto usa Micro-Lidar que mide directamente los patrones; puede fallar con filamentos transparentes o semitransparentes, con partículas brillantes o de acabado muy reflectante. Sincroniza la lista de filamentos desde el AMS si lo usas. Tras imprimir, botón Next y guarda el resultado en un preset nuevo o sobrescribe el original.',
+        'Auto usa Micro-Lidar, que mide directamente los patrones; puede fallar con filamentos transparentes o semitransparentes y con partículas brillantes o de acabado reflectante.',
       cuando: { slicer: 'bambu', boquilla: '04' },
       fuente: 'Bambu Lab',
       alcance: 'Auto sólo está disponible en serie X1; el corpus no dice si otras series soportan boquillas distintas.',
@@ -637,7 +637,7 @@ export const flowRate: Guia = {
       accion: 'Lanza la calibración fina si el rango ya se conoce con margen < 10 %',
       valor: '91–100 %, paso 1 %',
       porque:
-        'Fina sobre un flow ratio personalizado; útil si el rango ya se conoce con un margen < 10 %. Complete Calibration encadena gruesa y luego, opcionalmente, fina; Fine basada en Flow Ratio hace sólo la fina.',
+        'Fina sobre un flow ratio personalizado; útil si el rango ya se conoce con un margen < 10 %. Complete Calibration encadena gruesa y fina; la variante basada en Flow Ratio hace sólo la fina.',
       cuando: { slicer: 'bambu' },
       fuente: 'Bambu Lab',
       alcance: 'No mezclar con el flujo de calibración de OrcaSlicer.',
@@ -657,7 +657,7 @@ export const flowRate: Guia = {
       accion: 'Calcula el nuevo Flow Ratio con YOLO: OldFlowRatio ± modifier',
       valor: 'rango [-0,05, +0,05], paso 0,01 (Perfectionist [-0,04, +0,035], 0,005)',
       porque:
-        'Pase único: OldFlowRatio ± modifier; se imprimen 11 bloques y se elige el de mejor superficie superior (más lisa, sin huecos, línea mínima entre espiral interior y arcos exteriores). Se actualiza con OldFlowRatio ± modifier. Patrón recomendado: Archimedean Chords, que imprime la espiral interior al final para comprobar acumulación. Como alternativa, el flujo de 2 pasadas (legado) usa OldFlowRatio × (100 + modifier) / 100; son métodos distintos y no intercambiables.',
+        'Pase único: OldFlowRatio ± modifier; 11 bloques, el de mejor superficie. Archimedean Chords deja la espiral interior al final, para comprobar acumulación. El legacy escala: × (100 + modifier) / 100.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'YOLO es el recomendado; el legacy se mantiene. Uno suma/resta absoluto y el otro escala porcentualmente.',
@@ -667,7 +667,7 @@ export const flowRate: Guia = {
       accion: 'Calibra el Max Volumetric Speed midiendo la altura justo antes de los defectos',
       valor: '5 mm³/s inicio, 20 mm³/s fin, paso 0,5 (ej. 5 + 19 × 0,5 = 14,5 mm³/s)',
       porque:
-        'Depende de material, máquina, diámetro de boquilla y montaje del extrusor; hay que calibrarlo por impresora y por filamento. Incluso dentro del mismo tipo (PLA), marca y color afectan. Subir la temperatura de boquilla hacia el extremo alto del rango del filamento (torre de temperatura) si se va a subir velocidad o flujo. Procedimiento: pedir inicio, fin y paso; imprimir, anotar dónde empiezan a fallar las capas y dónde baja la calidad (un cambio de brillo brillante/mate es pista); medir con calibre la altura justo antes de los defectos y aplicar inicio + altura × paso. Verificar cruzado en la pestaña Preview, esquema de color flow.',
+        'Depende de material, máquina, boquilla y montaje: se calibra por impresora y filamento. Mide con calibre la altura justo antes de los fallos y aplica inicio + altura × paso.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'La prueba es el mejor caso: no tiene en cuenta retracciones ni otros ajustes. Verificar el corte físico.',
@@ -677,7 +677,7 @@ export const flowRate: Guia = {
       accion: 'Reduce el valor calculado un 10–20 %, o más, por seguridad',
       valor: '-10 a -20 %',
       porque:
-        'La prueba de caudal volumétrico es el mejor caso y no tiene en cuenta retracciones ni otros ajustes que pueden aumentar atascos o subextrusión. Imprimir a alto caudal puede dar mala adhesión entre capas o atascos. Después del cálculo, fijarlo en los ajustes del filamento.',
+        'La prueba de caudal volumétrico es el mejor caso: no cuenta retracciones ni otros ajustes que aumentan atascos o subextrusión. Imprimir a alto caudal puede dar mala adhesión entre capas.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'No es una pérdida de rendimiento: es el margen frente a retracciones y cambios de caudal.',
@@ -686,7 +686,7 @@ export const flowRate: Guia = {
       id: 'orca-adaptive-vol',
       accion: 'No uses Adaptive volumetric speed como ajuste definitivo',
       porque:
-        'Es experimental e incompleto (importado de BBS). Con él habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo del usuario; con él deshabilitado, sólo se aplica el máximo del usuario. Conviene medir primero el Max Volumetric Speed y usar éste como base.',
+        'Es experimental e incompleto (importado de BBS): con él habilitado, el flujo se limita por el menor entre el valor ajustado y el máximo del usuario; deshabilitado, sólo aplica el máximo del usuario.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'Puede usarse como complemento, no como sustituto del valor medido.',
@@ -696,7 +696,7 @@ export const flowRate: Guia = {
       accion: 'Habilita Pressure advance por filamento si hay blobs o ooze',
       valor: 'pressure_advance (float)',
       porque:
-        'Compensa el retraso de presión en accel/decel y reduce blobs, ooze y extrusión inconsistente; habilitado sobrescribe el resultado de la auto-calibración. Adaptive Pressure Advance (beta) modela la respuesta del extrusor según caudal volumétrico y aceleración, y emite el PA calculado según las condiciones; conviene un valor fijo razonable como respaldo y para cambios de herramienta.',
+        'Compensa el retraso de presión en accel/decel y reduce blobs, ooze y extrusión inconsistente; habilitado sobrescribe la auto-calibración. Conviene un valor fijo de respaldo al cambiar de herramienta.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'Adaptive PA afirma que un PA único suele no ser óptimo a altas velocidades; no da un modelo cerrado ni valores publicados.',
@@ -706,7 +706,7 @@ export const flowRate: Guia = {
       accion: 'Si activas Adaptive PA, mide al menos 3 velocidades por aceleración',
       valor: 'tripletes PA, FLOW, ACCELERATION',
       porque:
-        'Calibrar ejecutando la prueba de PA en al menos 3 velocidades por valor de aceleración (perímetros exteriores, interiores y la feature más rápida), para la aceleración mínima y la máxima, sin superar la aceleración máxima recomendada por el input shaper de Klipper. El PA ideal debe disminuir al aumentar el caudal volumétrico; si no, revisar el extrusor o usar el valor de la prueba más rápida.',
+        'La prueba de PA necesita al menos 3 velocidades por valor de aceleración, sin superar la del input shaper de Klipper. El PA ideal debe disminuir al aumentar el caudal: si no, revisa el extrusor.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'Formato de medición 0,04, 3,96, 3000 por línea.',
@@ -716,7 +716,7 @@ export const flowRate: Guia = {
       accion: 'Activa pressure_advance en [extruder] y reinicia',
       valor: 'pressure_advance = <valor>; RESTART',
       porque:
-        'La PA compensa la presión en boquilla durante aceleración y deceleración. Calibra primero rotation_distance del extrusor y la temperatura de boquilla. Un PA alto exige mucha adaptación del extrusor; puede ser útil combinarlo con una pequeña retracción (≈ 0,75 mm) y "wipe on retract", desactivando "z-lift on retract".',
+        'Compensa la presión en boquilla al acelerar y decelerar: calibra antes rotation_distance y la temperatura de boquilla. Un PA alto exige adaptación: añade retracción ≈ 0,75 mm y "wipe on retract".',
       cuando: { firmware: 'klipper' },
       fuente: 'Klipper3d',
       alcance: ' ≈ 0,75 mm es sólo Klipper; no hay corroboración cruzada.',
@@ -726,7 +726,7 @@ export const flowRate: Guia = {
       accion: 'Calibra PA con torre hueca y TUNING_TOWER',
       valor: 'direct drive FACTOR=.005; bowden largo FACTOR=.020; PA = 0 + altura × factor',
       porque:
-        'Prepara el ensayo: SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500. Torre hueca (cuadrado hueco), velocidad alta (≈ 100 mm/s), relleno cero y capa gruesa (≈ 75 % del diámetro de boquilla). Desactivar "dynamic acceleration control" y costuras "scarf joint". Medir con calibre la altura de la mejor calidad; ante la duda, escoger la más baja.',
+        'Prepara: SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500. Torre hueca, ≈ 100 mm/s, relleno cero y capa gruesa (75 % del diámetro de boquilla). Mide con calibre la altura de la mejor calidad.',
       cuando: { firmware: 'klipper', extrusor: ['directo', 'bowden', 'desconocido'] },
       fuente: 'Klipper3d',
       alcance: 'El FACTOR documentado es .005 para direct drive y .020 para bowden largo; no se traduce a la escala de Marlin.',
@@ -746,7 +746,7 @@ export const flowRate: Guia = {
       accion: 'Compila con LIN_ADVANCE y fija K por M900 en el start script',
       valor: 'K típico 0,1–2,0 (v1,5)',
       porque:
-        'Activación en firmware: compilar con #define LIN_ADVANCE y #define LIN_ADVANCE_K <valor> en Configuration_adv.h. Si se usa un solo material, fijar ahí el mejor K y reflashear. Alternativa: M900 Kxx en el script de inicio del slicer (Cura: Machine Settings; Slic3r: Printer Settings → Custom G-code; Simplify3D: Scripts → Custom G-code). Con ese método conviene dejar LIN_ADVANCE_K a 0 para no solapar.',
+        'Compila con #define LIN_ADVANCE y #define LIN_ADVANCE_K <valor> en Configuration_adv.h; con un solo material, fija ahí el mejor K. Alternativa: M900 Kxx en el script de inicio, con LIN_ADVANCE_K a 0.',
       cuando: { firmware: 'marlin' },
       fuente: 'Marlin Firmware',
       alcance: 'Los scripts son individuales por impresora y gusto personal; el firmware debe tener la funcionalidad activa.',
@@ -756,7 +756,7 @@ export const flowRate: Guia = {
       accion: 'Calibra K con patrón 20/40/20 mm y K-Factor Stepping',
       valor: '20/40/20 mm',
       porque:
-        'Cada línea: 20 mm a velocidad lenta, 40 mm a velocidad rápida y 20 mm a velocidad lenta. El K aumenta por pasos desde un valor inicial hasta el final; la línea con transición fluida y apenas visible es la óptima. Marlin v1.5 respeta el jerk del extrusor y puede reducir la aceleración si el K exige correcciones más rápidas de las permitidas; opciones: subir jerk, bajar aceleración o K, acortar el bowden.',
+        'Cada línea: 20 mm lenta, 40 mm rápida y 20 mm lenta. El K sube por pasos y la línea con transición fluida y apenas visible es la óptima. En v1.5 el jerk limita la aceleración: sube jerk o baja K.',
       cuando: { firmware: 'marlin' },
       fuente: 'Marlin Firmware',
       alcance: 'LIN_ADVANCE en Marlin v1.5: K en mm/mm/s. En v1.0 son 30–130.',
@@ -765,7 +765,7 @@ export const flowRate: Guia = {
       id: 'marlin-desactivar-presion',
       accion: 'Desactiva en el slicer Coast at end, extra restart length y wipe while retract',
       porque:
-        'Estas opciones interfieren con Linear Advance: LIN_ADVANCE controla la presión, y las otras manipulan la extrusión al final de cada movimiento. También desactivar "wipe while retract" y "combing"; revisar la distancia de retracción (puede llegar a 0). K = 0 desactiva el avance.',
+        'Interfieren con Linear Advance, que controla la presión; las otras manipulan la extrusión al final del movimiento. Desactiva "wipe while retract" y "combing"; revisa la retracción, que puede ser 0.',
       cuando: { firmware: 'marlin' },
       fuente: 'Marlin Firmware',
       alcance: 'Configurar K mediante start script sigue requiriendo la funcionalidad activa en firmware.',
@@ -774,7 +774,7 @@ export const flowRate: Guia = {
       id: 'recalibrar-montaje',
       accion: 'Recalibra el flujo si cambias material, boquilla, extrusor o temperatura',
       porque:
-        'La PA y el caudal volumétrico dependen del extrusor, la boquilla y el filamento; PA también de la temperatura de impresión y del caudal de extrusión. Lo que cambia el montaje cambia el valor calibrado.',
+        'La PA y el caudal volumétrico dependen del extrusor, la boquilla y el filamento; la PA también de la temperatura y del caudal. Lo que cambia el montaje cambia el valor calibrado.',
       fuente: 'Klipper3d, Marlin Firmware, OrcaSlicer',
       alcance: 'Cada firmware calibra con su propio patrón; ver las fuentes para los rangos.',
     },
@@ -782,7 +782,7 @@ export const flowRate: Guia = {
       id: 'orcaslicer-bambu',
       accion: 'En impresoras Bambu Lab con OrcaSlicer, no selecciones "Flow calibration"',
       porque:
-        'OrcaSlicer avisa específicamente: los perfiles y el flujo de calibración de Bambu Studio (Micro-Lidar) no son el de OrcaSlicer (modificadores de flow ratio, patrones Archimedean), y mezclarlos no está soportado.',
+        'OrcaSlicer avisa específicamente: el flujo de calibración de Bambu Studio (Micro-Lidar) no es el de OrcaSlicer (modificadores de flow ratio, patrones Archimedean), y mezclarlos no está soportado.',
       fuente: 'OrcaSlicer',
       alcance: 'Aviso de una fuente cruzada sobre el ecosistema Bambu.',
     },

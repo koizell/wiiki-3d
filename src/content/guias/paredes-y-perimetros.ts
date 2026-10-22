@@ -455,7 +455,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'outer-inner-precision',
       accion: 'Usa orden Outer/Inner',
-      porque: 'Outer/Inner ofrece la misma calidad superficial y precisión dimensional que Inner/Outer/Inner, pero con costuras Z menos consistentes (la primera extrusión de una nueva capa empieza en superficie visible).',
+      porque: 'Outer/Inner da la misma calidad superficial y precisión dimensional que Inner/Outer/Inner, pero con costuras Z menos consistentes: la primera extrusión de una capa nueva cae en superficie visible.',
       cuando: { voladizos: 'no', paredes: 'suficientes', problema: 'precision' },
       fuente: 'OrcaSlicer — Wall and Surfaces',
       alcance: 'La diferencia con Inner/Outer/Inner no está en la calidad superficial (idéntica) sino en la consistencia de la costura Z y en el mínimo de 3 paredes de Inner/Outer/Inner.',
@@ -472,7 +472,7 @@ export const paredesYPerimetros: Guia = {
       id: 'vase-mode-ajustes',
       accion: 'Ajusta capas sólidas inferiores y ancho de extrusión',
       valor: '0,45 → 0,6 mm',
-      porque: 'En vase mode se puede ajustar el número de capas sólidas inferiores y el ancho de extrusión de los perímetros externos para un vaso más grueso/fuerte/estanco. El modelo debe definirse como sólido (solo dimensiones exteriores) y solo se imprime un objeto a la vez.',
+      porque: 'En vase mode se ajusta el número de capas sólidas inferiores y el ancho de extrusión de los perímetros para un vaso más grueso/fuerte/estanco. El modelo debe ser sólido y se imprime un solo objeto.',
       cuando: { problema: 'vase' },
       fuente: 'Prusa KB',
       alcance: 'PrusaSlicer ajusta automáticamente el resto (1 perímetro, 0 % relleno, capas sólidas superiores desactivadas, soportes desactivados, ensure vertical shell thickness desactivado).',
@@ -496,7 +496,7 @@ export const paredesYPerimetros: Guia = {
     {
       id: 'external-perimeters-first',
       accion: 'Considera external perimeters first',
-      porque: 'Imprimir de exterior a interior puede mejorar la precisión dimensional (perímetro externo primero, exceso presionado hacia afuera); la superficie queda ligeramente menos suave. Prusa y OrcaSlicer coinciden en la dirección pero difieren en el efecto secundario reportado.',
+      porque: 'Imprimir de fuera a dentro puede mejorar la precisión dimensional: el perímetro externo primero empuja el exceso hacia fuera. Prusa y OrcaSlicer coinciden en la dirección pero difieren en el efecto.',
       cuando: { problema: 'precision' },
       fuente: 'Prusa KB, OrcaSlicer — Wall and Surfaces',
       alcance: 'Prusa: superficie menos suave; OrcaSlicer: costuras Z menos consistentes. Atribuir cada efecto a su fuente, no fusionarlos.',

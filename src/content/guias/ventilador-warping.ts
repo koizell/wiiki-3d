@@ -290,7 +290,7 @@ export const ventiladorWarping: Guia = {
       cuando: { ventilador: ['auxiliar', 'ambos'], material: ['pla', 'petg'] },
       valor: '40–50 %',
       porque:
-        'Si hay warping, se recomienda bajar el ventilador auxiliar. El valor objetivo preventivo es 40–50 %; si ya hay warping, reducir 20–30 % del valor actual. El filamento que más se beneficia de un auxiliar alto es PLA, pero principalmente en objetos pequeños o con voladizos altos.',
+        'Si hay warping, se recomienda bajar el auxiliar: 40–50 % preventivo y 20–30 % de reducción del valor actual. El PLA es el que más se beneficia de un auxiliar alto: piezas pequeñas o voladizos altos.',
       fuente: 'Bambu Lab',
       alcance: 'Las dos cifras de Bambu no son lo mismo: una es correctiva (20–30 % del valor actual) y la otra es preventiva (40–50 % del máximo).',
     },
@@ -300,7 +300,7 @@ export const ventiladorWarping: Guia = {
       cuando: { material: ['abs', 'pa', 'pc'] },
       valor: '0 %',
       porque:
-        'ABS es altamente susceptible a la separación de capas cuando sopla aire frío sobre la pieza antes de que se enfríe por completo. Es común desactivar cualquier ventilador externo para que las capas se mantengan calientes más tiempo.',
+        'El ABS es muy susceptible a la separación de capas si sopla aire frío antes de que la pieza se enfríe del todo. De ahí desactivar todo ventilador externo: las capas se mantienen calientes más tiempo.',
       fuente: 'Prusa Research',
       alcance: 'Regla general para ABS. La excepción es 10–20 % para overhangs abruptos, donde el ventilador es necesario para la calidad del voladizo.',
     },
@@ -310,7 +310,7 @@ export const ventiladorWarping: Guia = {
       cuando: { material: ['abs', 'pc'], tamaño: 'pequena' },
       valor: '10–20 %',
       porque:
-        'Para overhangs abruptos en materiales que no requieren mucha refrigeración (ABS, PC-Blend), se puede habilitar el ventilador al 10–20 %. El ventilador es necesario para la calidad del voladizo, no para el warping.',
+        'Para overhangs abruptos en materiales que no requieren mucha refrigeración (ABS, PC-Blend), se puede habilitar al 10–20 %. El ventilador hace falta para la calidad del voladizo, no para el warping.',
       fuente: 'Prusa Research',
       alcance: 'Excepción específica para overhangs. No es la regla general para ABS, que es apagado.',
     },
