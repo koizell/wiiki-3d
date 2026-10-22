@@ -7,6 +7,7 @@ export const orientacionResistencia: Guia = {
   resumen: 'Cómo cambia la resistencia de una pieza impresa según su orientación, y cómo mejorar la adhesión entre capas para que el eje Z no sea el eslabón débil.',
   sintoma: 'Resistencia distinta según el eje o pieza que se rompe en una dirección',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/orientacion-resistencia/ilustracion.png', alt: 'Una misma pieza impresa en dos orientaciones distintas, con flechas indicando la dirección de la fuerza' },
   entrada:
     'Una pieza impresa en FDM no es isótropa: resiste distinto según el eje porque la adhesión entre capas es el punto débil. Esta guía separa el problema de orientación y resistencia del de separación entre capas, y dice qué cambiar para que el eje Z deje de ser el eslabón débil: orientación, temperatura, ancho de extrusión, altura de capa, ventilador y cama.',
   autor: AUTOR,

@@ -8,6 +8,7 @@ export const piezasGrandesGrietas: Guia = {
     'Piezas grandes que se alabean o se agrietan: antes de subir temperaturas, confirma si es warping, separación entre capas o cracking por contracción.',
   sintoma: 'Piezas grandes que se alabean o se agrietan',
   dibujo: 'grieta',
+  ilustracion: { src: '/wiki/piezas-grandes-grietas/ilustracion.png', alt: 'Pieza grande con grietas visibles en las capas superiores' },
   entrada:
     'Cuando la pieza es grande, la contracción térmica ya no es un detalle de esquina: tira de toda la base, eleva bordes enteros y puede agrietar el interior. Aquí el material, el tamaño y el aire mandan más que el filamento, y varias cosas que parecen lo mismo no lo son: warping de esquinas, separación entre capas y cracking a lo largo del eje Z. Esta guía separa los tres antes de tocar nada.',
   autor: AUTOR,
