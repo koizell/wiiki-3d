@@ -17,9 +17,9 @@ import { AUTOR } from './autor.ts';
  */
 export const rutaDeCalibracion: Guia = {
   slug: 'ruta-de-calibracion',
-  titulo: 'Ruta de calibración: los órdenes que se contradicen',
+  titulo: 'Ruta de calibración: dos rutas que se contradicen y un tramo',
   resumen:
-    'Qué orden siguen los siete tests de calibración, cómo llama cada firmware a la función de presión y qué contradicciones hay que declarar sin resolver.',
+    'Qué orden de calibración publica cada fuente, cómo llama cada firmware a la función de presión y qué contradicciones hay que declarar sin resolver.',
   sintoma: 'Quiero calibrar mi impresora entera y no sé por dónde empezar',
   dibujo: 'slicer',
   entrada:
@@ -467,7 +467,7 @@ export const rutaDeCalibracion: Guia = {
       id: 'retracciones',
       accion: 'Calibra la retracción hasta el mínimo sin hilos',
       porque:
-        'El objetivo es la distancia más corta que permita imprimir sin hilos, y es el único paso en el que las dos rutas coinciden: las dos lo ponen tras el PA y el flujo.',
+        'El objetivo es la distancia más corta que permita imprimir sin hilos, y las dos rutas lo ponen tras el PA y del flujo, que es el paso que menos se mueve entre las dos.',
       fuente: 'Control3D, OrcaSlicer',
       alcance:
         'Control3D y OrcaSlicer la ponen después del PA y del flujo; OrcaSlicer lo dice porque PA y flujo cambian la presión en la boquilla. Los límites de 2 mm y de 6–7 mm son de una sola fuente.',
@@ -597,7 +597,17 @@ export const rutaDeCalibracion: Guia = {
     {
       url: 'https://www.klipper3d.org/Pressure_Advance.html',
       quien: 'Klipper3d',
-      que: 'Pressure advance: el PA como constante sin unidades, con un rango típico de 0,050 a 1,000, la torre por capas como método de calibración, y la atribución de la esquina abombada al PA bajo y la redondeada al PA alto.',
+      que: 'Pressure advance: el PA como constante sin unidades, con un rango típico de 0,050 a 1,000, y la torre por capas como método de calibración.',
+    },
+    {
+      url: 'https://github.com/SoftFever/OrcaSlicer/wiki/retraction_calib',
+      quien: 'OrcaSlicer',
+      que: 'El test de calibración de retracción y sus valores por defecto: 1–6 mm con paso de 0,2 mm en Bowden.',
+    },
+    {
+      url: 'https://www.simplify3d.com/support/print-quality-troubleshooting/stringing-or-oozing/',
+      quien: 'Simplify3D',
+      que: 'La retracción como ajuste contra el goteo: 0,5–2,0 mm en extrusión directa y hasta 15 mm en Bowden.',
     },
     {
       url: 'https://marlinfw.org/docs/features/lin_advance.html',
