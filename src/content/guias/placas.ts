@@ -489,7 +489,7 @@ export const placas: Guia = {
       accion: 'Recalienta a la temperatura original y deja enfriar',
       cuando: { chapa: ['smooth-prusa', 'textured-prusa', 'satin-prusa'], problema: 'demasiado-pegada' },
       porque:
-        'Prints atascados: recalentar la cama unos minutos, dejar enfriar hasta ambiente y despegar flexionando. Con espátula, doblar ligeramente la chapa e insertar debajo en vez de apalancar sobre superficie plana.',
+        'Recalentar la cama unos minutos, dejar enfriar hasta ambiente y despegar flexionando. Con espátula, doblar ligeramente la chapa e insertar debajo en vez de apalancar sobre superficie plana.',
       fuente: 'Prusa Research',
       alcance:
         'Estrategia de recalentado seguida de enfriamiento: distinta a la de autodesprendimiento de la Textured PEI, que se libera al enfriar directamente.',
@@ -519,7 +519,7 @@ export const placas: Guia = {
       accion: 'Deja curar el glue líquido según la cama',
       cuando: { chapa: ['engineering-bambu', 'smooth-bambu'] , material: ['abs', 'pc', 'petg'] },
       porque:
-        'Secar el glue hasta formar film que no forme hilos; basta precalentar la cama. Tiempos: ~1 h a 24 °C, ~45 s a 90 °C, ~2 min a 70 °C. Una capa gruesa pega más que una delgada; más allá de cuatro, disminuye.',
+        'Secar hasta formar film que no forme hilos; basta precalentar la cama. Tiempos: ~1 h a 24 °C, ~45 s a 90 °C, ~2 min a 70 °C. Una capa gruesa pega más que una delgada; más allá de cuatro, disminuye.',
       valor: '4 capas como óptimo',
       fuente: 'Bambu Lab',
       alcance:

@@ -94,7 +94,7 @@ export default function ReadoutAccion({
       */}
       {regla.enlaza && (
         <p className="accion-enlace">
-          <a className="enlace-guia" href={regla.enlaza.guia}>
+          <a className="enlace-guia" href={`/wiki/${regla.enlaza.guia}`}>
             {regla.enlaza.etiqueta}
             <span aria-hidden="true"> →</span>
           </a>

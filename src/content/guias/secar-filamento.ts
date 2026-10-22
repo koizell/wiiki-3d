@@ -712,7 +712,7 @@ export const secarFilamento: Guia = {
       accion: 'Comprueba el límite de temperatura de tu carrete antes de calentarlo',
       valor: '45 · 90 · 150 °C',
       porque:
-        'Los límites son del carrete, no del filamento: el negro viejo sólo llega a 45 °C, porque al enfriar el plástico se encoge, el cartón se queda expandido y el carrete queda flojo. Alternativa: un tornillo M4×65.',
+        'Los límites son del carrete, no del filamento: el negro viejo llega a 45 °C; al enfriar, el plástico se encoge, el cartón se queda expandido y el carrete queda flojo. Alternativa: un tornillo M4×65.',
       fuente: 'Prusa Research',
       alcance:
         'Cuatro límites distintos: negro viejo 45 °C, gris viejo 90 °C, negro nuevo 90 °C y gris nuevo 150 °C. El color no basta para saber cuál tienes, y por eso la regla no se puede condicionar a una variable.',

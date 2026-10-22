@@ -560,7 +560,7 @@ export const tpuFlexible: Guia = {
       accion: 'Con el AMS HT, alimenta el filamento por la salida TPU de la parte de atrás',
       cuando: { maquina: 'bambu', ams: 'amsht' },
       porque:
-        'El AMS HT es el único que admite TPU y sólo funciona como «sealed enclosure — its standard outlet and automatic feeding functionality cannot be used». El filamento entra por la salida TPU de atrás.',
+        'El AMS HT es el único que admite TPU y sólo funciona como «…sealed enclosure — its standard outlet and automatic feeding functionality cannot be used». El filamento entra por la salida TPU de atrás.',
       fuente: 'Bambu Lab',
       alcance:
         'El AMS HT no alimenta por su canal normal: como cámara estanca y de secado sí. La tabla de materiales no lo menciona en ninguna fila, así que no lo contradice —no habla de él—, y la excepción de producto del «TPU for AMS» es la que sí alimenta por cualquier AMS.',
@@ -692,10 +692,10 @@ export const tpuFlexible: Guia = {
       accion: 'Descarga el filamento a mano, con el hotend calentado',
       cuando: { maquina: 'bambu' },
       porque:
-        'Bambu, en las dos familias: en la serie P «Automatic unloading with a cutter is not supported» y en la serie A «manual unloading is required after heating up the hotend». El cutter no corta el TPU.',
+        'Bambu, en las dos familias: en la serie P «Automatic unloading with a cutter is not supported» y en la serie A «…manual unloading is required after heating up the hotend». El cutter no corta el TPU.',
       fuente: 'Bambu Lab',
       alcance:
-        'Es una limitación de la máquina: el cutter automático no corta el TPU. Prusa tiene la suya y es del mismo tipo —«automatic filament change might not work properly with flexible filaments»—, así que en las dos casas el cambio automático de filamento no es una vía fiable con este material.',
+        'Es una limitación de la máquina: el cutter automático no corta el TPU. La frase de la serie A es de las impresoras A1 («For A1 series printers, manual unloading is required…»), y la de la serie P, de las P. Prusa tiene la suya y es del mismo tipo —«automatic filament change might not work properly with flexible filaments»—, así que en las dos casas el cambio automático de filamento no es una vía fiable con este material.',
     },
     {
       id: 'boquilla-tapada',
@@ -734,7 +734,7 @@ export const tpuFlexible: Guia = {
       valor: '5 °C · 0,4 mm³/s',
       cuando: { sintoma: 'goteo' },
       porque:
-        'El exceso de temperatura da goteo: «reduce the nozzle temperature (by about 5 °C from the original setting) to decrease filament flow» y «decrease the maximum volumetric flow rate by 0.4 mm³/s».',
+        'El exceso de temperatura da goteo: «…reduce the nozzle temperature (by about 5 °C from the original setting) to decrease filament flow» y «…decrease the maximum volumetric flow rate by 0.4 mm³/s».',
       fuente: 'Bambu Lab',
       alcance:
         'Son unos 5 °C sobre el ajuste original y 0,4 mm³/s sobre el flujo máximo, no una temperatura de impresión: las cuatro cifras de boquilla del corpus tienen alcances distintos y no se funden. El flujo máximo tiene su propia guía.',
@@ -774,7 +774,7 @@ export const tpuFlexible: Guia = {
       accion: 'Elige PA Nylon o Satin como superficie en Prusa',
       cuando: { maquina: 'prusa' },
       porque:
-        'El catálogo del Prusament 95A da PA Nylon y Satin como «The most recommended print surface» y Smooth PEI como «Not recommended»: si se usa, con capa separadora: la adhesión es demasiado fuerte.',
+        'PA Nylon y Satin son «The most recommended print surface» y Smooth PEI es «Not recommended»: si se usa, con capa separadora, pues la adhesión es demasiado fuerte y retirar la pieza dañaría la chapa.',
       fuente: 'Prusa Research',
       alcance:
         'El corpus tiene dos grados distintos sobre la lámina satinada: el artículo general de flexibles pide una capa separadora en ella y la guía del 95A la da como la más recomendada sin mencionarla. Para materiales muy blandos, Prusa propone la Textured con muelle como alternativa. Las chapas tienen su propia guía.',

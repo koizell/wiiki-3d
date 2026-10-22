@@ -94,7 +94,7 @@ export default function TarjetaConocimiento({
 
       {enlaza && (
         <p className="tarjeta-enlace">
-          <a className="enlace-guia" href={enlaza.guia}>
+          <a className="enlace-guia" href={`/wiki/${enlaza.guia}`}>
             {enlaza.etiqueta}
           </a>
         </p>

@@ -259,10 +259,11 @@ export const toleranciasYEncaje: Guia = {
         'Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados.',
         'Si los ejes no son suficientemente ortogonales entre sí, aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo).',
         'En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash.',
+        'Las correas también sufren creep y elongación con el tiempo, que reducen la tensión y pueden provocar resbalones y pasos perdidos.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores. Los motores típicos de FDM no tienen bucle de control de posición, así que pequeños errores de posición pueden acumularse en trabajos largos. Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados. Si los ejes no son suficientemente ortogonales entre sí, aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo). En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash.',
+        'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores. Los motores típicos de FDM no tienen bucle de control de posición, así que pequeños errores de posición pueden acumularse en trabajos largos. Los E-steps del extrusor son un factor crucial que puede causar inexactitudes dimensionales si no están calibrados. Si los ejes no son suficientemente ortogonales entre sí, aparecen inexactitudes estructurales (un rectángulo se convierte en paralelogramo). En cada cambio de dirección de un eje hay una pequeña cantidad de backlash (holgura); a menor tensión de la correa, mayor backlash. Las correas también sufren creep y elongación con el tiempo, que reducen la tensión y pueden provocar resbalones y pasos perdidos.',
       cita: {
         texto: 'Los motores paso a paso tienen resolución de movimiento finita; la precisión de una trayectoria es solo tan buena como la resolución máxima de los motores.',
         fuente: 'All3DP',
@@ -904,7 +905,7 @@ export const toleranciasYEncaje: Guia = {
       id: 'componentes-tensos',
       accion: 'Asegura que las correas estén tensas y los componentes sin desgaste',
       porque:
-        'Los componentes deteriorados restan precisión a la impresora: tensa las correas y cambia lo gastado. Las correas sufren creep con el tiempo, reducen la tensión y provocan resbalones y pasos perdidos.',
+        'Componentes deteriorados restan precisión: tensa las correas y revisa varillas o rodamientos; si no, aprieta o sustituye. Las correas sufren creep y elongación con el tiempo, y pierden tensión.',
       fuente: 'All3DP',
       alcance:
         'El mantenimiento de los componentes mecánicos es previo a cualquier compensación de software. No puede condicionarse porque es una verificación mecánica universal.',
