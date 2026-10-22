@@ -876,3 +876,73 @@
   height: 10px;
   border-radius: 2px;
 }
+
+/*
+ * Los modos de color del visor de trayectoria.
+ *
+ * Tres botones y una escala. La escala es la misma rampa que usa el panel de
+ * riesgo —azul, verde, ámbar, rojo—, y por eso el ojo la lee sin instrucciones.
+ */
+.visor-trayectoria-modos {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-md);
+}
+
+.visor-trayectoria-modo {
+  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radio-sm);
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-control) var(--curva-estandar),
+    color var(--dur-control) var(--curva-estandar);
+}
+
+.visor-trayectoria-modo:hover {
+  color: var(--text-primary);
+}
+
+.visor-trayectoria-modo--activo {
+  background: var(--accent);
+  color: #fff;
+}
+
+.visor-trayectoria-rampa {
+  display: inline-block;
+  width: 72px;
+  height: 10px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #2563eb, #60a5fa, #22c55e, #f59e0b, #ef4444);
+}
+
+/*
+ * El pico de caudal.
+ *
+ * Es un **dato medido**, y por eso va en el visor y no en la guía: sale de leer
+ * el G-code, no de saber la impresora.
+ */
+.visor-trayectoria-pico {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radio-lg);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.visor-trayectoria-pico strong {
+  font-family: var(--fuente-dato);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+}

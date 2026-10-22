@@ -78,3 +78,110 @@ export function geometriaTrayectoria(trayectoria: Trayectoria): {
     colores: new Float32Array(colores),
   };
 }
+
+/* ------------------------------------------------------------------------------------
+ * Los modos de color
+ * ---------------------------------------------------------------------------------- */
+
+/** Lo que el color de un tramo quiere decir. */
+export type ModoColor = 'tipo' | 'velocidad' | 'caudal';
+
+/**
+ * La rampa de calor.
+ *
+ * De frío a caliente, con los tonos de la propia aplicación: el azul del acento,
+ * el verde del acierto, el ámbar del aviso y el rojo del peligro. Es la misma
+ * escala que usa el panel de riesgo, y por eso el ojo la lee sin instrucciones.
+ */
+const RAMPA = ['#2563eb', '#60a5fa', '#22c55e', '#f59e0b', '#ef4444'];
+
+/**
+ * El color de un valor dentro de una escala.
+ *
+ * @param valor El valor.
+ * @param min El mínimo de la escala.
+ * @param max El máximo de la escala.
+ */
+export function colorDeEscala(valor: number, min: number, max: number): string {
+  if (max <= min) return RAMPA[Math.floor(RAMPA.length / 2)];
+  const t = Math.min(1, Math.max(0, (valor - min) / (max - min)));
+  const pos = t * (RAMPA.length - 1);
+  const indice = Math.floor(pos);
+  const siguiente = Math.min(indice + 1, RAMPA.length - 1);
+  const mezcla = pos - indice;
+  return mezclaRampa(RAMPA[indice], RAMPA[siguiente], mezcla);
+}
+
+/** Mezcla dos colores hexadecimales. */
+function mezclaRampa(a: string, b: string, t: number): string {
+  const canal = (x: string, i: number) => parseInt(x.slice(i, i + 2), 16);
+  const parte = (i: number) => {
+    const ca = canal(a, i);
+    const cb = canal(b, i);
+    return Math.round(ca + (cb - ca) * t).toString(16).padStart(2, '0');
+  };
+  return `#${parte(1)}${parte(3)}${parte(5)}`;
+}
+
+/**
+ * El mínimo y el máximo de una magnitud en la trayectoria, **por percentiles**.
+ *
+ * ## Por qué no el mínimo y el máximo de verdad
+ *
+ * Porque el máximo se lo lleva un puñado de tramos y **aplasta el resto de la
+ * escala**. Con el caudal del fixture —pico de 68 mm³/s y media de 9— una escala
+ * lineal de 1 a 68 deja la trayectoria entera en el azul frío: la rampa está
+ *falta de información, aunque los datos sean distintos entre sí.
+ *
+ * La escala va del percentil 2 al 98: casi todos los tramos caen dentro y se ven
+ * distintos entre sí, y los valores extremos se quedan en los extremos de la
+ * rampa. Es lo que se hace con cualquier mapa de calor que tenga valores
+ * extremos.
+ *
+ * @param tramos Los tramos.
+ * @param modo La magnitud.
+ */
+export function escalaDe(
+  tramos: Trayectoria['tramos'],
+  modo: ModoColor
+): { min: number; max: number } {
+  const valores: number[] = [];
+  for (const tramo of tramos) {
+    if (tramo.viaje) continue;
+    const valor = modo === 'velocidad' ? tramo.feed : modo === 'caudal' ? tramo.caudal : 0;
+    if (valor > 0) valores.push(valor);
+  }
+  if (valores.length === 0) return { min: 0, max: 1 };
+
+  valores.sort((a, b) => a - b);
+  const percentil = (p: number) =>
+    valores[Math.min(valores.length - 1, Math.max(0, Math.round((p / 100) * (valores.length - 1))))];
+
+  const min = percentil(2);
+  const max = percentil(98);
+  if (max <= min) return { min, max: min + 1 };
+  return { min, max };
+}
+
+/**
+ * El tramo con más caudal, que es el que decide si la máquina puede imprimir.
+ *
+ * El caudal volumétrico máximo es **la cifra que limita una impresora**: por
+ * encima de él, el filamento no llega y la capa sale mal. Saber **dónde** está
+ * ese pico —en qué capa y haciendo qué— es lo que convierte una línea de colores
+ * en un diagnóstico.
+ */
+export function picoDeCaudal(trayectoria: Trayectoria): {
+  caudal: number;
+  capa: number;
+  tipo: string | null;
+} | null {
+  let pico: { caudal: number; capa: number; tipo: string | null } | null = null;
+  for (const tramo of trayectoria.tramos) {
+    if (tramo.viaje || tramo.caudal <= 0) continue;
+    if (!pico || tramo.caudal > pico.caudal) {
+      pico = { caudal: tramo.caudal, capa: tramo.capa, tipo: tramo.tipo };
+    }
+  }
+  return pico;
+}

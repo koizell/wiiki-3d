@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
+import {
+  COLOR_POR_TIPO,
+  colorDeEscala,
+  escalaDe,
+  picoDeCaudal,
+  type ModoColor,
+} from '../lib/trayectoria-render';
 
 /**
  * El visor de la trayectoria del G-code.
@@ -45,33 +52,17 @@ export default function VisorTrayectoria({
   const lineasRef = useRef<{ extraccion: THREE.LineSegments; viajes: THREE.LineSegments } | null>(null);
   const [capa, setCapa] = useState<number | null>(null);
   const [mostrarViajes, setMostrarViajes] = useState(false);
+  const [modo, setModo] = useState<ModoColor>('tipo');
 
   const totalCapas = trayectoria.capas.length;
 
-  /**
-   * El color de cada tipo de rasgo.
-   *
-   * Diez tipos y diez colores. Se eligen de la paleta del sitio y de tres más que
-   * hacen falta para distinguir los rellenos, que son los que más se parecen
-   * entre sí: un relleno normal y un relleno interno tienen que poder
-   * distinguirse de un vistazo o el color no informa.
-   */
-  const colorPorTipo = useMemo<Record<string, string>>(
-    () => ({
-      'Outer wall': '#60a5fa',
-      'Inner wall': '#3b82f6',
-      'Overhang wall': '#f97316',
-      'Top surface': '#22c55e',
-      'Bottom surface': '#16a34a',
-      'Internal solid infill': '#a855f7',
-      'Gap infill': '#7c3aed',
-      Bridge: '#ef4444',
-      'Support interface': '#f59e0b',
-      'Support material': '#fb923c',
-      Custom: '#8b949e',
-    }),
-    []
-  );
+  /** La escala del color: la magnitud que se está enseñando y sus extremos. */
+  const escala = useMemo(() => escalaDe(trayectoria.tramos, modo), [trayectoria, modo]);
+
+  /** El pico de caudal, que es lo que decide si la máquina puede imprimir. */
+  const pico = useMemo(() => picoDeCaudal(trayectoria), [trayectoria]);
+
+  const colorPorTipo = COLOR_POR_TIPO;
 
   /**
    * Las dos geometrías y el corte de cada capa.
@@ -109,7 +100,12 @@ export default function VisorTrayectoria({
         for (let v = 0; v < 2; v++) coloresViajes.push(gris.r, gris.g, gris.b);
       } else {
         puntosExtraccion.push(...desde, x, y, z);
-        color.set(colorPorTipo[tramo.tipo ?? ''] ?? '#8b949e');
+        if (modo === 'tipo') {
+          color.set(colorPorTipo[tramo.tipo ?? ''] ?? '#8b949e');
+        } else {
+          const valor = modo === 'velocidad' ? tramo.feed : tramo.caudal;
+          color.set(colorDeEscala(valor, escala.min, escala.max));
+        }
         for (let v = 0; v < 2; v++) coloresExtraccion.push(color.r, color.g, color.b);
       }
 
@@ -133,7 +129,7 @@ export default function VisorTrayectoria({
       viajes: { posiciones: new Float32Array(puntosViajes), colores: new Float32Array(coloresViajes) },
       cortePorCapa: cortes,
     };
-  }, [trayectoria, colorPorTipo, totalCapas]);
+  }, [trayectoria, colorPorTipo, totalCapas, modo, escala]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -292,6 +288,24 @@ export default function VisorTrayectoria({
           />
         </label>
 
+        <div className="visor-trayectoria-modos" role="group" aria-label="Qué muestra el color">
+          {([
+            ['tipo', 'Tipo de rasgo'],
+            ['velocidad', 'Velocidad'],
+            ['caudal', 'Caudal'],
+          ] as [ModoColor, string][]).map(([valor, etiqueta]) => (
+            <button
+              key={valor}
+              type="button"
+              className={`visor-trayectoria-modo${modo === valor ? ' visor-trayectoria-modo--activo' : ''}`}
+              aria-pressed={modo === valor}
+              onClick={() => setModo(valor)}
+            >
+              {etiqueta}
+            </button>
+          ))}
+        </div>
+
         <label className="visor-trayectoria-viajes">
           <input
             type="checkbox"
@@ -301,21 +315,56 @@ export default function VisorTrayectoria({
           <span>Ver los viajes</span>
         </label>
 
-        <ul className="visor-trayectoria-leyenda">
-          {[...new Set(trayectoria.tramos.filter((t) => !t.viaje).map((t) => t.tipo))]
-            .filter((t): t is string => Boolean(t))
-            .map((tipo) => (
-              <li key={tipo}>
-                <span
-                  className="visor-trayectoria-muestra"
-                  style={{ background: colorPorTipo[tipo] ?? '#8b949e' }}
-                  aria-hidden="true"
-                />
-                {tipo}
-              </li>
-            ))}
-        </ul>
+        {modo === 'tipo' ? (
+          <ul className="visor-trayectoria-leyenda">
+            {[...new Set(trayectoria.tramos.filter((t) => !t.viaje).map((t) => t.tipo))]
+              .filter((t): t is string => Boolean(t))
+              .map((tipo) => (
+                <li key={tipo}>
+                  <span
+                    className="visor-trayectoria-muestra"
+                    style={{ background: colorPorTipo[tipo] ?? '#8b949e' }}
+                    aria-hidden="true"
+                  />
+                  {tipo}
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <ul className="visor-trayectoria-leyenda">
+            <li>
+              <span className="visor-trayectoria-rampa" aria-hidden="true" />
+              {modo === 'velocidad'
+                ? `${Math.round(escala.min)}–${Math.round(escala.max)} mm/min`
+                : `${escala.min.toFixed(0)}–${escala.max.toFixed(0)} mm³/s`}
+            </li>
+          </ul>
+        )}
       </div>
+
+      {/*
+        El pico de caudal.
+
+        El caudal volumétrico máximo es **la cifra que limita una impresora**: por
+        encima de él el filamento no llega y la capa sale mal, aunque todo lo demás
+        esté bien. Y saber **dónde** está el pico —en qué capa y haciendo qué— es
+        lo que convierte una línea de colores en un diagnóstico.
+
+        No se dice si la máquina puede: eso depende de la impresora, que la
+        aplicación no conoce. Se dice **cuánto** y **dónde**, y se enlaza a la guía
+        que explica qué hacer con ese dato.
+      */}
+      {pico && (
+        <p className="visor-trayectoria-pico">
+          El caudal máximo de tu impresión es de{' '}
+          <strong>{pico.caudal.toFixed(0)} mm³/s</strong>, en la capa{' '}
+          <strong>{pico.capa + 1}</strong>
+          {pico.tipo ? <> haciendo <strong>{pico.tipo}</strong></> : null}.{' '}
+          <a className="enlace-guia" href="/wiki/max-volumetric-speed">
+            Qué significa el caudal
+          </a>
+        </p>
+      )}
     </div>
   );
 }

@@ -63,6 +63,19 @@ export interface Tramo {
   viaje: boolean;
   /** `true` si el tramo es un arco (`G2`/`G3`) y no una recta. */
   arco: boolean;
+  /** Los milímetros recorridos en este tramo. */
+  avance: number;
+  /**
+   * El caudal volumétrico, en mm³/s.
+   *
+   * Es el volumen que sale por la boquilla por segundo: el filamento del tramo
+   * dividido por el tiempo que tarda. Y es **la cifra que decide si una
+   * impresora puede imprimir**: una máquina tiene un caudal máximo, y un G-code
+   * que lo supera no se va a imprimir bien aunque todo lo demás esté bien.
+   *
+   * `0` en los viajes, que no depositan nada.
+   */
+  caudal: number;
 }
 
 /** Una capa de la impresión. */
@@ -210,6 +223,10 @@ class Lector {
   arcos: number;
   /** La caja envolvente de lo depositado. */
   caja: Caja;
+  /** El diámetro del filamento que declara la cabecera, en milímetros. */
+  diametro: number;
+  /** La densidad del filamento que declara la cabecera, en g/cm³. */
+  densidad: number;
 
   constructor() {
     this.tramos = [];
@@ -232,6 +249,10 @@ class Lector {
       min: { x: Infinity, y: Infinity, z: Infinity },
       max: { x: -Infinity, y: -Infinity, z: -Infinity },
     };
+    // El diámetro y la densidad salen de la cabecera. Sin ellos no se puede
+    // calcular el caudal, y el caudal es la cifra que decide si la máquina puede.
+    this.diametro = 1.75;
+    this.densidad = 1.24;
   }
 
   /** Lee una línea del archivo. */
@@ -249,6 +270,16 @@ class Lector {
   comentario(linea: string) {
     if (MARCA_CAPA.test(linea)) {
       this.nuevaCapa();
+      return;
+    }
+    const diametro = linea.match(/^\s*;\s*filament_diameter\s*[=:]\s*([\d.]+)/i);
+    if (diametro) {
+      this.diametro = Number(diametro[1]);
+      return;
+    }
+    const densidad = linea.match(/^\s*;\s*filament_density\s*[=:]\s*([\d.]+)/i);
+    if (densidad) {
+      this.densidad = Number(densidad[1]);
       return;
     }
     const z = linea.match(MARCA_Z);
@@ -353,6 +384,22 @@ class Lector {
       this.viajes += 1;
     }
 
+    /*
+     * El caudal volumétrico.
+     *
+     *   caudal = (avance de filamento × área del filamento) / tiempo
+     *
+     * El tiempo del tramo es su distancia dividida por la velocidad de avance. Y
+     * el área del filamento sale del diámetro que declara la cabecera.
+     *
+     * Con `M83` el `E` de un tramo son milímetros de filamento, así que el
+     * volumen es `E × π × (d/2)²`.
+     */
+    const avance = Math.hypot(x - this.x, y - this.y, z - this.z);
+    const area = Math.PI * (this.diametro / 2) ** 2;
+    const segundos = avance > 0 && this.feed > 0 ? (avance / this.feed) * 60 : 0;
+    const caudal = extruido && segundos > 0 ? (e * area) / segundos : 0;
+
     this.tramos.push({
       x,
       y,
@@ -367,6 +414,8 @@ class Lector {
       tipo: this.tipo,
       viaje: !extruido,
       arco: esArco,
+      avance,
+      caudal,
     });
 
     this.x = x;
@@ -443,6 +492,8 @@ class Lector {
       viajes: this.viajes,
       movimientos: this.movimientos,
       arcos: this.arcos,
+      diametro: this.diametro,
+      densidad: this.densidad,
     };
   }
 }
