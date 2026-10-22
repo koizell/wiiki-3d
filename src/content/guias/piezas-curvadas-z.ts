@@ -8,6 +8,7 @@ export const piezasCurvadasZ: Guia = {
     'Curvas con escalones, superficies que pierden detalle o capas que se han corrido en el eje Z: la causa suele ser la altura de capa o la orientación de la curva, no la temperatura.',
   sintoma: 'Superficie curva con escalones o capas corridas en Z',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/piezas-curvadas-z/ilustracion.png', alt: 'Superficie curva con escalones visibles en las capas' },
   entrada:
     'Una pieza con curvas en Z sale con escalones visibles, pierde detalle o, en el peor caso, se ha corrido entera. Subir la temperatura no lo arregla: aquí el ajuste es la altura de capa, la orientación de la superficie y, si hubo un desplazamiento real, la mecánica o el driver. Esta guía separa los tres casos mirando la pieza antes de tocar nada.',
   autor: AUTOR,

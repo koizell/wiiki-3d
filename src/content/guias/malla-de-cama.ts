@@ -10,6 +10,7 @@ export const mallaDeCama: Guia = {
     'La malla mide la cama y la sigue, pero no corrige un offset alto ni una chapa sucia.',
   sintoma: 'La primera capa se pega a trozos',
   dibujo: 'cama',
+  ilustracion: { src: '/wiki/malla-de-cama/ilustracion.png', alt: 'Cama de impresión con zonas de buena y mala adhesión en patrón de cuadrícula' },
   entrada:
     'La primera capa no pega del mismo modo en toda la base: unas zonas agarran y otras no. Eso es lo que la malla de cama puede arreglar, y lo arregla midiendo, no empujando la boquilla. Aquí se separa lo que la malla corrige de lo que no, y cuándo conviene pasar a mano.',
   autor: AUTOR,

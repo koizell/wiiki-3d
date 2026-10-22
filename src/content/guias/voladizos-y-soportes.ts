@@ -38,6 +38,7 @@ export const voladizosSoportes: Guia = {
     'Aprende a distinguirlos y a decidir si necesitas soportes o si con refrigeración y orientación basta.',
   sintoma: 'Un voladizo cuelga, los soportes fallan o la cara apoyada sale rugosa',
   dibujo: 'voladizo',
+  ilustracion: { src: '/wiki/voladizos-y-soportes/ilustracion.png', alt: 'Pieza con un voladizo pronunciado y soportes de árbol debajo, con un ángulo de 45 grados' },
   entrada: 'Un voladizo que cuelga, unos soportes que no salen o una cara apoyada rugosa son tres problemas que se confunden. Aquí se distinguen por dónde está el fallo y qué ángulo tiene el saliente.',
   autor: AUTOR,
   actualizado: '2026-10-21',
