@@ -98,6 +98,19 @@ jobs:
       # job. El despliegue lo cierran las comprobaciones que sí son fiables —
       # la revisión de AdSense, el contenido, los enlaces internos y el SEO—,
       # que en las últimas ejecuciones han pasado todas.
+      #
+      # ## PENDIENTE: volver a ponerla de puerta
+      #
+      # Cuando alguien pueda leer el log del job —la API dice que hace falta
+      # permiso de administrador— hay que mirar por qué falla en el runner y
+      # arreglarlo. El log también se sube como artefacto, que se descarga sin
+      # ese permiso: `wiki-verificacion.log`.
+      #
+      # Y el arreglo, si resultara ser del entorno, es el mismo de siempre:
+      # más margen, o menos cosas a la vez en el mismo runner.
+      #
+      # Mientras tanto, esto **no bloquea**: un portón que da falso a veces
+      # entrena a ignorar las luces y bloquea despliegues que están bien.
       - name: Wiki renderizada
         id: wiki
         continue-on-error: true
@@ -115,6 +128,18 @@ jobs:
             echo 'leen quien tenga permisos de administrador.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+      # El log de la wiki como artefacto, para que se pueda leer sin ser
+      # administrador del repositorio. Es lo que hace falta para poder cerrar el
+      # PENDIENTE de arriba.
+      - name: Subir el log de la wiki
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-verificacion
+          path: wiki-verificacion.log
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Subir artefacto
         uses: actions/upload-pages-artifact@v3
