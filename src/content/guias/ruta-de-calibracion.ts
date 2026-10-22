@@ -27,7 +27,15 @@ export const rutaDeCalibracion: Guia = {
   autor: AUTOR,
   actualizado: '2026-10-21',
   minutos: 10,
-  campos: ['material'],
+  /*
+   * `campos` va vacío a propósito, y no es una omisión.
+   *
+   * `campos` dice qué **campo del panel** explica esta guía, y un campo no puede
+   * pertenencer a dos guías. El `material` ya es de la guía `material`, y esta guía
+   * no explica el campo: **enruta**. Lo que sí hace es leer el material del
+   * archivo para declarar su variable, que es otra cosa, y va en
+   * `leeDelAnalisis`.
+   */
   leeDelAnalisis: ['material'],
 
   diferencial: {
@@ -206,12 +214,12 @@ export const rutaDeCalibracion: Guia = {
       puntos: [
         'Prusa da 0,05 para PLA en boquilla de 0,4 mm y 0,04 en 0,6 mm: son K-values de fabricante, no una recomendación universal.',
         'Bambu usa un Factor K propio: sus ejemplos van de 0,006 a 0,024, y son valores de ejemplo de su método.',
-        'Klipper llama PA al mismo parámetro y da un rango típico de 0,050 a 1,000, con el extremo alto sólo en Bowden.',
+        'Klipper llama PA al mismo parámetro y da un rango típico de 0,050 a 1,000.',
         'Las tres son constantes proporcionales sin unidades: son magnitudes distintas y no se comparan entre sí.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Prusa da 0,05 para PLA en boquilla de 0,4 mm y 0,04 en 0,6 mm: son K-values de fabricante, no una recomendación universal. Bambu usa un Factor K propio: sus ejemplos van de 0,006 a 0,024, y son valores de ejemplo de su método. Klipper llama PA al mismo parámetro y da un rango típico de 0,050 a 1,000, con el extremo alto sólo en Bowden. Las tres son constantes proporcionales sin unidades: son magnitudes distintas y no se comparan entre sí.',
+        'Prusa da 0,05 para PLA en boquilla de 0,4 mm y 0,04 en 0,6 mm: son K-values de fabricante, no una recomendación universal. Bambu usa un Factor K propio: sus ejemplos van de 0,006 a 0,024, y son valores de ejemplo de su método. Klipper llama PA al mismo parámetro y da un rango típico de 0,050 a 1,000. Las tres son constantes proporcionales sin unidades: son magnitudes distintas y no se comparan entre sí.',
       cifra: {
         valor: '0,05 · 0,006–0,024 · 0,050–1,000',
         nota: 'Prusa, Bambu y Klipper: escalas sin unidades, sin comparación posible entre ellas',
@@ -223,14 +231,14 @@ export const rutaDeCalibracion: Guia = {
       id: 'k-escala-unidades',
       titulo: 'Con unidades: mm/mm/s y segundos',
       puntos: [
-        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0, y avisa de recalibrarlo al cambiar de versión.',
+        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0.',
         'Duet3D lo da en segundos con M572: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida.',
         'La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor.',
         'El 0,05 de Prusa y el S0.025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0, y avisa de recalibrarlo al cambiar de versión. Duet3D lo da en segundos con M572: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida. La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor. El 0,05 de Prusa y el S0.025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
+        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0. Duet3D lo da en segundos con M572: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida. La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor. El 0,05 de Prusa y el S0.025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
       cifra: {
         valor: 'mm/mm/s · segundos',
         nota: 'Marlin v1.5 y Duet3D: el mismo fenómeno medido en unidades distintas',
