@@ -1,0 +1,142 @@
+name: Diagnóstico de la wiki renderizada
+
+# El arnés para una comprobación que falla en el runner y no se puede
+# reproducir en ningún otro sitio.
+#
+# `verify:wiki` pasa las 220 en local y en un contenedor limpio con Node 22, y
+# en el runner falla a veces en el primer segundo, sin imprimir ni una
+# comprobación. El log de un job normal sólo lo lee quien tenga permisos de
+# administrador, así que aquí **todo** se sube como artefacto, que se descarga
+# sin ese permiso.
+#
+# El arnés hace tres cosas:
+#
+# 1. **Anota el entorno**: versión de Node, de Playwright, del navegador, la
+#    memoria, el disco y los procesos. Un fallo que depende del entorno se
+#    diagnostica con el entorno delante.
+# 2. **Repite** la comprobación, porque el fallo es intermitente: una vez puede
+#    no querer decir nada.
+# 3. **Repite también la secuencia del pipeline** —enlaces, SEO y luego la
+#    wiki—, porque a lo mejor lo que falla es lo que dejan los pasos anteriores.
+#
+# Uso:  se lanza sola con cada push a `main` que toque este fichero, o a mano
+#       desde la pestaña Actions.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostico-wiki.yml'
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar el navegador
+        run: npx playwright install --with-deps chromium
+
+      - name: El entorno, que es donde está la respuesta
+        run: |
+          {
+            echo '### El entorno del runner'
+            echo ''
+            echo '```'
+            echo "node:    $(node --version)"
+            echo "npm:     $(npm --version)"
+            echo "playwright: $(node -e "console.log(require('./node_modules/playwright/package.json').version)")"
+            echo "BROWSERS: ${PLAYWRIGHT_BROWSERS_PATH:-<sin definir>}"
+            echo "HOME:    $HOME"
+            echo "CI:      ${CI:-<sin definir>}"
+            echo "nproc:   $(nproc)"
+            echo ''
+            uname -a
+            echo ''
+            free -m
+            echo ''
+            df -h / /tmp
+            echo ''
+            echo 'Los navegadores instalados:'
+            ls -1 ~/.cache/ms-playwright 2>/dev/null || echo '  (no hay caché en ~/.cache/ms-playwright)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Construir el sitio
+        run: npm run build
+
+      # La wiki en solitario: sin nada antes.
+      - name: La wiki, en solitario
+        run: |
+          set +e
+          for intento in 1 2 3; do
+            echo "=== intento $intent ==="
+            echo "--- empieza: $(date -u +%H:%M:%S)"
+            npm run verify:wiki > "wiki-suelto-$intento.log" 2>&1
+            echo "--- exit=$? · termina: $(date -u +%H:%M:%S)"
+            tail -25 "wiki-suelto-$intento.log"
+            echo
+          done
+          exit 0
+
+      # Y después de las comprobaciones que la preceden en el pipeline.
+      - name: La secuencia del pipeline, y luego la wiki
+        run: |
+          set +e
+          npm run verify:enlaces > enlaces.log 2>&1
+          echo "enlaces: exit=$?"
+          npm run verify:seo > seo.log 2>&1
+          echo "seo: exit=$?"
+          for intento in 1 2 3; do
+            echo "=== intento $intent, tras enlaces y seo ==="
+            echo "--- empieza: $(date -u +%H:%M:%S)"
+            npm run verify:wiki > "wiki-tras-seo-$intento.log" 2>&1
+            echo "--- exit=$? · termina: $(date -u +%H:%M:%S)"
+            tail -25 "wiki-tras-seo-$intento.log"
+            echo
+          done
+          exit 0
+
+      # Lo que se ve en el resumen del job: lo que se ejecuta y lo que pasa.
+      - name: El resumen
+        if: always()
+        run: |
+          {
+            echo '### Resumen del diagnóstico'
+            echo ''
+            echo '```'
+            for f in wiki-suelto-*.log wiki-tras-seo-*.log; do
+              [ -f "$f" ] || continue
+              echo "--- $f ($(wc -l < "$f") líneas)"
+              head -12 "$f"
+              echo '…'
+              tail -12 "$f"
+              echo
+            done
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # El log entero, que es lo que hay que mirar.
+      - name: Subir los logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-wiki
+          path: |
+            wiki-suelto-*.log
+            wiki-tras-seo-*.log
+            enlaces.log
+            seo.log
+          retention-days: 14
+          if-no-files-found: ignore
