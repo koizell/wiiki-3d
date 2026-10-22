@@ -33,7 +33,9 @@
     "verify:subida": "node scripts/verify/subida-ui.mjs",
     "verify:ui": "node scripts/verify/ui.mjs",
     "verify:revision": "node --experimental-strip-types scripts/verify/revision.mjs",
-    "verify:revision-selftest": "node scripts/verify/revision-selftest.mjs"
+    "verify:revision-selftest": "node scripts/verify/revision-selftest.mjs",
+    "verify:contenido": "npm run verify:guias && npm run verify:texto && npm run verify:wiki",
+    "verify:dist": "npm run verify:enlaces && npm run verify:seo"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
