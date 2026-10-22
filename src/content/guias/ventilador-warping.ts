@@ -32,6 +32,7 @@ export const ventiladorWarping: Guia = {
     'Hay dos ventiladores distintos y tres contradicciones sin resolver entre fuentes oficiales.',
   sintoma: 'El ventilador causa o agrava el warping',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/ventilador-warping/ilustracion.png', alt: 'Pieza con ventilador lateral soplando y esquinas levantadas' },
   entrada:
     'El ventilador de capa enfría el filamento después de salir de la boquilla. Si enfría demasiado rápido —especialmente en las primeras capas o en piezas grandes— la contracción térmica genera tensión que levanta las esquinas. Pero no hay un solo ventilador: el de capa y el auxiliar son dos ajustes distintos con efectos distintos. Y las fuentes oficiales se contradicen en tres puntos. Esta guía separa los dos ventiladores, explica las contradicciones con su matiz y termina con las acciones que dependen de tu material y tu montaje.',
   autor: AUTOR,

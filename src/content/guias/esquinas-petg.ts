@@ -10,6 +10,7 @@ export const esquinasPetg: Guia = {
     'Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
   sintoma: 'Esquinas levantadas en PETG',
   dibujo: 'esquinas',
+  ilustracion: { src: '/wiki/esquinas-petg/ilustracion.png', alt: 'Pieza con esquinas que se curvan hacia arriba y ventilador apuntando' },
   entrada:
     'El PETG es menos propenso a warpear que ABS, ASA, PC o PA, pero sus esquinas se levantan igual cuando la base no sujeta o el enfriamiento es inadecuado. Aquí casi nunca es el filamento: es la chapa, la cama, el aire y el ventilador. Antes de subir la cama, confirma que el daño son esquinas levantadas y no un deslizamiento de la pieza o un colapso.',
   autor: AUTOR,

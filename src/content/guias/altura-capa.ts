@@ -7,6 +7,7 @@ export const alturaCapa: Guia = {
   resumen: 'Qué altura de capa poner según lo que buscas: detalle, tiempo o resistencia, y el límite que impone la boquilla.',
   sintoma: 'Superficie con escalones, pieza que tarda demasiado o se rompe entre capas',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/altura-capa/ilustracion.png', alt: 'Superficie curva con capas gruesas (escalones) a la izquierda y finas (lisa) a la derecha' },
   entrada: 'La altura de capa decide el detalle, el tiempo y la resistencia, y casi nadie la toca. Esta guía dice cuándo subirla y cuándo bajarla, y por qué una pieza que tarda demasiado no es un fallo.',
   autor: AUTOR,
   actualizado: '2026-10-11',
