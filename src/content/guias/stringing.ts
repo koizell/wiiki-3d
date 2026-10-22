@@ -128,8 +128,8 @@ export const stringing: Guia = {
       indicador: 'velocidad',
       para: 'Si el travel es lento, la boquilla tiene más tiempo para gotear sobre aire.',
       opciones: [
-        { id: 'alta', etiqueta: 'Alta (más de 150 mm/s)' },
-        { id: 'baja', etiqueta: 'Baja (menos de 150 mm/s)' },
+        { id: 'alta', etiqueta: 'Alta' },
+        { id: 'baja', etiqueta: 'Baja' },
       ],
     },
   ],
@@ -244,12 +244,11 @@ export const stringing: Guia = {
       puntos: [
         'Direct drive: 0,5–2,0 mm. Bowden: hasta 15 mm según Simplify3D, o 1–6 mm según OrcaSlicer.',
         'Ambos rangos provienen de sus respectivas fuentes.',
-        'PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm.',
+        'PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm (según OrcaSlicer).',
       ],
       indicador: 'slicer',
       cuerpo:
-        'Direct drive: 0,5–2,0 mm. Bowden: hasta 15 mm según Simplify3D, o 1–6 mm según OrcaSlicer. Ambos rangos provienen de sus respectivas fuentes. PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm.',
-      cuando: { extrusor: ['directo', 'bowden'] },
+        'Direct drive: 0,5–2,0 mm. Bowden: hasta 15 mm según Simplify3D, o 1–6 mm según OrcaSlicer. Ambos rangos provienen de sus respectivas fuentes. PLA y ABS con stringing mínimo pueden necesitar solo 0,2–0,4 mm (según OrcaSlicer).',
       cifra: {
         valor: '0,5–2 mm · 1–6 mm',
         nota: 'Direct drive 0,5–2 mm; Bowden 1–6 mm (OrcaSlicer) o hasta 15 mm (Simplify3D)',
