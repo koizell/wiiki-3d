@@ -9,8 +9,7 @@ import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
 import Inicio from "../components/Inicio";
 import CabeceraRuta from "../components/CabeceraRuta";
 import SeccionAnalisis from "../components/SeccionAnalisis";
-import { MAQUINAS, maquinaPorSlug } from "../content/maquinas/catalogo";
-import { preflight } from "../lib/preflight";
+import Preflight from "../components/Preflight";
 import ControlesVisor from "../components/ControlesVisor";
 
 /**
@@ -52,12 +51,6 @@ function UploadRoute() {
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
   const [errorSubida, setErrorSubida] = useState('');
-  // Máquina del usuario, para las comprobaciones previas. Se persiste en
-  // localStorage para no pedirla cada vez.
-  const [maquinaSlug, setMaquinaSlug] = useState<string>(() => {
-    try { return localStorage.getItem('wiiki-maquina') ?? ''; } catch { return ''; }
-  });
-  const maquina = maquinaSlug ? maquinaPorSlug(maquinaSlug) : null;
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === "gcode";
@@ -132,6 +125,7 @@ function UploadRoute() {
           </button>
         </div>
         <SeccionAnalisis />
+        <Preflight metadata={metadata} />
         <p className="archivo-nota">Este análisis viene del historial: no se guarda el archivo, así que el visor 3D no se puede abrir.</p>
         <AvisoAlmacenamiento />
         <Recientes />
@@ -268,70 +262,7 @@ function UploadRoute() {
           </div>
         ) : null}
 
-        {/*
-          Comprobaciones previas (pre-flight).
-
-          El análisis dice qué hay; esto dice qué puede salir mal **antes** de
-          imprimir, cruzando los datos del G-code con la máquina que lo va a
-          imprimir. La máquina es una entrada, no una constante: el mismo
-          archivo puede ir bien en una P1S y mal en una Ender 3 V3 SE.
-        */}
-        <div className="preflight">
-          <div className="preflight-maquina">
-            <label className="preflight-etiqueta" htmlFor="preflight-maquina">
-              Tu máquina (opcional)
-            </label>
-            <select
-              id="preflight-maquina"
-              className="preflight-select"
-              value={maquinaSlug}
-              onChange={(e) => {
-                setMaquinaSlug(e.target.value);
-                try { localStorage.setItem('wiiki-maquina', e.target.value); } catch {}
-              }}
-            >
-              <option value="">Sin seleccionar</option>
-              {MAQUINAS.map((m) => (
-                <option key={m.slug} value={m.slug}>
-                  {m.marca} {m.modelo}
-                </option>
-              ))}
-            </select>
-            <p className="preflight-ayuda">
-              Sin máquina se comprueban sólo los datos del archivo. Con máquina
-              se cruzan con sus límites (boquilla, cama, cerramiento).
-            </p>
-          </div>
-
-          {metadata && (() => {
-            const avisos = preflight(metadata, maquina);
-            if (avisos.length === 0) {
-              return (
-                <p className="preflight-ok">
-                  Sin avisos: los datos del archivo están dentro de los límites
-                  {maquina ? ` de tu ${maquina.marca} ${maquina.modelo}` : ''}.
-                  Eso no garantiza el resultado: la geometría y la calibración
-                  deciden el resto.
-                </p>
-              );
-            }
-            return (
-              <ul className="preflight-lista">
-                {avisos.map((a) => (
-                  <li key={a.id} className={`preflight-aviso preflight-aviso--${a.nivel}`}>
-                    <span className="preflight-nivel">{a.nivel}</span>
-                    <span className="preflight-texto">{a.texto}</span>
-                    {a.guia && (
-                      <a className="preflight-enlace" href={`/wiki/${a.guia}`}>
-                        Ver la guía →
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            );
-          })()}
-        </div>
+        {metadata && <Preflight metadata={metadata} />}
 
         {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
           pintan de inmediato mientras llega el chunk.
