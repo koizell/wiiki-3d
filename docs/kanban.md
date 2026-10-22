@@ -51,14 +51,40 @@ Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
   extrusión es **relativa** (`M83`), el slicer cuenta la extrusión **neta** —las
   retracciones restan— y la Z de la capa la **anuncia** el slicer en un comentario
   `;Z:` que llega antes de que la cabeza suba.
-- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (214), `ui`
+- **El 3MF de proyecto da malla, trayectoria y análisis de un archivo.** Los 3MF de
+  proyecto —Bambu Studio, OrcaSlicer, PrusaSlicer— llevan dentro su G-code, y la
+  malla y el G-code están los dos en coordenadas de cama: la trayectoria se dibuja
+  **encima** de la pieza sin compensar nada. Y como el G-code va dentro, **también
+  se analiza**: el panel ya no dice «los 3MF no se analizan». No hace falta ninguna
+  dependencia nueva —`three` ya trae dentro el `fflate` que usa su propio
+  `3MFLoader`— y el unzip es filtrado y asíncrono, porque un 3MF de proyecto pesa
+  decenas de megabytes.
+- **El visor tiene mapas de calor**: tipo de rasgo, velocidad y **caudal
+  volumétrico**. La escala va del percentil 2 al 98, porque con el mínimo y el
+  máximo de verdad la rampa no informaba de nada: el pico de 68 mm³/s aplastaba
+  la media de 9 y todo salía en el azul frío.
+- **El pico de caudal es el diagnóstico**: «el caudal máximo de tu impresión es de
+  68 mm³/s, en la capa 5 haciendo Internal solid infill». La aplicación no dice
+  si tu máquina puede —eso depende de la impresora, que ella no conoce—: dice
+  cuánto y dónde, y enlaza a la guía que explica qué hacer con ese dato.
+- **La comprobación del G-code es autónoma.** `test-fixtures/` está en el
+  `.gitignore` a propósito —«G-codes reales de usuario, no se suben»—, así que el
+  material de la comprobación **se genera en memoria** y es determinista. El
+  archivo real, si está en la máquina, sigue usándose como comprobación extra.
+  De 16 a 38 comprobaciones.
+- **El recorrido de la guía marca la etapa en la que se está**, y el detalle que
+  hizo falta: en este sitio la guía no se desplaza en la ventana, se desplaza en
+  `.canvas-area`, y los eventos `scroll` no suben. Hay que escucharlos en el
+  documento y en fase de captura.
+- **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (218), `ui`
   (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
   `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
-  `seo` (450), `animacion` (18) y `guias` (1059). `lint` con 0 errores y las 3
+  `seo` (450), `animacion` (18), `gcode` (38) y `guias` (1059). `lint` con 0 errores y las 3
   advertencias preexistentes de las copias de Three de `.superpowers/brainstorm/`.
-- **Lo que queda**: la etapa activa del recorrido (hoy no se marca al desplazar), el
-  piloto del G-code con trayectoria 3D, y las guías que aún tienen el `porqué` de
-  más de 200 caracteres —**213 de 583**, y ese número sólo puede bajar.
+- **Lo que queda**: el `porqué` de más de 200 caracteres —**213 de 583**, y ese
+  número sólo puede bajar—, la revisión editorial de los 19 `resumenExtra`, y el
+  emparejamiento de un G-code suelto con un STL suelto: con un STL no hay marco de
+  cama, así que la superposición no es fiable y no se ofrece.
 
 ### Estado contrastado el 19 de octubre
 
