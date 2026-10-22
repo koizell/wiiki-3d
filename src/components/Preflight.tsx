@@ -32,7 +32,7 @@ export default function Preflight({ metadata }: { metadata: ProjectMetadata }) {
           value={maquinaSlug}
           onChange={(e) => {
             setMaquinaSlug(e.target.value);
-            try { localStorage.setItem('wiiki-maquina', e.target.value); } catch {}
+            try { localStorage.setItem('wiiki-maquina', e.target.value); } catch { /* localStorage puede no estar disponible (modo privado). */ }
           }}
         >
           <option value="">Sin seleccionar</option>
