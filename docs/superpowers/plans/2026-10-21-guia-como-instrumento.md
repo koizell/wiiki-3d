@@ -253,6 +253,75 @@ Es lo que esta vuelta necesitaba y no tenía: veinte y cuatro ficheros escritos
 por agentes, donde un `alcance` que se mueve o una `fuente` que cambia de nombre
 **no se ven leyendo**.
 
+## Lo que encontró el último repaso
+
+El trabajo estaba verde y aun así no estaba bien. Dos cosas que **ningún
+verificador miraba**, y que aparecieron al leer el resultado en vez de al pasarlo.
+
+### Los puntos de las tarjetas no eran frases
+
+El troceado del `cuerpo` en puntos partía por comas y dos puntos cuando la frase
+era larga, y dejaba el separador pegado al punto final:
+
+> «… cada capa se apoya sobre la anterior**,.**»
+
+**351 puntos de las 537 tarjetas** tienen ese final. El `cuerpo` nunca se tocó: el
+cotejo lo demuestra. El fallo era del script, y por eso **no lo veía nadie**: la
+comprobación de longitud dice que un punto cabe en 140 caracteres, y un punto de
+140 con una coma y un punto **sí cabe**.
+
+La moraleja es la de siempre, pero con un matiz que no se había visto: **un
+verificador que mide la forma no mide la lectura**. `verify:guias` comprueba que
+los puntos existen, que caben y que no repiten. Que se lean como frases es otra
+cosa, y no la comprobaba nadie.
+
+La regla que salió de ahí, y que ya está en el script:
+
+| Regla | Por qué |
+|---|---|
+| Primero se corta por **frases**, y una frase que empieza por negrita («**Demasiado alto:** la línea…») es una frase nueva | Sin eso, dos frases se pegaban y el punto medía 185 |
+| Cada trozo **termina en punto** y el siguiente **empieza en mayúscula** | En el cuerpo ya no es una continuación, es una frase propia |
+| **Dos cortes tienen que estar separados por 40 caracteres** | Sin esa regla el troceado se va a mil cortes de tres caracteres y el reenganche acaba partiendo en «…al enfriarse— y.» |
+| El límite del contenido es **139**, no 140 | Un trozo que se corta por cláusula acaba con un punto final que no estaba, y ese punto cuenta |
+
+### El texto estaba corrupto desde el principio
+
+En `separaciones.ts` había tres cosas rotas: **«ambosacted»** por «ambos actúan»,
+**«sin-improvement»** por «sin mejoría» y **«Oídos así»** por «Leídos así».
+
+La primera vez que aparecen es en `6ddd56e`, la conversión del artículo a guía
+tipada: **venían del artículo original**. El `cuerpo` las arrastró y la migración
+las copió a los `puntos`.
+
+Nadie las había visto porque `verify:guias` comprueba la estructura del contrato,
+no la ortografía. Y no hay forma de que un verificador estructural detecte que una
+palabra está pegada a otra sin un diccionario y una lista de excepciones — que es
+un problema distinto del que se puede resolver en un script.
+
+### El CI no miraba la wiki
+
+El pipeline ejecutaba `eslint`, el build y `verify:revision`. Se acabó ahí.
+
+El compilador **no sabe leer la wiki**. Una guía puede tener un `puntos` de 300
+caracteres, un `porque` que se ha comido un dato o un `resumen` que dice lo
+contrario que la tarjeta de al lado: TypeScript lo compila igual, la página se
+publica igual, y el sitio sale mal. De las 1091 comprobaciones del motor de
+guías, el CI no ejecutaba ninguna.
+
+Ahora el pipeline tiene tres capas, y las dos primeras van **antes** del build
+porque no necesitan red ni navegador: si el contenido está mal, se falla en
+segundos en vez de en dos minutos.
+
+| Capa | Qué corre | Cuándo |
+|---|---|---|
+| `verify:revision` | toda guía escrita tiene que estar registrada | antes del build |
+| `verify:contenido` | el motor de guías, el texto y el contraste con `wiki/raw/` | antes del build |
+| `verify:dist` | los enlaces internos que no dan 200 y el `description` de cada guía | con el sitio construido |
+
+Las que quedan fuera a propósito son las que dependen de la red:
+`verify:fuentes` mira si las URLs externas responden, y un 403 de un servidor que
+bloquea bots —no una fuente muerta— tumbaría un despliegue por un fallo ajeno.
+
 ## Fuera de alcance
 
 - Reescribir a mano las 32 guías restantes: la migración de la tarea 2 es
