@@ -116,8 +116,7 @@ export const material: Guia = {
       id: 'pc',
       titulo: 'PC',
       puntos: [
-        'Alta resistencia mecánica y térmica.',
-        'Requiere cámara cerrada y temperaturas de impresión elevadas.',
+        'Alta resistencia mecánica y térmica. Requiere cámara cerrada y temperaturas de impresión elevadas.',
         'Puede volverse quebradizo después de ciclos repetidos de secado.',
       ],
       indicador: 'temperatura',
@@ -130,8 +129,7 @@ export const material: Guia = {
       titulo: 'PA (Nylon)',
       puntos: [
         'Muy higroscópico: absorbe humedad rápidamente del aire.',
-        'Requiere cámara cerrada.',
-        'Después de unos tres meses expuesto al aire, es muy difícil de secar.',
+        'Requiere cámara cerrada. Después de unos tres meses expuesto al aire, es muy difícil de secar.',
       ],
       indicador: 'material',
       cuerpo: 'Muy higroscópico: absorbe humedad rápidamente del aire. Requiere cámara cerrada. Después de unos tres meses expuesto al aire, es muy difícil de secar.',
@@ -142,8 +140,7 @@ export const material: Guia = {
       id: 'tpu',
       titulo: 'TPU',
       puntos: [
-        'Flexible y resistente a impactos.',
-        'No es compatible con AMS.',
+        'Flexible y resistente a impactos. No es compatible con AMS.',
         'No requiere cámara cerrada.',
       ],
       indicador: 'material',
@@ -156,8 +153,8 @@ export const material: Guia = {
       titulo: 'Todos los filamentos absorben humedad',
       puntos: [
         'Todos los filamentos absorben humedad del aire en cierta medida.',
-        'El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión, agujeros y superficies rugosas.',
-        'Cuanto mayor la humedad y la exposición, más severos los defectos.',
+        'El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión.',
+        'Agujeros y superficies rugosas. Cuanto mayor la humedad y la exposición, más severos los defectos.',
       ],
       indicador: 'temperatura',
       cuerpo: 'Todos los filamentos absorben humedad del aire en cierta medida. El filamento húmedo se vaporiza dentro de la boquilla caliente, causando burbujas, stringing, sub-extrusión, agujeros y superficies rugosas. Cuanto mayor la humedad y la exposición, más severos los defectos.',
@@ -190,7 +187,8 @@ export const material: Guia = {
       id: 'contraccion-ejes',
       titulo: 'La contracción es mayor en X e Y',
       puntos: [
-        'El efecto de la contracción es más notable en los ejes X e Y que en Z. Si una pieza debe encajar con otra, compensa en esos ejes.',
+        'El efecto de la contracción es más notable en los ejes X e Y que en Z.',
+        'Si una pieza debe encajar con otra, compensa en esos ejes.',
       ],
       indicador: 'temperatura',
       cuerpo: 'El efecto de la contracción es más notable en los ejes X e Y que en Z. Si una pieza debe encajar con otra, compensa en esos ejes.',

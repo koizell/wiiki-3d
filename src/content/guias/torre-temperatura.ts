@@ -85,8 +85,8 @@ export const torreTemperatura: Guia = {
       id: 'que-es',
       titulo: 'Qué es una torre de temperatura',
       puntos: [
-        'Es un modelo de calibración: una torre vertical con varias secciones,.',
-        'cada una impresa a una temperatura distinta de boquilla (por ejemplo 240 °C en la base, luego 235 °C, 230 °C…).',
+        'Es un modelo de calibración: una torre vertical con varias secciones.',
+        'Cada una impresa a una temperatura distinta de boquilla (por ejemplo 240 °C en la base, luego 235 °C, 230 °C…).',
         'Sirve para determinar la temperatura ideal de boquilla para un filamento concreto.',
       ],
       indicador: 'calibracion',
@@ -119,8 +119,8 @@ export const torreTemperatura: Guia = {
       id: 'que-no-mide',
       titulo: 'Qué NO mide',
       puntos: [
-        'La torre no sustituye las calibraciones de flujo, retracción, velocidad volumétrica máxima,.',
-        'pressure advance o VFA que Bambu Lab documenta por separado; tampoco calibra cama o ambiente.',
+        'La torre no sustituye las calibraciones de flujo, retracción, velocidad volumétrica máxima.',
+        'Pressure advance o VFA que Bambu Lab documenta por separado; tampoco calibra cama o ambiente.',
         'Que existan pruebas separadas no excluye la temperatura como posible causa de subextrusión.',
       ],
       indicador: 'calibracion',
@@ -135,10 +135,10 @@ export const torreTemperatura: Guia = {
       id: 'aislar',
       titulo: 'Aislar la temperatura como única variable',
       puntos: [
-        '3D Printer Stuff propone conservar los ajustes habituales para cambiar sólo la temperatura entre secciones; es una guía secundaria,.',
-        'sin corroborar este procedimiento.',
+        '3D Printer Stuff propone conservar los ajustes habituales para cambiar sólo la temperatura entre secciones.',
+        'Es una guía secundaria, sin corroborar este procedimiento.',
         'Es el objetivo de la prueba, no una garantía de que no intervengan otros factores.',
-        'en Orca se respeta además la capa calculada por su autoescalado.',
+        'En Orca se respeta además la capa calculada por su autoescalado.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -168,8 +168,8 @@ export const torreTemperatura: Guia = {
       id: 'rango-pla',
       titulo: 'Rango orientativo para PLA',
       puntos: [
-        'Creality sitúa habitualmente PLA entre 190 y 220 °C. Es una orientación que varía por marca, color y configuración,.',
-        'no una temperatura universal.',
+        'Creality sitúa habitualmente PLA entre 190 y 220 °C.',
+        'Es una orientación que varía por marca, color y configuración, no una temperatura universal.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -186,7 +186,8 @@ export const torreTemperatura: Guia = {
       id: 'rango-abs',
       titulo: 'Rango orientativo para ABS',
       puntos: [
-        'Creality sitúa habitualmente ABS entre 230 y 260 °C. El rango es orientativo y varía por marca, color y configuración.',
+        'Creality sitúa habitualmente ABS entre 230 y 260 °C.',
+        'El rango es orientativo y varía por marca, color y configuración.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -218,8 +219,8 @@ export const torreTemperatura: Guia = {
       id: 'secciones-pla',
       titulo: 'Ejemplo de secciones para PLA',
       puntos: [
-        'La versión PLA descrita por 3D Printer Stuff cubre 190–220 °C en siete secciones de 5 °C. Es un ejemplo de una sola guía secundaria,.',
-        'sin corroborar la secuencia; no obliga a elegir ese modelo.',
+        'La versión PLA descrita por 3D Printer Stuff cubre 190–220 °C en siete secciones de 5 °C.',
+        'Es un ejemplo de una sola guía secundaria, sin corroborar la secuencia; no obliga a elegir ese modelo.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -235,9 +236,8 @@ export const torreTemperatura: Guia = {
       id: 'caracteristicas',
       titulo: 'Características sensibles a la temperatura',
       puntos: [
-        'El modelo descrito por 3D Printer Stuff incluye puentes, voladizos de 30°, 45° y 60°, pilares para observar hilos,.',
-        'detalle fino y paredes planas.',
-        'La geometría depende del modelo: es una descripción de una sola guía secundaria, sin corroborar.',
+        'El modelo descrito por 3D Printer Stuff incluye puentes, voladizos de 30°, 45° y 60°, pilares para observar hilos.',
+        'Detalle fino y paredes planas. La geometría depende del modelo: es una descripción de una sola guía secundaria, sin corroborar.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -252,8 +252,8 @@ export const torreTemperatura: Guia = {
       id: 'creality-print',
       titulo: 'Configuración en Creality Print',
       puntos: [
-        'En Creality Print, pulsar el botón "Filament" y luego el icono de pincel para fijar la temperatura del extrusor a alturas de capa exactas,.',
-        'coincidiendo con cada nivel de la torre.',
+        'En Creality Print, pulsar el botón "Filament" y luego el icono de pincel para fijar la temperatura del extrusor a alturas de capa exactas.',
+        'Coincidiendo con cada nivel de la torre.',
         'Buscar un modelo con niveles claramente espaciados y visibles.',
       ],
       indicador: 'temperatura',
@@ -271,7 +271,7 @@ export const torreTemperatura: Guia = {
       titulo: 'Cura: procedimiento general',
       puntos: [
         'Creality indica Extensions > Post Processing > Modify G-Code > Add a script > Change at Height.',
-        'configura la altura Z y la temperatura de cada sección y previsualiza el G-code.',
+        'Configura la altura Z y la temperatura de cada sección y previsualiza el G-code.',
         'Calcula las alturas con el grosor de capa y las capas de tu modelo; este mecanismo no fija un rango térmico para todos los materiales.',
       ],
       indicador: 'temperatura',
@@ -288,10 +288,10 @@ export const torreTemperatura: Guia = {
       id: 'cura-ejemplo-pla',
       titulo: 'Cura: ejemplo PLA, no receta universal',
       puntos: [
-        '3D Printer Stuff empieza su ejemplo PLA a 220 °C y cambia a 215 °C a 8,2 mm,.',
-        '210 °C a 16,4 mm y 205 °C a 24,6 mm. La guía secundaria recomienda como contexto el Smart Compact Temperature Tower de gaaZolee.',
-        'no es un modelo obligatorio ni un aval independiente,.',
-        'y la secuencia y las alturas no están corroboradas ni se trasladan sin comprobar el modelo y la capa.',
+        '3D Printer Stuff empieza su ejemplo PLA a 220 °C y cambia a 215 °C a 8,2 mm, 210 °C a 16,4 mm y 205 °C a 24,6 mm.',
+        'La guía secundaria recomienda como contexto el Smart Compact Temperature Tower de gaaZolee.',
+        'No es un modelo obligatorio ni un aval independiente.',
+        'Y la secuencia y las alturas no están corroboradas ni se trasladan sin comprobar el modelo y la capa.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -309,7 +309,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         '3D Printer Stuff describe cambios de temperatura por rango mediante "Add height range modifier".',
         'Es una sola guía secundaria, sin corroboración oficial ni prueba del programa en este corpus.',
-        'no se ofrece aquí esa ruta de interfaz como procedimiento verificado.',
+        'No se ofrece aquí esa ruta de interfaz como procedimiento verificado.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -326,8 +326,9 @@ export const torreTemperatura: Guia = {
       titulo: 'Configuración en OrcaSlicer (auto-escalado por boquilla)',
       puntos: [
         'El modelo de referencia está diseñado para boquilla de 0,4 mm a 0,2 mm de altura de capa.',
-        'Con "Auto-scale for nozzle" activo (por defecto), la torre se escala al diámetro de boquilla y la altura de capa se fija a la mitad de este,',
-        'para que las características se mantengan visibles; desactivar sólo para imprimir el modelo original a 0,4 mm.',
+        'Con "Auto-scale for nozzle" activo (por defecto).',
+        'La torre se escala al diámetro de boquilla y la altura de capa se fija a la mitad de este.',
+        'Para que las características se mantengan visibles; desactivar sólo para imprimir el modelo original a 0,4 mm.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -361,9 +362,9 @@ export const torreTemperatura: Guia = {
       titulo: 'Un ejemplo de perfil, no ajustes obligatorios',
       puntos: [
         '3D Printer Stuff ejemplifica capa de 0,2 mm, velocidad de 50–60 mm/s y relleno de 10–15 %, subordinados a conservar el perfil habitual.',
-        'son cifras secundarias sin corroborar, no una orden de cambiar tu velocidad o retracción.',
-        'En Orca rige la capa calculada por autoescalado, no una imposición de 0,2 mm. La estimación de 35–50 min y 8–15 g depende de velocidad,.',
-        'modelo y configuración, sin garantía para otras torres.',
+        'Son cifras secundarias sin corroborar, no una orden de cambiar tu velocidad o retracción.',
+        'En Orca rige la capa calculada por autoescalado, no una imposición de 0,2 mm.',
+        'La estimación de 35–50 min y 8–15 g depende de velocidad, modelo y configuración, sin garantía para otras torres.',
       ],
       indicador: 'velocidad',
       cuerpo:
@@ -379,9 +380,8 @@ export const torreTemperatura: Guia = {
       id: 'perfil-pla',
       titulo: 'Cama y ventilador: sólo el ejemplo PLA',
       puntos: [
-        'El ejemplo PLA de 3D Printer Stuff cita cama habitual de 60 °C y ventilador al 100 % tras la capa 3. Son valores de una sola guía.',
-        'secundaria,.',
-        'sin corroborar: no sustituyen obligatoriamente tu perfil PLA ni se aplican a otros materiales.',
+        'El ejemplo PLA de 3D Printer Stuff cita cama habitual de 60 °C y ventilador al 100 % tras la capa 3.',
+        'Son valores de una sola guía secundaria, sin corroborar: no sustituyen obligatoriamente tu perfil PLA ni se aplican a otros materiales.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -397,9 +397,8 @@ export const torreTemperatura: Guia = {
       id: 'seccion-altura',
       titulo: 'Altura de cada sección',
       puntos: [
-        '3D Printer Stuff describe secciones típicas de 8,0–8,2 mm,.',
-        'equivalentes a 40–41 capas si la capa es de 0,2 mm. Es un dato dependiente del modelo de una sola guía secundaria, sin corroborar.',
-        'comprueba las alturas de tu torre.',
+        '3D Printer Stuff describe secciones típicas de 8,0–8,2 mm, equivalentes a 40–41 capas si la capa es de 0,2 mm.',
+        'Es un dato dependiente del modelo de una sola guía secundaria, sin corroborar: comprueba las alturas de tu torre.',
       ],
       indicador: 'general',
       cuerpo:
@@ -431,8 +430,8 @@ export const torreTemperatura: Guia = {
       id: 'stringing',
       titulo: 'Cómo leer el stringing',
       puntos: [
-        '3D Printer Stuff busca cero hilos y atribuye el aumento con calor a un fundido menos viscoso; si hay hilos en todas las secciones,.',
-        'propone revisar la retracción aparte.',
+        '3D Printer Stuff busca cero hilos y atribuye el aumento con calor a un fundido menos viscoso.',
+        'Si hay hilos en todas las secciones, propone revisar la retracción aparte.',
         'El mecanismo y esa inferencia proceden de una sola guía secundaria, sin corroborar, no de un diagnóstico exclusivo.',
         'Orca advierte que bajar demasiado la temperatura también puede producir hilos.',
       ],
@@ -465,9 +464,9 @@ export const torreTemperatura: Guia = {
       titulo: 'Cómo leer los voladizos (overhangs)',
       puntos: [
         'En su modelo, 3D Printer Stuff usa el voladizo de 60° para comparar frente al de 45° y propone buscar el más suave.',
-        'describe comba con calor y curvatura por mala unión en frío.',
-        'Es un criterio dependiente del modelo de una sola guía secundaria, sin corroborar.',
-        'no garantiza limpieza universal a 45° ni esos ángulos en cualquier torre.',
+        'Describe comba con calor y curvatura por mala unión en frío.',
+        'Es un criterio dependiente del modelo de una sola guía secundaria.',
+        'Sin corroborar: no garantiza limpieza universal a 45° ni esos ángulos en cualquier torre.',
       ],
       indicador: 'entorno',
       cuerpo:
@@ -484,7 +483,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         'Creality propone comparar las secciones por flexión o rotura.',
         'Priorizar la más difícil de romper para piezas funcionales, aunque sea menos bonita, es el criterio de 3D Printer Stuff.',
-        'una sola guía secundaria, sin corroborar esa prioridad, no un ensayo normalizado de resistencia.',
+        'Una sola guía secundaria, sin corroborar esa prioridad, no un ensayo normalizado de resistencia.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -515,8 +514,8 @@ export const torreTemperatura: Guia = {
       titulo: 'Cómo leer el acabado superficial',
       puntos: [
         '3D Printer Stuff busca paredes suaves y consistentes: describe brillos y blobs por calor, y textura mate o rugosa por frío.',
-        'Creality respalda los defectos por calor, pero la explicación de la textura en frío procede sólo de esa guía secundaria, sin corroborar.',
-        'bajar no garantiza mejor acabado.',
+        'Creality respalda los defectos por calor, pero la explicación de la textura en frío procede sólo de esa guía secundaria.',
+        'Sin corroborar; bajar no garantiza mejor acabado.',
       ],
       indicador: 'entorno',
       cuerpo:
@@ -548,7 +547,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         'Creality propone comparar unión entre capas por flexión o rotura, comba en puentes y voladizos, hilos, paredes y detalle fino.',
         'Describe acabado nítido pero posible subextrusión en frío, frente a flujo más suave con riesgo de blobs y brillo en caliente.',
-        'también señala anillos en esquinas y detalle desgastado.',
+        'También señala anillos en esquinas y detalle desgastado.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -581,10 +580,10 @@ export const torreTemperatura: Guia = {
       titulo: 'Resolver resultados contradictorios',
       puntos: [
         'En el ejemplo de 3D Printer Stuff, 210 °C da mejor puenteado, 215 °C mejor adhesión y 205 °C menos hilos.',
-        'propone priorizar adhesión para uso funcional, acabado e hilos para visual y el medio del rango bueno para uso general,.',
-        'normalmente 5 °C sobre el mejor stringing.',
-        'Las prioridades y el margen numérico proceden de una sola guía secundaria, sin corroborar.',
-        'compara resultados dentro de un rango que imprima correctamente, sin asumir que bajar o subir siempre mejora.',
+        'Propone priorizar adhesión para uso funcional, acabado e hilos para visual y el medio del rango bueno para uso general.',
+        'Normalmente 5 °C sobre el mejor stringing.',
+        'Las prioridades y el margen numérico proceden de una sola guía secundaria.',
+        'Sin corroborar: compara resultados dentro de un rango que imprima correctamente, sin asumir que bajar o subir siempre mejora.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -600,11 +599,11 @@ export const torreTemperatura: Guia = {
       id: 'no-ultima-palabra',
       titulo: 'La torre no es la última palabra',
       puntos: [
-        'En el foro Prusa, samuel.jimenez prefirió visualmente 180 °C en su torre PLA de 180–250 °C y relató un paro al intentar imprimir a ese.',
-        'ajuste.',
-        'sospechó obstrucción, sin confirmarla.',
-        'Después informó de que volvió a extruir tras reinsertar filamento y calentar, sin aislar una causa: es un único testimonio sin corroborar,.',
-        'no evidencia de un atasco causado por esa temperatura.',
+        'En el foro Prusa, samuel.jimenez prefirió visualmente 180 °C en su torre PLA de 180–250 °C.',
+        'Y relató un paro al intentar imprimir a ese ajuste.',
+        'Sospechó obstrucción, sin confirmarla.',
+        'Después informó de que volvió a extruir tras reinsertar filamento y calentar, sin aislar una causa: es un único testimonio sin corroborar.',
+        'No evidencia de un atasco causado por esa temperatura.',
         'La preferencia visual no es una garantía de imprimibilidad.',
       ],
       indicador: 'temperatura',
@@ -623,7 +622,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         'Diem, en el foro Prusa, recuerda que un carrete nuevo podría estar húmedo por almacén o transporte y propone probar a secarlo.',
         'Es una posibilidad de una sola fuente de foro, sin corroborar la humedad de ese carrete ni un ensayo de secado.',
-        'el autor sí relató desaparición de hilos al bajar a 200 °C, sin demostrar una causa única.',
+        'El autor sí relató desaparición de hilos al bajar a 200 °C, sin demostrar una causa única.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -654,9 +653,9 @@ export const torreTemperatura: Guia = {
       id: 'carretes-pla',
       titulo: 'Variación entre carretes de PLA',
       puntos: [
-        '3D Printer Stuff afirma un rango de 195–218 °C entre carretes de PLA y desaconseja asumir que todos usan 200 °C. Es una sola guía.',
-        'secundaria,.',
-        'sin corroborar y sin muestra ni método de ensayo documentados aquí; no sustituye el rango orientativo de Creality.',
+        '3D Printer Stuff afirma un rango de 195–218 °C entre carretes de PLA y desaconseja asumir que todos usan 200 °C.',
+        'Es una sola guía secundaria, sin corroborar y sin muestra ni método de ensayo documentados aquí.',
+        'No sustituye el rango orientativo de Creality.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -674,7 +673,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         'Según Creality, el ambiente y las corrientes pueden afectar al resultado.',
         'Una caída brusca puede enfriar demasiado rápido y dejar uniones frágiles.',
-        'una habitación muy caliente o con corrientes puede producir enfriamiento no uniforme.',
+        'Una habitación muy caliente o con corrientes puede producir enfriamiento no uniforme.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -689,8 +688,8 @@ export const torreTemperatura: Guia = {
       id: 'sin-indicadores',
       titulo: 'Modelos sin indicadores de temperatura',
       puntos: [
-        'La mayoría de STL de torre estándar no llevan indicadores de temperatura impresos,.',
-        'lo que dificulta recordar qué temperatura corresponde a cada nivel.',
+        'La mayoría de STL de torre estándar no llevan indicadores de temperatura impresos.',
+        'Lo que dificulta recordar qué temperatura corresponde a cada nivel.',
         'Usar un modelo ajustable con cada paso marcado.',
       ],
       indicador: 'temperatura',
@@ -724,7 +723,7 @@ export const torreTemperatura: Guia = {
       puntos: [
         'Avinash propone 205–215 °C para PLA según su experiencia en el foro Prusa.',
         'Es una opinión de una sola fuente, sin corroborar, no una recomendación oficial ni demostrada para todas las marcas.',
-        'no se promedia con los otros rangos.',
+        'No se promedia con los otros rangos.',
       ],
       indicador: 'temperatura',
       cuerpo:

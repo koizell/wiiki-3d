@@ -39,6 +39,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { temaDeTarjeta, temaDeVariable } from '../../src/lib/indicadores.ts';
+import { trocearCuerpo } from './repuntar.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CARPETA = join(RAIZ, 'src', 'content', 'guias');
@@ -49,31 +50,11 @@ const NO_ES_GUIA = new Set(['tipos.ts', 'autor.ts']);
 /**
  * Trocea un cuerpo en puntos.
  *
- * Se parte por frases, y **no** se parte si la frase anterior termina en una
- * abreviatura —«M6.», «mm.», «R.», «S.»— porque ahí la coma no es un final de frase.
- *
- * La abreviatura se reconoce por la última palabra: si tiene tres caracteres o menos
- * y termina en letra o cifra, es abreviatura y la frase siguiente se pega.
+ * El troceado **vive en un solo sitio**: `repuntar.mjs`. Dos implementaciones de la
+ * misma regla divergen, y la que diverge es la que nadie mira.
  */
 export function trocear(texto) {
-  const frases = texto.split(/(?<=[.!?])\s+(?=[«"'A-ZÁÉÍÓÚÑ0-9])/);
-  const puntos = [];
-  let actual = '';
-  for (const frase of frases) {
-    const ultimaPalabra = (actual.match(/([^\s]+)$/) ?? ['', ''])[1];
-    const esAbreviatura =
-      ultimaPalabra.length > 0 &&
-      ultimaPalabra.length <= 3 &&
-      /[A-Za-zÁÉÍÓÚÑáéíóúñ0-9]\.$/.test(ultimaPalabra);
-    if (actual && esAbreviatura) {
-      actual += ' ' + frase;
-    } else {
-      if (actual) puntos.push(actual.trim());
-      actual = frase;
-    }
-  }
-  if (actual) puntos.push(actual.trim());
-  return puntos.filter((p) => p.length > 0);
+  return trocearCuerpo(texto);
 }
 
 /**
@@ -84,75 +65,8 @@ export function trocear(texto) {
  * cortar por ahí no cambia ni una palabra.
  *
  * Cuando una parte sale demasiado corta —menos de 40 caracteres—, se pega a la
- * siguiente: un punto de «y el centro.» no es un punto, es un resto.
- */
-const MAX_PUNTO = 140;
-const MIN_PUNTO = 40;
 
-/** Un corte de cláusula: coma, punto y coma o dos puntos, con lo que venga detrás. */
-const CLAUSULA = /(?<=[,;:])\s+/;
 
-/**
- * Parte un punto largo en puntos que caben en una línea.
- *
- * @param punto El texto a partir.
- * @param max El máximo por punto.
- */
-function partirPunto(punto, max = MAX_PUNTO, forzar = false) {
-  if (punto.length <= max && !forzar) return [punto];
-
-  const partes = punto.split(CLAUSULA);
-  if (partes.length <= 1) {
-    // No hay comas: se parte por espacios, que es peor pero es lo que hay.
-    const palabras = punto.split(' ');
-    const out = [];
-    let actual = '';
-    for (const palabra of palabras) {
-      if (actual && (actual + ' ' + palabra).length > max) {
-        out.push(actual);
-        actual = palabra;
-      } else {
-        actual = actual ? actual + ' ' + palabra : palabra;
-      }
-    }
-    if (actual) out.push(actual);
-    return out.length > 1 ? out : [punto];
-  }
-
-  // Se agrupan las partes en trozos que caben.
-  const trozos = [];
-  let actual = '';
-  for (const parte of partes) {
-    if (actual && (actual + ' ' + parte).length > max) {
-      trozos.push(actual);
-      actual = parte;
-    } else {
-      actual = actual ? actual + ' ' + parte : parte;
-    }
-  }
-  if (actual) trozos.push(actual);
-
-  // Un trozo que se ha quedado corto se pega al siguiente, si cabe.
-  const pegados = [];
-  for (const trozo of trozos) {
-    const anterior = pegados[pegados.length - 1];
-    if (anterior !== undefined && anterior.length < MIN_PUNTO) {
-      pegados[pegados.length - 1] = `${anterior} ${trozo}`;
-    } else {
-      pegados.push(trozo);
-    }
-  }
-
-  return pegados
-    .flatMap((p) => (p.length > max ? partirPorPalabras(p, max) : [p]))
-    .map((p) => {
-      const limpio = p.replace(/[:;]\s*$/, '');
-      // El punto de cierre se añade sólo si cabe: un punto de 141 caracteres
-      // incumple el límite por un carácter, y el límite es el límite.
-      const conPunto = /[.!?]$/.test(limpio) ? limpio : limpio + '.';
-      return conPunto.length > max ? limpio : conPunto;
-    });
-}
 
 /**
  * Un trozo sin comas que todavía no cabe en una línea.
@@ -297,10 +211,9 @@ export function migrarFichero(ruta) {
       );
       const tituloTexto = titulo ? (textoDe(titulo) ?? '') : '';
       const tema = temaDeTarjeta(tituloTexto, cuerpoTexto);
-      let puntos = trocear(cuerpoTexto).flatMap((p) => partirPunto(p));
-      // Una tarjeta que ha salido en un solo punto es una tarjeta que sigue siendo
-      // un párrafo: se parte por cláusula, aunque el punto quepa en una línea.
-      if (puntos.length === 1) puntos = partirPunto(puntos[0], MAX_PUNTO, true);
+      // El troceado ya se encarga de partir por cláusula lo que no cabe en una
+      // línea, así que aquí no hay nada más que decidir.
+      const puntos = trocear(cuerpoTexto);
 
       // La sangría es la de las propiedades del elemento.
       const sangria = sangriaDe(sourceFile, cuerpo.name.getStart(sourceFile));

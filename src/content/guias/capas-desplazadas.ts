@@ -203,9 +203,9 @@ export const capasDesplazadas: Guia = {
       id: 'stealthchop-lag',
       titulo: 'stealthChop introduce positional lag',
       puntos: [
-        'stealthChop es más silencioso que spreadCycle,.',
-        'pero en pruebas ha mostrado un incremento de positional lag de alrededor del 75 % de un full-step en movimientos a velocidad constante,.',
-        'además de poder desencadenar sobrecorriente.',
+        'stealthChop es más silencioso que spreadCycle.',
+        'Pero en pruebas ha mostrado un incremento de positional lag de alrededor del 75 % de un full-step en movimientos a velocidad constante.',
+        'Además de poder desencadenar sobrecorriente.',
         'La fuente lo deja como trueque: tú decides si prefieres el ruido menor.',
       ],
       indicador: 'velocidad',
@@ -233,7 +233,7 @@ export const capasDesplazadas: Guia = {
       titulo: 'SpreadCycle más microsteps altos: precisión sin ruido',
       puntos: [
         'Para mejor precisión posicional, usar spreadCycle y deshabilitar la interpolación.',
-        'entonces se puede subir los microsteps para reducir el ruido audible, típicamente 64 o 128.',
+        'Entonces se puede subir los microsteps para reducir el ruido audible, típicamente 64 o 128.',
       ],
       indicador: 'general',
       cuerpo:
@@ -258,10 +258,9 @@ export const capasDesplazadas: Guia = {
       id: 'psu-medicion',
       titulo: 'La fuente se mide bajo carga',
       puntos: [
-        'Una fuente insuficiente combinada con calentadores y movimientos a alta velocidad puede congelar la placa sin paro ni watchdog,.',
-        'dejando los calentadores activos.',
-        'Se mide la tensión de entrada con multímetro durante los movimientos rápidos.',
-        'una caída por debajo de la tensión esperada —12 V o 24 V— indica problema.',
+        'Una fuente insuficiente combinada con calentadores y movimientos a alta velocidad puede congelar la placa sin paro ni watchdog.',
+        'Dejando los calentadores activos. Se mide la tensión de entrada con multímetro durante los movimientos rápidos.',
+        'Una caída por debajo de la tensión esperada —12 V o 24 V— indica problema.',
       ],
       indicador: 'velocidad',
       cuerpo:
@@ -272,10 +271,10 @@ export const capasDesplazadas: Guia = {
       id: 'pasos-perdidos',
       titulo: 'Detectar pasos perdidos con GET_POSITION',
       puntos: [
-        'En Klipper se puede medir sin imprimir: homing, GET_POSITION, movimientos a alta velocidad, homing de nuevo y otro GET_POSITION.',
-        'se comparan los valores de la línea mcu.',
-        'Una pérdida real aparece en múltiplos de 64 microsteps con 16 microsteps; pequeñas diferencias se deben a los finales de carrera,.',
-        'que disparan en posiciones ligeramente distintas.',
+        'En Klipper se puede medir sin imprimir: homing, GET_POSITION, movimientos a alta velocidad.',
+        'Homing de nuevo y otro GET_POSITION; se comparan los valores de la línea mcu.',
+        'Una pérdida real aparece en múltiplos de 64 microsteps con 16 microsteps; pequeñas diferencias se deben a los finales de carrera.',
+        'Que disparan en posiciones ligeramente distintas.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -288,8 +287,8 @@ export const capasDesplazadas: Guia = {
       titulo: 'Jerk y Junction Deviation son alternativos',
       puntos: [
         'Son dos algoritmos de control de esquinas, no dos parámetros que se suman.',
-        'En Marlin 2, Classic Jerk está deprecado en favor de Junction Deviation,.',
-        'y si una máquina usa Classic Jerk hay que poner Maximum Junction Deviation a 0 para que apliquen los límites de jerk.',
+        'En Marlin 2, Classic Jerk está deprecado en favor de Junction Deviation.',
+        'Y si una máquina usa Classic Jerk hay que poner Maximum Junction Deviation a 0 para que apliquen los límites de jerk.',
         'OrcaSlicer da la conversión JD = 0,4 · Jerk² / Accel.',
       ],
       indicador: 'slicer',
@@ -314,10 +313,10 @@ export const capasDesplazadas: Guia = {
       titulo: 'OrcaSlicer: aceleración, Motion Ability y flavor',
       puntos: [
         'Los límites de aceleración y jerk del slicer no superan los máximos de Motion Ability.',
-        'Si la aceleración normal de printing es 0, Orca no envía comandos de aceleración y manda la del firmware,.',
-        'deshabilitando los demás ajustes de aceleración del proceso.',
-        'Con flavor Klipper, la opción de emitir límites al G-code se ignora y accel_to_decel se gestiona con SET_VELOCITY_LIMIT (por defecto al 50.',
-        '%).',
+        'Si la aceleración normal de printing es 0, Orca no envía comandos de aceleración y manda la del firmware.',
+        'Deshabilitando los demás ajustes de aceleración del proceso.',
+        'Con flavor Klipper, la opción de emitir límites al G-code se ignora.',
+        'Y accel_to_decel se gestiona con SET_VELOCITY_LIMIT (por defecto al 50 %).',
       ],
       indicador: 'slicer',
       cuerpo:

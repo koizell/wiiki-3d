@@ -25,7 +25,7 @@ export const separaciones: Guia = {
   dibujo: 'grieta',
   entrada: 'Las capas se abren por dentro y la base queda plana. Parece warping y no lo es: el arreglo es otro, y subir la cama no lo arregla. Aquí se distinguen mirando dónde está la rotura y si la base se levanta o no.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 3,
 
   diferencial: {
@@ -137,8 +137,8 @@ export const separaciones: Guia = {
       titulo: 'Se abre en una altura concreta: puedes cortarlo ahí',
       cuando: { altura: 'punto' },
       puntos: [
-        'Es el mejor caso para diagnosticar, y la razón es práctica: como sabes a qué altura se abre,.',
-        'puedes cortar la pieza justo por ahí y mirar el corte.',
+        'Es el mejor caso para diagnosticar, y la razón es práctica.',
+        'Como sabes a qué altura se abre, puedes cortar la pieza justo por ahí y mirar el corte.',
         'Eso separa los dos fallos que se parecen en la foto y decide qué protocolo sigue.',
         'Si además sabes qué ajuste cambió justo antes de esa altura, ya tienes el candidato.',
       ],
@@ -153,8 +153,8 @@ export const separaciones: Guia = {
       cuando: { altura: 'inicio' },
       puntos: [
         'Si la separación lleva desde la base, el corte te dice que faltó adhesión pero no dónde: es un ajuste constante, no un cambio puntual.',
-        'Eso deja la temperatura de boquilla y el enfriamiento por capa como las dos variables,.',
-        'y descarta de entrada toda la investigación sobre iteraciones o transiciones del perfil.',
+        'Eso deja la temperatura de boquilla y el enfriamiento por capa como las dos variables.',
+        'Y descarta de entrada toda la investigación sobre iteraciones o transiciones del perfil.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -165,8 +165,8 @@ export const separaciones: Guia = {
       titulo: 'Qué material y con qué aviso',
       puntos: [
         'El PETG es el peor caso documentado en este lote, con capas internas más débiles.',
-        'Y hay un aviso de alcance que este artículo tiene que decir: la fuente que describe capas débiles habla del PETG,.',
-        'y trasladar ese criterio a otro material sin más no está respaldado.',
+        'Y hay un aviso de alcance que este artículo tiene que decir: la fuente que describe capas débiles habla del PETG.',
+        'Y trasladar ese criterio a otro material sin más no está respaldado.',
       ],
       indicador: 'material',
       cuerpo:
@@ -190,8 +190,8 @@ export const separaciones: Guia = {
       titulo: 'Si se abre por el borde, esto no es separación',
       cuando: { esquinas: 'borde' },
       puntos: [
-        'Una rotura en el borde exterior, en las esquinas o a lo largo de una pared larga, es territorio del warping.',
-        'es el patrón que produce la contracción térmica al enfriarse los exteriores antes que el centro.',
+        'Una rotura en el borde exterior, en las esquinas o a lo largo de una pared larga.',
+        'Es territorio del warping: es el patrón que produce la contracción térmica al enfriarse los exteriores antes que el centro.',
         'Lo que los distingue es la base —si arquea desde la cama, es warping— y no el sitio donde se abre la grieta, que es el dato que más engaña.',
       ],
       indicador: 'cama',
@@ -204,11 +204,10 @@ export const separaciones: Guia = {
       titulo: 'Una sección horizontal entera es otro caso',
       cuando: { esquinas: 'horizontal' },
       puntos: [
-        'Si la pieza se parte por una línea horizontal completa, el corte sigue siendo el dato: si viene limpio y falta material entre capas,.',
-        'es adhesión insuficiente.',
-        'Y si la línea se ve repetida en toda la altura,.',
-        'lo que estás mirando puede no ser la rotura sino un cambio de ajuste en ese punto —una iteración distinta,.',
-        'un cambio de temperatura o de velocidad—, y eso esta guía no lo cubre.',
+        'Si la pieza se parte por una línea horizontal completa, el corte sigue siendo el dato: si viene limpio y falta material entre capas.',
+        'Es adhesión insuficiente. Y si la línea se ve repetida en toda la altura.',
+        'Lo que estás mirando puede no ser la rotura sino un cambio de ajuste en ese punto —una iteración distinta.',
+        'Un cambio de temperatura o de velocidad—, y eso esta guía no lo cubre.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -220,12 +219,12 @@ export const separaciones: Guia = {
       puntos: [
         'Prusa sube la temperatura de boquilla; Bambu sube la cama.',
         'Es un desacuerdo real entre dos fabricantes, y aquí no se promedia ni se elige por gusto.',
-        'Lo que sí se puede decir es que ambosacted sobre la misma causa —contracción al enfriarse— y que la diferencia es cuál de los dos lados de',
-        'la unión es el débil en su equipo.',
+        'Lo que sí se puede decir es que ambos actúan sobre la misma causa —contracción al enfriarse—.',
+        'Y que la diferencia es cuál de los dos lados de la unión es el débil en su equipo.',
       ],
       indicador: 'cama',
       cuerpo:
-        'Prusa sube la temperatura de boquilla; Bambu sube la cama. Es un desacuerdo real entre dos fabricantes, y aquí no se promedia ni se elige por gusto. Lo que sí se puede decir es que ambosacted sobre la misma causa —contracción al enfriarse— y que la diferencia es cuál de los dos lados de la unión es el débil en su equipo.',
+        'Prusa sube la temperatura de boquilla; Bambu sube la cama. Es un desacuerdo real entre dos fabricantes, y aquí no se promedia ni se elige por gusto. Lo que sí se puede decir es que ambos actúan sobre la misma causa —contracción al enfriarse— y que la diferencia es cuál de los dos lados de la unión es el débil en su equipo.',
       cifra: { valor: 'Prusa ↑ boquilla · Bambu ↑ cama', nota: 'desacuerdo sin resolver' },
       enlaza: { guia: 'temperatura-cama', etiqueta: 'Ver las cifras de cama' },
     },
@@ -233,8 +232,8 @@ export const separaciones: Guia = {
       id: 'boquilla',
       titulo: 'La boquilla del PLA: tres cifras, tres sitios',
       puntos: [
-        'El rango de temperatura de boquilla para el PLA aparece como 185–235 °C en la tabla de materiales,.',
-        'como 215 °C en la ficha del PLA y como un valor concreto en un hilo de foro.',
+        'El rango de temperatura de boquilla para el PLA aparece como 185–235 °C en la tabla de materiales.',
+        'Como 215 °C en la ficha del PLA y como un valor concreto en un hilo de foro.',
         'No se contradicen necesariamente, pero el corpus no lo resuelve y esta guía no elige por ti.',
       ],
       indicador: 'temperatura',
@@ -248,12 +247,12 @@ export const separaciones: Guia = {
       titulo: 'Los dos hilos: ninguno se resuelve',
       puntos: [
         'Los dos casos de foro que acompañan esta guía están sin resolver.',
-        'Uno terminó sin-improvement con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó.',
-        'Oídos así, son el límite de lo que un caso de foro puede demostrar.',
+        'Uno terminó sin mejoría con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó.',
+        'Leídos así, son el límite de lo que un caso de foro puede demostrar.',
       ],
       indicador: 'general',
       cuerpo:
-        'Los dos casos de foro que acompañan esta guía están sin resolver. Uno terminó sin-improvement con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó. Oídos así, son el límite de lo que un caso de foro puede demostrar.',
+        'Los dos casos de foro que acompañan esta guía están sin resolver. Uno terminó sin mejoría con el ajuste que le recomendó la fuente; el otro describe una mejora sin publicar con qué valor acabó. Leídos así, son el límite de lo que un caso de foro puede demostrar.',
     },
   ],
 

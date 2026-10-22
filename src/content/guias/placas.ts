@@ -105,9 +105,9 @@ export const placas: Guia = {
         chapa: ['textured-bambu', 'smooth-bambu', 'cool-supertack-bambu', 'engineering-bambu', 'dual-texture-bambu'],
       },
       puntos: [
-        'En 256 × 256 mm hay dos generaciones: la 1.ª compatible con A1 y X1/P1, la 2.ª con P2S/X2D,.',
-        'y la diferencia es un código QR. Una placa de 1.ª generación **no soporta el reconocimiento automático** en impresoras de 2.ª generación,.',
-        'aunque físicamente encaje; si aparece «Build plate not recognized», elegir «Resolved» o desactivar la detección.',
+        'En 256 × 256 mm hay dos generaciones: la 1.ª compatible con A1 y X1/P1, la 2.ª con P2S/X2D, y la diferencia es un código QR.',
+        'Una placa de 1.ª generación **no soporta el reconocimiento automático** en impresoras de 2.ª generación.',
+        'Aunque físicamente encaje; si aparece "Build plate not recognized", elegir "Resolved" o desactivar la detección.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -127,7 +127,7 @@ export const placas: Guia = {
         'En la **Textured PEI de Bambu** la acetona daña la superficie PEI y está prohibida.',
         'En la **Smooth PEI de Prusa** puede usarse 1–2 veces al mes si el IPA no es suficiente.',
         'Son superficies y procesos distintos (PEI en polvo sobre acero inox vs. film de PEI pegado con adhesivo 3M).',
-        'no se generaliza el permiso ni la prohibición a «todas las placas».',
+        'No se generaliza el permiso ni la prohibición a "todas las placas".',
       ],
       indicador: 'cama',
       cuerpo:
@@ -143,7 +143,7 @@ export const placas: Guia = {
       cuando: { chapa: 'textured-bambu' },
       puntos: [
         'En la Textured PEI de Bambu el alcohol puede simplemente **dispersar** los aceites.',
-        'se recomienda agua templada + detergente de cocina + frotado (sin aceites ni cremas hidratantes en el detergente).',
+        'Se recomienda agua templada + detergente de cocina + frotado (sin aceites ni cremas hidratantes en el detergente).',
         'El alcohol es la primera opción en la Smooth PEI de Prusa (IPA ~90 % en frío).',
         'El químico depende de la superficie, no del filamento.',
       ],
@@ -160,8 +160,8 @@ export const placas: Guia = {
       titulo: 'Diagnóstico por flujo de agua (PEI texturizado)',
       cuando: { chapa: 'textured-bambu', problema: 'sucia' },
       puntos: [
-        'En la Textured PEI de Bambu se moja la placa y se observa el flujo: si el agua baja en **hilos o gotas**,.',
-        'la placa está sucia (mala adhesión); si forma **lámina fina**, está limpia.',
+        'En la Textured PEI de Bambu se moja la placa y se observa el flujo.',
+        'Si el agua baja en **hilos o gotas**, la placa está sucia (mala adhesión); si forma **lámina fina**, está limpia.',
         'Los aceites de las manos transfieren a la superficie y se ven durante la primera capa.',
         'Casi todos los problemas de adhesión vienen de ahí.',
       ],
@@ -175,10 +175,10 @@ export const placas: Guia = {
       cuando: { chapa: 'smooth-prusa' },
       puntos: [
         'Tras 1–2 años la superficie puede pulirse y perder adhesión.',
-        'Se puede **revivir** con lija de grano alto (600–1000),.',
-        'lijando suavemente para traer PEI fresco a la superficie (queda con textura muy ligera).',
-        'Las burbujas bajo el PEI suelen desaparecer en días o semanas; la abolladura del desembalaje se va dando la vuelta y usando el otro lado,.',
-        'con el calor de la cama en 1–2 días de impresión.',
+        'Se puede **revivir** con lija de grano alto (600–1000).',
+        'Lijando suavemente para traer PEI fresco a la superficie (queda con textura muy ligera).',
+        'Las burbujas bajo el PEI suelen desaparecer en días o semanas; la abolladura del desembalaje se va dando la vuelta y usando el otro lado.',
+        'Con el calor de la cama en 1–2 días de impresión.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -194,8 +194,8 @@ export const placas: Guia = {
       cuando: { chapa: 'cool-supertack-bambu' },
       puntos: [
         'Adhiere fuerte con PLA incluso a 40 °C de cama y con PETG a 55–60 °C (2.ª generación).',
-        'en máquinas con parámetros compartidos (X/P series) el PETG puede seguir recomendándose a ~65 °C para reducir warping y *elephant foot* en.',
-        'modelos grandes.',
+        'En máquinas con parámetros compartidos (X/P series) el PETG puede seguir recomendándose a ~65 °C para reducir warping.',
+        'Y *elephant foot* en modelos grandes.',
         'Recubrimiento algo más blando que el Textured PEI: más susceptible a arañazos de espátula, que no afectan significativamente a la adhesión.',
       ],
       indicador: 'calibracion',
@@ -212,8 +212,9 @@ export const placas: Guia = {
       titulo: 'Desgaste del Cool Plate SuperTack',
       cuando: { chapa: 'cool-supertack-bambu' },
       puntos: [
-        'El Cool Plate SuperTack tiene el único dato cuantitativo de pérdida de adhesión de todas las chapas: menos del 20 % tras 300 impresiones,.',
-        'obtenido con PLA Basic en una A1. Bambu declara las demás chapas como consumibles sin porcentaje ni número de impresiones.',
+        'El Cool Plate SuperTack tiene el único dato cuantitativo de pérdida de adhesión de todas las chapas.',
+        'Menos del 20 % tras 300 impresiones, obtenido con PLA Basic en una A1.',
+        'Bambu declara las demás chapas como consumibles sin porcentaje ni número de impresiones.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -226,8 +227,7 @@ export const placas: Guia = {
       cuando: { chapa: 'effect-bambu' },
       puntos: [
         'Film con texturas ópticas (diamante, estrellado, galaxia, fibra de carbono) transferidas a la base.',
-        'Recomendado PLA y TPU.',
-        'Debe aplicarse sólo sobre la plancha de acero oficial Bambu.',
+        'Recomendado PLA y TPU. Debe aplicarse sólo sobre la plancha de acero oficial Bambu.',
         'El tipo de placa debe configurarse como Smooth PEI / High Temp Plate.',
         'La calibración por LIDAR del X1 no funciona con estos films; conviene omitirla o calibrar con una placa normal.',
         'Son consumibles.',
@@ -241,8 +241,8 @@ export const placas: Guia = {
       titulo: 'HighTemp de Prusa, sólo para HT90',
       cuando: { chapa: 'hightemp-prusa' },
       puntos: [
-        'Diseñada para materiales especiales de alta temperatura (PEEK, PEEK-CF, PEI, PEKK,.',
-        'PPSU) que de otro modo tendrían adhesión pobre o excesiva en chapas estándar.',
+        'Diseñada para materiales especiales de alta temperatura (PEEK.',
+        'PEEK-CF, PEI, PEKK, PPSU) que de otro modo tendrían adhesión pobre o excesiva en chapas estándar.',
         'PLA y PETG básicos no adhieren muy bien porque se desarrolló para materiales de alto rendimiento.',
         'Sólo para la Prusa Pro HT90, que puede usar además Textured, PP y PA Nylon.',
       ],
@@ -258,9 +258,9 @@ export const placas: Guia = {
       },
       puntos: [
         'Una P2S/X2D puede usar físicamente chapas de 1.ª generación, pero el tipo no se reconocerá automáticamente.',
-        'lo mismo le pasa a una X1 con chapas de 2.ª generación.',
+        'Lo mismo le pasa a una X1 con chapas de 2.ª generación.',
         'A1 y P1 son totalmente compatibles con chapas de 2.ª generación.',
-        'Si el tipo no se reconoce, elegir «Resolved» o desactivar la detección de placa.',
+        'Si el tipo no se reconoce, elegir "Resolved" o desactivar la detección de placa.',
       ],
       indicador: 'cama',
       cuerpo:
@@ -274,7 +274,7 @@ export const placas: Guia = {
       },
       puntos: [
         'Antes de imprimir, el nozzle se limpia en un nozzle wiper y luego se frota en una zona de wipe de la propia chapa.',
-        'En X1C, P1S/P1P y A1 puede haber «desgaste» en esa zona, pero no afecta a la función del nozzle ni de la placa.',
+        'En X1C, P1S/P1P y A1 puede haber "desgaste" en esa zona, pero no afecta a la función del nozzle ni de la placa.',
         'En la A1 mini la zona de wipe está en el heatbed y no se desgasta la placa.',
       ],
       indicador: 'cama',
@@ -286,9 +286,8 @@ export const placas: Guia = {
       titulo: 'Espesor distinto al cambiar de chapa',
       puntos: [
         'Cada tipo de chapa tiene espesor ligeramente distinto.',
-        'En impresoras sin loadcell, cambiar de chapa requiere recalibrar la primera capa (First Layer Calibration en i3) o usar perfiles de chapa.',
-        'distintos.',
-        'La Smooth PEI de Prusa es más gruesa que la texturizada y la satinada.',
+        'En impresoras sin loadcell, cambiar de chapa requiere recalibrar la primera capa (First Layer Calibration en i3).',
+        'O usar perfiles de chapa distintos. La Smooth PEI de Prusa es más gruesa que la texturizada y la satinada.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -299,9 +298,9 @@ export const placas: Guia = {
       titulo: 'Las chapas son consumibles',
       puntos: [
         'Las chapas son **consumibles** y no están cubiertas por garantía: los recubrimientos disminuyen con el tiempo.',
-        'Sólo las chapas defectuosas de llegada están cubiertas; el daño cosmético (arañazos, grietas,.',
-        'etc.) no. Prusa declara la chapa como consumible sin dar porcentaje ni número de impresiones.',
-        'sólo el Cool Plate SuperTack tiene cifra cuantitativa de desgaste.',
+        'Sólo las chapas defectuosas de llegada están cubiertas; el daño cosmético (arañazos, grietas, etc.) no.',
+        'Prusa declara la chapa como consumible sin dar porcentaje ni número de impresiones.',
+        'Sólo el Cool Plate SuperTack tiene cifra cuantitativa de desgaste.',
       ],
       indicador: 'cama',
       cuerpo:
@@ -314,9 +313,8 @@ export const placas: Guia = {
         chapa: ['engineering-bambu', 'smooth-bambu', 'textured-bambu', 'smooth-prusa', 'satin-prusa'],
       },
       puntos: [
-        'El glue que no se usa se guarda en un **lugar fresco y seco**, lejos de la luz solar directa.',
-        'Es lo que le alarga la vida útil.',
-        'La fuente no da meses ni fecha de caducidad: sólo el dónde guardarlo.',
+        'El glue que no se usa se guarda en un **lugar fresco y seco**, lejos de la luz solar directa: es lo que le alarga la vida útil.',
+        'La fuente no da meses ni fecha de caducidad, sólo el dónde guardarlo, así que aquí no se publica ninguna cifra.',
       ],
       indicador: 'entorno',
       cuerpo:

@@ -171,9 +171,9 @@ export const orientacionResistencia: Guia = {
       titulo: 'El eje Z como eslabón débil',
       cuando: { carga: 'z' },
       puntos: [
-        'Las fuentes dicen que la resistencia varía con la orientación por la adhesión entre capas (OrcaSlicer) y que las grietas se manifiestan a lo',
-        'largo del eje Z (Bambu).',
-        'La etiqueta «eslabón débil» es nuestra síntesis del concepto, no una cita literal.',
+        'Las fuentes dicen que la resistencia varía con la orientación por la adhesión entre capas (OrcaSlicer).',
+        'Y que las grietas se manifiestan a lo largo del eje Z (Bambu).',
+        'La etiqueta "eslabón débil" es nuestra síntesis del concepto, no una cita literal.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -198,8 +198,8 @@ export const orientacionResistencia: Guia = {
       titulo: 'Nylon: estrés adicional por cristalización',
       cuando: { material: 'pa' },
       puntos: [
-        'Los polímeros semicristalinos (Nylon) tienen un estrés adicional por cristalización.',
-        'pueden warpear incluso con la cama a 45 °C. El Nylon es el caso donde la adhesión entre capas sufre por partida doble.',
+        'Los polímeros semicristalinos (Nylon) tienen un estrés adicional por cristalización; pueden warpear incluso con la cama a 45 °C.',
+        'El Nylon es el caso donde la adhesión entre capas sufre por partida doble.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -211,8 +211,8 @@ export const orientacionResistencia: Guia = {
       id: 'adhesion-mecanismo',
       titulo: 'Adhesión entre capas: entrelazado de cadenas',
       puntos: [
-        'La adhesión entre capas se basa en el entrelazado de cadenas poliméricas cuando ambas capas están por encima de Tg. Por eso la temperatura',
-        'de extrusión y la de cámara son la palanca principal.',
+        'La adhesión entre capas se basa en el entrelazado de cadenas poliméricas cuando ambas capas están por encima de Tg.',
+        'Por eso la temperatura de extrusión y la de cámara son la palanca principal.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -224,9 +224,8 @@ export const orientacionResistencia: Guia = {
       titulo: 'Más tiempo por encima de Tg',
       cuando: { tempBoquilla: 'baja' },
       puntos: [
-        'Aumentar el tiempo por encima de Tg mejora la adhesión: subir la temperatura de extrusión, subir la temperatura de cámara,.',
-        'reducir el enfriamiento.',
-        'Es la vía principal para reforzar el eje Z.',
+        'Aumentar el tiempo por encima de Tg mejora la adhesión: subir la temperatura de extrusión, subir la temperatura de cámara.',
+        'Reducir el enfriamiento. Es la vía principal para reforzar el eje Z.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -251,8 +250,8 @@ export const orientacionResistencia: Guia = {
       titulo: 'Reducir la creación de tensión',
       cuando: { tempBoquilla: 'baja' },
       puntos: [
-        'Reducir la creación de tensión: aumentar el tamaño de boquilla, reducir la tasa de extrusión, aumentar la temperatura de impresión,.',
-        'recubrir la superficie interna de la boquilla.',
+        'Reducir la creación de tensión: aumentar el tamaño de boquilla, reducir la tasa de extrusión, aumentar la temperatura de impresión.',
+        'Recubrir la superficie interna de la boquilla.',
         'Son medidas de proceso, no de material.',
       ],
       indicador: 'temperatura',
@@ -265,9 +264,8 @@ export const orientacionResistencia: Guia = {
       titulo: 'Altura de capa y adhesión',
       cuando: { altura: 'alta' },
       puntos: [
-        'La altura de capa debe ser un 20 % menor que el diámetro de boquilla; con boquilla de 0,4 mm no pasar de 0,32 mm,.',
-        'o las capas no se adhieren bien.',
-        'Por encima del 80 % del diámetro aumenta el riesgo de mala adhesión.',
+        'La altura de capa debe ser un 20 % menor que el diámetro de boquilla; con boquilla de 0,4 mm no pasar de 0,32 mm.',
+        'O las capas no se adhieren bien. Por encima del 80 % del diámetro aumenta el riesgo de mala adhesión.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -306,10 +304,10 @@ export const orientacionResistencia: Guia = {
       titulo: 'Auto Orientation optimiza soportes, no resistencia',
       cuando: { orientacionSlicer: 'auto' },
       puntos: [
-        'Auto Orientation selecciona la orientación de menor «unprintability» (voladizos, soportes, contacto con cama, contorno).',
+        'Auto Orientation selecciona la orientación de menor "unprintability" (voladizos, soportes, contacto con cama, contorno).',
         'La misma página advierte que las características de resistencia varían con la orientación por la adhesión entre capas.',
-        'Son objetivos distintos: la orientación que minimiza soportes no es necesariamente la que maximiza la resistencia,.',
-        'porque cambiar la orientación cambia qué eje soporta la carga. (Inferencia nuestra; el cocinado marca que ninguna fuente lo afirma.).',
+        'Son objetivos distintos: la orientación que minimiza soportes no es necesariamente la que maximiza la resistencia.',
+        'Porque cambiar la orientación cambia qué eje soporta la carga. (Inferencia nuestra; el cocinado marca que ninguna fuente lo afirma.).',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -321,9 +319,9 @@ export const orientacionResistencia: Guia = {
       titulo: 'Auto Orientation puede fallar en modelos complejos',
       cuando: { orientacionSlicer: 'auto' },
       puntos: [
-        'Auto Orientation analiza la geometría del mesh (normales y áreas de caras), genera orientaciones candidatas,.',
-        'evalúa cada una por área de voladizo, contacto inferior, interfaz de soporte y complejidad de contorno,.',
-        'y selecciona la de menor puntuación de «unprintability».',
+        'Auto Orientation analiza la geometría del mesh (normales y áreas de caras).',
+        'Genera orientaciones candidatas, evalúa cada una por área de voladizo, contacto inferior, interfaz de soporte y complejidad de contorno.',
+        'Y selecciona la de menor puntuación de "unprintability".',
         'Puede no encontrar la mejor orientación en modelos complejos; siempre revisar la orientación sugerida.',
       ],
       indicador: 'geometria',
@@ -349,8 +347,8 @@ export const orientacionResistencia: Guia = {
       titulo: 'Protocolo Bambu para grietas intercapa',
       cuando: { material: ['abs', 'pc', 'pet-cf', 'pa-cf'] },
       puntos: [
-        'Desatascar la boquilla (cold pull).',
-        'Aumentar la temperatura de boquilla o reducir la velocidad de impresión, para dar más tiempo al filamento para adherirse a la capa inferior.',
+        'Desatascar la boquilla (cold pull). Aumentar la temperatura de boquilla o reducir la velocidad de impresión.',
+        'Para dar más tiempo al filamento para adherirse a la capa inferior.',
         'Con ABS: velocidad de pared interior 150 mm/s y exterior 100 mm/s.',
         'Reducir la velocidad del ventilador de capa.',
         'Subir la temperatura de cama 5-10 °C; si el equipo tiene calefacción activa de cámara, subir la cámara 5 °C.',
@@ -366,10 +364,10 @@ export const orientacionResistencia: Guia = {
       puntos: [
         'Tres ensayos mecánicos principales: tracción (tensile), impacto Charpy y flexión en tres puntos.',
         'El ensayo de tracción somete la probeta a tensión hasta la rotura.',
-        'el Charpy mide la energía de impacto (kJ/m²) necesaria para fracturar la probeta.',
-        'la flexión en tres puntos mide la resistencia a la deformación bajo carga gradual.',
-        'Sirven para comparar orientaciones y materiales, no para predecir el fallo de una pieza concreta. (Última frase: inferencia nuestra,.',
-        'no respaldada por el raw.).',
+        'El Charpy mide la energía de impacto (kJ/m²) necesaria para fracturar la probeta.',
+        'La flexión en tres puntos mide la resistencia a la deformación bajo carga gradual.',
+        'Sirven para comparar orientaciones y materiales, no para predecir el fallo de una pieza concreta. (Última frase.',
+        'Inferencia nuestra, no respaldada por el raw.).',
       ],
       indicador: 'material',
       cuerpo:

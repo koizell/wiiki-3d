@@ -111,7 +111,7 @@ export const maxVolumetricSpeed: Guia = {
       puntos: [
         'El volumetric flow rate es la cantidad de filamento que el hotend puede empujar a través de la boquilla por segundo, medida en mm³/s.',
         'En OrcaSlicer, el Max Volumetric Speed es el volumen de filamento que se puede fundir y extruir por segundo.',
-        'la velocidad de impresión se limita a ese valor para evitar atascos, subextrusión o mala adhesión entre capas.',
+        'La velocidad de impresión se limita a ese valor para evitar atascos, subextrusión o mala adhesión entre capas.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -157,13 +157,13 @@ export const maxVolumetricSpeed: Guia = {
       id: 'highflow-beneficios',
       titulo: 'Hotend de alto flujo: mejor fusión',
       puntos: [
-        'Un hotend de alto flujo (geometría interna de 4 canales) da una fusión más uniforme y una salida a temperatura y viscosidad más',
-        'consistentes.',
-        'E3D afirma que eso da una adhesión entre capas típicamente 3× más fuerte y más consistente, y paredes exteriores más lisas,.',
-        'incluso sin cambiar los ajustes de velocidad.',
+        'Un hotend de alto flujo (geometría interna de 4 canales) da una fusión más uniforme.',
+        'Y una salida a temperatura y viscosidad más consistentes.',
+        'E3D afirma que eso da una adhesión entre capas típicamente 3× más fuerte y más consistente.',
+        'Y paredes exteriores más lisas, incluso sin cambiar los ajustes de velocidad.',
         'Es un dato de fabricante, sin corroborar por otra fuente.',
         'No confundir con el daño por imprimir por encima del techo de fusión.',
-        'eso es un problema de velocidad (empujar material por encima del límite), no de geometría del hotend.',
+        'Eso es un problema de velocidad (empujar material por encima del límite), no de geometría del hotend.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -179,10 +179,9 @@ export const maxVolumetricSpeed: Guia = {
       id: 'pla-high-speed',
       titulo: 'PLA High Speed de Prusa',
       puntos: [
-        'Prusament PLA High Speed tiene un MVS de 28 mm³/s en la CORE One+ a 220 °C; el Prusament PLA normal tiene 24 mm³/s (mismo hardware,.',
-        'para comparación).',
-        'El PLA High Speed tiene MFI más alto y shear-thinning (la viscosidad baja al empujar más rápido),.',
-        'absorción rápida de calor y enfriamiento optimizado.',
+        'Prusament PLA High Speed tiene un MVS de 28 mm³/s en la CORE One+ a 220 °C; el Prusament PLA normal tiene 24 mm³/s (mismo hardware.',
+        'Para comparación). El PLA High Speed tiene MFI más alto y shear-thinning (la viscosidad baja al empujar más rápido).',
+        'Absorción rápida de calor y enfriamiento optimizado.',
         'No reemplaza al PLA clásico: las características visuales y mecánicas son distintas.',
       ],
       indicador: 'maquina',
@@ -200,8 +199,8 @@ export const maxVolumetricSpeed: Guia = {
       titulo: 'Cómo se calibra en OrcaSlicer',
       puntos: [
         'Valores por defecto: 5 mm³/s de inicio, 20 mm³/s de fin, paso 0,5.',
-        'Imprimir, anotar dónde empiezan a fallar las capas y dónde baja la calidad (un cambio de brillo brillante/mate es pista visual de.',
-        'degradación del material o mala adhesión).',
+        'Imprimir, anotar dónde empiezan a fallar las capas.',
+        'Y dónde baja la calidad (un cambio de brillo brillante/mate es pista visual de degradación del material o mala adhesión).',
         'Medir con calibre la altura justo antes de los defectos.',
         'Fórmula: MVS = inicio + (altura medida × paso).',
         'Ejemplo con 19 mm: 5 + (19 × 0,5) = 14,5 mm³/s.',
@@ -221,11 +220,11 @@ export const maxVolumetricSpeed: Guia = {
       id: 'adaptive-vol',
       titulo: 'Adaptive volumetric speed (experimental)',
       puntos: [
-        'En OrcaSlicer, el Adaptive volumetric speed (filament_adaptive_volumetric_speed,.',
-        'modo Developer) es experimental e incompleto (importado de BBS) y funcional sólo para algunos perfiles.',
-        'Con él habilitado, el flujo se limita por el menor entre el valor ajustado (calculado desde ancho de línea y altura de capa) y el máximo.',
-        'definido por el usuario.',
-        'deshabilitado, sólo se aplica el máximo del usuario.',
+        'En OrcaSlicer, el Adaptive volumetric speed (filament_adaptive_volumetric_speed.',
+        'Modo Developer) es experimental e incompleto (importado de BBS) y funcional sólo para algunos perfiles.',
+        'Con él habilitado, el flujo se limita por el menor entre el valor ajustado (calculado desde ancho de línea.',
+        'Y altura de capa) y el máximo definido por el usuario.',
+        'Deshabilitado, sólo se aplica el máximo del usuario.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -240,8 +239,8 @@ export const maxVolumetricSpeed: Guia = {
       id: 'simplify3d-extrusion-multiplier',
       titulo: 'Extrusion multiplier en Simplify3D (otro concepto)',
       puntos: [
-        'Simplify3D usa el extrusion multiplier (flow rate) como control de flujo: se ajusta por extrusor en la pestaña Extruder,.',
-        'con valores típicos ~0,9 para PLA y ~1,0 para ABS; se aumenta un 5 % y se reimprime el cubo de prueba.',
+        'Simplify3D usa el extrusion multiplier (flow rate) como control de flujo: se ajusta por extrusor en la pestaña Extruder.',
+        'Con valores típicos ~0,9 para PLA y ~1,0 para ABS; se aumenta un 5 % y se reimprime el cubo de prueba.',
         'Es un factor del flujo esperado, no un techo de velocidad por capacidad de fusión: no confundirlo con el MVS (mm³/s) de OrcaSlicer.',
       ],
       indicador: 'slicer',
@@ -259,8 +258,7 @@ export const maxVolumetricSpeed: Guia = {
       titulo: 'Subir la temperatura al aumentar flujo',
       puntos: [
         'Si se va a subir velocidad o flujo, conviene subir la temperatura de boquilla hacia el extremo alto del rango del filamento (usar una torre.',
-        'de temperatura para encontrarlo).',
-        'A mayor flujo, menos tiempo para introducir el calor en el filamento.',
+        'De temperatura para encontrarlo). A mayor flujo, menos tiempo para introducir el calor en el filamento.',
       ],
       indicador: 'temperatura',
       cuerpo:

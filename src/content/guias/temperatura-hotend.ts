@@ -73,8 +73,8 @@ export const temperaturaHotend: Guia = {
       id: 'rango-pla',
       titulo: 'Rango de PLA',
       puntos: [
-        'Bambu Lab da 190–240 °C para PLA.',
-        'Prusa da 195–220 °C. Cada fabricante tiene su rango; no se promedian.',
+        'Bambu Lab da 190–240 °C para PLA. Prusa da 195–220 °C.',
+        'Cada fabricante tiene su rango; no se promedian.',
       ],
       indicador: 'temperatura',
       cuerpo: 'Bambu Lab da 190–240 °C para PLA. Prusa da 195–220 °C. Cada fabricante tiene su rango; no se promedian.',
@@ -147,8 +147,7 @@ export const temperaturaHotend: Guia = {
       titulo: 'Subir la temperatura mejora la unión',
       puntos: [
         'Aumentar la temperatura de boquilla o disminuir la velocidad de impresión permite al filamento extruido más tiempo para unirse con la capa.',
-        'inferior,.',
-        'mejorando la adhesión intercapa.',
+        'Inferior, mejorando la adhesión intercapa.',
       ],
       indicador: 'calibracion',
       cuerpo: 'Aumentar la temperatura de boquilla o disminuir la velocidad de impresión permite al filamento extruido más tiempo para unirse con la capa inferior, mejorando la adhesión intercapa.',

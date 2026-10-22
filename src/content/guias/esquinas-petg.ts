@@ -157,8 +157,7 @@ export const esquinasPetg: Guia = {
       titulo: 'El ranking de riesgo de warping',
       puntos: [
         'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC, PA-CF, PA, ABS, ASA, PETG, PLA.',
-        'PETG queda justo por encima del PLA.',
-        'Son siete materiales del propio filtro de Bambu, no todos los rígidos.',
+        'PETG queda justo por encima del PLA. Son siete materiales del propio filtro de Bambu, no todos los rígidos.',
       ],
       indicador: 'material',
       cuerpo:
@@ -171,7 +170,7 @@ export const esquinasPetg: Guia = {
       puntos: [
         'Bambu da 60-80 °C en la tabla por filamento, con glue stick o liquid glue en el mismo rango.',
         'En la tabla por placa, las placas PEI (Engineering, Smooth, High-Temp y Textured) piden 60-80 °C para PETG.',
-        'la Cool Plate no está recomendada.',
+        'La Cool Plate no está recomendada.',
       ],
       indicador: 'cama',
       cuerpo:
@@ -182,8 +181,8 @@ export const esquinasPetg: Guia = {
       id: 'cama-prusa',
       titulo: 'Cama para PETG segun Prusa y Prusament',
       puntos: [
-        'Prusa da 70-90 °C para PETG en la guía de materiales,.',
-        'y Prusament PETG afina el mismo rango como 80 ± 10 °C. Las tres bandas solapan entre 70 y 80 °C.',
+        'Prusa da 70-90 °C para PETG en la guía de materiales, y Prusament PETG afina el mismo rango como 80 ± 10 °C.',
+        'Las tres bandas solapan entre 70 y 80 °C.',
       ],
       indicador: 'cama',
       cuerpo:
@@ -222,7 +221,7 @@ export const esquinasPetg: Guia = {
       puntos: [
         'Un usuario del foro de Prusa propone 20-40 °C de ambiente para PETG en recinto.',
         'Es una sola fuente secundaria, sin corroborar.',
-        'el extremo alto choca con los 40-50 °C a partir de los cuales las piezas PETG de la impresora se deforman.',
+        'El extremo alto choca con los 40-50 °C a partir de los cuales las piezas PETG de la impresora se deforman.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -234,12 +233,12 @@ export const esquinasPetg: Guia = {
       id: 'fan-contradiccion',
       titulo: 'Ventilador: dos direcciones segun qué ventilador',
       puntos: [
-        'Bambu habla del auxiliar: exceso de cooling enfría las paredes exteriores demasiado rápido y desencadena warping; recomendado 40-50 %,.',
-        'bajarlo a 20-30 % si hay warping, y sin ventilador en las 3 primeras capas.',
-        'Prusa habla del ventilador de pieza: PETG necesita mucho cooling y, si las esquinas se levantan,.',
-        'hay que comprobar que esté activo y sin obstrucciones y probar a subir la velocidad.',
-        'Ambas pueden ser ciertas según qué ventilador y qué ha fallado: comprobar primero si está activo y sin obstrucciones; si ya está alto,.',
-        'bajarlo.',
+        'Bambu habla del auxiliar: exceso de cooling enfría las paredes exteriores demasiado rápido y desencadena warping.',
+        'Recomendado 40-50 %, bajarlo a 20-30 % si hay warping, y sin ventilador en las 3 primeras capas.',
+        'Prusa habla del ventilador de pieza: PETG necesita mucho cooling y.',
+        'Si las esquinas se levantan, hay que comprobar que esté activo y sin obstrucciones y probar a subir la velocidad.',
+        'Ambas pueden ser ciertas según qué ventilador y qué ha fallado: comprobar primero si está activo y sin obstrucciones.',
+        'Si ya está alto, bajarlo.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -288,7 +287,8 @@ export const esquinasPetg: Guia = {
       id: 'petg-extrusor',
       titulo: 'Temperatura de boquilla para PETG',
       puntos: [
-        'Bambu da 240-270 °C, Prusa 215-270 °C y Prusament 250 ± 10 °C. El rango propio depende del filamento y del hotend.',
+        'Bambu da 240-270 °C, Prusa 215-270 °C y Prusament 250 ± 10 °C.',
+        'El rango propio depende del filamento y del hotend.',
         'Si el ventilador excesivo ha levantado la pieza, subir la temperatura de boquilla recupera la union entre capas.',
       ],
       indicador: 'ventilacion',
@@ -300,11 +300,9 @@ export const esquinasPetg: Guia = {
       id: 'infill-patron',
       titulo: 'Relleno y patron para PETG',
       puntos: [
-        'Modelos planos grandes: Gyroid a unas 25 % como techo; Grid y Triangle generan tension lineal interna,.',
-        'Gyroid se encoge de forma mas uniforme.',
-        'Piezas estructurales: 5 paredes y unos 25 %; no estructurales: 2 paredes y 15 %.',
-        'Evitar mas de 50 %.',
-        'Para partes duraderas, aumentar primero el número de perimetros, no el porcentaje de relleno.',
+        'Modelos planos grandes: Gyroid a unas 25 % como techo; Grid y Triangle generan tension lineal interna.',
+        'Gyroid se encoge de forma mas uniforme. Piezas estructurales: 5 paredes y unos 25 %; no estructurales: 2 paredes y 15 %.',
+        'Evitar mas de 50 %. Para partes duraderas, aumentar primero el número de perimetros, no el porcentaje de relleno.',
       ],
       indicador: 'material',
       cuerpo:
@@ -344,7 +342,7 @@ export const esquinasPetg: Guia = {
       puntos: [
         'Si la habitacion esta por debajo de 20 °C, aparecen problemas de warping incluso con PLA y PETG, que son materiales permisivos.',
         'Las corrientes de aire enfrían un lado antes que el otro y aumentan la tensión entre capas.',
-        'conviene bloquear el flujo alrededor de la impresora.',
+        'Conviene bloquear el flujo alrededor de la impresora.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -355,8 +353,7 @@ export const esquinasPetg: Guia = {
       id: 'humedad-secado',
       titulo: 'Humedad en PETG y secado',
       puntos: [
-        'PETG absorbe humedad.',
-        'Filamento húmedo da sonidos de crujido o popping, superficies rugosas, burbujas, stringing y resistencia reducida.',
+        'PETG absorbe humedad. Filamento húmedo da sonidos de crujido o popping, superficies rugosas, burbujas, stringing y resistencia reducida.',
         'Secar antes de reintentar: 70 °C durante 8 h en horno de secado, o 65 °C durante 12 h en AMS.',
       ],
       indicador: 'temperatura',

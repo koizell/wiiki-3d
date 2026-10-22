@@ -150,8 +150,8 @@ export const despegueAMitad: Guia = {
       titulo: 'Por qué se levanta',
       puntos: [
         'Es contracción térmica, no un ajuste mal puesto.',
-        'El filamento sale fundido y la pieza se enfría; los bordes exteriores se enfrían antes que el centro,.',
-        'y esa diferencia genera una tensión que tira de las esquinas hacia arriba y puede terminar en despegue total.',
+        'El filamento sale fundido y la pieza se enfría; los bordes exteriores se enfrían antes que el centro.',
+        'Y esa diferencia genera una tensión que tira de las esquinas hacia arriba y puede terminar en despegue total.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -165,8 +165,8 @@ export const despegueAMitad: Guia = {
       id: 'tres-caras',
       titulo: 'Las tres caras del despegue a mitad',
       puntos: [
-        'Warping o corner lifting: las esquinas o bordes se curvan hacia arriba fuera de la cama, a veces a mitad,.',
-        'y se puede ver una línea horizontal ondulada en el lateral donde la boquilla volvió a golpear la capa levantada.',
+        'Warping o corner lifting: las esquinas o bordes se curvan hacia arriba fuera de la cama.',
+        'A veces a mitad, y se puede ver una línea horizontal ondulada en el lateral donde la boquilla volvió a golpear la capa levantada.',
         'Fallo de adhesión: el modelo completo se desplaza, desliza o salta de la cama.',
         'Colapso estructural: la parte superior parece un nido de pájaro o las capas superiores quedan desplazadas lateralmente respecto a la base.',
         'Las tres pasan en plena impresión, pero son causas distintas.',
@@ -184,8 +184,7 @@ export const despegueAMitad: Guia = {
       titulo: 'El ranking de riesgo de warping',
       puntos: [
         'Bambu ordena por riesgo de warping los materiales propensos a contraerse: PC → PA-CF → PA → ABS → ASA → PETG → PLA.',
-        'Son siete, y el PLA es el último.',
-        'Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
+        'Son siete, y el PLA es el último. Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
       ],
       indicador: 'material',
       cuerpo:
@@ -197,7 +196,7 @@ export const despegueAMitad: Guia = {
       titulo: 'La primera capa y el problema a mitad no son lo mismo',
       puntos: [
         'Filamento que se contrae al enfriarse levanta las esquinas sólo si la base no se sujetó bien.',
-        'por eso el agarre inicial es el Tier 1 que Bambu atribuye a aproximadamente el 80 % de los fallos de warping y adhesión.',
+        'Por eso el agarre inicial es el Tier 1 que Bambu atribuye a aproximadamente el 80 % de los fallos de warping y adhesión.',
         'Si las esquinas levantan pero la pieza no se suelta, no es adhesión nula: es contracción sobre una unión que no aguantó.',
       ],
       indicador: 'calibracion',
@@ -229,8 +228,9 @@ export const despegueAMitad: Guia = {
       titulo: 'ABS, ASA y cama alta',
       cuando: { material: 'abs', fallo: ['esquinas', 'cama'] },
       puntos: [
-        'Simplify3D sitúa el ABS en 100–120 °C y Bambu en 90–100 °C. Para ABS, ASA, PA y PC la cámara cerrada con cama calentada es esencial.',
-        'en impresoras open-frame conviene subir la cama unos +10 °C para compensar cuando hace frío.',
+        'Simplify3D sitúa el ABS en 100–120 °C y Bambu en 90–100 °C.',
+        'Para ABS, ASA, PA y PC la cámara cerrada con cama calentada es esencial.',
+        'En impresoras open-frame conviene subir la cama unos +10 °C para compensar cuando hace frío.',
         'Una pieza de ABS de 100 mm que enfría de 230 °C a 30 °C se encoge casi 1,5 mm.',
       ],
       indicador: 'maquina',
@@ -244,8 +244,8 @@ export const despegueAMitad: Guia = {
       cuando: { material: 'abs' },
       puntos: [
         'El ABS se contrae casi un 1,5 % al pasar de 230 °C a temperatura ambiente.',
-        'una pieza de 100 mm de ABS que enfría de 230 °C a 30 °C se encoge casi 1,5 mm. Por eso los modelos grandes y planos en ABS warpean casi.',
-        'siempre sin cámara cerrada.',
+        'Una pieza de 100 mm de ABS que enfría de 230 °C a 30 °C se encoge casi 1,5 mm.',
+        'Por eso los modelos grandes y planos en ABS warpean casi siempre sin cámara cerrada.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -258,8 +258,8 @@ export const despegueAMitad: Guia = {
       cuando: { material: 'petg', fallo: ['esquinas', 'cama'] },
       puntos: [
         'Bambu sitúa el PETG justo por encima del PLA en el ranking de riesgo, y su rango de cama es 60–80 °C en la tabla por filamento.',
-        'El mismo cuidado de enfriamiento y adhesión que con el PLA,.',
-        'pero sin bajar la guardia en la humedad ni en la adhesión excesiva con superficies PEI.',
+        'El mismo cuidado de enfriamiento y adhesión que con el PLA.',
+        'Pero sin bajar la guardia en la humedad ni en la adhesión excesiva con superficies PEI.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -272,9 +272,9 @@ export const despegueAMitad: Guia = {
       cuando: { material: ['pla', 'pla-cf', 'petg'], fallo: 'esquinas' },
       puntos: [
         'PLA y PETG necesitan mucho cooling, pero PLA puede warpear por cooling excesivo.',
-        'deshabilitar el cooling en las primeras 3 capas ayuda a que la primera capa se pegue y el conjunto se asiente.',
-        'El ventilador auxiliar a alta velocidad enfría las paredes exteriores demasiado rápido: bajarlo a 40–50 % o reducirlo 20–30 % ayuda,.',
-        'sobre todo en objetos pequeños o con voladizos.',
+        'Deshabilitar el cooling en las primeras 3 capas ayuda a que la primera capa se pegue y el conjunto se asiente.',
+        'El ventilador auxiliar a alta velocidad enfría las paredes exteriores demasiado rápido: bajarlo a 40–50 % o reducirlo 20–30 % ayuda.',
+        'Sobre todo en objetos pequeños o con voladizos.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -290,9 +290,8 @@ export const despegueAMitad: Guia = {
       cuando: { material: ['pla', 'pla-cf', 'petg'] },
       puntos: [
         'Bambu parte de que el cooling excesivo (sobre todo el auxiliar) desencadena el warping de esquinas y recomienda bajarlo.',
-        'Prusa parte de que PLA necesita mucho cooling y que un ventilador parado o insuficiente puede levantar las esquinas,.',
-        'y sugiere activarlo y subirlo.',
-        'Ambas coinciden en los extremos (0 % en ABS; full demasiado pronto perjudica ABS).',
+        'Prusa parte de que PLA necesita mucho cooling y que un ventilador parado o insuficiente puede levantar las esquinas.',
+        'Y sugiere activarlo y subirlo. Ambas coinciden en los extremos (0 % en ABS; full demasiado pronto perjudica ABS).',
         'El corpus no resuelve cuál aplicar en un caso intermedio; ambas se exponen.',
       ],
       indicador: 'ventilacion',
@@ -322,8 +321,8 @@ export const despegueAMitad: Guia = {
       puntos: [
         'Para ABS, ASA, PA y PC la impresora cerrada con cámara calentada es esencial.',
         'En impresoras open-frame (A1) conviene subir la cama otros +10 °C para compensar cuando hace frío.',
-        'Pero imprimir PLA o PETG en recinto puede no ser buena idea,.',
-        'porque necesitan mucho cooling y es difícil lograrlo con temperatura ambiente alta.',
+        'Pero imprimir PLA o PETG en recinto puede no ser buena idea.',
+        'Porque necesitan mucho cooling y es difícil lograrlo con temperatura ambiente alta.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -340,8 +339,8 @@ export const despegueAMitad: Guia = {
         'Relleno por defecto 15 %; evitar más de 50 % (caso típico que provoca warping: 60 %).',
         'Para piezas estructurales, 5 paredes y unos 25 %; para no estructurales, 2 paredes y 15 %.',
         'Grid y Triangles crean tensión lineal interna; Gyroid se contrae de forma uniforme en todas direcciones.',
-        'Los patrones que cruzan (Grid, Triangles) además generan un bulto mínimo dentro de una capa que la boquilla engancha en el siguiente pase,.',
-        'que es la vía del colapso.',
+        'Los patrones que cruzan (Grid, Triangles) además generan un bulto mínimo dentro de una capa que la boquilla engancha en el siguiente pase.',
+        'Que es la vía del colapso.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -352,8 +351,8 @@ export const despegueAMitad: Guia = {
       id: 'brim',
       titulo: 'Brim, brim ears y raft',
       puntos: [
-        'Brim de 8–10 mm para PLA que levanta esquinas; si sólo fallan dos esquinas,.',
-        'brim ears pintados dirigidos únicamente a ellas es mejor que un brim entero.',
+        'Brim de 8–10 mm para PLA que levanta esquinas.',
+        'Si sólo fallan dos esquinas, brim ears pintados dirigidos únicamente a ellas es mejor que un brim entero.',
         'El brim aumenta el área de contacto con la cama; si no basta, añadir una pequeña geometría (un cilindro) en la zona problemática.',
         'El brim o el raft ayudan a sujetar los bordes; por su altura (pocas capas) warpean menos.',
         'Para piezas pequeñas sin suficiente apoyo, brim o raft aumenta el área de contacto con la cama.',
@@ -406,7 +405,7 @@ export const despegueAMitad: Guia = {
         'Z-offset físico: subirlo 0,05–0,1 mm (Simplify3D usa −0,05 mm para acercar 0,05 mm).',
         'Cada layer suele ser de unos 0,2 mm, de modo que un ajuste pequeño tiene gran efecto.',
         'Bajar un poco el Live Adjust Z aumenta la adhesión sin sobrecosquir la primera capa.',
-        'con PETG o PC la adhesión puede ser excesiva y dañar la chapa PEI.',
+        'Con PETG o PC la adhesión puede ser excesiva y dañar la chapa PEI.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -430,10 +429,10 @@ export const despegueAMitad: Guia = {
       id: 'adhesivos',
       titulo: 'Adhesivos, cintas y superficies',
       puntos: [
-        'Glue stick como booster de emergencia para filamentos tozudos (ABS, ASA, PA, PC), en capa fina y uniforme.',
-        'también actúa como capa de separación que protege la chapa.',
+        'Glue stick como booster de emergencia para filamentos tozudos (ABS.',
+        'ASA, PA, PC), en capa fina y uniforme; también actúa como capa de separación que protege la chapa.',
         'PLA suele pegar bien sobre cinta de pintor azul; ABS, sobre Kapton/Polyimide film; BuildTak suele sujetar PLA.',
-        'el vidrio borosilicato va bien con ABS caliente.',
+        'El vidrio borosilicato va bien con ABS caliente.',
         'Spray de cabello y glue sticks funcionan si todo lo demás falla.',
       ],
       indicador: 'cama',
@@ -461,8 +460,8 @@ export const despegueAMitad: Guia = {
       puntos: [
         'La parte superior parece un nido de pájaro o las capas superiores quedan desplazadas lateralmente respecto a la base.',
         'Causa mecánica o de adhesión: la boquilla derribó un modelo alto y delgado por vibración a alta velocidad.',
-        'los patrones de relleno que cruzan (Grid, Triangles) generan pequeños bultos que la boquilla engancha en el siguiente pase.',
-        'o las correas flojas dan "slop" mecánico.',
+        'Los patrones de relleno que cruzan (Grid, Triangles) generan pequeños bultos que la boquilla engancha en el siguiente pase.',
+        'O las correas flojas dan "slop" mecánico.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -476,8 +475,8 @@ export const despegueAMitad: Guia = {
       id: 'belts',
       titulo: 'Correas y su tensión',
       puntos: [
-        'Una correa floja produce un clic o traqueteo irregular en los ejes X o Y durante la impresión; una correa bien tensada se siente firme,.',
-        'como una cuerda de guitarra, con ligero rebote.',
+        'Una correa floja produce un clic o traqueteo irregular en los ejes X o Y durante la impresión; una correa bien tensada se siente firme.',
+        'Como una cuerda de guitarra, con ligero rebote.',
         'Es la causa principal de capas desplazadas y también entra en el colapso.',
       ],
       indicador: 'general',
@@ -493,10 +492,10 @@ export const despegueAMitad: Guia = {
       titulo: 'Velocidad y aceleración en modelos altos',
       cuando: { tamaño: 'alta-delgada', fallo: 'colapso' },
       puntos: [
-        'Para modelos altos y finos que se tumban, reducir velocidad de impresión y aceleración en 20–30 %,.',
-        'activar supports y considerar reorientar el modelo para que quede tumbado.',
-        'Reducir velocidad puede ayudar mucho en materiales de alta propensión al warping para que el conjunto se asiente y las capas se fundan',
-        'correctamente.',
+        'Para modelos altos y finos que se tumban, reducir velocidad de impresión y aceleración en 20–30 %.',
+        'Activar supports y considerar reorientar el modelo para que quede tumbado.',
+        'Reducir velocidad puede ayudar mucho en materiales de alta propensión al warping para.',
+        'Que el conjunto se asiente y las capas se fundan correctamente.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -524,8 +523,8 @@ export const despegueAMitad: Guia = {
       id: 'humedad',
       titulo: 'Humedad del filamento y adhesión',
       puntos: [
-        'Si se oyen crujidos o petardeos al imprimir, o se ven superficies ásperas, burbujeantes o stringy, el filamento ha absorbido humedad.',
-        'secar antes de reintentar.',
+        'Si se oyen crujidos o petardeos al imprimir, o se ven superficies ásperas, burbujeantes o stringy.',
+        'El filamento ha absorbido humedad; secar antes de reintentar.',
         'Guardar el filamento no usado en bolsas selladas o contenedores herméticos con gel de sílice.',
         'Nylon y PC absorben humedad en pocas horas en ambiente húmedo, no dejar en el portabobinas durante la noche.',
         'El PETG es el peor caso documentado para capas internas débiles.',
@@ -539,7 +538,7 @@ export const despegueAMitad: Guia = {
       titulo: 'Mantenimiento antes de diagnosticar',
       puntos: [
         'Revisar residuos en el piñón del extrusor; inspeccionar el tubo PTFE por grietas, amarilleo o bloqueos.',
-        'confirmar que el cabezal se mueve libremente en X, Y, Z sin tirones ni rozaduras.',
+        'Confirmar que el cabezal se mueve libremente en X, Y, Z sin tirones ni rozaduras.',
         'Ejecutar el ABL tras mover la impresora, hacer mantenimiento o actualizar firmware.',
         'Comprobar que la boquilla esté instalada correctamente, con los clips bien fijados.',
       ],
@@ -552,11 +551,10 @@ export const despegueAMitad: Guia = {
       titulo: 'Cuatro fallos que no son este',
       puntos: [
         'Warping mínimo puede pasar desapercibido pero aún así dejar defectos visibles en paredes laterales y capas superiores.',
-        'es fácil confundirlo con extrusión o flujo.',
+        'Es fácil confundirlo con extrusión o flujo.',
         'El colapso de piezas altas es mecánico, no térmico.',
         'La base plana con capas sueltas por dentro es separación.',
-        'La base más ancha es pie de elefante.',
-        'Y la pieza entera corrida es desplazamiento.',
+        'La base más ancha es pie de elefante. Y la pieza entera corrida es desplazamiento.',
       ],
       indicador: 'temperatura',
       cuerpo:

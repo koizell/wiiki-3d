@@ -103,8 +103,9 @@ export const piezasCurvadasZ: Guia = {
       id: 'altura-y-curvas',
       titulo: 'La altura de capa es la resolución vertical',
       puntos: [
-        'La altura de capa define cuánto detalle tiene la pieza en el eje Z. Usar alturas menores da acabado de superficie más suave,.',
-        'líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
+        'La altura de capa define cuánto detalle tiene la pieza en el eje Z.',
+        'Usar alturas menores da acabado de superficie más suave.',
+        'Líneas de capa menos visibles, más detalle en curvas y mejor rendimiento en voladizos.',
       ],
       indicador: 'altura',
       cuerpo:
@@ -137,8 +138,8 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Por debajo del 20 %: inconsistencias de flujo',
       cuando: { altura: 'fina' },
       puntos: [
-        'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones "fish scale",.',
-        'especialmente a altas velocidades.',
+        'Por debajo del 20 % del diámetro de boquilla pueden aparecer inconsistencias de flujo y patrones "fish scale".',
+        'Especialmente a altas velocidades.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -168,8 +169,8 @@ export const piezasCurvadasZ: Guia = {
       id: 'z-contouring-que-es',
       titulo: 'Z contouring (ZAA) suaviza curvas superiores',
       puntos: [
-        'Z contouring reduce el escalonado visible en superficies curvas y pendientes superiores ajustando la altura Z de puntos de extrusión',
-        'individuales para que el toolpath siga mejor la superficie del modelo.',
+        'Z contouring reduce el escalonado visible en superficies curvas.',
+        'Y pendientes superiores ajustando la altura Z de puntos de extrusión individuales para que el toolpath siga mejor la superficie del modelo.',
       ],
       indicador: 'geometria',
       cuerpo:
@@ -202,9 +203,8 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Minimize wall height angle',
       cuando: { zContouring: 'activado' },
       puntos: [
-        'Reduce la altura de los perímetros de superficie superior para ajustarse mejor al borde del modelo en pendientes más pronunciadas que ese.',
-        'ángulo.',
-        'afecta a perímetros internos y externos.',
+        'Reduce la altura de los perímetros de superficie superior para ajustarse mejor al borde del modelo en pendientes más pronunciadas.',
+        'Que ese ángulo; afecta a perímetros internos y externos.',
         'Poner 0 para desactivar.',
       ],
       indicador: 'geometria',
@@ -239,7 +239,7 @@ export const piezasCurvadasZ: Guia = {
       cuando: { zContouring: 'activado' },
       puntos: [
         'Mantiene la dirección de relleno consistente de capa a capa.',
-        'ayuda a un patrón de superficie más consistente en superficies superiores curvas.',
+        'Ayuda a un patrón de superficie más consistente en superficies superiores curvas.',
         'Sólo tiene efecto cuando Z contouring está habilitado para esa región.',
       ],
       indicador: 'geometria',
@@ -256,7 +256,7 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Altura de capa y voladizos',
       puntos: [
         'Las alturas de capa menores permiten voladizos más pronunciados al reducir la distancia no soportada entre capas.',
-        'las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
+        'Las mayores aumentan esa distancia, provocando más sagging y necesidad de soportes a ángulos menores.',
       ],
       indicador: 'altura',
       cuerpo:
@@ -272,7 +272,7 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Altura de primera capa',
       puntos: [
         'La altura de primera capa controla el grosor de la capa inicial.',
-        'una primera capa más gruesa mejora la adhesión a la cama y compensa imperfecciones de la superficie de construcción.',
+        'Una primera capa más gruesa mejora la adhesión a la cama y compensa imperfecciones de la superficie de construcción.',
         'Recomendado 0,25 mm para boquilla de 0,4 mm, máximo 65 % del diámetro de boquilla.',
       ],
       indicador: 'calibracion',
@@ -289,10 +289,10 @@ export const piezasCurvadasZ: Guia = {
       titulo: 'Desalineación de capas: causa mecánica o eléctrica',
       cuando: { desplazamiento: 'si' },
       puntos: [
-        'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal; si algo se desvía,.',
-        'la impresión sigue como si nada.',
-        'Si el cabezal se mueve demasiado rápido,.',
-        'los motores pueden no seguir el ritmo (se oye un clic al fallar la posición) y el resto de la impresión queda desalineado.',
+        'Las impresoras 3D usan control en lazo abierto: no hay realimentación de la posición real del cabezal.',
+        'Si algo se desvía, la impresión sigue como si nada.',
+        'Si el cabezal se mueve demasiado rápido.',
+        'Los motores pueden no seguir el ritmo (se oye un clic al fallar la posición) y el resto de la impresión queda desalineado.',
       ],
       indicador: 'maquina',
       cuerpo:

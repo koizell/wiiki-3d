@@ -133,7 +133,7 @@ export const agujerosOvalados: Guia = {
         'El plástico se contrae al enfriar; diferentes materiales exhiben diferente contracción, que también depende de la temperatura.',
         'La contracción térmica es un problema común en materiales de alta temperatura como ABS.',
         'El error dimensional que aumenta con el tamaño de la pieza es atribuible a la contracción térmica.',
-        'el porcentaje de contracción = error / tamaño.',
+        'El porcentaje de contracción = error / tamaño.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -148,8 +148,8 @@ export const agujerosOvalados: Guia = {
       id: 'causas-concavo',
       titulo: 'Más material en el lado cóncavo',
       puntos: [
-        'Al extruir a lo largo de una curva, se deposita más material por unidad de distancia en el lado cóncavo,.',
-        'lo que hace el radio interno más corto.',
+        'Al extruir a lo largo de una curva, se deposita más material por unidad de distancia en el lado cóncavo.',
+        'Lo que hace el radio interno más corto.',
         'El lado interior del anillo tiene menos volumen que el exterior y se pega a la huella previa, así que el diámetro interior sale menor.',
         'El plástico tiende a redondear las esquinas, reduciendo aún más el área interna del agujero.',
       ],
@@ -165,11 +165,11 @@ export const agujerosOvalados: Guia = {
       id: 'causas-mecanicas',
       titulo: 'Errores mecánicos',
       puntos: [
-        'El backlash (holgura mecánica, generalmente correas flojas) produce errores dimensionales distintos en X e Y. En impresoras con cama móvil,.',
-        'el eje Y es más propenso por la inercia.',
+        'El backlash (holgura mecánica, generalmente correas flojas) produce errores dimensionales distintos en X e Y.',
+        'En impresoras con cama móvil, el eje Y es más propenso por la inercia.',
         'El Z wobble por problemas mecánicos reduce el tamaño del agujero a la envolvente interna de las capas apiladas.',
-        'La sección irregular del filamento (diámetro no constante) produce flujo irregular y el agujero resultante es la envolvente interna de todas',
-        'las capas.',
+        'La sección irregular del filamento (diámetro no constante) produce flujo irregular.',
+        'Y el agujero resultante es la envolvente interna de todas las capas.',
       ],
       indicador: 'maquina',
       cuerpo:
@@ -183,10 +183,10 @@ export const agujerosOvalados: Guia = {
       id: 'modelo-flujo',
       titulo: 'Modelo de flujo: ovalado vs rectangular',
       puntos: [
-        'Slic3r y sus forks (PrusaSlicer, SuperSlicer, OrcaSlicer) asumen que el camino de extrusión tiene forma ovalada, lo que explica los solapes.',
-        'dos paredes de 0,4 mm con altura de capa de 0,2 mm producen un espesor combinado de 0,714 mm en lugar de 0,8 mm. Cura asume que el camino de',
-        'extrusión es rectangular y no incluye solape.',
-        'dos paredes de 0,4 mm producen un espesor de 0,8 mm. Esto explica por qué los agujeros salen pequeños en Slic3r/Orca y no en Cura.',
+        'Slic3r y sus forks (PrusaSlicer, SuperSlicer, OrcaSlicer) asumen que el camino de extrusión tiene forma ovalada.',
+        'Lo que explica los solapes; dos paredes de 0,4 mm con altura de capa de 0,2 mm producen un espesor combinado de 0,714 mm en lugar de 0,8.',
+        'Mm. Cura asume que el camino de extrusión es rectangular y no incluye solape; dos paredes de 0,4 mm producen un espesor de 0,8 mm.',
+        'Esto explica por qué los agujeros salen pequeños en Slic3r/Orca y no en Cura.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -203,7 +203,7 @@ export const agujerosOvalados: Guia = {
       puntos: [
         'La compensación del agujero se aplica por radio: el diámetro del agujero aumentará el doble del valor de compensación.',
         'Si los agujeros salen 0,1 mm pequeños, se introduce -0,05 (signo negativo = encoger hacia dentro).',
-        'se compensa la mitad del error porque actúa en cada lado.',
+        'Se compensa la mitad del error porque actúa en cada lado.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -218,8 +218,8 @@ export const agujerosOvalados: Guia = {
       id: 'compensacion-formula',
       titulo: 'Fórmula de calibración',
       puntos: [
-        'Fórmula de calibración de contour en Bambu.',
-        '(55 − valor medido) / 2. Esta fórmula permite calcular el valor de compensación necesario para que el agujero mida lo diseñado.',
+        'Fórmula de calibración de contour en Bambu: (55 − valor medido) / 2.',
+        'Esta fórmula permite calcular el valor de compensación necesario para que el agujero mida lo diseñado.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -234,8 +234,8 @@ export const agujerosOvalados: Guia = {
       id: 'poliholes',
       titulo: 'Poliholes',
       puntos: [
-        'Un polyhole representa el agujero como un polígono con un número reducido de lados planos,.',
-        'lo que fuerza al slicer a tratar cada segmento como una línea recta que se imprime de forma más fiable.',
+        'Un polyhole representa el agujero como un polígono con un número reducido de lados planos.',
+        'Lo que fuerza al slicer a tratar cada segmento como una línea recta que se imprime de forma más fiable.',
         'La técnica polyhole fue implementada originalmente en SuperSlicer; la idea y las matemáticas son de Hydraraptor (nophead).',
         'OpenSCAD tiene la función polyhole() desarrollada por nophead que calcula el número óptimo de segmentos.',
       ],
@@ -252,9 +252,9 @@ export const agujerosOvalados: Guia = {
       titulo: 'Número de segmentos en el CAD',
       puntos: [
         'Aumentar el número de segmentos en el CAD antes de exportar el STL reduce el error de aproximación poligonal.',
-        'El número de lados se calcula a partir del tamaño del agujero y el diámetro de la boquilla (aproximadamente el doble del diámetro del.',
-        'agujero en mm con boquilla de 0,4 mm,.',
-        'nunca menos de 3).',
+        'El número de lados se calcula a partir del tamaño del agujero.',
+        'Y el diámetro de la boquilla (aproximadamente el doble del diámetro del agujero en mm con boquilla de 0,4 mm.',
+        'Nunca menos de 3).',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -270,9 +270,9 @@ export const agujerosOvalados: Guia = {
       titulo: 'Limitaciones: caminos cerrados',
       puntos: [
         'X-Y Hole Compensation solo aplica a caminos cerrados.',
-        'si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas.',
-        'Si se aplica X-Y Hole Compensation a un modelo con caminos no cerrados,.',
-        'se produce una separación de capa notable en las ubicaciones de los agujeros.',
+        'Si el modelo tiene aberturas en los lados que producen caminos no cerrados en una capa, la compensación no se aplica a esas capas.',
+        'Si se aplica X-Y Hole Compensation a un modelo con caminos no cerrados.',
+        'Se produce una separación de capa notable en las ubicaciones de los agujeros.',
         'Solo X-Y Contour Compensation puede aplicarse a capas con caminos no cerrados.',
       ],
       indicador: 'calibracion',
@@ -287,8 +287,8 @@ export const agujerosOvalados: Guia = {
       id: 'calibracion-filamento',
       titulo: 'Calibración específica por filamento',
       puntos: [
-        'Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil,.',
-        'las tolerancias varían de una impresora a otra.',
+        'Cada combinación de filamento e impresora puede resultar en tolerancias diferentes; incluso con el mismo filamento y perfil.',
+        'Las tolerancias varían de una impresora a otra.',
         'La calibración de compensación es específica para cada filamento; debe repetirse cuando se cambia de material.',
       ],
       indicador: 'calibracion',
@@ -321,8 +321,8 @@ export const agujerosOvalados: Guia = {
       id: 'orca-tolerance-test',
       titulo: 'Orca Tolerance Test',
       puntos: [
-        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0, 0,05, 0,1, 0,2, 0,3 y 0,4 mm,.',
-        'además de un probador hexagonal.',
+        'El modelo "Orca Tolerance Test" tiene 6 agujeros hexagonales con tolerancias de 0,0.',
+        '0,05, 0,1, 0,2, 0,3 Y 0,4 mm, además de un probador hexagonal.',
         'Este modelo permite calibrar la compensación de agujeros de forma sistemática.',
       ],
       indicador: 'calibracion',
@@ -355,10 +355,10 @@ export const agujerosOvalados: Guia = {
       id: 'algoritmo-bowyer',
       titulo: 'Algoritmo de Adrian Bowyer: implementado y retirado',
       puntos: [
-        'Slic3r implementó un algoritmo de compensación para el lado cóncavo de las curvas (propuesto por Adrian Bowyer),.',
-        'pero muchos usuarios se quejaron de que los agujeros salían demasiado grandes, por lo que fue retirado.',
+        'Slic3r implementó un algoritmo de compensación para el lado cóncavo de las curvas (propuesto por Adrian Bowyer).',
+        'Pero muchos usuarios se quejaron de que los agujeros salían demasiado grandes, por lo que fue retirado.',
         'La compensación manual es preferible a la automática porque permite elegir el punto exacto.',
-        'los agujeros grandes son peor que los agujeros pequeños (que se pueden taladrar).',
+        'Los agujeros grandes son peor que los agujeros pequeños (que se pueden taladrar).',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -372,10 +372,10 @@ export const agujerosOvalados: Guia = {
       id: 'separacion-parametros',
       titulo: 'Separación de parámetros: ventaja de Bambu/Orca',
       puntos: [
-        'Bambu Studio y OrcaSlicer ofrecen dos parámetros independientes (hole y contour),.',
-        'mientras que PrusaSlicer (según el usuario del foro) tiene un único parámetro que afecta a todo.',
-        'La separación de parámetros es una ventaja de Bambu/Orca, no una contradicción de valores.',
-        'permite ajustar agujeros y contornos por separado.',
+        'Bambu Studio y OrcaSlicer ofrecen dos parámetros independientes (hole y contour).',
+        'Mientras que PrusaSlicer (según el usuario del foro) tiene un único parámetro que afecta a todo.',
+        'La separación de parámetros es una ventaja de Bambu/Orca.',
+        'No una contradicción de valores: permite ajustar agujeros y contornos por separado.',
       ],
       indicador: 'slicer',
       cuerpo:

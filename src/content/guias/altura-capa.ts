@@ -69,7 +69,8 @@ export const alturaCapa: Guia = {
       id: 'resolucion-vertical',
       titulo: 'La altura de capa es la resolución vertical',
       puntos: [
-        'La altura de capa define cuánto detalle tiene la pieza en el eje Z. A menor altura, mayor finura, pero el plano XY no se ve afectado.',
+        'La altura de capa define cuánto detalle tiene la pieza en el eje Z.',
+        'A menor altura, mayor finura, pero el plano XY no se ve afectado.',
       ],
       indicador: 'altura',
       cuerpo: 'La altura de capa define cuánto detalle tiene la pieza en el eje Z. A menor altura, mayor finura, pero el plano XY no se ve afectado.',

@@ -154,8 +154,8 @@ export const warping: Guia = {
       puntos: [
         'Es contracción térmica, no un ajuste mal puesto.',
         'El filamento sale fundido y llega frío a la pieza: ese salto es un choque térmico.',
-        'Durante el enfriamiento el plástico se contrae, y el problema es dónde: los bordes exteriores se enfrían antes que el centro,.',
-        'y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
+        'Durante el enfriamiento el plástico se contrae, y el problema es dónde: los bordes exteriores se enfrían antes que el centro.',
+        'Y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -180,8 +180,7 @@ export const warping: Guia = {
       puntos: [
         'Bambu ordena por riesgo de warping los filamentos que su propia tabla llama propensos a contraerse.',
         'PC → PA-CF → PA → ABS → ASA → PETG → PLA.',
-        'Son siete y el PLA es el último.',
-        'Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
+        'Son siete y el PLA es el último. Ordena esos siete, no todos los rígidos, y no dice cuántas veces viene del ajuste y cuántas del material.',
       ],
       indicador: 'material',
       cuerpo:
@@ -194,8 +193,8 @@ export const warping: Guia = {
       cuando: { material: ['pla', 'pla-cf'] },
       puntos: [
         'La tabla por chapa de Bambu da dos rangos para el PLA, y son los dos extremos de la misma fila leídos por columnas distintas.',
-        'No se contradicen: con la Cool Plate pide 35–45 °C, y con la Textured PEI,.',
-        'la Smooth PEI y la Engineering pide 45–65 °C. El 35–45 es de la Cool Plate, y si tu chapa es otra no es el tuyo.',
+        'No se contradicen: con la Cool Plate pide 35–45 °C, y con la Textured PEI, la Smooth PEI y la Engineering pide 45–65 °C.',
+        'El 35–45 es de la Cool Plate, y si tu chapa es otra no es el tuyo.',
       ],
       indicador: 'cama',
       cuerpo:
@@ -224,8 +223,9 @@ export const warping: Guia = {
       id: 'techo',
       titulo: 'El 65 °C no es un techo',
       puntos: [
-        'Coincide con el extremo alto del intervalo de Bambu para la Textured PEI, pero no es lo mismo.',
-        'uno es un techo que un usuario le pone a otro en un foro, el otro el extremo de un intervalo de fabricante para esa chapa.',
+        'Coincide con el extremo alto del intervalo de Bambu para la Textured PEI.',
+        'Pero no es lo mismo: uno es un techo que un usuario le pone a otro en un foro.',
+        'El otro el extremo de un intervalo de fabricante para esa chapa.',
         'De las fuentes revisadas, ningún fabricante dice que no se pueda pasar de ahí, y la tabla de Prusa para PLA se queda en 50–60 °C.',
       ],
       indicador: 'cama',
@@ -240,9 +240,8 @@ export const warping: Guia = {
       cuando: { material: ['pla', 'pla-cf', 'petg'] },
       puntos: [
         'Bambu habla del auxiliar y dice dos cosas distintas en dos páginas: en una, bajarlo a 40–50 %; en otra, reducirlo 20–30 %.',
-        'El corpus no resuelve cuál aplicar.',
-        'Y no es el ventilador de pieza del que habla Prusa, que para PLA y PETG recomienda lo contrario.',
-        'comprobar que el de pieza está activo y probarlo a subirlo, con el límite de que demasiado ventilador puede bajar la adhesión entre capas.',
+        'El corpus no resuelve cuál aplicar. Y no es el ventilador de pieza del que habla Prusa, que para PLA y PETG recomienda lo contrario.',
+        'Comprobar que el de pieza está activo y probarlo a subirlo, con el límite de que demasiado ventilador puede bajar la adhesión entre capas.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -254,8 +253,8 @@ export const warping: Guia = {
       cuando: { chapa: 'textured' },
       puntos: [
         'La Textured PEI baja la boquilla 0,04 mm automáticamente al nivelar, para asegurar la primera capa.',
-        'Si laminaste para la Cool Plate e imprimes en la Textured, ese descenso no se aplica,.',
-        'la boquilla queda demasiado alta y la primera capa no se pega.',
+        'Si laminaste para la Cool Plate e imprimes en la Textured.',
+        'Ese descenso no se aplica, la boquilla queda demasiado alta y la primera capa no se pega.',
         'Son el síntoma del mismo error de una línea de perfil.',
       ],
       indicador: 'calibracion',
@@ -268,10 +267,10 @@ export const warping: Guia = {
       titulo: 'Pieza grande y plana: el enclosure pasa a ser la variable',
       cuando: { tamaño: 'grande', material: ['abs', 'pc', 'pa'] },
       puntos: [
-        'Bambu dice que los modelos grandes y planos en ABS, ASA o PC «casi siempre warpean sin cámara cerrada»,.',
-        'y que si no hay cámara la alternativa es cambiar a PLA, PLA-CF, PETG o PETG-CF.',
+        'Bambu dice que los modelos grandes y planos en ABS, ASA o PC "casi siempre warpean sin cámara cerrada".',
+        'Y que si no hay cámara la alternativa es cambiar a PLA, PLA-CF, PETG o PETG-CF.',
         'Es el único sitio de esta guía donde el material decide y decide mucho, y va en la dirección contraria al ranking del principio.',
-        'allí el PLA era el más seguro, y aquí es la salida cuando la pieza es grande.',
+        'Allí el PLA era el más seguro, y aquí es la salida cuando la pieza es grande.',
       ],
       indicador: 'material',
       cuerpo:
@@ -282,12 +281,12 @@ export const warping: Guia = {
       id: 'no-es-warping',
       titulo: 'Cuatro fallos que no son warping',
       puntos: [
-        'El colapso de piezas altas y finas es mecánico, no térmico: la boquilla tumba un modelo alto por vibración,.',
-        'las correas flojas dan holgura al cabezal.',
+        'El colapso de piezas altas y finas es mecánico, no térmico: la boquilla tumba un modelo alto por vibración.',
+        'Las correas flojas dan holgura al cabezal.',
         'La boquilla contra el relleno es otra fila del catálogo.',
         'Los voladizos inclinados y las piezas pequeñas son condición del consejo de ventilador de Prusa, no un tipo de warping.',
-        'Y la humedad no es warping: si el filamento suena a chasquido, hay que secarlo y reintentar,.',
-        'y ninguna fuente de este lote dice con qué temperatura.',
+        'Y la humedad no es warping: si el filamento suena a chasquido.',
+        'Hay que secarlo y reintentar, y ninguna fuente de este lote dice con qué temperatura.',
       ],
       indicador: 'ventilacion',
       cuerpo:

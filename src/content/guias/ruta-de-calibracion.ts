@@ -159,7 +159,7 @@ export const rutaDeCalibracion: Guia = {
       titulo: 'No hay un orden canónico',
       puntos: [
         'Prusa y Bambu no publican un orden de calibración: es una ausencia de dato, no un orden distinto.',
-        'No se puede reconstruir su secuencia a partir de la de los demás.',
+        'Y no se puede reconstruir su secuencia a partir de la de los demás.',
         'El de OrcaSlicer es el único que razona cada paso con una dependencia explícita, y es documentación oficial.',
         'El de Control3D es el método de un blog de autor, que sólo justifica el orden por dependencias entre parámetros.',
       ],
@@ -177,7 +177,7 @@ export const rutaDeCalibracion: Guia = {
       puntos: [
         'Bambu describe la esquina del K bajo como abombada y redondeada; Prusa dice que con blobs hay que subir el K.',
         'Duet3D mira el final del perímetro antes del cambio de capa y la costura Z; Klipper mira las capas de la torre.',
-        'Marlin lo cuenta así: K bajo da línea «starved» al acelerar y blob al decelerar; K alto, exceso al arrancar y hambre al decelerar.',
+        'Marlin lo cuenta así: K bajo da línea "starved" al acelerar y blob al decelerar; K alto, exceso al arrancar y hambre al decelerar.',
         'La familia abombado / hueco coincide en el lado del valor: lo que cambia es el vocabulario y el punto donde se mira.',
       ],
       indicador: 'calibracion',
@@ -193,9 +193,9 @@ export const rutaDeCalibracion: Guia = {
       id: 'pa-esquina-redondeada',
       titulo: 'La misma forma, en lados opuestos',
       puntos: [
-        'Bambu llama «esquina redondeada y abombada» a la del K bajo; Klipper llama «rounded corners» a la del PA alto.',
+        'Bambu llama "esquina redondeada y abombada" a la del K bajo; Klipper llama "rounded corners" a la del PA alto.',
         'La misma forma queda atribuida a lados opuestos del rango: es un choque frontal entre las dos fuentes.',
-        'Por eso no se puede decir «K bajo = abombado» sin decir de qué patrón se mira y desde qué lado.',
+        'Por eso no se puede decir "K bajo = abombado" sin decir de qué patrón se mira y desde qué lado.',
         'La regla que sí es común a todas: se elige el valor en el que la línea o la forma es más uniforme.',
       ],
       indicador: 'calibracion',
@@ -270,7 +270,7 @@ export const rutaDeCalibracion: Guia = {
       id: 'retraccion-rangos',
       titulo: 'La retracción en Bowden: tres valores',
       puntos: [
-        'Control3D sitúa el límite «aproximadamente entre 6 y 7 mm», según la longitud del tubo.',
+        'Control3D sitúa el límite "aproximadamente entre 6 y 7 mm", según la longitud del tubo.',
         'OrcaSlicer recorre 1–6 mm con paso de 0,2 mm, y Simplify3D admite hasta 15 mm.',
         'Los dos primeros se solapan en el 6 mm y los dos quedan muy por debajo del techo de Simplify3D.',
         'El paso de 0,2 mm está corroborado por OrcaSlicer; los límites de 2 mm y de 6–7 mm son de una sola fuente.',
@@ -310,7 +310,7 @@ export const rutaDeCalibracion: Guia = {
       puntos: [
         'Las calibraciones automáticas de flujo o PA son un punto de partida, no la garantía del mejor resultado.',
         'Pueden variar entre trabajos y hacen que la misma pieza no se reproduzca siempre igual.',
-        'La propia wiki de Bambu llama «fully automated» a la suya y a la vez enumera los casos en que no es fiable.',
+        'La propia wiki de Bambu llama "fully automated" a la suya y a la vez enumera los casos en que no es fiable.',
         'Un perfil calibrado a mano reduce variables y da la referencia con la que comparar la máquina.',
       ],
       indicador: 'calibracion',
@@ -353,7 +353,7 @@ export const rutaDeCalibracion: Guia = {
         'El test de flujo y el de retracción de OrcaSlicer están inspirados en SuperSlicer.',
         'El método PA Line viene del K-factor Calibration Pattern de Marlin, y el PA Tower, de Klipper.',
         'La torre de temperatura es un remix de la Smart compact temperature calibration tower.',
-        'El test de caudal máximo es de CNC Kitchen: una «torre de PA» no es el mismo test en un sitio que en otro.',
+        'El test de caudal máximo es de CNC Kitchen: una "torre de PA" no es el mismo test en un sitio que en otro.',
       ],
       indicador: 'calibracion',
       cuerpo:

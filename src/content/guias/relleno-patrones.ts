@@ -105,9 +105,8 @@ export const rellenoPatrones: Guia = {
       id: 'que-es-relleno',
       titulo: 'Qué es el relleno',
       puntos: [
-        'El relleno es la estructura interna de la pieza impresa: aporta resistencia y soporte, y se ajusta para equilibrar uso de material,.',
-        'tiempo de impresión y resistencia.',
-        'La densidad se expresa como porcentaje del volumen total de relleno, del 0 % (hueco) al 100 % (sólido).',
+        'El relleno es la estructura interna de la pieza impresa: aporta resistencia y soporte, y se ajusta para equilibrar uso de material.',
+        'Tiempo de impresión y resistencia. La densidad se expresa como porcentaje del volumen total de relleno, del 0 % (hueco) al 100 % (sólido).',
       ],
       indicador: 'material',
       cuerpo:
@@ -133,7 +132,8 @@ export const rellenoPatrones: Guia = {
       titulo: 'Densidad recomendada: PETG',
       cuando: { material: 'petg' },
       puntos: [
-        'PETG es tenaz y ligeramente flexible; resiste al calor ≈ 80 °C. Densidades entre 25 % y 40 % son el rango habitual.',
+        'PETG es tenaz y ligeramente flexible; resiste al calor ≈ 80 °C.',
+        'Densidades entre 25 % y 40 % son el rango habitual.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -200,7 +200,7 @@ export const rellenoPatrones: Guia = {
       titulo: 'Solapamiento relleno-pared',
       puntos: [
         'El porcentaje de solapamiento del relleno con las paredes controla el enlace entre estructura interna y perímetro.',
-        'la mayoría de usos se benefician de 10 %–25 %, según material y condiciones.',
+        'La mayoría de usos se benefician de 10 %–25 %, según material y condiciones.',
       ],
       indicador: 'material',
       cuerpo:
@@ -213,8 +213,8 @@ export const rellenoPatrones: Guia = {
       titulo: 'Densidad y superficie',
       cuando: { problema: 'superficie' },
       puntos: [
-        'Superficies bajas pueden mostrar imperfecciones con densidad baja (falta de soporte interno) y abultamientos con densidad alta (tensiones',
-        'internas al enfriar).',
+        'Superficies bajas pueden mostrar imperfecciones con densidad baja (falta de soporte interno).',
+        'Y abultamientos con densidad alta (tensiones internas al enfriar).',
       ],
       indicador: 'geometria',
       cuerpo:
@@ -225,8 +225,8 @@ export const rellenoPatrones: Guia = {
       id: 'anisotropia',
       titulo: 'Resistencia en X-Y frente a Z',
       puntos: [
-        'Los patrones se valoran por resistencia en dos direcciones, horizontal (plano X-Y) y vertical (eje Z),.',
-        'porque la resistencia en Z depende de la adhesión entre capas.',
+        'Los patrones se valoran por resistencia en dos direcciones, horizontal (plano X-Y) y vertical (eje Z).',
+        'Porque la resistencia en Z depende de la adhesión entre capas.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -238,8 +238,8 @@ export const rellenoPatrones: Guia = {
       titulo: 'Patrones para fuerza estructural',
       cuando: { uso: 'estructural' },
       puntos: [
-        'Para fuerza estructural: Cubic (rejilla 3D uniforme), Gyroid (igual en todas las direcciones,.',
-        'distribuye tensiones) y Tri-hexagon (combina compresión y tracción).',
+        'Para fuerza estructural: Cubic (rejilla 3D uniforme), Gyroid (igual en todas las direcciones.',
+        'Distribuye tensiones) y Tri-hexagon (combina compresión y tracción).',
       ],
       indicador: 'general',
       cuerpo:
@@ -251,8 +251,8 @@ export const rellenoPatrones: Guia = {
       titulo: 'Patrones para velocidad',
       cuando: { uso: 'prototipo' },
       puntos: [
-        'Para velocidad: Lines/rectilinear (geometría simple, trayectorias largas) y Zigzag (continuo, menos retracción).',
-        'Lightning para prototipos no funcionales.',
+        'Para velocidad: Lines/rectilinear (geometría simple, trayectorias largas) y Zigzag (continuo.',
+        'Menos retracción); Lightning para prototipos no funcionales.',
       ],
       indicador: 'velocidad',
       cuerpo:
@@ -264,11 +264,11 @@ export const rellenoPatrones: Guia = {
       titulo: 'Gyroid',
       puntos: [
         'Gyroid: resistencia igual en todas las direcciones; no se cruza consigo mismo en una capa; permite rellenar con resina u otro líquido.',
-        'distribuye la contracción a lo largo de sus líneas curvas, ayudando a reducir warping (afirmación de una sola fuente, OrcaSlicer).',
-        'más lento de laminar por los puntos de las curvas.',
-        'Matiz entre fuentes: Prusa lo describe como relativamente rápido y ahorrador de material,.',
-        'mientras OrcaSlicer lo valora con tiempo alto y material normal; las descripciones son cualitativas y los ratings dependen del laminador,.',
-        'del modelo y de la densidad.',
+        'Distribuye la contracción a lo largo de sus líneas curvas, ayudando a reducir warping (afirmación de una sola fuente.',
+        'OrcaSlicer); más lento de laminar por los puntos de las curvas.',
+        'Matiz entre fuentes: Prusa lo describe como relativamente rápido y ahorrador de material.',
+        'Mientras OrcaSlicer lo valora con tiempo alto y material normal; las descripciones son cualitativas y los ratings dependen del laminador.',
+        'Del modelo y de la densidad.',
       ],
       indicador: 'slicer',
       cuerpo:
@@ -280,7 +280,7 @@ export const rellenoPatrones: Guia = {
       titulo: 'Honeycomb',
       puntos: [
         'Honeycomb: alta resistencia; consume aprox.',
-        '25 % más de material que otros patrones y el tiempo puede ser el doble (cifra de una sola fuente, Prusa).',
+        '25 % Más de material que otros patrones y el tiempo puede ser el doble (cifra de una sola fuente, Prusa).',
       ],
       indicador: 'material',
       cuerpo:
@@ -294,9 +294,8 @@ export const rellenoPatrones: Guia = {
       cuando: { problema: 'pesado' },
       puntos: [
         'Adaptive Cubic es más denso cerca de las paredes y más hueco en el centro: ahorra material y tiempo manteniendo resistencia.',
-        'ideal para piezas grandes.',
-        'Consumo de material aprox.',
-        '1/4 menos que rectilinear (cifra de una sola fuente, Prusa).',
+        'Ideal para piezas grandes. Consumo de material aprox.',
+        '1/4 Menos que rectilinear (cifra de una sola fuente, Prusa).',
       ],
       indicador: 'material',
       cuerpo:
@@ -310,8 +309,8 @@ export const rellenoPatrones: Guia = {
       puntos: [
         'Causas típicas: patrón débil, velocidad de relleno demasiado alta (sub-extrusión) o ancho de extrusión insuficiente.',
         'Soluciones: cambiar de patrón (Grid, Triangular y Solid Honeycomb son fuertes.',
-        'Rectilinear y Fast Honeycomb sacrifican resistencia por velocidad),.',
-        'bajar la velocidad (ej. de 3600 mm/min a la mitad) o aumentar el ancho de extrusión del relleno (ej.',
+        'Rectilinear y Fast Honeycomb sacrifican resistencia por velocidad).',
+        'Bajar la velocidad (ej. de 3600 mm/min a la mitad) o aumentar el ancho de extrusión del relleno (ej.',
         '200 %).',
       ],
       indicador: 'velocidad',
@@ -323,8 +322,8 @@ export const rellenoPatrones: Guia = {
       id: 'multiline',
       titulo: 'Fill Multiline',
       puntos: [
-        'Fill Multiline genera el patrón seleccionado con hasta 10 líneas de extrusión paralelas por trayectoria,.',
-        'preservando la densidad definida y el uso total de material.',
+        'Fill Multiline genera el patrón seleccionado con hasta 10 líneas de extrusión paralelas por trayectoria.',
+        'Preservando la densidad definida y el uso total de material.',
         'Puede mejorar la resistencia y la velocidad sin aumentar material.',
       ],
       indicador: 'velocidad',
@@ -337,8 +336,8 @@ export const rellenoPatrones: Guia = {
       titulo: 'Relleno adaptativo (TPMS)',
       cuando: { problema: 'pesado' },
       puntos: [
-        'Gyroid, TPMS-D y TPMS-FK pueden graduar la densidad dentro del objeto: celdas finas junto a paredes y superficies superior/inferior,.',
-        'más espaciadas hacia el centro, ahorrando material y tiempo.',
+        'Gyroid, TPMS-D y TPMS-FK pueden graduar la densidad dentro del objeto: celdas finas junto a paredes y superficies superior/inferior.',
+        'Más espaciadas hacia el centro, ahorrando material y tiempo.',
       ],
       indicador: 'material',
       cuerpo:
@@ -349,8 +348,8 @@ export const rellenoPatrones: Guia = {
       id: 'smooth-factor',
       titulo: 'Smooth Factor',
       puntos: [
-        'Smooth Factor redondea las esquinas del relleno disperso con curvas Bézier quínticas: 0 % mantiene esquinas afiladas,.',
-        '100 % las curvas máximas.',
+        'Smooth Factor redondea las esquinas del relleno disperso con curvas Bézier quínticas.',
+        '0 % Mantiene esquinas afiladas, 100 % las curvas máximas.',
         'Reduce vibración, ringing y contracción del plástico en los giros.',
         'Sólo ciertos patrones.',
       ],
@@ -365,8 +364,7 @@ export const rellenoPatrones: Guia = {
       cuando: { problema: 'fragil' },
       puntos: [
         'Extra solid infill inserta capas sólidas en posiciones específicas para reforzar puntos críticos sin cambiar la densidad dispersa (formatos.',
-        'intervalo N,.',
-        'N#K o lista explícita de capas).',
+        'Intervalo N, N#K o lista explícita de capas).',
       ],
       indicador: 'geometria',
       cuerpo:
@@ -416,8 +414,8 @@ export const rellenoPatrones: Guia = {
       id: 'grid-cruces',
       titulo: 'Grid y acumulación en cruces',
       puntos: [
-        'Grid imprime dos conjuntos de líneas perpendiculares en cada capa: fuerte en X-Y y Z,.',
-        'pero el material se acumula en los cruces y puede generar ruido o fallo de impresión.',
+        'Grid imprime dos conjuntos de líneas perpendiculares en cada capa.',
+        'Fuerte en X-Y y Z, pero el material se acumula en los cruces y puede generar ruido o fallo de impresión.',
       ],
       indicador: 'material',
       cuerpo:
@@ -429,9 +427,9 @@ export const rellenoPatrones: Guia = {
       titulo: 'Checklist antes de imprimir',
       cuando: { problema: 'ninguno' },
       puntos: [
-        'Antes de tocar el relleno: boquilla ≥ 0,4 mm (o ajustar ancho de línea), multiplicador de flujo calibrado con cubo de pared única,.',
-        'feature mínimo ≥ 1,2× diámetro de boquilla, nivelación de cama y altura de primera capa verificadas, filamento seco (PETG, ABS, nylon),.',
-        'perfil de ventilador acorde al material, firmware y laminador actualizados.',
+        'Antes de tocar el relleno: boquilla ≥ 0,4 mm (o ajustar ancho de línea), multiplicador de flujo calibrado con cubo de pared única.',
+        'Feature mínimo ≥ 1,2× diámetro de boquilla, nivelación de cama y altura de primera capa verificadas.',
+        'Filamento seco (PETG, ABS, nylon), perfil de ventilador acorde al material, firmware y laminador actualizados.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -442,8 +440,8 @@ export const rellenoPatrones: Guia = {
       id: 'metodologia',
       titulo: 'Cómo se miden los ratings',
       puntos: [
-        'Los ratings son la media de un cubo de 100 mm, un 3DBenchy y el Stanford bunny, laminados a 5, 15,.',
-        '30 y 50 % de densidad de relleno disperso sin paredes ni capas superior/inferior.',
+        'Los ratings son la media de un cubo de 100 mm, un 3DBenchy y el Stanford bunny, laminados a 5.',
+        '15, 30 Y 50 % de densidad de relleno disperso sin paredes ni capas superior/inferior.',
         'Las estimaciones son guía estándar y no serán iguales para todos los modelos (documentado solo por OrcaSlicer).',
       ],
       indicador: 'slicer',

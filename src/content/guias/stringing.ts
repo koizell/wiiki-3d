@@ -159,8 +159,8 @@ export const stringing: Guia = {
       id: 'causa-humedad',
       titulo: 'Causa: filamento húmedo',
       puntos: [
-        'Si hay mucho stringing en la parte superior de la torre de calibración,.',
-        'se recomienda secar el filamento y comprobar que la boquilla esté correctamente instalada sin fugas.',
+        'Si hay mucho stringing en la parte superior de la torre de calibración.',
+        'Se recomienda secar el filamento y comprobar que la boquilla esté correctamente instalada sin fugas.',
       ],
       indicador: 'calibracion',
       cuerpo:
@@ -191,7 +191,7 @@ export const stringing: Guia = {
       puntos: [
         'Aumentar la velocidad de movimiento reduce el tiempo que el extrusor tiene para gotear entre piezas.',
         'Los movimientos cortos pueden ser lo suficientemente rápidos para que el plástico no tenga tiempo de gotear.',
-        'los movimientos largos tienen más probabilidades de crear hilos.',
+        'Los movimientos largos tienen más probabilidades de crear hilos.',
       ],
       indicador: 'velocidad',
       cuerpo:
@@ -227,10 +227,10 @@ export const stringing: Guia = {
       titulo: 'Velocidad de retracción',
       puntos: [
         'El rango óptimo es 1200–6000 mm/min (20–100 mm/s).',
-        'Si la velocidad de retracción es demasiado lenta,.',
-        'el plástico goteará lentamente a través de la boquilla y puede empezar a fugarse antes de que el extrusor termine de moverse.',
-        'Si es demasiado rápida, el filamento puede separarse del plástico caliente dentro de la boquilla,.',
-        'o el engranaje puede desgastar trozos del filamento.',
+        'Si la velocidad de retracción es demasiado lenta.',
+        'El plástico goteará lentamente a través de la boquilla y puede empezar a fugarse antes de que el extrusor termine de moverse.',
+        'Si es demasiado rápida, el filamento puede separarse del plástico caliente dentro de la boquilla.',
+        'O el engranaje puede desgastar trozos del filamento.',
       ],
       indicador: 'temperatura',
       cuerpo:
@@ -279,8 +279,8 @@ export const stringing: Guia = {
       id: 'avoid-crossing',
       titulo: 'Avoid crossing outline',
       puntos: [
-        'Ajusta automáticamente la ruta de travel para que la boquilla tenga una distancia muy corta sobre espacios abiertos,.',
-        'o incluso evitar cruzar espacios abiertos por completo.',
+        'Ajusta automáticamente la ruta de travel para que la boquilla tenga una distancia muy corta sobre espacios abiertos.',
+        'O incluso evitar cruzar espacios abiertos por completo.',
         'Es la solución cuando los movimientos largos son los que producen los hilos.',
       ],
       indicador: 'temperatura',

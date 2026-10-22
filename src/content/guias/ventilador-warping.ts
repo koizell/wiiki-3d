@@ -131,10 +131,10 @@ export const ventiladorWarping: Guia = {
       titulo: 'Dos ventiladores distintos',
       puntos: [
         'El ventilador de capa enfría toda la pieza.',
-        'El auxiliar —auxiliary part cooling fan— enfría las paredes exteriores y puede causar warping cuando lo hace demasiado rápido,.',
-        'especialmente en objetos pequeños o con voladizos altos.',
-        'El auxiliar se controla con el comando G-code M106 P2 S(0-255) y se desactiva durante las primeras capas definidas por «No cooling for the',
-        'first X layers».',
+        'El auxiliar —auxiliary part cooling fan— enfría las paredes exteriores y puede causar warping cuando lo hace demasiado rápido.',
+        'Especialmente en objetos pequeños o con voladizos altos.',
+        'El auxiliar se controla con el comando G-code M106 P2 S(0-255).',
+        'Y se desactiva durante las primeras capas definidas por "No cooling for the first X layers".',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -149,7 +149,7 @@ export const ventiladorWarping: Guia = {
       titulo: 'Las primeras 3 capas sin ventilador',
       puntos: [
         'Desactivar el ventilador de capa durante las primeras capas mejora la adhesión a la cama y reduce el warping temprano.',
-        'Se recomienda «No cooling for the first X layers» = 3 para la mayoría de filamentos comunes (PLA, PETG, TPU).',
+        'Se recomienda "No cooling for the first X layers" = 3 para la mayoría de filamentos comunes (PLA, PETG, TPU).',
         'En Bambu Studio, el ajuste está en Filament Settings → Cooling tab.',
       ],
       indicador: 'ventilacion',
@@ -186,10 +186,10 @@ export const ventiladorWarping: Guia = {
       titulo: 'ABS: apagado o 10–20 %',
       cuando: { material: ['abs', 'pc'] },
       puntos: [
-        'Prusa dice «apagar ventiladores por completo» para ABS en la página de separación de capas,.',
-        'pero en la de warping recomienda un 10–20 % para overhangs abruptos incluso en ABS y PC-Blend.',
-        'El apagado es la regla general; el 10–20 % es una excepción específica para voladizos donde el ventilador es necesario para la calidad,.',
-        'no para el warping.',
+        'Prusa dice "apagar ventiladores por completo" para ABS en la página de separación de capas.',
+        'Pero en la de warping recomienda un 10–20 % para overhangs abruptos incluso en ABS y PC-Blend.',
+        'El apagado es la regla general; el 10–20 % es una excepción específica para voladizos donde el ventilador es necesario para la calidad.',
+        'No para el warping.',
       ],
       indicador: 'ventilacion',
       cuerpo:
@@ -205,11 +205,11 @@ export const ventiladorWarping: Guia = {
       titulo: 'PLA: mucho ventilador, pero no demasiado',
       cuando: { material: ['pla', 'petg'] },
       puntos: [
-        'Prusa dice que PLA y PETG necesitan mucha refrigeración y que si las esquinas se levantan hay que verificar que el ventilador funciona y',
-        'aumentar su velocidad.',
+        'Prusa dice que PLA y PETG necesitan mucha refrigeración y que si las esquinas se levantan hay que verificar.',
+        'Que el ventilador funciona y aumentar su velocidad.',
         'Bambu dice que demasiado enfriamiento en PLA puede causar warping.',
-        'El ventilador ayuda a la adhesión de la primera capa y a la calidad de los voladizos,.',
-        'pero un exceso en las primeras capas o en piezas grandes puede causar warping.',
+        'El ventilador ayuda a la adhesión de la primera capa y a la calidad de los voladizos.',
+        'Pero un exceso en las primeras capas o en piezas grandes puede causar warping.',
         'La clave está en el equilibrio y en el número de capas iniciales sin ventilador.',
       ],
       indicador: 'ventilacion',
@@ -224,9 +224,8 @@ export const ventiladorWarping: Guia = {
       id: 'corrientes',
       titulo: 'Corrientes de aire: el enemigo silencioso',
       puntos: [
-        'Una ventana abierta, aire acondicionado o ventilador de mesa cerca puede enfriar un lado de la pieza más rápido que el otro,.',
-        'causando warping asimétrico.',
-        'Las corrientes de aire enfrían el modelo más rápido, aumentando la tensión entre capas.',
+        'Una ventana abierta, aire acondicionado o ventilador de mesa cerca puede enfriar un lado de la pieza más rápido que el otro.',
+        'Causando warping asimétrico. Las corrientes de aire enfrían el modelo más rápido, aumentando la tensión entre capas.',
         'Ventiladores fuertes o ventanas abiertas crean enfriamiento desigual, especialmente en ABS y Nylon.',
       ],
       indicador: 'ventilacion',
@@ -242,7 +241,8 @@ export const ventiladorWarping: Guia = {
       titulo: 'Temperaturas de cama por material',
       puntos: [
         'La cama caliente compensa el enfriamiento del ventilador.',
-        'Para PLA en Textured PEI Plate: 55–65 °C. Para ABS/ASA: aumentar cama +10–15 °C y usar cerramiento; la cámara debe alcanzar 40 °C+.',
+        'Para PLA en Textured PEI Plate: 55–65 °C.',
+        'Para ABS/ASA: aumentar cama +10–15 °C y usar cerramiento; la cámara debe alcanzar 40 °C+.',
         'Para ABS: cama 100–120 °C. Si la habitación está por debajo de 20 °C, el warping puede ocurrir incluso con PLA y PETG.',
       ],
       indicador: 'ventilacion',
@@ -260,8 +260,9 @@ export const ventiladorWarping: Guia = {
       puntos: [
         'Abrir la puerta y la cubierta de la impresora mejora la refrigeración, pero solo es recomendable para PLA, PETG y TPU.',
         'En filamentos de alta temperatura puede causar warping o mala adhesión entre capas.',
-        'Materiales de alta temperatura (PETG, ABS, ASA, PA,.',
-        'PC) se imprimen con poca o ninguna refrigeración en impresora cerrada para que el ambiente esté más caliente y permita enfriamiento lento.',
+        'Materiales de alta temperatura (PETG, ABS.',
+        'ASA, PA, PC) se imprimen con poca o ninguna refrigeración en impresora cerrada para.',
+        'Que el ambiente esté más caliente y permita enfriamiento lento.',
       ],
       indicador: 'ventilacion',
       cuerpo:
