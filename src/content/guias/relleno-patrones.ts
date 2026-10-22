@@ -7,6 +7,7 @@ export const rellenoPatrones: Guia = {
   resumen: 'Cómo elegir patrón y densidad de relleno según el material y el uso, y qué cambiar cuando el relleno es débil, pesado o deja marcas en la superficie.',
   sintoma: 'Pieza frágil, pesada o lenta por el relleno, o superficie con huecos o abultamientos',
   dibujo: 'slicer',
+  ilustracion: { src: '/wiki/relleno-patrones/ilustracion.png', alt: 'Tres secciones de pieza con distintos patrones de infill en corte' },
   entrada:
     'El relleno es la estructura interna de la pieza: aporta resistencia y soporte, y se ajusta para equilibrar material, tiempo y resistencia. Esta guía separa el problema del relleno del de orientación y del de separación entre capas, y dice qué patrón y qué densidad usar según el material y el uso, además de qué cambiar cuando el relleno es débil, pesado o deja marcas en la superficie.',
   autor: AUTOR,

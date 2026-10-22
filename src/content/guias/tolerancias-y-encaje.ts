@@ -17,6 +17,7 @@ export const toleranciasYEncaje: Guia = {
     'Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
   sintoma: 'La pieza no sale a medida o no encaja',
   dibujo: 'slicer',
+  ilustracion: { src: '/wiki/tolerancias-y-encaje/ilustracion.png', alt: 'Perno y agujero con la holgura marcada' },
   entrada:
     'Una pieza impresa en FDM casi nunca sale exactamente a la medida diseñada: el plástico se contrae al enfriar, el slicer deposita más material en el lado cóncavo de las curvas y los errores mecánicos (backlash, steps/mm) producen desviaciones. Esta guía explica qué es una tolerancia y una holgura, qué tipos de encaje existen, cómo medir la tolerancia real de tu máquina y qué ajustar por diseño, software, máquina y post-procesado para que las piezas encajen.',
   autor: AUTOR,

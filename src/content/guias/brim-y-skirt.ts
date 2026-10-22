@@ -8,6 +8,7 @@ export const brimYSkirt: Guia = {
     'Brim para adhesion, skirt para purga y escudo para corrientes: el material y el objetivo deciden el tipo y la anchura; el resto son costes de tiempo, material y limpieza.',
   sintoma: 'La pieza se despega por los bordes o la boquilla purga mal',
   dibujo: 'primera-capa',
+  ilustracion: { src: '/wiki/brim-y-skirt/ilustracion.png', alt: 'Pieza sobre la cama rodeada de un anillo de brim y un skirt separado' },
   entrada:
     'El brim es una capa plana alrededor de la base que mejora la adhesion; el skirt son perimetros extra que purgan y estabilizan la boquilla; el draft shield es una pared alta que protege de corrientes. Cada uno resuelve un problema distinto y cada uno cuesta tiempo, material o trabajo de limpieza si se usa donde no hace falta.',
   autor: AUTOR,
