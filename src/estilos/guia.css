@@ -720,8 +720,22 @@
     font-size: 9px;
   }
 
+  /*
+   * El margen de debajo del recorrido, una vez.
+   *
+   * La lista de los cuatro pasos traía `margin-bottom: 28px` y su contenedor
+   * `.guia-recorrido` traía otros 16: **44 px de margen** entre el recorrido y
+   * la primera etapa, de los cuales 28 eran el mismo margen contado dos veces.
+   *
+   * No es un detalle de estilo: esos 28 px son los que empujaban la primera
+   * comprobación del diferencial por debajo del pliegue en un móvil de 375 px.
+   */
   .guia-recorrido {
     margin-bottom: 16px;
+  }
+
+  .guia-recorrido-lista {
+    margin-bottom: 0;
   }
 
   .guia-cabecera-cuerpo {
@@ -735,6 +749,19 @@
 
   .guia-cabecera-dibujo .dibujo {
     height: 58px;
+  }
+
+  /*
+   * La firma, en una línea.
+   *
+   * «wiiki-3d · Contacto · Actualizado el 21 de octubre de 2026» ocupaba dos
+   * líneas en móvil y empujaba la primera comprobación por debajo del pliegue.
+   * Es la línea menos informativa de la cabecera —la fecha está en el pie de las
+   * fuentes— y no tiene por qué ocupar dos renglones.
+   */
+  .guia-autor {
+    font-size: 0.7rem;
+    line-height: 1.35;
   }
 
   .comprobacion-pares {
@@ -792,6 +819,18 @@
   position: relative;
   aspect-ratio: 16 / 10;
   min-height: 280px;
+  /*
+   * Y un tope de alto.
+   *
+   * El lienzo es de 16:10 en una columna de 920 px: son 575 px de alto, y con
+   * ellos **el diagnóstico se iba a 1150 px**, muy por debajo del pliegue. La
+   * trayectoria es lo que se mira; el veredicto es lo que se lee, y lo que se
+   * lee no puede estar dos pantallas más abajo.
+   *
+   * El tope no recorta la escena: `three` ajusta la cámara al contenedor, así
+   * que la camiseta se ve más pequeña, no cortada.
+   */
+  max-height: min(38vh, 380px);
   background: var(--bg-dark);
   border: 1px solid var(--border);
   border-radius: var(--radio-lg);

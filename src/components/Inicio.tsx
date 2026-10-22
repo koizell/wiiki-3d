@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import CabeceraRuta from './CabeceraRuta';
 import DibujoSintoma from './DibujoSintoma';
 import { GUIAS, guiaPorSlug } from '../lib/guias';
 import type { Guia } from '../content/guias/tipos';
@@ -255,10 +256,11 @@ export default function Inicio({ interactivo = true, children }: InicioProps) {
             otra vista—, y en el HTML exportado, que no tiene analizador, se
             dice «Modo lectura».
           */}
-          <p className="plano-ruta">
-            <span>01 · Inicio</span>
-            <span className="plano-ruta-estado">{interactivo ? 'Sin archivo' : 'Modo lectura'}</span>
-          </p>
+          <CabeceraRuta
+            numero="01"
+            nombre="Inicio"
+            estado={interactivo ? 'Sin archivo' : 'Modo lectura'}
+          />
           <h1>¿Va a salir bien tu impresión?</h1>
           <p>
             Tu slicer ya escribió dentro del archivo el material, las temperaturas y

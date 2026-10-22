@@ -392,7 +392,8 @@ body {
  */
 .btn-primary,
 .btn-ghost,
-.btn-danger {
+.btn-danger,
+.btn-fantasma {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -444,6 +445,42 @@ body {
 
 .btn-danger:hover {
   background: var(--danger-hover);
+}
+
+/*
+ * El control fantasma: el «X» de cerrar el archivo.
+ *
+ * El botón X estaba en rojo saturado, y el rojo es el color de una acción
+ * destructiva: borrar, descartar, cerrar. Cerrar el archivo que se está
+ * mirando **no** destruye nada —se puede volver a subir— y compite en la misma
+ * línea con la acción principal, que es la que manda. Con el rojo delante, la
+ * línea Sayba de la cabecera era un aviso de peligro donde no había peligro.
+ *
+ * Por eso tiene su propia clase y no se toca `.btn-danger`: **los botones
+ * destructivos de verdad —borrar un análisis, vaciar el historial— se siguen
+ * pintando en rojo**, porque ahí sí lo es.
+ */
+.btn-fantasma {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.25rem 0.6rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-fantasma:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
 }
 
 /* Navegación */
@@ -553,10 +590,18 @@ body {
 
 /* Área central */
 .canvas-area {
+  /*
+   * §7.1: el lienzo deja de centrar.
+   *
+   * Antes era `display: flex; align-items: center; justify-content: center`, y
+   * eso es lo que hacía flotar a Taller en medio de la pantalla y lo que
+   * obligó a parchear el visor con `align-self: stretch`. Ahora se ancla
+   * arriba: el contenido va donde va, y el parche deja de ser necesario.
+   */
   grid-area: main;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   background: radial-gradient(circle at center, var(--viewer-fondo) 0%, var(--bg-dark) 100%);
   padding: 1rem;
   overflow: hidden;
@@ -1051,26 +1096,14 @@ body {
   width: 100%;
   gap: 1rem;
   /*
-   * El estirado va aquí y no como `height: 100%`.
+   * §7.1: el parche ya no es necesario.
    *
-   * Con el padre a altura automática —el caso móvil, donde el scroll es del
-   * documento— un `height: 100%` no tiene contra qué medirse, resuelve a
-   * `auto`, `.viewer-container` colapsa y `.viewer-3d-container` se queda a
-   * cero píxeles. El visor desaparecería sin un solo error en consola.
-   * `align-self: stretch` sí funciona contra un padre automático, porque lo
-   * estira en su eje transversal.
-   *
-   * Hace falta porque `.canvas-area { align-items: center }` centra a sus hijos,
-   * lo cual es justo lo que quiere la zona de subida —que es su otro hijo— pero
-   * no el visor, que necesita llenar el alto. Medido: a 1200×667, sin esta
-   * declaración, `.viewer-container` se queda en 88px y el canvas WebGL en
-   * **0px**.
-   *
-   * Sólo hace algo a partir de 1200px. Por debajo las filas del grid son
-   * `auto`, así que la fila del área central ya mide exactamente lo que mide su
-   * contenido y estirarse o centrarse da el mismo resultado.
+   * Con el lienzo anclado arriba (en vez de centrado), el visor se mide por
+   * su propio contenido y no tiene que pelearse con el centrado del padre.
+   * La explicación de por qué estaba aquí antes se conserva en el plan:
+   * con `align-items: center` el `.viewer-container` colapsaba a 88 px y el
+   * canvas WebGL a 0.
    */
-  align-self: stretch;
 }
 
 .file-info {
@@ -1246,23 +1279,28 @@ body {
 
 /* Aviso del área central para formatos sin visor todavía */
 .canvas-placeholder {
-  flex: 1;
+  /*
+   * §7.7: el visor sin previsualización deja de ser una caja vacía centrada
+   * —el vacío con dos líneas centradas que era el fallo— y pasa a ser un
+   * **panel de estado con propósito**, anclado arriba. Se lee lo que hay, se
+   * hace lo que se puede, y el hueco de debajo no existe.
+   */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 1.5rem 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+  padding: 1.25rem 1rem;
   color: var(--text-secondary);
   font-size: var(--texto-md);
   border: 1px dashed var(--border);
   border-radius: var(--radio-lg);
   background: var(--bg-panel);
-  /*
-   * El mismo suelo que el visor 3D, y por el mismo motivo: también es
-   * `flex: 1` dentro de `.viewer-container`. Sin esto el aviso se aplana en
-   * móvil —y es justo lo que se ve con un G-code, el caso más habitual de la app.
-   */
-  min-height: 40dvh;
+  /* Anclado arriba: el alto lo pone el contenido, no un `40dvh` inventado. */
+  min-height: 0;
+  width: 100%;
+  max-width: 34rem;
 }
 
 .canvas-error {
@@ -1434,6 +1472,18 @@ body {
 }
 
 /* Recomendación de Jev al final del panel */
+/*
+ * El veredicto, levantado por encima del visor.
+ *
+ * Es el mismo bloque que va dentro del panel, con las mismas clases: lo que
+ * cambia es que la vista lo pone arriba, porque con el lienzo de la trayectoria
+ * delante el diagnóstico se iba a 1150 px —dos pantallas más abajo— y lo que se
+ * lee no puede estar debajo de lo que se mira.
+ */
+.analisis-veredicto {
+  margin-bottom: 1rem;
+}
+
 .panel-recommendation {
   padding: 0.75rem 0.9rem;
   border-left: 3px solid var(--accent);
@@ -2136,6 +2186,13 @@ body {
   font-family: var(--fuente-dato);
 }
 
+/* La nota de debajo de la aritmética: qué hace el `÷ 1000`. */
+.taller-resultado-nota {
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
 /* --- El historial: lista, recientes y confirmaciones ------------------------- *
  *
  * `.recientes` y `.historial` comparten la fila porque es la misma información
@@ -2173,7 +2230,16 @@ body {
 .historial,
 .recientes {
   width: 100%;
-  max-width: 34rem;
+  /*
+   * §7.4: «Últimos análisis» deja de ser un bloque suelto de 34 rem que
+   * flota debajo del visor. Es una **sección a ancho completo**, anclada al
+   * borde superior por la línea y al lienzo por su propia anchura. Lo que se
+   * lee aquí es lo que acabas de hacer, y tiene que estar donde se ve —no
+   * en un hueco a media columna.
+   */
+  max-width: 100%;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .historial-titulo {
@@ -4229,6 +4295,29 @@ body {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--border);
+}
+
+/*
+ * La fórmula del coste, en el carril de Taller.
+ *
+ * Va en la misma mono que el resto de los datos del sitio, y en la caja que
+ * usa el carril para las cifras: el número que se está explicando es un
+ * producto, y escribirlo con su operatorio es lo que permite comprobarlo de un
+ * vistazo sin saber multiplicar de memoria.
+ */
+.riel-calculo {
+  margin: 0.65rem 0;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  font-family: var(--fuente-dato);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+  text-align: center;
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
 .riel-fuente strong {

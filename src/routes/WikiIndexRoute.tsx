@@ -1,3 +1,4 @@
+import CabeceraRuta from '../components/CabeceraRuta';
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import DibujoSintoma from '../components/DibujoSintoma';
@@ -64,6 +65,15 @@ export default function WikiIndexRoute() {
 
   return (
     <div className="wiki-index">
+      {/*
+        La cabecera de plano de la ruta (§5 y §7.2 de la spec).
+
+        El estado aquí es el **tamaño de lo que hay debajo**, que es lo único
+        que un índice puede decir de sí mismo y no estaba en ninguna parte: 33
+        guías, 33 síntomas. Quien llega por un buscador lee once palabras de la
+        tarjeta y no sabe si hay una guía o treinta.
+      */}
+      <CabeceraRuta numero="03" nombre="Wiki" estado={`${GUIAS.length} guías`} />
       <h1>¿Qué le pasa a tu pieza?</h1>
       <p className="wiki-index-intro">
         Cada guía empieza por confirmar que el problema es el que crees, sigue con lo

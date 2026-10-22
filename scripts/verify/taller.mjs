@@ -64,7 +64,7 @@ const TRAMOS = [
 const GRAMOS = 0.93;
 const PRECIO = 25;
 const COSTE_ESPERADO = (GRAMOS * PRECIO / 1000).toFixed(2).replace('.', ',');
-const LINEA_ESPERADA = `0,93 g × 25,00 €/kg = ${COSTE_ESPERADO} €`;
+const LINEA_ESPERADA = `0,93 g ÷ 1000 × 25,00 €/kg = ${COSTE_ESPERADO} €`;
 
 /** Los textos de los cinco estados, tal cual los fija `docs/taller.md`. */
 const ESTADOS = [
@@ -392,7 +392,7 @@ try {
     const conPunto = await textoResultado(page);
     const esperadoConPunto = (GRAMOS * 1.234 / 1000).toFixed(2).replace('.', ',');
     comprobar(
-      conPunto === `0,93 g × 1,23 €/kg = ${esperadoConPunto} €`,
+      conPunto === `0,93 g ÷ 1000 × 1,23 €/kg = ${esperadoConPunto} €`,
       `${tramo.nombre} · «1.234» son 1,234 €/kg y no mil doscientos treinta y cuatro`
     );
 
@@ -402,7 +402,7 @@ try {
       const resultado = await textoResultado(page);
       const esperado = (GRAMOS * 0.25 / 1000).toFixed(2).replace('.', ',');
       comprobar(
-        resultado === `0,93 g × 0,25 €/kg = ${esperado} €`,
+        resultado === `0,93 g ÷ 1000 × 0,25 €/kg = ${esperado} €`,
         `${tramo.nombre} · «${entrada}» es el mismo precio que su equivalente con punto`
       );
     }

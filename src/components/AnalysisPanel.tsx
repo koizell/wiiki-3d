@@ -63,6 +63,15 @@ interface AnalysisPanelProps {
    * correspondencia entre campos y artículos sin poder probarlos por separado.
    */
   explicar?: (campo: string) => ArticuloDeCampo | null;
+  /**
+   * Que la recomendación **no** se pinte dentro del panel.
+   *
+   * Existe para el caso en que la vista la levanta por su cuenta, por encima de
+   * todo lo demás: el veredicto es lo que se lee, y lo que se lee no puede
+   * estar dos pantallas más abajo. Cuando la vista la levanta, el panel se
+   * queda con los datos y sin el veredicto, para no repetirlo.
+   */
+  recomendacionFuera?: boolean;
 }
 
 /**
@@ -102,6 +111,35 @@ const RISK_CLASS: Record<RiskLevel, string> = {
   'Crítico': 'risk-critico',
 };
 
+/**
+ * El veredicto, y nada más.
+ *
+ * Vive suelto porque **dos sitios lo necesitan** y en sitios distintos: dentro
+ * del panel, cuando el análisis va solo, y por encima de todo lo demás, cuando
+ * hay algo grande delante —el visor de trayectoria— y el veredicto no puede
+ * quedarse debajo.
+ *
+ * Es el mismo bloque en los dos casos, con el mismo texto y las mismas clases: no
+ * son dos versiones de la misma cosa, es la misma cosa puesta en un sitio u
+ * otro.
+ */
+export function Recomendacion({
+  recomendacion,
+  demo,
+}: {
+  recomendacion: string;
+  demo: boolean;
+}) {
+  return (
+    <div className="panel-recommendation">
+      <strong className="panel-recommendation-title">
+        {demo ? 'Orientación de demostración' : 'Recomendación'}
+      </strong>
+      <p>{recomendacion}</p>
+    </div>
+  );
+}
+
 function AnalysisPanel({
   status,
   metadata,
@@ -110,6 +148,7 @@ function AnalysisPanel({
   fileType,
   explicar,
   modoClasificacion,
+  recomendacionFuera = false,
 }: AnalysisPanelProps) {
   const demo = modoClasificacion === 'demo';
   const materialAmbiguo = metadata !== null && !materialUnico(metadata.material);
@@ -166,10 +205,9 @@ function AnalysisPanel({
           ni los soportes y no garantiza el resultado. Se calcula en tu navegador, sin consultar un servicio.
         </p>
       )}
-      {!materialAmbiguo && classification && <div className="panel-recommendation">
-        <strong className="panel-recommendation-title">{demo ? 'Orientación de demostración' : 'Recomendación'}</strong>
-        <p>{classification.recommendation}</p>
-      </div>}
+      {!materialAmbiguo && classification && !recomendacionFuera && (
+        <Recomendacion recomendacion={classification.recommendation} demo={demo} />
+      )}
       {!materialAmbiguo && classification && <section className="panel-estimacion">
         <h3 className="panel-section-title">{demo ? 'Estimación local (demo)' : 'Diagnóstico de Jev'}</h3>
         <dl className="panel-data">

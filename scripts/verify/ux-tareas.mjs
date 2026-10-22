@@ -76,9 +76,24 @@ try {
       assert.equal(await p.locator('.panel-body').count(), 1);
       assert.equal(await p.locator('.canvas-placeholder').count(), 0);
       assert.equal(await p.locator('main h1').count(), 1);
+      /*
+       * El veredicto, en la primera pantalla.
+       *
+       * Antes comparaba con el lateral izquierdo, y esa comparación **no podía
+       * cumplirse**: el lateral empieza en y=0, así que `recomendacion.y < 0` es
+       * falso siempre. La comprobación llevaba en rojo por una causa que no era
+       * la que decía —y tapaba la que sí era: con el visor de trayectoria
+       * delante, el veredicto estaba a 1150 px, dos pantallas más abajo.
+       *
+       * Ahora mide lo que dice: que el veredicto se ve sin desplazar. Y el
+       * veredicto se levanta por encima del visor, que es lo que lo arregla.
+       */
       const recomendacion = await p.locator('main .panel-recommendation').boundingBox();
-      const nav = await p.locator('.sidebar-left').boundingBox();
-      assert(recomendacion.y < nav.y, 'recomendación fuera del área inicial');
+      const alto = await p.evaluate(() => innerHeight);
+      assert(
+        recomendacion.y + recomendacion.height <= alto,
+        `recomendación fuera de la primera pantalla: y=${Math.round(recomendacion.y)} de ${alto}`
+      );
       assert.equal(await p.locator('main a[href="/taller"]').count(), 1);
     });
     await probar('formato no admitido permite elegir otro en el propio aviso', async p => {
@@ -175,7 +190,7 @@ try {
       await p.getByRole('link', { name: 'Taller', exact: true }).first().click();
       await p.getByLabel('Precio del filamento (€/kg)').fill('25');
       assert.match(await p.locator('.taller-total').innerText(), /0,02\s*€/);
-      assert.match(await p.locator('.taller-resultado').innerText(), /0,93.*25,00.*0,02/);
+      assert.match(await p.locator('.taller-resultado').innerText(), /0,93.*÷ 1000.*25,00.*0,02/);
       assert.match(await p.locator('.taller-limites').innerText(), /filamento/);
       await p.getByLabel('Precio del filamento (€/kg)').fill('-1');
       assert.equal(await p.locator('.taller-total').count(), 0);

@@ -1,10 +1,13 @@
 import { lazy, Suspense, useState } from "react";
 import VisorTrayectoria from "../components/VisorTrayectoria";
+import { Recomendacion } from "../components/AnalysisPanel";
+import { MODO_CLASIFICACION } from "../services/JevService";
 import { useTrayectoria } from "../state/useTrayectoria";
 import { useAnalysis, useAnalysisActions } from "../state/useAnalysis";
 import { isViewerFormat, unsupportedFileMessage } from "../lib/files";
 import { AvisoAlmacenamiento, Recientes } from "../components/Recientes";
 import Inicio from "../components/Inicio";
+import CabeceraRuta from "../components/CabeceraRuta";
 import SeccionAnalisis from "../components/SeccionAnalisis";
 import ControlesVisor from "../components/ControlesVisor";
 
@@ -43,13 +46,25 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
-  const { file, fileType, metadata, trayectoria } = useAnalysis();
+  const { file, fileType, metadata, trayectoria, classification, status } = useAnalysis();
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
   const [errorSubida, setErrorSubida] = useState('');
 
   const viewerFormat = isViewerFormat(fileType) ? fileType : null;
   const showGcodeNotice = fileType === "gcode";
+
+  /*
+   * El veredicto se levanta cuando hay algo grande delante.
+   *
+   * Con un G-code, la pantalla es: el visor de trayectoria —575 px de lienzo— y
+   * después el análisis. Con el veredicto al final de la pila, estaba a 1150 px.
+   *
+   * Con un 3MF o un STL no hace falta: el visor 3D va en el lienzo y el panel
+   * de análisis en la columna derecha, que es otra historia.
+   */
+  const veredictoArriba = showGcodeNotice && status === "done" && classification !== null;
+  const veredicto = classification?.recommendation ?? "";
 
   /*
    * La trayectoria del G-code.
@@ -104,7 +119,7 @@ function UploadRoute() {
       <>
         <div className="file-info">
           <h1 className="file-name">Análisis: {metadata.filename}</h1>
-          <button className="btn-danger" onClick={clearFile} aria-label="Cerrar análisis">
+          <button className="btn-fantasma" onClick={clearFile} aria-label="Cerrar análisis">
             X
           </button>
         </div>
@@ -192,6 +207,19 @@ function UploadRoute() {
   return (
     <>
        <div className={showGcodeNotice ? 'analisis-trabajo' : 'viewer-container'}>
+         {/*
+           Cabecera de plano de la ruta (§5 y §7.2 de la spec).
+
+           Ésta es todavía la portada —`01 · Inicio`—, sólo que con un archivo
+           abierto. El estado dice lo que está pasando: «Con análisis» si el
+           G-code ya se leyó, y «Con archivo» si no. Antes esta pantalla no
+           tenía cabecera de plano, y era la única de las rutas que no la tenía.
+         */}
+         <CabeceraRuta
+           numero="01"
+           nombre="Inicio"
+           estado={status === 'done' ? 'Con análisis' : 'Con archivo'}
+         />
         <div className="file-info">
           {/*
           El nombre del archivo es el <h1> de esta vista, y no un `h2` con otro
@@ -208,10 +236,29 @@ function UploadRoute() {
           base son 32 px en vez de 14,4, y la fila de `.file-info` crece.
         */}
           <h1 className="file-name">Archivo: {file.name}</h1>
-          <button className="btn-danger" onClick={clearFile} aria-label="Cerrar archivo">
+          <button className="btn-fantasma" onClick={clearFile} aria-label="Cerrar archivo">
             X
           </button>
         </div>
+
+        {/*
+          El veredicto, arriba del todo.
+
+          Con el visor de trayectoria delante —575 px de lienzo, que era lo que
+          ocupaba la pantalla— el diagnóstico se iba a 1150 px: dos pantallas
+          más abajo, en un sitio donde nadie baja a buscar el veredicto de su
+          propia impresión. **Lo que se lee no puede estar debajo de lo que se
+          mira.**
+
+          Así que el veredicto se levanta aquí, antes del visor y antes del
+          análisis, y el panel se queda con los datos. Es el mismo bloque y el
+          mismo texto: lo que cambia es dónde está.
+        */}
+        {veredictoArriba ? (
+          <div className="analisis-veredicto">
+            <Recomendacion recomendacion={veredicto} demo={MODO_CLASIFICACION === 'demo'} />
+          </div>
+        ) : null}
 
         {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
           pintan de inmediato mientras llega el chunk.
@@ -281,7 +328,7 @@ function UploadRoute() {
           lleva dentro—, y su análisis se enseña igual que el de un G-code suelto.
           La condición es que haya metadatos, no la extensión del archivo.
         */}
-        {(showGcodeNotice || metadata) && <SeccionAnalisis />}
+        {(showGcodeNotice || metadata) && <SeccionAnalisis recomendacionFuera={veredictoArriba} />}
 
         {showUnsupported && (
           <div className="canvas-placeholder">

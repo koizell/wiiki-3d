@@ -1,3 +1,4 @@
+import CabeceraRuta from '../components/CabeceraRuta';
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalysis, useAnalysisActions } from '../state/useAnalysis';
@@ -49,6 +50,19 @@ function TallerRoute() {
 
   return (
     <div className="taller">
+      {/*
+        La cabecera de plano de la ruta (§5 y §7.2 de la spec).
+
+        El estado dice **qué se puede hacer aquí**, y en Taller son dos cosas
+        distintas según haya archivo o no: con un G-code se costea la pieza; sin
+        él, sólo se explica qué es esto. Antes el rótulo era el mismo en los dos
+        casos, así que la pantalla no decía en qué estado estaba.
+      */}
+      <CabeceraRuta
+        numero="02"
+        nombre="Taller"
+        estado={esGcode ? 'Con análisis' : 'Sin archivo'}
+      />
       <h1 className="taller-titulo">Taller</h1>
 
       {/*
@@ -138,6 +152,14 @@ function TallerRoute() {
               <p>Coste de filamento</p>
               <output className="taller-total" htmlFor={campoId} aria-live="polite">{conComa(costeEuros(gramos, precioLeido.precioKg))} €</output>
               <p className="taller-resultado">{lineaCalculo(gramos, precioLeido.precioKg)}</p>
+              {/*
+                El `÷ 1000` de la línea es la conversión de gramos a kilogramos, y
+                es la única parte de la operación que no es obvia. Se dice aquí
+                para que nadie tenga que deducirlo: la línea está para poder
+                comprobarse, y una comprobación que hay que interpretar no se
+                puede comprobar.
+              */}
+              <p className="taller-resultado-nota">El ÷ 1000 pasa los gramos a kilogramos.</p>
             </div>
           )}
           <p className="taller-limites">Sólo filamento: no incluye electricidad, máquina ni mano de obra.</p>

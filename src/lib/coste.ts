@@ -114,12 +114,23 @@ export function conComa(valor: number, decimales = 2): string {
 }
 
 /**
- * La aritmética entera de la línea, como la ve la persona: las tres cifras y el
- * signo entre ellas.
+ * La aritmética entera de la línea, como la ve la persona: las cifras y el signo
+ * entre ellas.
  *
  * Sale de aquí y no de la vista porque es el criterio de aceptación medible: con
- * 0,93 g y 25 €/kg tiene que dar `0,93 g × 25,00 €/kg = 0,02 €`. Si esta función
- * cambia, ese número cambia, y eso tiene que verse en la comprobación.
+ * 0,93 g y 25 €/kg tiene que dar `0,93 g ÷ 1000 × 25,00 €/kg = 0,02 €`. Si esta
+ * función cambia, ese número cambia, y eso tiene que verse en la comprobación.
+ *
+ * ## Por qué el `÷ 1000` está escrito y no escondido
+ *
+ * Porque la línea **se puede comprobar**, y antes no se podía. `0,93 g × 25,00
+ * €/kg` da 23,25 €, no 0,02 €: falta la conversión de gramos a kilogramos, que es
+ * la mitad de la operación y la única parte que no es obvia. Un lector que
+ * multiplica lo que ve y no le sale la cifra tiene razón para desconfiar del
+ * número, y con razón.
+ *
+ * El orden es el de la aritmética, no el de las unidades: primero se pasan los
+ * gramos a kilogramos, y luego se multiplica por el precio del kilogramo.
  *
  * @param gramos Filamento consumido, en gramos.
  * @param precioKg Precio del filamento, en €/kg.
@@ -127,6 +138,6 @@ export function conComa(valor: number, decimales = 2): string {
 export function lineaCalculo(gramos: number, precioKg: number): string {
   const coste = costeEuros(gramos, precioKg);
   return (
-    `${conComa(gramos)} g × ${conComa(precioKg)} €/kg = ${conComa(coste)} €`
+    `${conComa(gramos)} g ÷ 1000 × ${conComa(precioKg)} €/kg = ${conComa(coste)} €`
   );
 }

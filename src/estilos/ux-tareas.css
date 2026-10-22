@@ -117,6 +117,19 @@
   .inicio-sintoma-sintoma { font-size: var(--texto-sm); }
   .inicio-sintoma-dibujo { width: 3.5rem; }
   .guia-cabecera { display: block; }
+  /*
+   * El dibujo de la cabecera, en móvil.
+   *
+   * Flota a la derecha y mide 4 rem, y las dos cosas importan. La anchura,
+   * porque el SVG escala con su contenedor y sin esto se estira a todo el
+   * ancho —220 px de alto para un dibujo de 60— y empuja la primera
+   * comprobación por debajo del pliegue. Y el `float`, porque un elemento
+   * flotado no ocupa alto en su celda: la banda de la rejilla se cierra y el
+   * dibujo se dibuja en el hueco que queda al lado, sin desplazar nada.
+   *
+   * No es la solución más elegante —lo elegante sería el dibujo junto al
+   * titular, que es donde pertenece— pero es la que no mueve la lectura.
+   */
   .guia-cabecera-dibujo { float: right; width: 4rem; margin: 0 0 0.5rem 0.75rem; }
   .guia-cabecera h1 { font-size: 1.5rem; }
   .guia-cabecera-resumen { clear: both; }

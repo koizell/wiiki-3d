@@ -4,8 +4,14 @@ import { useAnalysis } from '../state/useAnalysis';
 import { articuloParaCampo } from '../lib/wiki-campos';
 import { MODO_CLASIFICACION } from '../services/JevService';
 
-/** El resultado pertenece al área de trabajo; el G-code no necesita un visor vacío. */
-export default function SeccionAnalisis() {
+/**
+ * El resultado pertenece al área de trabajo; el G-code no necesita un visor vacío.
+ *
+ * `recomendacionFuera` es para cuando la vista levanta el veredicto por su
+ * cuenta, por encima de todo lo demás. Lo que se lee no puede estar dos
+ * pantallas más abajo, y con el visor de trayectoria delante lo estaba.
+ */
+export default function SeccionAnalisis({ recomendacionFuera = false }: { recomendacionFuera?: boolean }) {
   const { status, metadata, classification, error, fileType } = useAnalysis();
   return (
     <section className="analisis-principal" aria-labelledby="resultado-titulo">
@@ -18,7 +24,8 @@ export default function SeccionAnalisis() {
       </div>
       <AnalysisPanel status={status} metadata={metadata} classification={classification}
         modoClasificacion={MODO_CLASIFICACION}
-        error={error} fileType={fileType ?? undefined} explicar={articuloParaCampo} />
+        error={error} fileType={fileType ?? undefined} explicar={articuloParaCampo}
+        recomendacionFuera={recomendacionFuera} />
       {metadata && status === 'done' && (
         <p className="analisis-siguiente"><Link className="boton boton--ruta" to="/taller">Calcular el coste de filamento →</Link></p>
       )}
