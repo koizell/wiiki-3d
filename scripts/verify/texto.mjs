@@ -43,11 +43,16 @@ const MAX_PORQUE = 200;
 /**
  * Los números de partida.
  *
- * Son los del 21 de octubre de 2026, con las 32 guías migradas a `puntos`,
- * `indicador` y `resumenExtra`. **Sólo pueden bajar.**
+ * Son los del **21 de octubre de 2026**, después de la vuelta de acortamiento:
+ * las 32 guías migradas a `puntos`, `indicador` y `resumenExtra`, y los 213
+ * `porque` de más de 200 caracteres acortados y revisados uno a uno.
+ *
+ * **Sólo pueden bajar.** Y si bajan, este script avisa de que el número de
+ * aquí está desactualizado, porque un freno que no se actualiza deja de avisar
+ * de las subidas siguientes.
  */
 const FRENO = {
-  porqueLargos: 213,
+  porqueLargos: 0,
   resumenesPartidos: 19,
   tarjetasSinPuntos: 0,
   reglasSinIndicador: 0,
@@ -157,12 +162,16 @@ comprobar(
  * avisar de las subidas siguientes, que es peor que no tenerlo.
  */
 comprobar(
-  porqueLargos === FRENO.porqueLargos,
-  `AVISO: el freno de los porqué está desactualizado (${porqueLargos} reales, ${FRENO.porqueLargos} en el script): actualiza FRENO.porqueLargos`
+  porqueLargos >= FRENO.porqueLargos,
+  porqueLargos < FRENO.porqueLargos
+    ? `AVISO: el freno de los porqué está más flojo que la realidad (${porqueLargos} reales, ${FRENO.porqueLargos} en el script): actualiza FRENO.porqueLargos`
+    : `el freno de los porqué está apretado: ${porqueLargos} de ${FRENO.porqueLargos}`
 );
 comprobar(
-  tarjetasSinPuntos === FRENO.tarjetasSinPuntos,
-  `AVISO: el freno de las tarjetas sin puntos está desactualizado (${tarjetasSinPuntos} reales, ${FRENO.tarjetasSinPuntos} en el script): actualiza FRENO.tarjetasSinPuntos`
+  tarjetasSinPuntos >= FRENO.tarjetasSinPuntos,
+  tarjetasSinPuntos < FRENO.tarjetasSinPuntos
+    ? `AVISO: el freno de las tarjetas sin puntos está más flojo que la realidad (${tarjetasSinPuntos} reales, ${FRENO.tarjetasSinPuntos} en el script): actualiza FRENO.tarjetasSinPuntos`
+    : `el freno de las tarjetas sin puntos está apretado: ${tarjetasSinPuntos} de ${FRENO.tarjetasSinPuntos}`
 );
 
 for (const c of checks) console.log(c);
