@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { TIMEOUT_COMPROBACION } from './probe.mjs';
+import { startPreview, TIMEOUT_COMPROBACION } from './probe.mjs';
 
 /*
  * Los slugs vienen del registro de la aplicación, no de un directorio de ficheros.
