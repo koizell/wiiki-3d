@@ -80,9 +80,9 @@ export const tpuFlexible: Guia = {
   sintoma: '¿Mi impresora puede con TPU?',
   dibujo: 'hotend',
   entrada:
-    'El TPU no es un material con otros números: es un material con otras exigencias. Lo que decide si tu máquina puede con él no es la temperatura, sino el engranaje que muerde el filamento, el camino que recorre hasta el cabezal, la boquilla que llevas montada y el aparato que le alimenta. Por debajo de 85A los engranajes de una Bambu no muerden; un AMS no deja pasar un TPU corriente por su canal; y de las máquinas de husillo no hay ni una fuente en este tema.',
+    'Lo que decide si tu máquina puede con un TPU no es la temperatura, sino el engranaje que muerde el filamento, el camino que recorre hasta el cabezal, la boquilla que llevas montada y el aparato que le alimenta. Por debajo de 85A los engranajes de una Bambu no muerden; un AMS no deja pasar un TPU corriente por su canal; y de las máquinas de husillo no hay ni una fuente en este tema.',
   autor: AUTOR,
-  actualizado: '2026-10-19',
+  actualizado: '2026-10-21',
   minutos: 7,
 
   /*

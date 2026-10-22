@@ -5,7 +5,7 @@ export const elephantFoot: Guia = {
   slug: 'elephant-foot',
   titulo: 'Pie de elefante (elephant foot)',
   resumen:
-    'La base sale más ancha que el resto.',
+    'Por qué la base sale más ancha que arriba, y cuándo la resuelves con compensación y cuándo con nivelación y temperatura.',
   resumenExtra:
     'Antes de compensar, mide dónde está el ensanchamiento y si la máquina está demasiado baja: la compensación mueve el contorno, no cura la causa.',
   sintoma: 'La base sale más ancha que arriba',
@@ -13,7 +13,7 @@ export const elephantFoot: Guia = {
   entrada:
     'La primera capa y a veces las primeras salen más anchas que las superiores y dejan un anillo saliente en el borde inferior. La causa nominal es que la primera capa se prensa sobre la cama caliente todavía blanda; el peso de las capas superiores y la temperatura de la cama deciden cuánto se nota.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 3,
 
   diferencial: {

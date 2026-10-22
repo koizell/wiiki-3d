@@ -47,14 +47,14 @@ export const adhesion: Guia = {
   slug: 'adhesion-primera-capa',
   titulo: 'Adhesión en la primera capa',
   resumen:
-    'La base no se pega.',
+    'Qué hace que la primera capa no se pegue, y por qué apretar la boquilla cambia de fallo en vez de arreglarlo.',
   resumenExtra:
     'Antes de tocar nada, comprueba que no sea infraextrusión —apretar la boquilla cambia de fallo— y que el perfil diga la chapa que tienes montada.',
   sintoma: 'La base no se pega a la cama',
   dibujo: 'primera-capa',
   entrada: 'La primera capa no pega, o pega y sale frágil. Son dos fallos distintos con dos arreglos distintos, y apretar la boquilla para forzarla cambia de fallo. Aquí se empieza por saber cuál de los dos tienes.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 3,
 
   /*

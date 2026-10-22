@@ -21,7 +21,7 @@ import { AUTOR } from './autor.ts';
  * ## Lo que este fichero se niega a hacer
  *
  * A dar **una** cifra. Podría: con `material=pla` y `chapa=cool` sale 35–45 °C, y es
- * la respuesta correcta. Pero lo que no puede hacer es dejar de범 decir que las otras
+ * la respuesta correcta. Pero lo que no puede hacer es dejar de decir que las otras
  * cinco existen, porque el error real de la gente no es no tener la cifra: es tener
  * una —la que ha leído en un foro— y creer que es la única. Por eso las tres
  * tarjetas de cifras están siempre visibles y la última es la que avisa de que el
@@ -38,7 +38,7 @@ export const temperaturaCama: Guia = {
   dibujo: 'cama',
   entrada: 'No hay un número de cama: hay seis para el PLA y dependen de la chapa más que del fabricante. Esta guía te da la cifra que toca a la tuya y te dice dónde cae la que trae tu archivo.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 2,
 
   /*
@@ -145,19 +145,28 @@ export const temperaturaCama: Guia = {
 
   conocimiento: [
     {
+      /*
+       * La tarjeta de las seis cifras, y el sitio donde se cayó una.
+       *
+       * El título y el `resumen` de la guía dicen seis, y el cuerpo decía cinco:
+       * contaba la fila por chapa de Bambu como una sola vez y no contaba ni el
+       * 35–65 por filamento ni el objetivo de 55–65 de la página de warping de
+       * Bambu. El `cifra` traía un 55 que el cuerpo no mencionaba, y se saltaba el
+       * 45. **Seis apariciones son seis, y los seis números son estos.**
+       */
       id: 'seis',
       titulo: 'Las seis cifras del PLA, y por qué todas son ciertas',
       puntos: [
         'No es que los fabricantes se confundan: cada una tiene un alcance distinto.',
-        'Bambu publica dos rangos para el PLA porque son los dos extremos de la misma fila de su tabla por chapa.',
-        'Prusa da un único 50–60 °C que no está condicionado a ninguna chapa.',
-        'La ficha del PLA da un 60 °C recomendado que es de la cama, y usa ese mismo número más abajo para hablar de la pieza.',
-        'Y el slicer repite el 50–60 de Prusa. Son cinco apariciones y ninguna está equivocada.',
+        'La tabla por chapa de Bambu da 35–45 °C para la Cool Plate y 45–65 °C para las otras tres.',
+        'Su tabla por filamento da 35–65 °C; y su página de warping un objetivo de 55–65 °C en Textured PEI.',
+        'Prusa da 50–60 °C en su tabla de materiales y un 60 °C suelto en la ficha del PLA.',
+        'Y el slicer repite el 50–60 de Prusa. Son seis apariciones y ninguna está equivocada.',
       ],
       indicador: 'slicer',
       cuerpo:
-        'No es que los fabricantes se confundan: cada una tiene un alcance distinto. Bambu publica dos rangos para el PLA porque son los dos extremos de la misma fila de su tabla por chapa. Prusa da un único 50–60 °C que no está condicionado a ninguna chapa. La ficha del PLA da un 60 °C recomendado que es de la cama, y usa ese mismo número más abajo para hablar de la pieza. Y el slicer repite el 50–60 de Prusa. Son cinco apariciones y ninguna está equivocada.',
-      cifra: { valor: '35 · 50 · 55 · 60 · 65 °C', nota: 'cinco cifras para un solo material' },
+        'No es que los fabricantes se confundan: cada una tiene un alcance distinto. La tabla por chapa de Bambu da 35–45 °C para la Cool Plate y 45–65 °C para las otras tres; su tabla por filamento da 35–65 °C; y su página de warping un objetivo de 55–65 °C en Textured PEI. Prusa da 50–60 °C en su tabla de materiales y un 60 °C suelto en la ficha del PLA. Y el slicer repite el 50–60 de Prusa. Son seis apariciones y ninguna está equivocada.',
+      cifra: { valor: '35 · 45 · 50 · 55 · 60 · 65 °C', nota: 'seis cifras para un solo material' },
     },
     {
       id: 'rango',
@@ -416,6 +425,11 @@ export const temperaturaCama: Guia = {
       url: 'https://help.prusa3d.com/article/first-layer-issues_1804',
       quien: 'Prusa Research',
       que: 'Primera capa: incremento de +5–10 °C y adhesión excesiva en PEI lisa.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/filament-acc/filament/print-quality/warping-falling-off-collapsing',
+      quien: 'Bambu Lab',
+      que: 'Página de warping: objetivo de cama de 55–65 °C para el PLA en Textured PEI, y 35 °C en Cool Plate.',
     },
     {
       url: 'https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/',

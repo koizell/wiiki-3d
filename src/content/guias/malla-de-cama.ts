@@ -5,7 +5,7 @@ export const mallaDeCama: Guia = {
   slug: 'malla-de-cama',
   titulo: 'Malla de cama y nivelación',
   resumen:
-    'La adhesión va y viene por zonas.',
+    'Qué corrige la malla de cama, qué no, y cuándo conviene ajustar el Z-offset a mano en vez de medir.',
   resumenExtra:
     'La malla mide la cama y la sigue, pero no corrige un offset alto ni una chapa sucia.',
   sintoma: 'La primera capa se pega a trozos',
@@ -13,7 +13,7 @@ export const mallaDeCama: Guia = {
   entrada:
     'La primera capa no pega del mismo modo en toda la base: unas zonas agarran y otras no. Eso es lo que la malla de cama puede arreglar, y lo arregla midiendo, no empujando la boquilla. Aquí se separa lo que la malla corrige de lo que no, y cuándo conviene pasar a mano.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 4,
 
   diferencial: {

@@ -12,7 +12,7 @@ export const flowRate: Guia = {
   slug: 'flow-rate',
   titulo: 'Flow rate y calibración del flujo',
   resumen:
-    'Hay huecos entre líneas o material de sobra.',
+    'Cómo se calibra el flujo de filamento, y por qué el ajuste del slicer y el del firmware son dos capas distintas.',
   resumenExtra:
     'Antes de tocar temperatura se descarta warping y separación: lo que falla aquí es cuánto filamento sale.',
   sintoma: 'Huecos o exceso de material en las líneas',
@@ -20,7 +20,7 @@ export const flowRate: Guia = {
   entrada:
     'La pieza está bien adherida y las capas no se abren por dentro: lo que se ve es que las líneas no llenan o que sobra material. Subir la cama o la boquilla no lo arregla. Lo que falla es la cantidad de filamento que sale, y las dos capas que la ajustan (slicer y firmware) son distintas.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 8,
 
   diferencial: {

@@ -1113,6 +1113,42 @@ comprobar('la comparación marca dentro, por encima y por debajo', () => {
   assert.equal(compararValor(rango, undefined), null, 'sin dato no hay comparación, no un «dentro»');
 });
 
+/*
+ * Los puntos tienen que ser una partición fiel del cuerpo.
+ *
+ * Los `puntos` son el `cuerpo` troceado: ni una palabra más, ni una menos. El
+ * troceado es mecánico —corta y vuelve a pegar—, así que la comparación de
+ * palabras tiene que dar lo mismo. Y da lo mismo aunque el corte cambie una
+ * coma por un punto y capitalice la continuación, porque aquí sólo se comparan
+ * las palabras: la puntuación y las mayúsculas son del troceador, no del texto.
+ *
+ * Esto es lo que no miraba nadie. El `cuerpo` estaba intacto —el cotejo lo
+ * demuestra— mientras 351 puntos acababan en «,.». Y un redactor puede editar
+ * un `cuerpo` y dejar los `puntos` del troceado anterior: el texto nuevo no
+ * está en los puntos, y el texto viejo sigue en ellos.
+ */
+const RE_PALABRA = /[a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1\u00fc0-9]+/gi;
+
+/** Las palabras de un texto, sin puntuación y en minúsculas. */
+function palabras(texto) {
+  return (texto.toLowerCase().match(RE_PALABRA) ?? []).join(' ');
+}
+
+for (const guia of GUIAS) {
+  comprobar(`${guia.slug}: los puntos de cada tarjeta son su cuerpo, troceado y sin perder una palabra`, () => {
+    for (const c of guia.conocimiento) {
+      if (!c.puntos || c.puntos.length === 0) continue;
+      const esperado = palabras(c.cuerpo);
+      const obtenido = palabras(c.puntos.join(' '));
+      assert.equal(
+        obtenido,
+        esperado,
+        `la tarjeta «${c.id}» no tiene los mismos puntos que su cuerpo:\n  cuerpo: ${esperado.slice(0, 160)}\n  puntos: ${obtenido.slice(0, 160)}`
+      );
+    }
+  });
+}
+
 if (fallos.length > 0) {
   console.log(`\n${fallos.length} COMPROBACIONES HAN FALLADO:\n`);
   for (const f of fallos) console.log(`  ✗ ${f.nombre}\n      ${f.mensaje}\n`);

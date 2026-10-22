@@ -5,7 +5,7 @@ export const despegueAMitad: Guia = {
   slug: 'despegue-a-mitad',
   titulo: 'Despegue a mitad de impresión',
   resumen:
-    'La pieza se despega, tumba o se desmorona a mitad.',
+    'Qué fallo está tumbando la pieza a mitad de impresión, y qué ajuste lo arregla en cada caso.',
   resumenExtra:
     'Antes de subir la temperatura, distingue si es warping de esquinas, adhesión de cama o colapso: las causas y los ajustes no son los mismos.',
   sintoma: 'La pieza se despega o tumba a mitad',
@@ -13,7 +13,7 @@ export const despegueAMitad: Guia = {
   entrada:
     'La pieza se despega o tumba a mitad de la impresión. Puede ser que las esquinas se levanten, que la pieza deslice o salte de la cama, o un colapso estructural con las capas superiores corridas. El punto de partida común es el agarre de la primera capa y el enfriamiento, pero el ajuste que arregla cada caso no es el mismo y cambiar la temperatura sin distinguirlos es la forma más directa de no resolver nada.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 5,
 
   diferencial: {

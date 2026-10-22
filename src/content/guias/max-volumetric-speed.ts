@@ -12,7 +12,7 @@ export const maxVolumetricSpeed: Guia = {
   slug: 'max-volumetric-speed',
   titulo: 'Velocidad volumétrica máxima (MVS)',
   resumen:
-    'La pieza se subextruye o se atasca sólo a alta velocidad.',
+    'Cuánto filamento puede fundir tu hotend por segundo, y cómo se calibra ese techo en cada slicer.',
   resumenExtra:
     'Antes de tocar temperatura se descarta flow rate y warping: lo que falla aquí es el techo de caudal que el hotend puede fundir.',
   sintoma: 'Subextrusión o atascos a alta velocidad',
@@ -20,7 +20,7 @@ export const maxVolumetricSpeed: Guia = {
   entrada:
     'La pieza está bien adherida y las capas no se abren por dentro, pero al acelerar aparecen huecos, líneas débiles o el extrusor se atasca. A velocidad normal todo va bien. Lo que falla no es la cantidad de filamento que sale ni la temperatura de cama: es el volumen por segundo que el hotend puede fundir, y ese techo es el que limita la velocidad real.',
   autor: AUTOR,
-  actualizado: '2026-10-17',
+  actualizado: '2026-10-21',
   minutos: 7,
 
   diferencial: {

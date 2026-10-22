@@ -14,7 +14,7 @@ export const agujerosOvalados: Guia = {
   slug: 'agujeros-ovalados',
   titulo: 'Agujeros ovalados y compensación dimensional XY',
   resumen:
-    'Los agujeros salen más pequeños o elípticos.',
+    'Qué causa que un agujero salga más pequeño o elíptico, cómo se mide el error y cuándo el problema es mecánico y no del slicer.',
   resumenExtra:
     'Antes de compensar, mide el error y descarta warping, separación y pie de elefante: la compensación mueve el contorno, no cura la causa.',
   sintoma: 'Los agujeros salen más pequeños o elípticos',
@@ -22,7 +22,7 @@ export const agujerosOvalados: Guia = {
   entrada:
     'Los agujeros de una pieza salen más pequeños de lo diseñado o con forma ovalada. Esto ocurre por varias causas físicas: el plástico se contrae al enfriar, el slicer deposita más material en el lado cóncavo de las curvas, y los errores mecánicos como el backlash producen errores distintos en X e Y. La compensación XY del slicer puede corregir parte del error, pero no es un truco único: depende del material, la geometría y la impresora. Esta guía te ayuda a medir el error, elegir la compensación adecuada y saber cuándo el problema es mecánico y no de software.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 6,
 
   diferencial: {

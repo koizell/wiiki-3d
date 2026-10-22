@@ -35,12 +35,12 @@ export const voladizosSoportes: Guia = {
   resumen:
     'Un voladizo que se descuelga, unos soportes que se rompen y una cara apoyada rugosa se ven parecidos pero no se arreglan igual.',
   resumenExtra:
-    'Aprende a distinguirlos y a decidir si necesitas soportes o con refrigeración y orientación es suficiente.',
+    'Aprende a distinguirlos y a decidir si necesitas soportes o si con refrigeración y orientación basta.',
   sintoma: 'Un voladizo cuelga, los soportes fallan o la cara apoyada sale rugosa',
   dibujo: 'voladizo',
   entrada: 'Un voladizo que cuelga, unos soportes que no salen o una cara apoyada rugosa son tres problemas que se confunden. Aquí se distinguen por dónde está el fallo y qué ángulo tiene el saliente.',
   autor: AUTOR,
-  actualizado: '2026-10-11',
+  actualizado: '2026-10-21',
   minutos: 4,
 
   /*
@@ -82,7 +82,7 @@ export const voladizosSoportes: Guia = {
       id: 'voladizo',
       etiqueta: '¿Qué ángulo tiene el voladizo más crítico?',
       indicador: 'geometria',
-      para: 'El ángulo decide si necesitas soportes o con refrigeración y orientación es suficiente. Es la variable más importante de la guía.',
+      para: 'El ángulo decide si necesitas soportes o si con refrigeración y orientación basta. Es la variable más importante de la guía.',
       necesaria: true,
       campos: ['overhangAngle'],
       opciones: [

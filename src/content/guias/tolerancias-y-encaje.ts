@@ -12,7 +12,7 @@ export const toleranciasYEncaje: Guia = {
   slug: 'tolerancias-y-encaje',
   titulo: 'Tolerancias y encaje en impresión 3D FDM',
   resumen:
-    'La pieza sale más grande o más pequeña de lo diseñado, o no encaja con otra.',
+    'Qué ajuste corresponde a cada causa de que una pieza no salga a medida: diseño, slicer, máquina o post-procesado.',
   resumenExtra:
     'Antes de compensar, mide el error real de tu máquina: no hay dos impresoras con la misma tolerancia.',
   sintoma: 'La pieza no sale a medida o no encaja',
@@ -20,7 +20,7 @@ export const toleranciasYEncaje: Guia = {
   entrada:
     'Una pieza impresa en FDM casi nunca sale exactamente a la medida diseñada: el plástico se contrae al enfriar, el slicer deposita más material en el lado cóncavo de las curvas y los errores mecánicos (backlash, steps/mm) producen desviaciones. Esta guía explica qué es una tolerancia y una holgura, qué tipos de encaje existen, cómo medir la tolerancia real de tu máquina y qué ajustar por diseño, software, máquina y post-procesado para que las piezas encajen.',
   autor: AUTOR,
-  actualizado: '2026-10-17',
+  actualizado: '2026-10-21',
   minutos: 7,
 
   diferencial: {

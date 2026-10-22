@@ -4,47 +4,72 @@ import { AUTOR } from './autor.ts';
 /**
  * Stringing y retracción.
  *
- * El stringing son hilos finos entre piezas causados por plástico que gotea
- * durante el travel. El oozing es el goteo constante sin moverse. Comparten
- * causas pero se arreglan distinto: el stringing con retracción y travel
- * speed, el oozing con temperatura o boquilla.
+ * ## Lo que las fuentes no distinguen
+ *
+ * Las tres fuentes de este lote usan «stringing» y «oozing» **para el mismo
+ * defecto**. Simplify3D abre su página con «Stringing (otherwise known as
+ * oozing, whiskers, or "hairy" prints)» y OrcaSlicer habla de «the least
+ * stringing and oozing» como si fueran la misma cosa. **Ninguna fuente define
+ * el oozing como el goteo constante sin moverse**, y el grep de `wiki/raw/`
+ * entero por «drip», «blob», «not moving» o «stationary» no devuelve ninguna.
+ *
+ * Por eso esta guía **no publica una distinción entre stringing y oozing**: se la
+ * daría a sí misma, y en el `description` de la página, que es donde más se ve.
+ * Lo que hay es un defecto y varias causas —temperatura alta, filamento húmedo,
+ * retracción mal ajustada y velocidad de travel baja— y un orden de ajustes.
  */
 export const stringing: Guia = {
   slug: 'stringing',
   titulo: 'Stringing y retracción',
   resumen:
-    'Hilos finos entre piezas o goteo constante de la boquilla.',
+    'Qué ajustes quitan los hilos de plástico y en qué orden probarlos: retracción, temperatura y travel speed.',
   resumenExtra:
-    'Distingue stringing de oozing y ajusta retracción, temperatura y travel speed en el orden correcto.',
+    'Las causas que dan las fuentes: temperatura alta, filamento húmedo, retracción mal ajustada y travel lento. Y el orden de Simplify3D: distancia de retracción, velocidad de retracción, temperatura, no cruzar el contorno y velocidad de movimiento.',
   sintoma: 'Hilos finos entre piezas o goteo de la boquilla',
   dibujo: 'hotend',
   entrada:
-    'El stringing son hilos finos de plástico que aparecen entre piezas o en voladizos, causados por plástico que gotea de la boquilla mientras el extrusor se mueve. El oozing es el goteo constante incluso sin moverse. Ambos comparten causas pero se arreglan distinto: el stringing se corrige con retracción y velocidad de travel, el oozing con temperatura o boquilla. Esta guía te ayuda a distinguir cuál tienes y a ajustar los parámetros en el orden correcto.',
+    'El stringing son hilos finos de plástico que aparecen entre piezas o en voladizos, causados por plástico que gotea de la boquilla mientras el extrusor se mueve. Es también lo que otras fuentes llaman oozing, whiskers o hairy prints: el mismo defecto, no dos, y no hay un ajuste distinto para cada nombre. Lo que hay son varias causas posibles y un orden para descartarlas, que es lo que esta guía te da.',
   autor: AUTOR,
-  actualizado: '2026-10-18',
+  actualizado: '2026-10-21',
   minutos: 5,
 
+  /*
+   * El diferencial, y por qué no separa stringing de oozing.
+   *
+   * La versión anterior tenía dos comprobaciones sobre lo mismo: una preguntaba
+   * si los hilos aparecían sólo durante los viajes y la otra si la boquilla
+   * goteaba sin imprimir. Las dos caras —«es stringing» y «es oozing»—
+   * repartían el mismo defecto en dos, y ese reparto no lo respaldaba ninguna
+   * fuente. Peor: el `contra` las ponía en la misma lista que la temperatura alta
+   * y el filamento húmedo, como si fueran diagnósticos distintos.
+   *
+   * Lo que sí está respaldado son **las causas**, y son cuatro: la temperatura
+   * demasiado alta, el filamento húmedo, la retracción mal ajustada y la
+   * velocidad de travel baja. El diferencial triagea esas cuatro, y la salida
+   * `siNo` va a la guía de temperatura de boquilla, que es donde vive el caso
+   * «mi temperatura no es la que dice el fabricante».
+   */
   diferencial: {
-    contra: 'stringing en viajes, oozing constante, temperatura alta y filamento húmedo',
-    contraCorto: 'stringing u oozing',
+    contra: 'temperatura de boquilla mal puesta',
+    contraCorto: 'la temperatura de boquilla',
     comprobaciones: [
       {
-        id: 'solo-viajes',
-        mira: '¿Los hilos aparecen solo cuando la boquilla se mueve entre piezas, o también cuando está quieta imprimiendo?',
-        si: 'Solo en viajes: es stringing puro, la retracción y el travel speed son el ajuste.',
-        no: 'También cuando está quieta: es oozing, la temperatura o la boquilla son la causa.',
-      },
-      {
-        id: 'boquilla-gotea',
-        mira: '¿La boquilla gotea plástico sin imprimir, como una gota que cae?',
-        si: 'Gotea constantemente: es oozing. Revisa temperatura y boquilla.',
-        no: 'No gotea sin imprimir: es stringing, el problema está en el travel.',
+        id: 'temperatura',
+        mira: '¿La temperatura que tienes puesta es la que da el fabricante para ese filamento?',
+        si: 'Es la que toca: la temperatura no es la causa, y lo que queda son la retracción, el travel speed y la humedad.',
+        no: 'No es la que toca: el problema es la temperatura de boquilla, y esa guía la tiene.',
       },
       {
         id: 'humedad',
         mira: '¿Has impreso con este filamento recientemente sin secarlo, o ha estado expuesto al ambiente?',
-        si: 'Filamento posiblemente húmedo: sécalo antes de tocar otros ajustes.',
-        no: 'Filamento seco: descarta humedad y sigue con los ajustes de retracción.',
+        si: 'Filamento posiblemente húmedo: sécalo y comprueba que la boquilla esté instalada sin fugas antes de tocar otros ajustes.',
+        no: 'Filamento seco: descarta la humedad y sigue con los ajustes de retracción.',
+      },
+      {
+        id: 'viajes',
+        mira: '¿Los hilos aparecen sobre todo en los viajes largos, por encima de los espacios abiertos?',
+        si: 'Sí: el movimiento es lo que los produce. Sube la velocidad de travel o activa no cruzar el contorno.',
+        no: 'No: los hilos no vienen del movimiento, así que la retracción es el ajuste.',
       },
     ],
     siNo: { guia: 'temperatura-hotend', etiqueta: 'Temperatura de hotend' },
@@ -120,22 +145,33 @@ export const stringing: Guia = {
       cuerpo:
         'El stringing son hilos finos de plástico que quedan sobre el modelo impreso. Ocurre cuando plástico gotea de la boquilla mientras el extrusor se mueve a una nueva ubicación.',
       cita: {
-        texto: 'Stringing (otherwise known as oozing, whiskers, or "hairy" prints) occurs when small strings of plastic are left behind on a 3D printed model.',
+        texto: 'This is typically due to plastic oozing out of the nozzle while the extruder is moving to a new location.',
         fuente: 'Simplify3D',
       },
     },
     {
+      /*
+       * La tarjeta que antes se llamaba «Qué es el oozing».
+       *
+       * Decía que el oozing es el goteo constante sin moverse, y que se arregla
+       * con temperatura mientras el stringing se arregla con retracción. **Eso no
+       * lo dice ninguna de las tres fuentes**: las tres usan los dos nombres para
+       * el mismo defecto. Lo que sí se puede publicar es exactamente lo contrario,
+       * y es lo que dice la cita: stringing, oozing, whiskers y hairy prints son
+       * cuatro nombres de un solo defecto.
+       */
       id: 'que-es-oozing',
-      titulo: 'Qué es el oozing',
+      titulo: 'Oozing, whiskers y hairy prints: el mismo defecto',
       puntos: [
-        'El oozing es plástico que sale de la boquilla mientras el extrusor se mueve a una nueva ubicación.',
-        'Cuando también gotea sin moverse, la causa suele ser temperatura alta.',
+        'Las fuentes no distinguen entre stringing y oozing.',
+        'Son dos nombres para el mismo defecto, y el que unas llaman whiskers y otras hairy prints es ese mismo defecto y no un cuarto.',
+        'No hay dos fallos que se arreglen distinto; hay uno, y lo que cambia es la causa.',
       ],
       indicador: 'temperatura',
       cuerpo:
-        'El oozing es plástico que sale de la boquilla mientras el extrusor se mueve a una nueva ubicación. Cuando también gotea sin moverse, la causa suele ser temperatura alta.',
+        'Las fuentes no distinguen entre stringing y oozing: son dos nombres para el mismo defecto, y el que unas llaman whiskers y otras hairy prints es ese mismo defecto y no un cuarto. No hay dos fallos que se arreglen distinto; hay uno, y lo que cambia es la causa.',
       cita: {
-        texto: 'This is typically due to plastic oozing out of the nozzle while the extruder is moving to a new location.',
+        texto: 'Stringing (otherwise known as oozing, whiskers, or "hairy" prints) occurs when small strings of plastic are left behind on a 3D printed model.',
         fuente: 'Simplify3D',
       },
     },

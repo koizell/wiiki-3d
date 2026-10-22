@@ -5,7 +5,7 @@ export const esquinasPetg: Guia = {
   slug: 'esquinas-petg',
   titulo: 'Esquinas levantadas en PETG (warping)',
   resumen:
-    'El PETG ensombrece el warping del PLA pero sus esquinas se levantan igual.',
+    'El PETG es algo más propenso a warpear que el PLA, y sus esquinas se levantan igual.',
   resumenExtra:
     'Confirma primero que no es fallo de adhesión ni colapso, y ajusta chapa, cama y enfriamiento según tu montaje.',
   sintoma: 'Esquinas levantadas en PETG',
@@ -13,7 +13,7 @@ export const esquinasPetg: Guia = {
   entrada:
     'El PETG es menos propenso a warpear que ABS, ASA, PC o PA, pero sus esquinas se levantan igual cuando la base no sujeta o el enfriamiento es inadecuado. Aquí casi nunca es el filamento: es la chapa, la cama, el aire y el ventilador. Antes de subir la cama, confirma que el daño son esquinas levantadas y no un deslizamiento de la pieza o un colapso.',
   autor: AUTOR,
-  actualizado: '2026-10-16',
+  actualizado: '2026-10-21',
   minutos: 5,
   diferencial: {
     contra: 'fallo de adhesión a la cama y colapso estructural',

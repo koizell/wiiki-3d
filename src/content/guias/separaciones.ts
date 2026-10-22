@@ -18,7 +18,7 @@ export const separaciones: Guia = {
   slug: 'separaciones-entre-capas',
   titulo: 'Separaciones entre capas',
   resumen:
-    'Las capas se sueltan por dentro y la base está plana.',
+    'Qué ajuste une las capas cuando se separan por dentro, y qué contradicción hay entre las dos fuentes oficiales.',
   resumenExtra:
     'Antes de tocar la temperatura hay una comprobación que decide el ajuste, y las dos listas oficiales no dicen lo mismo.',
   sintoma: 'Las capas se sueltan por dentro',
