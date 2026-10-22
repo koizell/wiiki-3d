@@ -137,6 +137,21 @@
   background: var(--bg-panel);
 }
 
+@media (max-width: 700px) {
+  /*
+   * En móvil la ilustración no se pinta.
+   *
+   * Es una portada: ayuda a reconocer el problema en escritorio, donde hay
+   * espacio para ella. En un móvil de 375 px empuja la primera comprobación
+   * del diferencial por debajo del pliegue, que es justo lo que la spec pide
+   * que no pase («adelanta la primera comprobación»). El dibujo pequeño del
+   * índice ya hizo el trabajo de reconocimiento.
+   */
+  .guia-ilustracion {
+    display: none;
+  }
+}
+
 .guia-cabecera-cuerpo {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 13rem;
