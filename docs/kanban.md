@@ -38,6 +38,19 @@ Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
   dijera: seguía buscando la clase `.inicio-accesos`, que el rediseño de la
   portada había borrado. Ahora comprueba el orden —los síntomas antes de la
   documentación larga— y no una altura que ya no describía el diseño.
+- **La trayectoria del G-code se ve en 3D.** El aviso de la aplicación decía, textual,
+  «El G-code se analiza; su trayectoria no se muestra en 3D». Ahora se lee el **cuerpo**
+  del archivo —movimientos, capas y tipo de rasgo de cada tramo— y se dibuja
+  coloreado por lo que la cabeza está haciendo: perímetros, rellenos, superficies,
+  soportes y puentes. La cortina por capas es un `setDrawRange`, y el archivo se lee
+  por trozos porque uno real pesa decenas de megabytes.
+- **La prueba de que el lector dice la verdad**: los gramos **no se leen**, se derivan
+  de la extrusión que el lector ha visto. 311,01 mm declarados → 310,21 leídos;
+  0,93 g declarados → 0,925 g derivados. `verify:gcode` son 16 comprobaciones contra
+  el fixture real. Y encontró tres fallos de lectura que ya están corregidos: la
+  extrusión es **relativa** (`M83`), el slicer cuenta la extrusión **neta** —las
+  retracciones restan— y la Z de la capa la **anuncia** el slicer en un comentario
+  `;Z:` que llega antes de que la cabeza suba.
 - **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (214), `ui`
   (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
   `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
