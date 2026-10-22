@@ -8,6 +8,7 @@ export const placas: Guia = {
     'Qué chapa poner según tu material, cómo limpiarla sin arruinarla y por qué una regla de acetona que vale para una placa la estropea en otra.',
   sintoma: 'La pieza no se pega (o no se puede despegar)',
   dibujo: 'cama',
+  ilustracion: { src: '/wiki/placas/ilustracion.png', alt: 'Tres superficies de cama distintas con una pieza sobre cada una' },
   entrada:
     'La chapa no es un accesorio: es la mitad de la adhesión. Aquí se elige según el filamento, se explica por qué el glue sirve para una cosa distinta según la superficie, y se da la limpieza que no daña la que tienes.',
   autor: AUTOR,

@@ -79,6 +79,7 @@ export const tpuFlexible: Guia = {
     'Qué máquina puede con qué variante, qué hay que cambiar en el equipo y qué no se sabe todavía.',
   sintoma: '¿Mi impresora puede con TPU?',
   dibujo: 'hotend',
+  ilustracion: { src: '/wiki/tpu-flexible/ilustracion.png', alt: 'Pieza flexible doblada con extrusor directo' },
   entrada:
     'Lo que decide si tu máquina puede con un TPU no es la temperatura, sino el engranaje que muerde el filamento, el camino que recorre hasta el cabezal, la boquilla que llevas montada y el aparato que le alimenta. Por debajo de 85A los engranajes de una Bambu no muerden; un AMS no deja pasar un TPU corriente por su canal; y de las máquinas de husillo no hay ni una fuente en este tema.',
   autor: AUTOR,
