@@ -99,7 +99,7 @@ try {
     await probar('formato no admitido permite elegir otro en el propio aviso', async p => {
       await p.locator('#file-upload').setInputFiles({ name: 'prueba.txt', mimeType: 'text/plain', buffer: Buffer.from('prueba') });
       assert.equal(await p.locator('main').getByRole('button', { name: 'Elegir otro archivo' }).count(), 1);
-      assert(!(await p.locator('#file-upload').getAttribute('accept')).includes('.obj'));
+      assert((await p.locator('#file-upload').getAttribute('accept')).includes('.obj'));
     });
   }
   if (!grupo || grupo === 'guias') {

@@ -49,15 +49,12 @@ export function detectFileType(filename: string): FileType {
 
 /** Acota el tipo de archivo a los que el visor 3D puede construir. */
 export function isViewerFormat(fileType: FileType | null): fileType is ViewerFormat {
-  return fileType === 'stl' || fileType === '3mf';
+  return fileType === 'stl' || fileType === '3mf' || fileType === 'obj';
 }
 
 /** Explica en el área central por qué un formato todavía no se puede mostrar. */
-export function unsupportedFileMessage(fileType: FileType, filename: string): string {
-  if (fileType === 'obj') {
-    return 'El visor 3D para archivos .obj todavía no está disponible. El análisis técnico se reserva a los archivos G-code.';
-  }
-  return `"${filename}" tiene un formato no compatible. Sube un archivo .stl, .3mf, .gcode o .gco.`;
+export function unsupportedFileMessage(filename: string): string {
+  return `"${filename}" tiene un formato no compatible. Sube un archivo .stl, .3mf, .obj, .gcode o .gco.`;
 }
 
 /** Normaliza cualquier excepción a un mensaje presentable. */

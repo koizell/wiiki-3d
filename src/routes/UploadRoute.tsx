@@ -88,7 +88,7 @@ function UploadRoute() {
    *   analizaró el mismo G-code que va dentro— y se dibuja **encima de la malla**.
    */
   const trayectoriaSuelta = useTrayectoria(showGcodeNotice ? file : null);
-  const showUnsupported = fileType === "obj" || fileType === "unknown";
+  const showUnsupported = fileType === "unknown";
 
   /*
    * `Recientes` va debajo de la zona de subida en el estado sin archivo, y
@@ -337,7 +337,7 @@ function UploadRoute() {
         {showUnsupported && (
           <div className="canvas-placeholder">
             <p className="canvas-error">
-              {unsupportedFileMessage(fileType, file.name)}
+              {unsupportedFileMessage(file.name)}
             </p>
             <button type="button" className="btn-primary" onClick={openFilePicker}>Elegir otro archivo</button>
           </div>

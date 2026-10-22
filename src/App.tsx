@@ -198,7 +198,7 @@ function AppShell() {
               ref={fileInputRef}
               id="file-upload"
               type="file"
-              accept=".stl,.3mf,.gcode,.gco"
+              accept=".stl,.3mf,.obj,.gcode,.gco"
               style={{ display: 'none' }}
               onChange={(event) => {
                 const selected = event.target.files?.[0];
