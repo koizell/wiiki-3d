@@ -76,15 +76,40 @@ Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
   hizo falta: en este sitio la guía no se desplaza en la ventana, se desplaza en
   `.canvas-area`, y los eventos `scroll` no suben. Hay que escucharlos en el
   documento y en fase de captura.
+- **La vuelta de texto está cerrada: los 213 `porque` largos son cero.** De 583
+  reglas, las que pasaban de 200 caracteres se han acortado, revisado una a una y
+  devueltas donde el matiz se había perdido. El `resumen` de la cabecera es ahora
+  **una frase en las 32 guías** —media de 98 caracteres—, y la segunda mitad, cuando
+  la había, va en `resumenExtra`, dentro del desplegable de contexto.
+  **29.706 palabras de cuerpo antes y 29.706 después**: no se ha perdido ni una.
+- **El contenido se revisó con dos mitades, porque una vuelta escrita por agentes lo
+  necesita.** La **mecánica** (`verify:recorte`) compara cada guía con `HEAD` con el
+  AST de TypeScript y exige que fuera del `porque` no haya cambiado nada, campo por
+  campo. La **editorial** (el revisor) lee si el matiz perdido sigue en el `alcance`,
+  en la condición o en una tarjeta. De las 51 reglas señaladas, 49 eran
+  redundancia, 1 equivalencia y **1 pérdida real**, ya devuelta.
+- **Tres bugs reales encontrados por el camino**, ninguno del acortamiento:
+  `agujeros-ovalados/usar-hole-compensation` había perdido que el parámetro es
+  bidireccional; `esquinas-petg/recinto-abrir` tomaba la fila del PLA en una guía
+  de PETG, con un umbral de 60 °C en vez de 45 °C, y no se disparaba en el rango
+  recomendado; y el **material cocinado** decía «cama por encima de 70 °C», que era
+  otra columna de la tabla de Bambu. Los tres van por el pipeline que les toca.
+- **Investigación de Control3D (César Galera).** Sus siete tests de calibración son
+  **nuestras guías**, una a una; lo que falta es la **entrada por la puerta de
+  atrás**: quien no tiene un síntoma no tiene dónde empezar. Y sus **modelos de test
+  gratuitos** con su licencia. En
+  [`investigacion-control3d-2026-10-21.md`](investigacion-control3d-2026-10-21.md).
 - **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (218), `ui`
   (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
   `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
-  `seo` (450), `animacion` (18), `gcode` (38) y `guias` (1059). `lint` con 0 errores y las 3
+  `seo` (450), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72) y `guias`
+(1059). `lint` con 0 errores y las 3
   advertencias preexistentes de las copias de Three de `.superpowers/brainstorm/`.
-- **Lo que queda**: el `porqué` de más de 200 caracteres —**213 de 583**, y ese
-  número sólo puede bajar—, la revisión editorial de los 19 `resumenExtra`, y el
-  emparejamiento de un G-code suelto con un STL suelto: con un STL no hay marco de
-  cama, así que la superposición no es fiable y no se ofrece.
+- **Lo que queda**: la revisión editorial de los 19 `resumenExtra` —la migración fue
+  mecánica y esa parte necesita criterio, no un script—, la **ruta de calibración** que
+  la investigación de Control3D dejó sobre la mesa, y el emparejamiento de un G-code
+  suelto con un STL suelto: con un STL no hay marco de cama, así que la superposición
+  no es fiable y no se ofrece.
 
 ### Estado contrastado el 19 de octubre
 
