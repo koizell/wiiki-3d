@@ -90,11 +90,11 @@ jobs:
             exit 0
           fi
           {
-            echo '### La wiki renderizada falla'
-            echo '```'
-            tail -40 wiki-verificacion.log
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo '::error::La wiki renderizada falla. Las primeras líneas del log:'
+            head -8 wiki-verificacion.log | while IFS= read -r linea; do
+              echo "::error::$linea"
+            done
+          } >&2
           exit 1
 
       # Si falla, el motivo va en una anotación: «Process completed with exit
