@@ -7,6 +7,7 @@ export const paredesYPerimetros: Guia = {
   resumen: 'Cómo ajustar paredes, perímetros y capas sólidas superiores para que la pieza sea fuerte, tenga buen acabado y no falle en paredes delgadas.',
   sintoma: 'Pieza débil, superficie con huecos o abultamientos, o paredes delgadas que fallan',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/paredes-y-perimetros/ilustracion.png', alt: 'Pared delgada con huecos entre líneas y otra con abultamientos por exceso' },
   entrada:
     'Las paredes y los perímetros son la estructura que define la resistencia y el acabado de la pieza: más perímetros hacen una pieza más fuerte, y las capas sólidas superiores cierran la superficie. Esta guía separa el problema de paredes y perímetros del de orientación y del de voladizos, y dice cuántas paredes usar, qué generador elegir (Arachne o Classic), cómo ajustar las capas sólidas superiores y el orden de paredes según si hay voladizos.',
   autor: AUTOR,
