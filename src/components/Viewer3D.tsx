@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import ControlesVisor from './ControlesVisor';
 import { geometriaTrayectoria } from '../lib/trayectoria-render';
@@ -11,7 +12,7 @@ import type { Trayectoria } from '../services/GcodeTrayectoria';
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
  * la extensión del archivo hasta aquí lo hace `App`.
  */
-export type ViewerFormat = 'stl' | '3mf';
+export type ViewerFormat = 'stl' | '3mf' | 'obj';
 
 interface Viewer3DProps {
   file: File;
@@ -40,6 +41,7 @@ const CAMERA_DIRECTION = new THREE.Vector3(0.6, 0.45, 1).normalize();
 const LOAD_ERROR_MESSAGE: Record<ViewerFormat, string> = {
   stl: 'Error al procesar el archivo STL.',
   '3mf': 'El archivo 3MF está dañado o no se reconoce como un proyecto válido.',
+  obj: 'Error al procesar el archivo OBJ.',
 };
 
 /**
@@ -139,6 +141,32 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
+    // 2b. La cama de impresión.
+    //
+    // Sin ella, el modelo flota en el espacio y el usuario no puede juzgar si
+    // está bien orientado para imprimir. La cama es el marco de referencia:
+    // la pieza se posa sobre ella, y la trayectoria (en 3MF de proyecto) se
+    // dibuja encima, en el mismo plano.
+    //
+    // Grid de 200×200 mm (volumen típico de una impresora de escritorio) con
+    // divisiones de 10 mm, y un plano semitransparente como superficie.
+    const bedSize = 220;
+    // GridHelper ya está en el plano XZ (Y = 0), que es donde queda la cama
+    // tras la conversión Z-up → Y-up del 3MF.
+    const grid = new THREE.GridHelper(bedSize, 22, 0x2563eb, 0x1e242c);
+    scene.add(grid);
+
+    const bedGeometry = new THREE.PlaneGeometry(bedSize, bedSize);
+    const bedMaterial = new THREE.MeshStandardMaterial({
+      color: 0x161a20,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide,
+    });
+    const bed = new THREE.Mesh(bedGeometry, bedMaterial);
+    bed.rotation.x = -Math.PI / 2; // PlaneGeometry es XY por defecto; lo ponemos en XZ
+    scene.add(bed);
+
     // 3. Controles de órbita
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -232,11 +260,11 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
 
         scene.add(grupo);
 
-        // Solo el 3MF reencuadra: viene del slicer con sus coordenadas reales
-        // (sobre la cama de impresión) y con un número de piezas variable. El
-        // STL conserva la cámara por defecto, que ya está afinada para piezas
-        // en milímetros.
-        if (fileType === '3mf') frameCamera(camera, controls, grupo);
+        // Se reencuadra siempre: con la cama de impresión como marco mínimo,
+        // una pieza de 20 mm y una de 250 mm se ven igual de bien, y la cama
+        // queda dentro del encuadre. Antes el STL conservaba la cámara por
+        // defecto, lo que dejaba piezas pequeñas lejos y la cama fuera de vista.
+        frameCamera(camera, controls, grupo);
 
         comandos.current = {
           encuadrar: () => frameCamera(camera, controls, model),
@@ -351,7 +379,46 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
  */
 function buildModel(format: ViewerFormat, data: ArrayBuffer): THREE.Object3D | null {
   if (format === 'stl') return buildStl(data);
+  if (format === 'obj') return buildObj(data);
   return buildThreeMf(data);
+}
+
+/** OBJ: un grupo con las mallas declaradas en el archivo. Se respetan los
+ * materiales del .mtl si los hay; si no, se aplica el material de la app. */
+function buildObj(data: ArrayBuffer): THREE.Object3D | null {
+  const texto = new TextDecoder().decode(data);
+  const objeto = new OBJLoader().parse(texto);
+
+  // Centrar la geometría
+  // Z-up -> Y-up (convención de los slicers)
+  objeto.rotation.x = -Math.PI / 2;
+  objeto.updateMatrixWorld(true);
+
+  const box = new THREE.Box3().setFromObject(objeto);
+  if (box.isEmpty()) return null;
+  const centro = box.getCenter(new THREE.Vector3());
+  objeto.position.sub(centro);
+
+  // Si el OBJ no traía materiales, aplicar el material de la app a todas las mallas
+  let tieneMaterial = false;
+  objeto.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.material) {
+      const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+      if (mat && (mat as THREE.MeshStandardMaterial).color) tieneMaterial = true;
+    }
+  });
+  if (!tieneMaterial) {
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x3b82f6,
+      metalness: 0.3,
+      roughness: 0.4,
+    });
+    objeto.traverse((child) => {
+      if (child instanceof THREE.Mesh) child.material = material;
+    });
+  }
+
+  return objeto;
 }
 
 /** STL: una sola malla sin color, así que se le aplica el material de la app. */
@@ -368,7 +435,13 @@ function buildStl(data: ArrayBuffer): THREE.Object3D {
     roughness: 0.4,
   });
 
-  return new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(geometry, material);
+  // STL no tiene convención de ejes fiable (Thingiverse, Printables, Tinkercad...
+  // cada uno exporta como quiere). Se asume Z-up (la convención de los slicers)
+  // y se convierte a Y-up, que es lo que espera three.js por defecto. El usuario
+  // puede girar con los controles si la pieza venía con otra orientación.
+  mesh.rotation.x = -Math.PI / 2;
+  return mesh;
 }
 
 /**
@@ -422,7 +495,9 @@ function frameCamera(
 
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const maxDimension = Math.max(size.x, size.y, size.z);
+  // La cama (220×220 mm) es el marco mínimo: una pieza pequeña no debe
+  // verse como si flotara en el vacío, sino posada sobre la cama.
+  const maxDimension = Math.max(size.x, size.y, size.z, 220);
 
   const verticalFov = THREE.MathUtils.degToRad(camera.fov);
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
