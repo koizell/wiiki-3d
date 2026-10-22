@@ -266,14 +266,28 @@ export async function arrancarPreview(port = 4173) {
   );
   child.unref();
 
-  for (let i = 0; i < 30; i++) {
+  /*
+   * Un minuto de margen, no doce segundos.
+   *
+   * Doce segundos bastan en una máquina donde todo está caliente: el paquete
+   * instalado, la caché del npm, el disco. En un runner de CI no: `npx` tiene
+   * que resolver el paquete, el disco es lento y el proceso compite con el
+   * resto del pipeline. Y cuando el servidor no llega a tiempo, el script no
+   * dice «el servidor no arrancó»: dice que las comprobaciones fallaron, y eso
+   * es un diagnóstico falso.
+   *
+   * El minuto se paga sólo cuando hace falta, porque en cuanto el servidor
+   * responde se sale del bucle.
+   */
+  const intentos = 150;
+  for (let i = 0; i < intentos; i++) {
     await new Promise((r) => setTimeout(r, 400));
     if (await vivo(host)) {
       return {
         base: host,
         detener: () => {
           // `detached: true` hace al hijo líder de su grupo de procesos, así que
-          // matar el grupo se lleva también al `vite` real que lanza `npx`. Con
+          // matar el grupo se lleva también el `vite` real que lanza `npx`. Con
           // `child.kill()` a secas quedaría el servidor vivo y huérfano.
           try {
             process.kill(-child.pid, 'SIGTERM');
@@ -284,5 +298,8 @@ export async function arrancarPreview(port = 4173) {
       };
     }
   }
-  throw new Error('vite preview no arrancó en 12s');
+  throw new Error(
+    `vite preview no arrancó en ${Math.round((intentos * 400) / 1000)}s en el puerto ${port}. ` +
+      'O el servidor no arrancó, o tardó más de eso: esto no es un fallo de lo que se mide.'
+  );
 }

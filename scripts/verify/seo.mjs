@@ -58,6 +58,34 @@ function palabrasDe(html) {
   return texto.split(/\s+/).filter((w) => /[\p{L}\p{N}]{2,}/u.test(w)).length;
 }
 
+/**
+ * Corta las peticiones que salen del sitio.
+ *
+ * La página carga AdSense y Analytics de Google. `waitUntil: 'networkidle'`
+ * espera a que **la red** se quede quieta, y esas dos peticiones no dependen
+ * de este sitio: si tardan —o se quedan colgadas— la carga no termina nunca y
+ * la comprobación falla por un motivo que no tiene que ver con el SEO.
+ *
+ * En un runner de CI es justo lo que pasa: la red es la de un runner, no la de
+ * un portátil, y lo que se mide aquí es **este sitio**, no la disponibilidad de
+ * Google.
+ *
+ * El patrón es el mismo que usan `verify:wiki` y `verify:enlaces`: lo que es del
+ * sitio se deja pasar, lo que no se responde con un cuerpo vacío.
+ */
+function cortarExternos(contexto, base) {
+  const origen = new URL(base).origin;
+  return contexto.route(/^https?:\/\//, (route) => {
+    const url = route.request().url();
+    if (new URL(url).origin === origen) return route.continue();
+    return route.fulfill({
+      status: 200,
+      contentType: route.request().resourceType() === 'script' ? 'application/javascript' : 'text/plain',
+      body: '',
+    });
+  });
+}
+
 const browser = await chromium.launch();
 try {
   comprobar('despegue-a-mitad: no repetir una acción por cada variable', () => {
@@ -65,6 +93,7 @@ try {
     assert.equal((html.match(/class="accion"/g) ?? []).length, GUIAS.find((g) => g.slug === 'despegue-a-mitad').reglas.length);
   });
   const sin = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 667 } });
+  await cortarExternos(sin, BASE);
   const titulos = new Set();
   for (const ruta of rutas) {
     const html = readFileSync(join(dist, ruta.slice(1), 'index.html'), 'utf8');
@@ -289,6 +318,7 @@ try {
   comprobar('404 estático noindex', () => assert.ok(readFileSync(join(dist, '404.html'), 'utf8').includes('noindex, follow')));
 
   const con = await browser.newContext({ viewport: { width: 375, height: 667 } });
+  await cortarExternos(con, BASE);
   const page = await con.newPage();
   const errores = [];
   page.on('pageerror', (e) => errores.push(String(e)));
