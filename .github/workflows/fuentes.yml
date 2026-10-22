@@ -1,0 +1,50 @@
+name: Verificar fuentes de la wiki
+
+# Comprobación lenta y con red: no va en el pipeline de cada push, porque
+# respeta el robots.txt (Crawl-delay hasta 10 s en Prusa) y una pasada
+# completa tarda ~25 min. Va a su ritmo, una vez por semana, y se puede
+# lanzar a mano cuando se quiera.
+#
+# El repositorio es público, así que las minutos de Actions son gratuitos;
+# aún así se mantiene semanal y no diaria para no machacar a los hosts.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuentes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Va a la red y respeta robots.txt. Sale con código 1 si hay una fuente
+      # ROTA, BLOQUEADA o CÁSCARA; una fuente CAMBIADA es sólo un aviso.
+      - name: Verificar fuentes
+        run: |
+          set -o pipefail
+          node scripts/wiki/fuentes.mjs --verificar 2>&1 | tee fuentes-verificacion.log
+
+      - name: Subir el log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuentes-verificacion
+          path: fuentes-verificacion.log
+          retention-days: 30
+          if-no-files-found: ignore
