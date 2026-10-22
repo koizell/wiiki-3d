@@ -17,6 +17,7 @@ export const flowRate: Guia = {
     'Antes de tocar temperatura se descarta warping y separación: lo que falla aquí es cuánto filamento sale.',
   sintoma: 'Huecos o exceso de material en las líneas',
   dibujo: 'hotend',
+  ilustracion: { src: '/wiki/flow-rate/ilustracion.png', alt: 'Dos secciones de pared: una con huecos entre líneas y otra con material acumulado' },
   entrada:
     'La pieza está bien adherida y las capas no se abren por dentro: lo que se ve es que las líneas no llenan o que sobra material. Subir la cama o la boquilla no lo arregla. Lo que falla es la cantidad de filamento que sale, y las dos capas que la ajustan (slicer y firmware) son distintas.',
   autor: AUTOR,

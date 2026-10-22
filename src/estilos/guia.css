@@ -115,6 +115,28 @@
   padding-bottom: 0.5rem;
 }
 
+/*
+ * La ilustración de la guía.
+ *
+ * Es una portada, no una tarjeta: va a todo el ancho de lectura y su trabajo
+ * es que quien llegue reconozca lo que ve en su propia pieza. Sin texto
+ * dentro —los modelos escriben mal el texto y no hay forma de corregirlo— y
+ * sin rejilla detrás, que es la frontera del motivo de plano.
+ */
+.guia-ilustracion {
+  margin: 0 0 1.5rem;
+  max-width: 44rem;
+}
+
+.guia-ilustracion img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-lg);
+  background: var(--bg-panel);
+}
+
 .guia-cabecera-cuerpo {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 13rem;

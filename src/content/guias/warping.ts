@@ -28,6 +28,7 @@ export const warping: Guia = {
     'Antes de subir la cama, comprueba que es warping y no separación entre capas, y qué chapa usas: la cifra de cama depende de ella más que del fabricante.',
   sintoma: 'Las esquinas se levantan de la cama',
   dibujo: 'esquinas',
+  ilustracion: { src: '/wiki/warping-pla/ilustracion.png', alt: 'Pieza rectangular sobre la cama con las cuatro esquinas levantadas y curvadas hacia arriba' },
   entrada: 'El PLA es el material rígido que menos warpea, así que cuando sus esquinas se levantan casi nunca es el filamento: es la chapa, la cama o el aire. Esta guía empieza por lo que se ve —una base plana y esquinas que se curvan hacia arriba— y termina con la cifra de cama que toca a tu montaje.',
   autor: AUTOR,
   actualizado: '2026-10-21',

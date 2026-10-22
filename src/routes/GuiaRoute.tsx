@@ -199,6 +199,26 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
       <Cabecera guia={guia} />
 
       {/*
+        La ilustración de la guía, si la tiene.
+
+        Va después de la cabecera y antes del recorrido, para que la
+        navegación siga siendo lo primero que se ve y la imagen sea lo que
+        introduce el problema, no lo que lo interrumpe. Es un bloque propio —
+        no una tarjeta— porque su trabajo es el de una portada: reconocer lo
+        que se ve en la pieza propia.
+      */}
+      {guia.ilustracion && (
+        <figure className="guia-ilustracion">
+          <img
+            src={guia.ilustracion.src}
+            alt={guia.ilustracion.alt}
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      )}
+
+      {/*
         El recorrido con los contadores.
 
         Son **enlaces**, no botones: el destino sigue siendo `#diagnostico`,

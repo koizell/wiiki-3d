@@ -66,6 +66,7 @@ export const zSeam: Guia = {
     'Esta guía dice dónde ponerla para que estorbe menos y qué se puede mejorar.',
   sintoma: 'Una línea vertical que sube por la pared',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/z-seam/ilustracion.png', alt: 'Pared vertical con una línea marcada que sube por toda la altura' },
   entrada:
     'La costura Z es el punto en el que empieza y acaba cada perímetro de la capa: el cabezal no puede cerrar un círculo, así que ahí la extrusión se detiene y vuelve a empezar. Las dos casas del corpus lo dicen con todas las letras — es normal, y con FFF no se puede eliminar —, y esa es la diferencia con el resto de las guías de este sitio: aquí no se busca el ajuste que borre la costura, sino el sitio donde cae y cuánto se nota. Si lo que ves es un bulto en la base, una capa que se suelta o una pieza que se deforma, esta no es tu guía.',
   autor: AUTOR,

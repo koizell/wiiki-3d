@@ -19,6 +19,7 @@ export const capasDesplazadas: Guia = {
     'Antes de tocar temperatura, se descarta que sea separación o warping: la causa suele ser el motor, el driver o el firmware, no la unión entre capas.',
   sintoma: 'Las capas se han corrido de su sitio',
   dibujo: 'capas',
+  ilustracion: { src: '/wiki/capas-desplazadas/ilustracion.png', alt: 'Pieza con las capas superiores corridas horizontalmente respecto a las inferiores' },
   entrada:
     'La pieza no se ha abierto por dentro ni tiene las esquinas levantadas: ha salido enteramente corrida a un lado, y la unión entre capas sigue intacta. Subir la cama o la boquilla no lo arregla. Lo que falla aquí es que el hotend no fue donde el firmware ordenó, por una causa mecánica (correa/polea) o eléctrica (pérdida de pasos, driver, fuente).',
   autor: AUTOR,

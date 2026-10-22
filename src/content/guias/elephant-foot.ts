@@ -10,6 +10,7 @@ export const elephantFoot: Guia = {
     'Antes de compensar, mide dónde está el ensanchamiento y si la máquina está demasiado baja: la compensación mueve el contorno, no cura la causa.',
   sintoma: 'La base sale más ancha que arriba',
   dibujo: 'primera-capa',
+  ilustracion: { src: '/wiki/elephant-foot/ilustracion.png', alt: 'Pieza cúbica cuya base sale más ancha que el resto, con abultamiento en la primera capa' },
   entrada:
     'La primera capa y a veces las primeras salen más anchas que las superiores y dejan un anillo saliente en el borde inferior. La causa nominal es que la primera capa se prensa sobre la cama caliente todavía blanda; el peso de las capas superiores y la temperatura de la cama deciden cuánto se nota.',
   autor: AUTOR,

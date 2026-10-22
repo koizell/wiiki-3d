@@ -402,6 +402,19 @@ export interface Guia {
   sintoma: string;
   /** Qué dibujo lleva la tarjeta del índice. */
   dibujo: Dibujo;
+  /**
+   * La ilustración de la guía, si la tiene.
+   *
+   * Es una imagen, no una fuente: no respalda ninguna afirmación y no entra en
+   * `sources`. Ilustra lo que la guía explica —el aspecto de un problema, la
+   * geometría de una costura, la forma de una deformación— para que quien llega
+   * reconozca lo que ve en su propia pieza.
+   *
+   * Opcional y sin texto dentro: los modelos escriben mal el texto y no hay forma
+   * de corregirlo después. Si un diagrama necesita etiquetas, se componen en
+   * HTML/CSS encima.
+   */
+  ilustracion?: { src: string; alt: string };
   /** Cuánto se tarda. Es el número que hace elegible una guía sobre otra. */
   minutos: number;
   diferencial: Diferencial;

@@ -27,6 +27,7 @@ export const stringing: Guia = {
     'Las causas que dan las fuentes: temperatura alta, filamento húmedo, retracción mal ajustada y travel lento. Y el orden de Simplify3D: distancia de retracción, velocidad de retracción, temperatura, no cruzar el contorno y velocidad de movimiento.',
   sintoma: 'Hilos finos entre piezas o goteo de la boquilla',
   dibujo: 'hotend',
+  ilustracion: { src: '/wiki/stringing/ilustracion.png', alt: 'Dos torres impresas con hilos finos de plástico entre ellas y goteo de la boquilla' },
   entrada:
     'El stringing son hilos finos de plástico que aparecen entre piezas o en voladizos, causados por plástico que gotea de la boquilla mientras el extrusor se mueve. Es también lo que otras fuentes llaman oozing, whiskers o hairy prints: el mismo defecto, no dos, y no hay un ajuste distinto para cada nombre. Lo que hay son varias causas posibles y un orden para descartarlas, que es lo que esta guía te da.',
   autor: AUTOR,
