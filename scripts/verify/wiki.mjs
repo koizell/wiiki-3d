@@ -62,8 +62,19 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * `startPreview()` el script levanta lo que necesita, y si ya hay algo escuchando en
  * ese puerto lo reutiliza en vez de pelearse con él.
  */
-const servidor = await arrancarPreview();
-const BASE = process.env.BASE_URL ?? servidor?.base ?? 'http://127.0.0.1:4173';
+/*
+ * Su propio puerto.
+ *
+ * `verify:seo` levanta su preview en el 4173 y **no lo apaga**: `startPreview`
+ * devuelve la URL y nada más, así que el servidor se queda huérfano. Si la wiki
+ * usa el mismo puerto, depende de que aquel servidor siga vivo, y si no lo está
+ * —porque el runner lo limpió, o porque otro proceso cogió el puerto— lo que
+ * falla es una comprobación de otra.
+ *
+ * Cada comprobación con navegador, su puerto.
+ */
+const servidor = await arrancarPreview(4174);
+const BASE = process.env.BASE_URL ?? servidor?.base ?? 'http://127.0.0.1:4174';
 
 /**
  * Las guías, leídas del registro de la aplicación.
