@@ -86,7 +86,16 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          npm run verify:wiki 2>&1 | tee wiki-verificacion.log
+          if npm run verify:wiki 2>&1 | tee wiki-verificacion.log; then
+            exit 0
+          fi
+          {
+            echo '### La wiki renderizada falla'
+            echo '```'
+            tail -40 wiki-verificacion.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       # Si falla, el motivo va en una anotación: «Process completed with exit
       # code 1» no dice qué comprobación falló, y el log de un job hay que
