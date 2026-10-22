@@ -128,6 +128,20 @@ export interface Trayectoria {
   movimientos: number;
   /** Cuántos de esos movimientos eran arcos. */
   arcos: number;
+  /** La velocidad máxima de avance, en mm/min. `0` si no se declaró. */
+  velocidadMaxima: number;
+  /** Cuántas retracciones se hicieron (G10/G11 o E negativo). */
+  retracciones: number;
+  /** La velocidad del ventilador de pieza, en % (0–100). `null` si no se declaró. */
+  ventilador: number | null;
+  /** El pressure advance configurado, en segundos. `null` si no se declaró. */
+  pressureAdvance: number | null;
+  /** La aceleración máxima, en mm/s². `null` si no se declaró. */
+  aceleracion: number | null;
+  /** Las temperaturas de hotend vistas, en °C. Vacío si no hubo cambios. */
+  temperaturasHotend: number[];
+  /** Las temperaturas de cama vistas, en °C. Vacío si no hubo cambios. */
+  temperaturasCama: number[];
 }
 
 /**
@@ -221,6 +235,20 @@ class Lector {
   movimientos: number;
   /** Cuántos de esos movimientos eran arcos. */
   arcos: number;
+  /** La velocidad máxima de avance vista, en mm/min. */
+  velocidadMaxima: number;
+  /** Cuántas retracciones se hicieron. */
+  retracciones: number;
+  /** La velocidad del ventilador de pieza, en %. `null` si no se declaró. */
+  ventilador: number | null;
+  /** El pressure advance configurado, en segundos. `null` si no se declaró. */
+  pressureAdvance: number | null;
+  /** La aceleración máxima, en mm/s². `null` si no se declaró. */
+  aceleracion: number | null;
+  /** Las temperaturas de hotend vistas. */
+  temperaturasHotend: number[];
+  /** Las temperaturas de cama vistas. */
+  temperaturasCama: number[];
   /** La caja envolvente de lo depositado. */
   caja: Caja;
   /** El diámetro del filamento que declara la cabecera, en milímetros. */
@@ -245,6 +273,13 @@ class Lector {
     this.viajes = 0;
     this.movimientos = 0;
     this.arcos = 0;
+    this.velocidadMaxima = 0;
+    this.retracciones = 0;
+    this.ventilador = null;
+    this.pressureAdvance = null;
+    this.aceleracion = null;
+    this.temperaturasHotend = [];
+    this.temperaturasCama = [];
     this.caja = {
       min: { x: Infinity, y: Infinity, z: Infinity },
       max: { x: -Infinity, y: -Infinity, z: -Infinity },
@@ -261,7 +296,8 @@ class Lector {
       this.comentario(linea);
       return;
     }
-    if (linea.charCodeAt(0) === 71 /* G */) {
+    const c = linea.charCodeAt(0);
+    if (c === 71 /* G */ || c === 77 /* M */) {
       this.comando(linea);
     }
   }
@@ -304,6 +340,24 @@ class Lector {
 
   /** Un comando `G…`. */
   comando(linea: string) {
+    // --- Temperaturas de hotend ---
+    let m = linea.match(/^M10[49]\b.*\bS(\d+)/i);
+    if (m) { const t = Number(m[1]); if (!this.temperaturasHotend.includes(t)) this.temperaturasHotend.push(t); return; }
+    // --- Temperaturas de cama ---
+    m = linea.match(/^M1[49]0\b.*\bS(\d+)/i);
+    if (m) { const t = Number(m[1]); if (!this.temperaturasCama.includes(t)) this.temperaturasCama.push(t); return; }
+    // --- Ventilador de pieza ---
+    m = linea.match(/^M106\b.*\bS(\d+)/i);
+    if (m) { this.ventilador = Math.round((Number(m[1]) / 255) * 100); return; }
+    // --- Pressure advance ---
+    m = linea.match(/^M572\b.*\bS([\d.]+)/i) || linea.match(/^M900\b.*\bK([\d.]+)/i);
+    if (m) { this.pressureAdvance = Number(m[1]); return; }
+    // --- Aceleración ---
+    m = linea.match(/^M204\b.*\bS(\d+)/i);
+    if (m) { this.aceleracion = Number(m[1]); return; }
+    // --- Retracción (G10/G11) ---
+    if (/^G10\b/i.test(linea) || /^G11\b/i.test(linea)) { this.retracciones += 1; return; }
+    // --- Modos de extrusión ---
     if (/^M83\b/i.test(linea)) {
       this.relativo = true;
       return;
@@ -325,12 +379,15 @@ class Lector {
     const op = movimiento[1].toUpperCase();
     const parametros = new Map<string, number>();
     PARAMETRO.lastIndex = 0;
-    let m;
-    while ((m = PARAMETRO.exec(movimiento[2])) !== null) {
-      parametros.set(m[1].toUpperCase(), Number(m[2]));
+    let pm;
+    while ((pm = PARAMETRO.exec(movimiento[2])) !== null) {
+      parametros.set(pm[1].toUpperCase(), Number(pm[2]));
     }
 
-    if (parametros.has('F')) this.feed = parametros.get('F') ?? this.feed;
+    if (parametros.has('F')) {
+      this.feed = parametros.get('F') ?? this.feed;
+      if (this.feed > this.velocidadMaxima) this.velocidadMaxima = this.feed;
+    }
     if (!parametros.has('X') && !parametros.has('Y') && !parametros.has('Z') && !parametros.has('E')) {
       return;
     }
@@ -374,6 +431,11 @@ class Lector {
      * positivos **con movimiento en X o Y**. Una retracción y su contrarretracción
      * no depositan nada, y un `E0.8` sin mover la cabeza tampoco.
      */
+    // Retracción: E negativo es retracción (con o sin movimiento).
+    if (parametros.has('E') && e < 0) {
+      this.retracciones += 1;
+    }
+
     const mueve = parametros.has('X') || parametros.has('Y');
     const extruido = e > 0 && mueve;
     this.filamento += e;
@@ -492,6 +554,13 @@ class Lector {
       viajes: this.viajes,
       movimientos: this.movimientos,
       arcos: this.arcos,
+      velocidadMaxima: this.velocidadMaxima,
+      retracciones: this.retracciones,
+      ventilador: this.ventilador,
+      pressureAdvance: this.pressureAdvance,
+      aceleracion: this.aceleracion,
+      temperaturasHotend: this.temperaturasHotend,
+      temperaturasCama: this.temperaturasCama,
       diametro: this.diametro,
       densidad: this.densidad,
     };

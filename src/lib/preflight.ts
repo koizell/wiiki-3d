@@ -30,6 +30,7 @@
 
 import type { ProjectMetadata } from '../services/types';
 import type { Maquina } from '../content/maquinas/tipos';
+import type { Trayectoria } from '../services/GcodeTrayectoria';
 
 /** Nivel del aviso: determina el color y el orden en la lista. */
 export type NivelAviso = 'bloqueante' | 'importante' | 'atencion';
@@ -101,7 +102,7 @@ function esBowden(extrusor: string | null): boolean {
  * luego importantes, luego atención. Dentro del mismo nivel, por orden de
  * aparición en esta función.
  */
-export function preflight(metadata: ProjectMetadata, maquina: Maquina | null): PreflightAviso[] {
+export function preflight(metadata: ProjectMetadata, trayectoria: Trayectoria | null, maquina: Maquina | null): PreflightAviso[] {
   const avisos: PreflightAviso[] = [];
   const material = normalizarMaterial(metadata.material);
 
@@ -228,6 +229,83 @@ export function preflight(metadata: ProjectMetadata, maquina: Maquina | null): P
         guia: 'temperatura-cama',
       });
     }
+  }
+
+  // --- 10. Área de impresión vs cama de la máquina ---
+  if (trayectoria && maquina && maquina.vol) {
+    const caja = trayectoria.caja;
+    const ancho = caja.max.x - caja.min.x;
+    const profundo = caja.max.y - caja.min.y;
+    const alto = caja.max.z - caja.min.z;
+    if (ancho > maquina.vol[0] || profundo > maquina.vol[1] || alto > maquina.vol[2]) {
+      avisos.push({
+        id: 'area-maquina',
+        nivel: 'bloqueante',
+        texto: `La pieza mide ${Math.round(ancho)}×${Math.round(profundo)}×${Math.round(alto)} mm y la cama de tu ${maquina.marca} ${maquina.modelo} es ${maquina.vol[0]}×${maquina.vol[1]}×${maquina.vol[2]} mm. No cabe: escala la pieza o cambia de máquina.`,
+        guia: 'voladizos-y-soportes',
+      });
+    }
+  }
+
+  // --- 11. Velocidad máxima vs máquina ---
+  if (trayectoria && maquina && trayectoria.velocidadMaxima > 0 && maquina.velMax !== null) {
+    const velMaxMms = trayectoria.velocidadMaxima / 60; // mm/min → mm/s
+    if (velMaxMms > maquina.velMax) {
+      avisos.push({
+        id: 'velocidad-maquina',
+        nivel: 'importante',
+        texto: `La velocidad máxima del G-code es ${Math.round(velMaxMms)} mm/s y tu ${maquina.marca} ${maquina.modelo} declara ${maquina.velMax} mm/s. La máquina no va a alcanzar esa velocidad: el tiempo real será mayor.`,
+        guia: 'max-volumetric-speed',
+      });
+    }
+  }
+
+  // --- 12. Ventilador de pieza ---
+  if (trayectoria && trayectoria.ventilador !== null) {
+    const necesitaFan = ['PLA', 'PLA-CF', 'PETG'].includes(material);
+    if (necesitaFan && trayectoria.ventilador === 0) {
+      avisos.push({
+        id: 'fan-apagado',
+        nivel: 'importante',
+        texto: `El ventilador de pieza está apagado (${trayectoria.ventilador} %) y el material es ${metadata.material}. Sin enfriamiento la superficie sale peor y el warping sube. Actívalo al menos en las capas superiores.`,
+        guia: 'ventilador-warping',
+      });
+    }
+  }
+
+  // --- 13. Pressure advance ---
+  if (trayectoria && trayectoria.pressureAdvance === null) {
+    const necesitaPA = ['PLA', 'PLA-CF', 'PETG', 'ABS', 'ASA'].includes(material);
+    if (necesitaPA) {
+      avisos.push({
+        id: 'sin-pa',
+        nivel: 'atencion',
+        texto: `El G-code no configura pressure advance (M572/M900). Sin él, el stringing puede ser peor en cambios de dirección. Configúralo en el slicer para tu filamento.`,
+        guia: 'flow-rate',
+      });
+    }
+  }
+
+  // --- 14. Temperatura variable ---
+  if (trayectoria && trayectoria.temperaturasHotend.length > 1) {
+    const min = Math.min(...trayectoria.temperaturasHotend);
+    const max = Math.max(...trayectoria.temperaturasHotend);
+    avisos.push({
+      id: 'temp-variable',
+      nivel: 'atencion',
+      texto: `La temperatura de hotend cambia durante la impresión (${min}–${max} °C). Si no es intencional (torre de temperatura, cambio de material), puede indicar un problema de configuración.`,
+      guia: 'temperatura-hotend',
+    });
+  }
+
+  // --- 15. Retracciones ---
+  if (trayectoria && trayectoria.retracciones > 100) {
+    avisos.push({
+      id: 'muchas-retracciones',
+      nivel: 'atencion',
+      texto: `El G-code tiene ${trayectoria.retracciones} retracciones. Muchas retracciones aumentan el riesgo de stringing y el desgaste del extrusor. Revisa la configuración de retracción del slicer.`,
+      guia: 'stringing',
+    });
   }
 
   // Orden: bloqueantes, importantes, atención.

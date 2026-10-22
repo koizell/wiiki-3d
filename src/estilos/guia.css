@@ -1024,6 +1024,43 @@
 }
 
 /*
+ * El resumen de la trayectoria: capas, dimensiones, velocidad, retracciones,
+ * ventilador, pressure advance, temperaturas. Es lo que se lee de un vistazo
+ * sin mover el deslizador.
+ */
+.visor-trayectoria-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radio-sm);
+  background: var(--bg-panel);
+}
+
+.visor-trayectoria-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.visor-trayectoria-dato dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.visor-trayectoria-dato dd {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
  * El enlace de una acción a la guía que la desarrolla.
  *
  * Es la cuarta interconexión de la wiki, y la que hace posible una guía que

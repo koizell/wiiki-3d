@@ -365,6 +365,63 @@ export default function VisorTrayectoria({
           </a>
         </p>
       )}
+
+      {/*
+        El resumen de la trayectoria.
+
+        Lo que se puede leer de un vistazo sin mover el deslizador: cuántas
+        capas, cuánto mide la pieza, a qué velocidad máxima va, cuántas
+        retracciones y a qué velocidad está el ventilador. Es la información
+        que decide si el archivo es imprimible en la máquina que se tiene.
+      */}
+      <dl className="visor-trayectoria-resumen">
+        <div className="visor-trayectoria-dato">
+          <dt>Capas</dt>
+          <dd>{totalCapas}</dd>
+        </div>
+        <div className="visor-trayectoria-dato">
+          <dt>Dimensiones</dt>
+          <dd>
+            {Math.round(trayectoria.caja.max.x - trayectoria.caja.min.x)}×
+            {Math.round(trayectoria.caja.max.y - trayectoria.caja.min.y)}×
+            {Math.round(trayectoria.caja.max.z - trayectoria.caja.min.z)} mm
+          </dd>
+        </div>
+        {trayectoria.velocidadMaxima > 0 && (
+          <div className="visor-trayectoria-dato">
+            <dt>Velocidad máx.</dt>
+            <dd>{Math.round(trayectoria.velocidadMaxima / 60)} mm/s</dd>
+          </div>
+        )}
+        <div className="visor-trayectoria-dato">
+          <dt>Retracciones</dt>
+          <dd>{trayectoria.retracciones}</dd>
+        </div>
+        {trayectoria.ventilador !== null && (
+          <div className="visor-trayectoria-dato">
+            <dt>Ventilador</dt>
+            <dd>{trayectoria.ventilador} %</dd>
+          </div>
+        )}
+        {trayectoria.pressureAdvance !== null && (
+          <div className="visor-trayectoria-dato">
+            <dt>Pressure advance</dt>
+            <dd>{trayectoria.pressureAdvance.toFixed(3)} s</dd>
+          </div>
+        )}
+        {trayectoria.temperaturasHotend.length > 1 && (
+          <div className="visor-trayectoria-dato">
+            <dt>Hotend</dt>
+            <dd>{Math.min(...trayectoria.temperaturasHotend)}–{Math.max(...trayectoria.temperaturasHotend)} °C</dd>
+          </div>
+        )}
+        {trayectoria.temperaturasCama.length > 1 && (
+          <div className="visor-trayectoria-dato">
+            <dt>Cama</dt>
+            <dd>{Math.min(...trayectoria.temperaturasCama)}–{Math.max(...trayectoria.temperaturasCama)} °C</dd>
+          </div>
+        )}
+      </dl>
     </div>
   );
 }

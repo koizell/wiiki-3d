@@ -125,7 +125,7 @@ function UploadRoute() {
           </button>
         </div>
         <SeccionAnalisis />
-        <Preflight metadata={metadata} />
+        <Preflight metadata={metadata} trayectoria={trayectoria} />
         <p className="archivo-nota">Este análisis viene del historial: no se guarda el archivo, así que el visor 3D no se puede abrir.</p>
         <AvisoAlmacenamiento />
         <Recientes />
@@ -262,7 +262,7 @@ function UploadRoute() {
           </div>
         ) : null}
 
-        {metadata && <Preflight metadata={metadata} />}
+        {metadata && <Preflight metadata={metadata} trayectoria={trayectoria} />}
 
         {/* El `Suspense` acota solo al visor: barra, sidebars y zona de subida
           pintan de inmediato mientras llega el chunk.

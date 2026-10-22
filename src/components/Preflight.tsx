@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ProjectMetadata } from '../services/types';
+import type { Trayectoria } from '../services/GcodeTrayectoria';
 import { MAQUINAS, maquinaPorSlug } from '../content/maquinas/catalogo';
 import { preflight } from '../lib/preflight';
 
@@ -13,12 +14,12 @@ import { preflight } from '../lib/preflight';
  * La máquina se persiste en `localStorage` para no pedirla cada vez: es una
  * preferencia del navegador, no un dato del análisis.
  */
-export default function Preflight({ metadata }: { metadata: ProjectMetadata }) {
+export default function Preflight({ metadata, trayectoria }: { metadata: ProjectMetadata; trayectoria?: Trayectoria | null }) {
   const [maquinaSlug, setMaquinaSlug] = useState<string>(() => {
     try { return localStorage.getItem('wiiki-maquina') ?? ''; } catch { return ''; }
   });
   const maquina = maquinaSlug ? maquinaPorSlug(maquinaSlug) : null;
-  const avisos = preflight(metadata, maquina);
+  const avisos = preflight(metadata, trayectoria ?? null, maquina);
 
   return (
     <div className="preflight">
