@@ -21,6 +21,7 @@
     "verify:historial": "node scripts/verify/historial.mjs",
     "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
     "verify:gcode": "node --experimental-strip-types scripts/verify/gcode.mjs",
+    "verify:texto": "node --experimental-strip-types scripts/verify/texto.mjs",
     "verify:esquema": "node scripts/verify/esquema-torre.mjs",
     "verify:enlaces": "node scripts/verify/enlaces.mjs",
     "verify:demo": "node scripts/verify/demo.mjs",
