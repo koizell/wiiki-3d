@@ -30,6 +30,13 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # Las comprobaciones que miden la interfaz necesitan un navegador, y
+      # `npm ci` instala el paquete de Playwright pero **no** el navegador: sin
+      # este paso, `verify:enlaces`, `verify:seo` y `verify:wiki` fallan al
+      # arrancar Chromium. Es un download de ~150 MB, una vez por ejecución.
+      - name: Instalar el navegador de las comprobaciones
+        run: npx playwright install --with-deps chromium
+
       - name: Lint
         run: npx eslint src
 
@@ -51,16 +58,19 @@ jobs:
       # o un resumen que dice lo contrario que la tarjeta de al lado: el build
       # pasa igual y el sitio sale mal.
       #
-      # Estos tres no necesitan red ni navegador, así que pueden ir antes del
-      # build. `verify:wiki` contrasta las afirmaciones con `wiki/raw/`.
+      # Estos dos no necesitan red ni navegador, así que van antes del build y
+      # fallan en segundos en vez de en dos minutos. `verify:guias` son 1124
+      # comprobaciones: la estructura del contrato y que los `puntos` de cada
+      # tarjeta sean su cuerpo troceado sin perder una palabra.
       - name: Blindaje del contenido
         run: npm run verify:contenido
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
 
-      # Y ya con el sitio construido: los enlaces internos que no dan 200, y el
-      # `description` de cada guía —que es donde se publica el `resumen`.
+      # Y ya con el sitio construido: los enlaces internos que no dan 200, el
+      # `description` de cada guía —que es donde se publica el `resumen`— y la
+      # wiki renderizada, que es lo que lee la gente.
       - name: Blindaje de lo construido
         run: npm run verify:dist
 
