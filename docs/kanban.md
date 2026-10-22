@@ -114,14 +114,50 @@ Actualizado: 2026-10-21. Tablero vivo: se actualiza al cerrar cada tarjeta.
 - **Suite en verde**: `verify:layout`, `teclado`, `rutas`, `wiki` (220), `ui`
   (176), `taller` (180), `historial` (114), `esquema` (44), `maquinas`,
   `composicion` (45), `demo` (19), `revision` (16), `multimaterial` (12), `subida`,
-  `seo` (463), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72) y `guias`
-(1091). `lint` con 0 errores y las 3
-  advertencias preexistentes de las copias de Three de `.superpowers/brainstorm/`.
-- **Lo que queda**: la revisión editorial de los 19 `resumenExtra` —la migración fue
-  mecánica y esa parte necesita criterio, no un script—, la **ruta de calibración** que
-  la investigación de Control3D dejó sobre la mesa, y el emparejamiento de un G-code
-  suelto con un STL suelto: con un STL no hay marco de cama, así que la superposición
-  no es fiable y no se ofrece.
+  `seo` (463), `animacion` (18), `gcode` (38), `texto` (6), `recorte` (72), `guias`
+  (**1124**) y `enlaces` (298). `lint` con **0 errores** y `tsc` sin diagnósticos.
+- **El último repaso encontró cosas que ningún verificador miraba.** El trabajo
+  estaba verde y aun así no estaba bien:
+  - **Los puntos de las tarjetas no eran frases.** El troceado partía por comas y
+    dos puntos y dejaba el separador pegado al punto final: «…se apoya sobre la
+    anterior**,.**». **351 de 537 tarjetas.** El `cuerpo` nunca se tocó —el cotejo
+    lo demuestra—, el fallo era del script, y por eso no lo veía nadie: un punto
+    de 140 con una coma y un punto **sí cabe**. Repunteado desde el `cuerpo`, con
+    el troceado en un solo sitio —`migrar-indicadores.mjs` usa el mismo— y la
+    separación mínima de 40 caracteres entre cortes, que sin ella partía en
+    «Lo | que sí se puede decir es | que…» y acababa en «…al enfriarse— y.».
+  - **Texto corrupto desde el artículo original**: «ambosacted», «sin-improvement»
+    y «Oídos así» en `separaciones.ts`, y un carácter coreano perdido en el
+    comentario de `temperatura-cama.ts`. La conversión de artículo a guía los
+    arrastró y nadie los vio porque `verify:guias` comprueba la estructura del
+    contrato, no la ortografía.
+  - **El CI no miraba la wiki.** El pipeline ejecutaba `eslint`, el build y
+    `verify:revision`. TypeScript compila igual una guía con un `puntos` de 300
+    caracteres o un resumen que dice lo contrario que la tarjeta de al lado.
+    Ahora hay tres capas: `verify:revision`, `verify:contenido` (antes del build,
+    sin red) y `verify:dist` (con el sitio construido).
+  - **Tres fallos que habrían roto el despliegue** —el CI ejecuta `eslint src` y
+    no pasaba—: un hook (`useEtapaActiva`) llamado **después** de un `return`
+    condicional, lo que revienta cuando la guía llega por lazy loading; un
+    `setState` síncrono dentro de un efecto; y una **trayectoria que se leía y
+    no se pintaba**, porque el efecto que construye la escena depende del
+    archivo y no de la trayectoria, que llega después por un análisis aparte.
+  - **Once resúmenes visibles repetían el síntoma** que la tarjeta ya enseña, y
+    en uno eran la misma frase dos veces. Y uno de ellos afirmaba una distinción
+    —stringing frente a oozing— que **las tres fuentes niegan**: las tres usan
+    los dos nombres para el mismo defecto. No estaba en el resumen: estaba en el
+    `diferencial`, que es lo que separa un problema del de al lado.
+  - **Y la ruta de calibración**: Duet3D publicaba **un tramo de tres pasos**, no
+    una ruta, y la guía lo contaba como tercera ruta completa en siete sitios.
+    Ahora cuenta dos rutas completas y un tramo, declara cuál usa y por qué, y
+    separa a Prusa —que no publica ninguno— de Bambu —que tiene una lista pero
+    no la justifica—.
+- **Lo que queda**: el emparejamiento de un G-code suelto con un STL suelto: con
+  un STL no hay marco de cama, así que la superposición no es fiable y no se
+  ofrece. Y `verify:fuentes`, que falla por dos URLs que devuelven 403 —bloqueo
+  de bots, no fuentes muertas— y catorce páginas del corpus que han cambiado;
+  es preexistente y no bloquea el despliegue, porque el pipeline no lo ejecuta a
+  propósito: un 403 ajeno no puede tumbar un despliegue.
 
 ### Estado contrastado el 19 de octubre
 
