@@ -43,7 +43,7 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
-  const { file, fileType, metadata } = useAnalysis();
+  const { file, fileType, metadata, trayectoria } = useAnalysis();
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
   const [errorSubida, setErrorSubida] = useState('');
@@ -63,7 +63,15 @@ function UploadRoute() {
    * así que mientras se lee se dice que se está leyendo, y si falla se dice por
    * qué, sin dejar un hueco en la pantalla.
    */
-  const trayectoria = useTrayectoria(showGcodeNotice ? file : null);
+  /*
+   * Dos trayectorias y no una, porque son dos cosas:
+   *
+   * - `trayectoriaSuelta` es la del **G-code suelto**: se lee aquí, en la ruta,
+   *   y se dibuja en su propio visor.
+   * - `trayectoria` es la del **3MF de proyecto**: viene del contexto —porque
+   *   analizaró el mismo G-code que va dentro— y se dibuja **encima de la malla**.
+   */
+  const trayectoriaSuelta = useTrayectoria(showGcodeNotice ? file : null);
   const showUnsupported = fileType === "obj" || fileType === "unknown";
 
   /*
@@ -234,28 +242,46 @@ function UploadRoute() {
             </>
           }
         >
-          {viewerFormat && <LazyViewer3D file={file} fileType={viewerFormat} onChooseFile={openFilePicker} />}
+          {viewerFormat && (
+            <LazyViewer3D
+              file={file}
+              fileType={viewerFormat}
+              trayectoria={trayectoria}
+              onChooseFile={openFilePicker}
+            />
+          )}
         </Suspense>
 
         {showGcodeNotice && (
           <>
-            {trayectoria.fase === "vacia" && (
+            {trayectoriaSuelta.fase === "vacia" && (
               <p className="archivo-nota">El G-code se analiza; su trayectoria se dibuja en 3D.</p>
             )}
-            {trayectoria.fase === "leyendo" && (
+            {trayectoriaSuelta.fase === "leyendo" && (
               <div className="visor-trayectoria-cargando" role="status">
                 Leyendo la trayectoria del G-code…
               </div>
             )}
-            {trayectoria.fase === "error" && (
+            {trayectoriaSuelta.fase === "error" && (
               <p className="archivo-nota" role="alert">
-                No se ha podido dibujar la trayectoria: {trayectoria.mensaje}
+                No se ha podido dibujar la trayectoria: {trayectoriaSuelta.mensaje}
               </p>
             )}
-            {trayectoria.fase === "lista" && <VisorTrayectoria trayectoria={trayectoria.trayectoria} />}
-            <SeccionAnalisis />
+            {trayectoriaSuelta.fase === "lista" && (
+              <VisorTrayectoria trayectoria={trayectoriaSuelta.trayectoria} />
+            )}
           </>
         )}
+
+        {/*
+          El análisis, cuando hay algo que analizar.
+
+          Antes sólo se pintaba para el G-code, porque era el único formato que
+          traía metadatos. Ahora un **3MF de proyecto** también los trae —los
+          lleva dentro—, y su análisis se enseña igual que el de un G-code suelto.
+          La condición es que haya metadatos, no la extensión del archivo.
+        */}
+        {(showGcodeNotice || metadata) && <SeccionAnalisis />}
 
         {showUnsupported && (
           <div className="canvas-placeholder">

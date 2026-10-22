@@ -4,6 +4,8 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import ControlesVisor from './ControlesVisor';
+import { geometriaTrayectoria } from '../lib/trayectoria-render';
+import type { Trayectoria } from '../services/GcodeTrayectoria';
 
 /**
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
@@ -14,6 +16,14 @@ export type ViewerFormat = 'stl' | '3mf';
 interface Viewer3DProps {
   file: File;
   fileType: ViewerFormat;
+  /**
+   * La trayectoria del G-code, si el archivo la trae.
+   *
+   * Sólo la traen los 3MF **de proyecto**, que llevan dentro su G-code. Y como
+   * la malla y el G-code están los dos en coordenadas de cama, la trayectoria se
+   * dibuja **encima** de la pieza, sin medir ni compensar nada.
+   */
+  trayectoria?: Trayectoria | null;
   onChooseFile?: () => void;
 }
 
@@ -38,7 +48,7 @@ const LOAD_ERROR_MESSAGE: Record<ViewerFormat, string> = {
  */
 const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mostrar.';
 
-function Viewer3D({ file, fileType, onChooseFile }: Viewer3DProps) {
+function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const comandos = useRef<{ encuadrar: () => void; zoom: (factor: number) => void; girar: () => void } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,13 +124,63 @@ function Viewer3D({ file, fileType, onChooseFile }: Viewer3DProps) {
           return;
         }
 
-        scene.add(model);
+        /*
+         * La malla y la trayectoria, en el **mismo grupo**.
+         *
+         * El grupo es lo que lleva la rotación de Z arriba a Y arriba y el
+         * recentrado, y las dos cosas se mueven con él. Por eso la trayectoria
+         * cae **encima** de la pieza sin compensar nada: los dos están en
+         * coordenadas de cama y el recentrado es el mismo para los dos.
+         */
+        const grupo = new THREE.Group();
+        grupo.add(model);
+
+        if (trayectoria && fileType === '3mf') {
+          const { posiciones, colores } = geometriaTrayectoria(trayectoria);
+          const geometria = new THREE.BufferGeometry();
+          geometria.setAttribute('position', new THREE.BufferAttribute(posiciones, 3));
+          geometria.setAttribute('color', new THREE.BufferAttribute(colores, 3));
+          /*
+           * La trayectoria rota **igual que la malla**.
+           *
+           * La malla viene en coordenadas de cama —Z arriba— y `three` trabaja con
+           * Y arriba, así que la malla gira. La trayectoria viene en el mismo marco
+           * de cama, así que **gira lo mismo**: sin esta rotación las dos están
+           * en sistemas distintos y la trayectoria sale al lado de la pieza en vez
+           * de encima.
+           */
+          const grupoTrayectoria = new THREE.Group();
+          grupoTrayectoria.rotation.x = -Math.PI / 2;
+          grupoTrayectoria.add(
+            new THREE.LineSegments(
+              geometria,
+              new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 })
+            )
+          );
+          grupo.add(grupoTrayectoria);
+        }
+
+        /*
+         * El recentrado, sobre el grupo y **después** de rotar: la caja envolvente
+         * sólo refleja la rotación si las matrices del grupo ya están al día, y
+         * calcularla antes dejaría la pieza descentrada.
+         */
+        if (fileType === '3mf') {
+          grupo.updateMatrixWorld(true);
+          const box = new THREE.Box3().setFromObject(grupo);
+          if (!box.isEmpty()) {
+            const center = box.getCenter(new THREE.Vector3());
+            grupo.position.set(-center.x, -center.y, -center.z);
+          }
+        }
+
+        scene.add(grupo);
 
         // Solo el 3MF reencuadra: viene del slicer con sus coordenadas reales
         // (sobre la cama de impresión) y con un número de piezas variable. El
         // STL conserva la cámara por defecto, que ya está afinada para piezas
         // en milímetros.
-        if (fileType === '3mf') frameCamera(camera, controls, model);
+        if (fileType === '3mf') frameCamera(camera, controls, grupo);
 
         comandos.current = {
           encuadrar: () => frameCamera(camera, controls, model),
@@ -253,16 +313,11 @@ function buildThreeMf(data: ArrayBuffer): THREE.Object3D | null {
   if (meshCount === 0) return null;
 
   // Z-up -> Y-up, que es lo que espera three.js por defecto.
+  //
+  // El recentrado **no** se hace aquí: lo hace el grupo que agrupa la malla y la
+  // trayectoria, para que las dos se muevan lo mismo. Recentrar aquí separaría
+  // la trayectoria de la pieza por el vector de centrado.
   group.rotation.x = -Math.PI / 2;
-
-  // El recentrado va después de rotar a propósito: la caja envolvente solo
-  // refleja la rotación si las matrices del grupo ya están al día, y calcularla
-  // antes dejaría el modelo descentrado.
-  const box = new THREE.Box3().setFromObject(group);
-  if (!box.isEmpty()) {
-    const center = box.getCenter(new THREE.Vector3());
-    group.position.set(-center.x, -center.y, -center.z);
-  }
 
   return group;
 }

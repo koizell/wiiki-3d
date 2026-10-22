@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AnalysisStatus } from '../components/AnalysisPanel';
-import { parseGcode } from '../services/ParserService';
+import { parseGcode, parseGcodeTexto } from '../services/ParserService';
+import { analizarGcode, type Trayectoria } from '../services/GcodeTrayectoria';
+import { leerProyecto3mfAsync } from '../services/ThreeMfProyecto';
 import { classifyWithJev } from '../services/JevService';
 import type { JevClassification, ProjectMetadata } from '../services/types';
 import { detectFileType, toErrorMessage, type FileType } from '../lib/files';
@@ -46,6 +48,15 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   const [classification, setClassification] = useState<JevClassification | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  /**
+   * La trayectoria del G-code, cuando el archivo la trae.
+   *
+   * Vive aquí y no en la vista porque la necesitan **dos** sitios: el visor 3D,
+   * que la dibuja, y la ruta, que decide si hay trayectoria que enseñar. Y porque
+   * es parte del **mismo** archivo: un 3MF de proyecto lleva dentro su G-code, y
+   * ese G-code es a la vez lo que se analiza y lo que se dibuja.
+   */
+  const [trayectoria, setTrayectoria] = useState<Trayectoria | null>(null);
 
   const loadFile = (selected: File) => {
     const detectedType = detectFileType(selected.name);
@@ -57,9 +68,15 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     setMetadata(null);
     setClassification(null);
     setAnalysisError(null);
+    setTrayectoria(null);
     // Solo el G-code entra en la cola de análisis. El resto no está "pendiente":
     // el panel explica desde el principio que ese formato no se analiza, en
     // lugar de seguir invitando a subir un archivo que el usuario ya ha subido.
+    //
+    // El 3MF es la excepción: un 3MF **de proyecto** lleva dentro su G-code, y
+    // entonces sí se puede analizar. El estado no se decide por la extensión sino
+    // por lo que traiga el archivo, y por eso aquí se pone 'unsupported' y el
+    // efecto de más abajo lo cambia si encuentra un G-code dentro.
     setAnalysisStatus(detectedType === 'gcode' ? 'idle' : 'unsupported');
   };
 
@@ -69,6 +86,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     setMetadata(null);
     setClassification(null);
     setAnalysisError(null);
+    setTrayectoria(null);
     setAnalysisStatus('idle');
   };
 
@@ -92,6 +110,68 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     setAnalysisError(null);
     setAnalysisStatus('done');
   };
+
+  /*
+   * El 3MF de proyecto: la malla, la trayectoria y el análisis, de un archivo.
+   *
+   * Un 3MF de proyecto —el que exportan Bambu Studio, OrcaSlicer y
+   * PrusaSlicer— lleva dentro el G-code que la máquina va a ejecutar. Abrirlo es
+   * abrir un ZIP, y `three` ya trae dentro el unzip que hace falta, así que
+   * **no hace falta ninguna dependencia nueva**.
+   *
+   * Y el G-code que sale de ahí es el mismo que se subiría suelto: los mismos
+   * metadatos, la misma trayectoria, y —esto es lo importante— **las coordenadas
+   * de cama**, que es lo que permite superponer la trayectoria y la malla sin
+   * medir nada.
+   */
+  useEffect(() => {
+    if (!file || fileType !== '3mf') return;
+
+    const controller = new AbortController();
+
+    const runProyecto = async () => {
+      try {
+        const datos = await file.arrayBuffer();
+        if (controller.signal.aborted) return;
+
+        const proyecto = await leerProyecto3mfAsync(datos);
+        if (controller.signal.aborted) return;
+
+        // Un 3MF de malla —el que exporta un CAD— no lleva G-code, y eso no es un
+        // fallo: se queda como estaba, con el aviso de que no se analiza.
+        if (!proyecto.gcode) return;
+
+        setAnalysisStatus('parsing');
+        const meta = parseGcodeTexto(proyecto.gcode, `${file.name} · placa 1`);
+        if (controller.signal.aborted) return;
+        setMetadata(meta);
+
+        setTrayectoria(analizarGcode(proyecto.gcode));
+        if (controller.signal.aborted) return;
+
+        if (!materialUnico(meta.material)) {
+          setAnalysisStatus('done');
+          return;
+        }
+
+        setAnalysisStatus('classifying');
+        const jevResult = await classifyWithJev(meta);
+        if (controller.signal.aborted) return;
+        setClassification(jevResult);
+        setAnalysisStatus('done');
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        // Un 3MF que no se puede abrir no es un fallo de la aplicación: es un
+        // archivo que no lleva lo que se le pidió. Se avisa y se sigue.
+        setAnalysisError(toErrorMessage(error));
+        setAnalysisStatus('unsupported');
+      }
+    };
+
+    void runProyecto();
+
+    return () => controller.abort();
+  }, [file, fileType]);
 
   // Solo el G-code tiene metadatos de impresión que analizar; el resto de
   // formatos ya quedó en `unsupported` al subir el archivo.
@@ -196,8 +276,9 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
       classification,
       status: analysisStatus,
       error: analysisError,
+      trayectoria,
     }),
-    [file, fileType, metadata, classification, analysisStatus, analysisError]
+    [file, fileType, metadata, classification, analysisStatus, analysisError, trayectoria]
   );
 
   /*

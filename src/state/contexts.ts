@@ -2,6 +2,7 @@ import { createContext, type RefObject } from 'react';
 import type { AnalysisStatus } from '../components/AnalysisPanel';
 import type { JevClassification, ProjectMetadata } from '../services/types';
 import type { FileType } from '../lib/files';
+import type { Trayectoria } from '../services/GcodeTrayectoria';
 
 /**
  * Los dos contextos del análisis y sus tipos.
@@ -25,6 +26,14 @@ export interface AnalysisState {
   classification: JevClassification | null;
   status: AnalysisStatus;
   error: string | null;
+  /**
+   * La trayectoria del G-code, cuando el archivo la trae.
+   *
+   * Sólo la traen dos casos: un `.gcode` suelto, y un `.3mf` **de proyecto**, que
+   * lleva dentro su G-code. En el segundo la trayectoria y la malla están en el
+   * mismo marco de cama, y por eso se pueden superponer.
+   */
+  trayectoria: Trayectoria | null;
 }
 
 /** Las acciones que cambian el estado, más el disparador del selector de ficheros. */
