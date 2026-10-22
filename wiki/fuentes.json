@@ -11,7 +11,7 @@
     {
       "url": "https://help.prusa3d.com/article/extrusion-multiplier-calibration_2257",
       "sitio": "help.prusa3d.com",
-      "bytes": 1170699,
+      "bytes": 1170715,
       "sha": "9ee19c4921242765"
     },
     {
@@ -23,13 +23,13 @@
     {
       "url": "https://help.prusa3d.com/article/mesh-bed-leveling_112163",
       "sitio": "help.prusa3d.com",
-      "bytes": 1131458,
+      "bytes": 1131462,
       "sha": "19a7c9d0d6f87b60"
     },
     {
       "url": "https://help.prusa3d.com/article/skirt-and-brim_133969",
       "sitio": "help.prusa3d.com",
-      "bytes": 1125447,
+      "bytes": 1125436,
       "sha": "9f15cab5e137afd7"
     },
     {
@@ -59,7 +59,7 @@
     {
       "url": "https://help.prusa3d.com/article/layers-and-perimeters_1748",
       "sitio": "help.prusa3d.com",
-      "bytes": 1222283,
+      "bytes": 1222299,
       "sha": "4c8a94ce730ba94b"
     },
     {
@@ -71,7 +71,7 @@
     {
       "url": "https://forum.bambulab.com/t/pla-in-x1c/144237",
       "sitio": "forum.bambulab.com",
-      "bytes": 61690,
+      "bytes": 61694,
       "sha": "aca2fab2f2fe1dc5"
     },
     {
@@ -90,7 +90,7 @@
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-user-mods-octoprint-enclosures-nozzles/optimal-enclosure-temps-for-pla-petg-abs",
       "sitio": "forum.prusa3d.com",
       "bytes": 182074,
-      "sha": "f72ed49cd31f36b9"
+      "sha": "a857b84b95cf3f8a"
     },
     {
       "url": "https://wiki.bambulab.com/en/knowledge-sharing/filament-guide-beginners",
@@ -143,7 +143,7 @@
     {
       "url": "https://help.prusa3d.com/article/layer-shifting_2020",
       "sitio": "help.prusa3d.com",
-      "bytes": 1234903,
+      "bytes": 1234907,
       "sha": "933003904b49efaa"
     },
     {
@@ -173,7 +173,7 @@
     {
       "url": "https://help.prusa3d.com/article/binary-g-code_646763",
       "sitio": "help.prusa3d.com",
-      "bytes": 1099468,
+      "bytes": 1099453,
       "sha": "a2ae4b2a697a6fbd"
     },
     {
@@ -185,7 +185,7 @@
     {
       "url": "https://help.prusa3d.com/article/first-print-with-prusaslicer_1753",
       "sitio": "help.prusa3d.com",
-      "bytes": 1134623,
+      "bytes": 1134641,
       "sha": "9cbe72e370289488"
     },
     {
@@ -209,14 +209,14 @@
     {
       "url": "https://help.prusa3d.com/filament-material-guide",
       "sitio": "help.prusa3d.com",
-      "bytes": 1239640,
+      "bytes": 1239639,
       "sha": "357ff5948f91b447"
     },
     {
       "url": "https://help.prusa3d.com/article/first-layer-issues_1804",
       "sitio": "help.prusa3d.com",
-      "bytes": 1253304,
-      "sha": "5b7ab42aa79d3f53"
+      "bytes": 1253513,
+      "sha": "ffb2748bfb8c37d8"
     },
     {
       "url": "https://help.prusa3d.com/article/pla_2062",
@@ -233,7 +233,7 @@
     {
       "url": "https://help.prusa3d.com/article/stringing-and-oozing_1805",
       "sitio": "help.prusa3d.com",
-      "bytes": 1152158,
+      "bytes": 1152140,
       "sha": "3fd71ca160d173ee"
     },
     {
@@ -245,13 +245,13 @@
     {
       "url": "https://help.prusa3d.com/article/bad-looking-surface-above-supports_1803",
       "sitio": "help.prusa3d.com",
-      "bytes": 1075825,
-      "sha": "53129e6f737477db"
+      "bytes": 1076061,
+      "sha": "e80afe5f64b9a60d"
     },
     {
       "url": "https://help.prusa3d.com/article/failing-supports_1807",
       "sitio": "help.prusa3d.com",
-      "bytes": 1065704,
+      "bytes": 1065931,
       "sha": "272516b20a00796a"
     },
     {
@@ -270,19 +270,19 @@
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/adjusting-settings-for-warping-of-pla/",
       "sitio": "forum.prusa3d.com",
       "bytes": 161088,
-      "sha": "b2345f87faeeddcc"
+      "sha": "70412966f572d7c2"
     },
     {
       "url": "https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/",
       "sitio": "forum.prusa3d.com",
       "bytes": 162961,
-      "sha": "a67e449c0f6520ed"
+      "sha": "7c18a81ee7ce8565"
     },
     {
       "url": "https://help.prusa3d.com/article/warping_2011",
       "sitio": "help.prusa3d.com",
-      "bytes": 1110982,
-      "sha": "424077a7807104c9"
+      "bytes": 1111213,
+      "sha": "36cc9218a634bdfe"
     },
     {
       "url": "https://wiki.bambulab.com/en/software/bambu-studio/xy-hole-contour-compensation",
@@ -306,13 +306,13 @@
       "url": "https://forum.prusa3d.com/forum/prusaslicer/hole-dimension-compensation/",
       "sitio": "forum.prusa3d.com",
       "bytes": 167139,
-      "sha": "3a5ef22fb7787f3b"
+      "sha": "6645908b8a118e82"
     },
     {
       "url": "https://forum.prusa3d.com/forum/prusaslicer/hole-size-compensation/",
       "sitio": "forum.prusa3d.com",
       "bytes": 156793,
-      "sha": "8531da9882e42f88"
+      "sha": "6819432efdad3f4d"
     },
     {
       "url": "https://www.simplify3d.com/resources/print-quality-troubleshooting/dimensional-accuracy/",
@@ -383,7 +383,7 @@
     {
       "url": "https://marlinfw.org/docs/basics/troubleshooting.html",
       "sitio": "marlinfw.org",
-      "bytes": 2149,
+      "bytes": 2150,
       "sha": "26fa450a3107bccd"
     },
     {
@@ -419,7 +419,7 @@
     {
       "url": "https://forum.bambulab.com/t/elephants-foot-mushrooming/110247",
       "sitio": "forum.bambulab.com",
-      "bytes": 57086,
+      "bytes": 57088,
       "sha": "8460252dbf466fa7"
     },
     {
@@ -437,7 +437,7 @@
     {
       "url": "https://www.creality.com/blog/3d-printer-elephant-foot",
       "sitio": "creality.com",
-      "bytes": 270390,
+      "bytes": 270433,
       "sha": "6fa02eb2cbfc04ff"
     },
     {
@@ -449,7 +449,7 @@
     {
       "url": "https://help.prusa3d.com/article/elephant-foot-compensation_114487",
       "sitio": "help.prusa3d.com",
-      "bytes": 1110280,
+      "bytes": 1110276,
       "sha": "78672853879e2c8d"
     },
     {
@@ -473,7 +473,7 @@
     {
       "url": "https://marlinfw.org/docs/features/lin_advance.html",
       "sitio": "marlinfw.org",
-      "bytes": 107039,
+      "bytes": 107038,
       "sha": "96ef0d23c3a8f099"
     },
     {
@@ -485,31 +485,31 @@
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/flow_ratio_calib",
       "sitio": "github.com",
-      "bytes": 657756,
+      "bytes": 657751,
       "sha": "d6e0619e470e149b"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/material_flow_ratio_and_pressure_advance",
       "sitio": "github.com",
-      "bytes": 664226,
+      "bytes": 664221,
       "sha": "08e19c903d18331a"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/material_volumetric_speed_limitation",
       "sitio": "github.com",
-      "bytes": 648767,
+      "bytes": 648762,
       "sha": "f5155060e7d57c2a"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/volumetric_speed_calib",
       "sitio": "github.com",
-      "bytes": 651204,
+      "bytes": 651199,
       "sha": "0ff1c511834fc01b"
     },
     {
       "url": "https://e3d-online.com/blogs/news/the-evolution-of-e3d-s-high-flow-technology",
       "sitio": "e3d-online.com",
-      "bytes": 681412,
+      "bytes": 681319,
       "sha": "1cd3d28d364a5e7c"
     },
     {
@@ -533,7 +533,7 @@
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/prepare_auto_orient",
       "sitio": "github.com/OrcaSlicer",
-      "bytes": 645338,
+      "bytes": 645342,
       "sha": "95c7e4502e93adba"
     },
     {
@@ -563,19 +563,19 @@
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/quality_settings_wall_generator",
       "sitio": "github.com/OrcaSlicer",
-      "bytes": 667980,
+      "bytes": 667979,
       "sha": "6175cb35dd4333c1"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_top_bottom_shells",
       "sitio": "github.com/OrcaSlicer",
-      "bytes": 680830,
+      "bytes": 680829,
       "sha": "4c935e18521762d8"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_walls",
       "sitio": "github.com/OrcaSlicer",
-      "bytes": 652740,
+      "bytes": 652739,
       "sha": "8cacdf279be6bcb3"
     },
     {
@@ -594,18 +594,18 @@
       "url": "https://forum.prusa3d.com/forum/english-forum-original-prusa-i3-mk4s-how-do-i-print-this/persistent-warping-with-large-asa-prints-what-else-can-i-try/",
       "sitio": "forum.prusa3d.com",
       "bytes": 153896,
-      "sha": "f953e25bb95cb4d6"
+      "sha": "9d03ff6c1bafa6b3"
     },
     {
       "url": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_layer_height",
       "sitio": "github.com",
-      "bytes": 651434,
+      "bytes": 651438,
       "sha": "1ca0e968f9084fdd"
     },
     {
       "url": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_z_contouring",
       "sitio": "github.com",
-      "bytes": 650618,
+      "bytes": 650614,
       "sha": "ce390d363819c8bb"
     },
     {
@@ -617,7 +617,7 @@
     {
       "url": "https://www.creality.com/blog/3d-print-warping",
       "sitio": "creality.com",
-      "bytes": 262270,
+      "bytes": 261375,
       "sha": "5ec4fee93fbdd184"
     },
     {
@@ -653,25 +653,25 @@
     {
       "url": "https://help.prusa3d.com/article/flexible-steel-sheets-guidepost_2195",
       "sitio": "help.prusa3d.com",
-      "bytes": 1217834,
+      "bytes": 1217816,
       "sha": "e1951a58da0c0ee4"
     },
     {
       "url": "https://help.prusa3d.com/article/smooth-steel-sheet_196550",
       "sitio": "help.prusa3d.com",
-      "bytes": 1103431,
+      "bytes": 1103418,
       "sha": "e208a23e17c27d10"
     },
     {
       "url": "https://bambulab.com/en/a1",
       "sitio": "bambulab.com",
-      "bytes": 757107,
+      "bytes": 757052,
       "sha": "2a77814edd6d76eb"
     },
     {
       "url": "https://www.flashforge.com/products/flashforge-ad5x-3d-printer",
       "sitio": "flashforge.com",
-      "bytes": 1230175,
+      "bytes": 1230188,
       "sha": "183ef628b1445e2b"
     },
     {
@@ -707,14 +707,14 @@
     {
       "url": "https://www.prusa3d.com/product/original-prusa-mk4s-3d-printer/",
       "sitio": "prusa3d.com",
-      "bytes": 801487,
+      "bytes": 801486,
       "sha": "00ce34195e013507"
     },
     {
       "url": "https://us.store.bambulab.com/products/p1s",
       "sitio": "us.store.bambulab.com",
-      "bytes": 1297816,
-      "sha": "d1c909bf0c4338c4"
+      "bytes": 1298353,
+      "sha": "62e58e4ea6591d5a"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/strength_settings_infill",
@@ -737,7 +737,7 @@
     {
       "url": "https://help.prusa3d.com/article/infill-patterns_177130",
       "sitio": "help.prusa3d.com",
-      "bytes": 1219548,
+      "bytes": 1219563,
       "sha": "4d101415768bb54e"
     },
     {
@@ -773,7 +773,7 @@
     {
       "url": "https://help.prusa3d.com/article/drying-filament-in-memmert-uf-series-universal-oven_913458",
       "sitio": "help.prusa3d.com",
-      "bytes": 1126958,
+      "bytes": 1127172,
       "sha": "548fdd03b7af8785"
     },
     {
@@ -804,7 +804,7 @@
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-improvements-archive/dimensional-accuracy/",
       "sitio": "forum.prusa3d.com",
       "bytes": 167884,
-      "sha": "d0dad8dcc11fef07"
+      "sha": "b076414315976b0f"
     },
     {
       "url": "https://www.3dprinterstuff.com/workshop/temperature-tower-calibration",
@@ -834,7 +834,7 @@
       "url": "https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-assembly-and-first-prints-troubleshooting/temperature-tower-3/",
       "sitio": "forum.prusa3d.com",
       "bytes": 159371,
-      "sha": "dbb728230ea18548"
+      "sha": "407f18924d40fc17"
     },
     {
       "url": "https://wiki.bambulab.com/en/filament-acc/filament/tpu-85a-90a-printing-guide-for-p-series",
@@ -863,13 +863,13 @@
     {
       "url": "https://help.prusa3d.com/article/flexible-materials_2057",
       "sitio": "help.prusa3d.com",
-      "bytes": 1174398,
+      "bytes": 1174416,
       "sha": "cab92c27090adf28"
     },
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/material_cooling",
       "sitio": "github.com",
-      "bytes": 687463,
+      "bytes": 687458,
       "sha": "a4fff91e7798058c"
     },
     {
@@ -899,7 +899,7 @@
     {
       "url": "https://help.prusa3d.com/article/seam-position_151069",
       "sitio": "help.prusa3d.com",
-      "bytes": 1139971,
+      "bytes": 1139986,
       "sha": "900e314401d35c08"
     },
     {
@@ -923,13 +923,13 @@
     {
       "url": "https://github.com/OrcaSlicer/OrcaSlicer/wiki/calibration_guide",
       "sitio": "github.com/OrcaSlicer",
-      "bytes": 656897,
+      "bytes": 656898,
       "sha": "58eee0a3b7467f14"
     },
     {
       "url": "https://help.prusa3d.com/article/linear-advance_2252",
       "sitio": "help.prusa3d.com",
-      "bytes": 1210031,
+      "bytes": 1210013,
       "sha": "ff9a9bc6e4fdc452"
     }
   ]

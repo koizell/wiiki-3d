@@ -287,7 +287,7 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Calibra el MVS midiendo la altura justo antes de los defectos',
       valor: '5 mm³/s inicio, 20 mm³/s fin, paso 0,5 (ej. 5 + 19 × 0,5 = 14,5 mm³/s)',
       porque:
-        'El MVS es el caudal que el hotend aguanta: se mide con calibre la altura justo antes de los defectos y se aplica inicio + (altura × paso). El brillo brillante/mate avisa de que la calidad baja.',
+        'El MVS es el caudal que el hotend aguanta: se mide con calibre la altura justo antes de los defectos y el MVS se fija en los ajustes del filamento. El brillo brillante/mate avisa de la calidad baja.',
       cuando: { slicer: 'orca' },
       fuente: 'OrcaSlicer',
       alcance: 'La prueba es el mejor caso: no tiene en cuenta retracciones ni otros ajustes que pueden aumentar atascos o subextrusión.',
@@ -345,10 +345,11 @@ export const maxVolumetricSpeed: Guia = {
       accion: 'Si buscas velocidad con PLA, valora un PLA de alto flujo (MFI alto y shear-thinning)',
       valor: '28 mm³/s · ahorro 20-40 %',
       porque:
-        'Prusament PLA High Speed alcanza 28 mm³/s en CORE One+ a 220 °C: su MFI alto y shear-thinning llevan la impresora al límite sin clogs. El ahorro depende de la forma y el tamaño (Prusa acota 20–40 %).',
+        'Prusament PLA High Speed alcanza 28 mm³/s en CORE One+ a 220 °C: su MFI alto y shear-thinning llevan la impresora al límite sin clogs ni hardware especializado.',
       cuando: { material: 'pla' },
       fuente: 'Prusa Research',
-      alcance: 'Dato de fabricante, sin corroborar; el MVS depende del hardware y la forma del modelo, y comparar números entre fabricantes no es válido.',
+      alcance:
+        'Dato de fabricante, sin corroborar; el MVS depende del hardware y la forma del modelo, y comparar números entre fabricantes no es válido. El ahorro depende de la forma y el tamaño (Prusa acota 20–40 %) y se consigue sin hardware especializado: el filamento es la alternativa a un hotend de alto caudal.',
     },
     {
       id: 'recalibrar-cambios',
