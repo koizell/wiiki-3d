@@ -19,28 +19,30 @@ export type EstadoTrayectoria =
   | { fase: 'lista'; trayectoria: Trayectoria }
   | { fase: 'error'; mensaje: string };
 
+/** El resultado de un análisis, con el archivo al que pertenece. */
+type Resultado = { archivo: File; estado: EstadoTrayectoria };
+
 export function useTrayectoria(file: File | null): EstadoTrayectoria {
-  const [estado, setEstado] = useState<EstadoTrayectoria>({ fase: 'vacia' });
+  const [resultado, setResultado] = useState<Resultado | null>(null);
 
   useEffect(() => {
-    if (!file) {
-      setEstado({ fase: 'vacia' });
-      return;
-    }
+    if (!file) return;
 
     let vivo = true;
-    setEstado({ fase: 'leyendo' });
 
     analizarGcodeDeArchivo(file)
       .then((trayectoria) => {
         if (!vivo) return;
-        setEstado({ fase: 'lista', trayectoria });
+        setResultado({ archivo: file, estado: { fase: 'lista', trayectoria } });
       })
       .catch((error: unknown) => {
         if (!vivo) return;
-        setEstado({
-          fase: 'error',
-          mensaje: error instanceof Error ? error.message : 'No se ha podido leer el G-code.',
+        setResultado({
+          archivo: file,
+          estado: {
+            fase: 'error',
+            mensaje: error instanceof Error ? error.message : 'No se ha podido leer el G-code.',
+          },
         });
       });
 
@@ -50,5 +52,21 @@ export function useTrayectoria(file: File | null): EstadoTrayectoria {
     };
   }, [file]);
 
-  return estado;
+  /*
+   * Las dos fases que no son resultado **se derivan**, no se escriben.
+   *
+   * Escribir `{fase: 'leyendo'}` dentro del efecto es un `setState` síncrono en
+   * el cuerpo del efecto, y eso hace que React renderice otra vez en cascada
+   * antes de que el efecto haya terminado. Además, obliga a duplicar el estado
+   * en dos sitios: el efecto dice «leyendo» y el render dice «vacia», y basta un
+   * cambio de archivo para que los dos se desincronicen.
+   *
+   * La regla que sale es más simple: **el estado es el resultado del análisis, y
+   * el resultado pertenece a un archivo**. Si no hay archivo, no hay nada que
+   * leer. Si el resultado no es del archivo que hay ahora —porque se acaba de
+   * subir otro, o porque todavía no ha llegado—, se está leyendo.
+   */
+  if (!file) return { fase: 'vacia' };
+  if (!resultado || resultado.archivo !== file) return { fase: 'leyendo' };
+  return resultado.estado;
 }

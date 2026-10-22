@@ -17,13 +17,13 @@ import { AUTOR } from './autor.ts';
  */
 export const rutaDeCalibracion: Guia = {
   slug: 'ruta-de-calibracion',
-  titulo: 'Ruta de calibración: qué orden sigue cada fabricante',
+  titulo: 'Ruta de calibración: los órdenes que se contradicen',
   resumen:
     'Qué orden siguen los siete tests de calibración, cómo llama cada firmware a la función de presión y qué contradicciones hay que declarar sin resolver.',
   sintoma: 'Quiero calibrar mi impresora entera y no sé por dónde empezar',
   dibujo: 'slicer',
   entrada:
-    'Esta guía no diagnostica: enruta. Los siete tests de calibración ya están publicados por separado, con sus criterios de lectura, y lo que aquí importa es lo que no está en ninguna parte: el orden. Hay tres métodos publicados que se contradicen entre sí, y Prusa y Bambu no publican ninguno. Lo que sigue es la secuencia que se puede recomendar, con el motivo de cada paso, el enlace a la guía que lo explica y las contradicciones declaradas en vez de resueltas.',
+    'Esta guía no diagnostica: enruta. Los siete tests de calibración ya están publicados por separado, con sus criterios de lectura, y lo que aquí importa es lo que no está en ninguna parte: el orden. Hay dos rutas completas publicadas, la de Control3D y la de OrcaSlicer, y un tramo suelto de Duet3D; las dos rutas se contradicen, porque el flujo va segundo en una y cuarto en la otra. Esta guía usa la de Control3D, que es la única que da los ocho pasos —los siete tests y la pieza final— y que justifica el orden por las dependencias entre parámetros. No porque sea el orden correcto: es el método de un blog de autor, y la propia guía lo marca. Prusa no publica ninguno y Bambu sólo lista sus tests sin justificarlos. Lo que sigue es esa secuencia, con el motivo de cada paso, el enlace a la guía que lo explica y las contradicciones declaradas en vez de resueltas.',
   autor: AUTOR,
   actualizado: '2026-10-21',
   minutos: 10,
@@ -139,16 +139,18 @@ export const rutaDeCalibracion: Guia = {
   conocimiento: [
     {
       id: 'tres-ordenes',
-      titulo: 'Hay tres órdenes, y se contradicen',
+      titulo: 'Dos rutas completas y un tramo, que se contradicen',
       puntos: [
         'Control3D: temperatura, flujo, PA, velocidad volumétrica, retracciones, tolerancias, voladizos y pieza final.',
         'OrcaSlicer: temperatura, velocidad volumétrica máxima, PA, flujo, retracciones, grupo avanzado y tolerancias al final.',
-        'Duet3D publica sólo un tramo: Input Shaping, PA y retracción.',
-        'La contradicción está en lo que va antes: el flujo es el segundo paso de un orden y el cuarto del otro.',
+        'Duet3D no publica una ruta: sólo un tramo, Input Shaping, PA y retracción.',
+        'La contradicción está en lo que va antes: el flujo es segundo en un orden y cuarto en el otro.',
+        'Las tolerancias van sextas en un orden y las últimas en el otro.',
+        'El segundo desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Control3D: temperatura, flujo, PA, velocidad volumétrica, retracciones, tolerancias, voladizos y pieza final. OrcaSlicer: temperatura, velocidad volumétrica máxima, PA, flujo, retracciones, grupo avanzado y tolerancias al final. Duet3D publica sólo un tramo: Input Shaping, PA y retracción. La contradicción está en lo que va antes: el flujo es el segundo paso de un orden y el cuarto del otro.',
+        'Control3D: temperatura, flujo, PA, velocidad volumétrica, retracciones, tolerancias, voladizos y pieza final. OrcaSlicer: temperatura, velocidad volumétrica máxima, PA, flujo, retracciones, grupo avanzado y tolerancias al final. Duet3D no publica una ruta: sólo un tramo, Input Shaping, PA y retracción. La contradicción está en lo que va antes: el flujo es segundo en un orden y cuarto en el otro. Las tolerancias van sextas en un orden y las últimas en el otro. El segundo desacuerdo es el Input Shaping: Duet3D lo pone antes de la retracción y OrcaSlicer después, en el grupo avanzado.',
       cita: {
         texto: 'Do it last, as the result depends on every calibration above',
         fuente: 'OrcaSlicer',
@@ -158,14 +160,16 @@ export const rutaDeCalibracion: Guia = {
       id: 'sin-orden-canonico',
       titulo: 'No hay un orden canónico',
       puntos: [
-        'Prusa y Bambu no publican un orden de calibración: es una ausencia de dato, no un orden distinto.',
-        'Y no se puede reconstruir su secuencia a partir de la de los demás.',
-        'El de OrcaSlicer es el único que razona cada paso con una dependencia explícita, y es documentación oficial.',
+        'Prusa no publica un orden de calibración: es una ausencia de dato, no un orden distinto.',
+        'Bambu lista sus tests en el menú de Bambu Studio, pero no los justifica: es un orden de menú, no una secuencia recomendada.',
+        'El menú va de Temperature a Flow Rate, Pressure Advance, Retraction Test, Max Flowrate y VFA, sin razonar el orden.',
+        'Ninguno de los dos se puede reconstruir a partir de Control3D ni de OrcaSlicer.',
+        'El orden de OrcaSlicer es el único que razona cada paso con una dependencia explícita, y es documentación oficial.',
         'El de Control3D es el método de un blog de autor, que sólo justifica el orden por dependencias entre parámetros.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Prusa y Bambu no publican un orden de calibración: es una ausencia de dato, no un orden distinto, y no se puede reconstruir su secuencia a partir de la de los demás. El de OrcaSlicer es el único que razona cada paso con una dependencia explícita, y es documentación oficial. El de Control3D es el método de un blog de autor, que sólo justifica el orden por dependencias entre parámetros.',
+        'Prusa no publica un orden de calibración: es una ausencia de dato, no un orden distinto. Bambu lista sus tests en el menú de Bambu Studio, pero no los justifica: es un orden de menú, no una secuencia recomendada. El menú va de Temperature a Flow Rate, Pressure Advance, Retraction Test, Max Flowrate y VFA, sin razonar el orden. Ninguno de los dos se puede reconstruir a partir de Control3D ni de OrcaSlicer. El orden de OrcaSlicer es el único que razona cada paso con una dependencia explícita, y es documentación oficial. El de Control3D es el método de un blog de autor, que sólo justifica el orden por dependencias entre parámetros.',
       cita: {
         texto: 'algunos parámetros afectan directamente a los siguientes',
         fuente: 'Control3D',
@@ -232,13 +236,13 @@ export const rutaDeCalibracion: Guia = {
       titulo: 'Con unidades: mm/mm/s y segundos',
       puntos: [
         'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0.',
-        'Duet3D lo da en segundos con M572: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida.',
+        'Duet3D lo da en segundos: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida.',
         'La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor.',
-        'El 0,05 de Prusa y el S0.025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
+        'El 0,05 de Prusa y el 0,025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0. Duet3D lo da en segundos con M572: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida. La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor. El 0,05 de Prusa y el S0.025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
+        'Marlin v1.5 expresa el K en mm/mm/s, con valores típicos de 0,1 a 2,0. Duet3D lo da en segundos: 0,025 en directa y hasta 0,7 o 2,0 en Bowden largo, y los llama puntos de partida. La función es la misma con otra magnitud: velocidad pedida más K por la aceleración del extrusor. El 0,05 de Prusa y el 0,025 de Duet3D no son el mismo número con otro nombre: son magnitudes distintas.',
       cifra: {
         valor: 'mm/mm/s · segundos',
         nota: 'Marlin v1.5 y Duet3D: el mismo fenómeno medido en unidades distintas',
@@ -294,13 +298,13 @@ export const rutaDeCalibracion: Guia = {
       titulo: 'En extrusión directa, el límite es mucho más bajo',
       puntos: [
         'Control3D dice que en extrusión directa 2 mm ya sería un valor muy elevado.',
-        'Es una sola fuente, un blog de autor, y el material cocinado la marca como sin corroborar.',
-        'Los tres órdenes ponen la retracción después del PA y del flujo, así que es el paso que menos se mueve.',
-        'Si los hilos siguen apareciendo, esa fuente manda revisar antes la temperatura, el flujo y el PA.',
+        'Es una sola fuente, un blog de autor, y no está corroborada por ninguna otra.',
+        'Los dos órdenes que publican la ruta completa ponen la retracción después del PA y del flujo.',
+        'Es el paso que menos se mueve, y si los hilos siguen apareciendo esa fuente manda revisar antes la temperatura, el flujo y el PA.',
       ],
       indicador: 'calibracion',
       cuerpo:
-        'Control3D dice que en extrusión directa 2 mm ya sería un valor muy elevado. Es una sola fuente, un blog de autor, y el material cocinado la marca como sin corroborar. Los tres órdenes ponen la retracción después del PA y del flujo, así que es el paso que menos se mueve. Si los hilos siguen apareciendo, esa fuente manda revisar antes la temperatura, el flujo y el PA.',
+        'Control3D dice que en extrusión directa 2 mm ya sería un valor muy elevado. Es una sola fuente, un blog de autor, y no está corroborada por ninguna otra. Los dos órdenes que publican la ruta completa ponen la retracción después del PA y del flujo. Es el paso que menos se mueve, y si los hilos siguen apareciendo esa fuente manda revisar antes la temperatura, el flujo y el PA.',
       enlaza: { guia: 'stringing', etiqueta: 'Cómo se calibra la retracción' },
       cuando: { extrusor: 'directo' },
     },
@@ -393,17 +397,28 @@ export const rutaDeCalibracion: Guia = {
     },
     {
       id: 'valor-gcode',
-      titulo: 'Cuando el valor va dentro del G-code',
+      titulo: 'En Cura y Simplify3D, el K se añade a mano',
       puntos: [
         'En Cura y Simplify3D el K no tiene campo propio: se añade M900 Kxx al script de inicio, a mano.',
+        'M900 es el comando de Linear Advance de Marlin y PrusaSlicer, y el valor acaba en el G-code, no en un campo del programa.',
+      ],
+      indicador: 'slicer',
+      cuerpo:
+        'En Cura y Simplify3D el K no tiene campo propio: se añade M900 Kxx al script de inicio, a mano. M900 es el comando de Linear Advance de Marlin y PrusaSlicer, y el valor acaba en el G-code, no en un campo del programa.',
+      cuando: { slicer: ['cura', 'simplify3d', 'otro'], firmware: ['prusa', 'marlin', 'otro'] },
+    },
+    {
+      id: 'valor-gcode-duet',
+      titulo: 'En Duet3D, el PA se añade con M572',
+      puntos: [
         'Duet3D lo hace con M572 D0 S0.1, donde D es la unidad de extrusor y S la cantidad de PA, en segundos.',
         'El valor va por unidad de extrusor: para varios extrusores con el mismo valor, M572 D0:1 S0.1.',
       ],
       indicador: 'slicer',
       cuerpo:
-        'En Cura y Simplify3D el K no tiene campo propio: se añade M900 Kxx al script de inicio, a mano. Duet3D lo hace con M572 D0 S0.1, donde D es la unidad de extrusor y S la cantidad de PA, en segundos. El valor va por unidad de extrusor: para varios extrusores con el mismo valor, M572 D0:1 S0.1.',
+        'Duet3D lo hace con M572 D0 S0.1, donde D es la unidad de extrusor y S la cantidad de PA, en segundos. El valor va por unidad de extrusor: para varios extrusores con el mismo valor, M572 D0:1 S0.1.',
       cita: { texto: 'M572 D0 S0.1', fuente: 'Duet3D' },
-      cuando: { slicer: ['cura', 'simplify3d', 'otro'] },
+      cuando: { firmware: 'duet' },
     },
   ],
 
@@ -413,9 +428,9 @@ export const rutaDeCalibracion: Guia = {
       accion: 'Fija la temperatura de boquilla con la torre',
       porque:
         'La temperatura cambia la viscosidad del filamento y de ella dependen todos los pasos siguientes: es lo primero que hay que cerrar.',
-      fuente: 'Control3D',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
-        'Los tres órdenes la ponen la primera. OrcaSlicer la razona: de la viscosidad del filamento depende que fluya bien y se adhiera, y con ella todos los tests que vienen detrás.',
+        'Las dos rutas completas la ponen la primera; el tramo de Duet3D no incluye la temperatura. OrcaSlicer la razona: de la viscosidad del filamento depende que fluya bien y se adhiera, y con ella todos los tests que vienen detrás.',
       enlaza: { guia: 'torre-temperatura', etiqueta: 'Cómo se hace la torre de temperatura' },
     },
     {
@@ -423,7 +438,7 @@ export const rutaDeCalibracion: Guia = {
       accion: 'Mide el flujo con el test de flow ratio',
       porque:
         'El factor de caudal decide cuánto filamento sale por la boquilla, y corregirlo sobre un perfil ya ajustado suele ser un cambio pequeño.',
-      fuente: 'Control3D',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
         'Control3D lo pone segundo; OrcaSlicer lo pone cuarto, tras la velocidad volumétrica y el PA, y avisa de que PA y flujo se influyen: uno puede ir antes del otro.',
       enlaza: { guia: 'flow-rate', etiqueta: 'Calibrar el flujo' },
@@ -432,8 +447,8 @@ export const rutaDeCalibracion: Guia = {
       id: 'pa',
       accion: 'Calibra el Pressure Advance con su patrón',
       porque:
-        'Compensa el retraso de la presión del filamento en la boquilla al acelerar y al frenar, y es el ajuste que peor suele estar sin calibrar.',
-      fuente: 'Control3D',
+        'Es el ajuste que peor suele estar sin calibrar, y por eso OrcaSlicer lo pone antes que el flujo; su nombre y su escala cambian con el firmware, así que el valor no se porta entre máquinas.',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
         'Control3D lo pone tercero y OrcaSlicer también, pero por otra razón: el PA es el valor que menos se ha calibrado nunca. El nombre y la escala cambian con el firmware.',
       enlaza: { guia: 'flow-rate', etiqueta: 'Calibrar el Pressure Advance' },
@@ -443,7 +458,7 @@ export const rutaDeCalibracion: Guia = {
       accion: 'Mide la velocidad volumétrica máxima',
       porque:
         'El límite real depende de la máquina, la boquilla y la fusión del extrusor, y fija el techo por debajo del cual los tests siguientes funcionan.',
-      fuente: 'Control3D',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
         'Control3D lo pone cuarto; OrcaSlicer lo pone segundo, avisa de que el valor de la bobina suele estar sobrestimado y pide un 10–20 % por debajo: ese margen sale de dos páginas del mismo wiki.',
       enlaza: { guia: 'max-volumetric-speed', etiqueta: 'Calibrar la velocidad volumétrica' },
@@ -452,10 +467,10 @@ export const rutaDeCalibracion: Guia = {
       id: 'retracciones',
       accion: 'Calibra la retracción hasta el mínimo sin hilos',
       porque:
-        'El objetivo es la distancia más corta que permita imprimir sin hilos, y es el único paso en el que los tres órdenes coinciden: todos lo ponen tras el PA y el flujo.',
-      fuente: 'Control3D',
+        'El objetivo es la distancia más corta que permita imprimir sin hilos, y es el único paso en el que las dos rutas coinciden: las dos lo ponen tras el PA y el flujo.',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
-        'Los tres órdenes la ponen después del PA y del flujo; OrcaSlicer lo dice porque los dos cambian la presión en la boquilla. Los límites de 2 mm y de 6–7 mm son de una sola fuente.',
+        'Control3D y OrcaSlicer la ponen después del PA y del flujo; OrcaSlicer lo dice porque PA y flujo cambian la presión en la boquilla. Los límites de 2 mm y de 6–7 mm son de una sola fuente.',
       enlaza: { guia: 'stringing', etiqueta: 'Calibrar la retracción' },
     },
     {
@@ -463,7 +478,7 @@ export const rutaDeCalibracion: Guia = {
       accion: 'Mide las tolerancias con el test de encaje',
       porque:
         'El objetivo es el ajuste más pequeño que permita encajar las piezas sin forzar, y conviene hacerlo antes de fabricar modelos con encajes precisos.',
-      fuente: 'Control3D',
+      fuente: 'Control3D, OrcaSlicer',
       alcance:
         'Control3D lo pone sexto; OrcaSlicer lo pone al final de todo, porque el resultado depende de cada calibración anterior. Empezar en cero y buscar el mínimo que encaja es de una sola fuente.',
       enlaza: { guia: 'tolerancias-y-encaje', etiqueta: 'Calibrar las tolerancias' },
@@ -482,7 +497,7 @@ export const rutaDeCalibracion: Guia = {
       id: 'pieza-final',
       accion: 'Imprime la pieza final de comprobación',
       porque:
-        'Una pieza sencilla que combine paredes, curvas, retracciones, puentes y voladizos comprueba que los valores funcionan aplicados a la vez, pero no sustituye a los tests.',
+        'Después de los siete tests, una pieza sencilla que combine paredes, curvas, retracciones, puentes y voladizos comprueba que los valores funcionan aplicados a la vez, pero no sustituye a los tests.',
       fuente: 'Control3D',
       alcance:
         'Paso propio de Control3D, sin equivalente en OrcaSlicer ni Duet3D. Si aparecen defectos, hay que revisar el test de esa zona antes de tocar parámetros al azar.',
@@ -514,7 +529,7 @@ export const rutaDeCalibracion: Guia = {
       accion: 'Recalibra si cambias la temperatura o la velocidad volumétrica',
       porque:
         'Bambu obliga a recalibrar el valor de presión cuando cambian esos dos ajustes del perfil de filamento, y Orca avisa de que PA y flujo se influyen.',
-      fuente: 'Bambu Lab',
+      fuente: 'Bambu Lab, OrcaSlicer',
       alcance:
         'La lista de motivos es de Bambu. El aviso de OrcaSlicer va en la otra dirección: si el flow ratio cambió mucho, hay que repetir un test rápido de PA.',
       cuando: { motivo: 'ajustes' },
@@ -543,13 +558,13 @@ export const rutaDeCalibracion: Guia = {
     {
       sintoma: 'Los valores de tu fabricante',
       porQue:
-        'Los K de Prusa, el Factor K de Bambu y los valores de arranque de Duet3D son de su firmware y no se traducen entre sí: aquí se declara la escala, no la cifra.',
+        'Los K de Prusa, el Factor K de Bambu y los valores de arranque de Duet3D son de su firmware y no se traducen entre sí: aquí se declara la escala y el valor de ejemplo de cada uno, no el valor que te toca a ti.',
       guia: 'flow-rate',
     },
     {
       sintoma: 'Un orden oficial para tu máquina',
       porQue:
-        'Prusa y Bambu no publican un orden de calibración, y esa ausencia no se reconstruye a partir de los otros tres.',
+        'Prusa no publica ningún orden de calibración y Bambu sólo lista sus tests en el menú de Bambu Studio, sin justificarlos: ninguno de los dos es una secuencia recomendada, y esa ausencia no se reconstruye a partir de Control3D ni de OrcaSlicer.',
     },
   ],
 
@@ -562,7 +577,7 @@ export const rutaDeCalibracion: Guia = {
     {
       url: 'https://github.com/OrcaSlicer/OrcaSlicer/wiki/calibration_guide',
       quien: 'OrcaSlicer',
-      que: 'Documentación oficial: el orden de calibración con la dependencia de cada paso, los tests de filamento y de impresora, y la nomenclatura de la función de presión.',
+      que: 'Documentación oficial: el orden de calibración con la dependencia de cada paso, y los tests de filamento y de impresora.',
     },
     {
       url: 'https://help.prusa3d.com/article/linear-advance_2252',
@@ -572,12 +587,22 @@ export const rutaDeCalibracion: Guia = {
     {
       url: 'https://wiki.bambulab.com/en/software/bambu-studio/calibration_pa',
       quien: 'Bambu Lab',
-      que: 'Flow Dynamics: el Factor K, la calibración manual y la automática, cuándo hay que recalibrar y cuándo el resultado no es fiable. Bambu no publica un orden de calibración.',
+      que: 'Flow Dynamics: el Factor K, la calibración manual y la automática, cuándo hay que recalibrar y cuándo el resultado no es fiable. Bambu no publica un orden de calibración justificado: su wiki sólo lista sus tests, sin razonar el orden.',
     },
     {
       url: 'https://docs.duet3d.com/User_manual/Tuning/Pressure_advance',
       quien: 'Duet3D',
       que: 'Pressure advance: de dónde viene el error de presión, el parámetro en segundos por unidad de extrusor, el método más simple y el tramo de orden respecto a Input Shaping y retracción.',
+    },
+    {
+      url: 'https://www.klipper3d.org/Pressure_Advance.html',
+      quien: 'Klipper3d',
+      que: 'Pressure advance: el PA como constante sin unidades, con un rango típico de 0,050 a 1,000, la torre por capas como método de calibración, y la atribución de la esquina abombada al PA bajo y la redondeada al PA alto.',
+    },
+    {
+      url: 'https://marlinfw.org/docs/features/lin_advance.html',
+      quien: 'Marlin Firmware',
+      que: 'Linear Advance: la v1.5 con el K en mm/mm/s, con valores de 0,1 a 2,0, el patrón de calibración por tramos lentos y rápidos, y el vocabulario starved y overshoot para los dos lados del valor.',
     },
   ],
 };

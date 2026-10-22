@@ -48,12 +48,63 @@ const LOAD_ERROR_MESSAGE: Record<ViewerFormat, string> = {
  */
 const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mostrar.';
 
+/**
+ * Añade la trayectoria al grupo de la escena.
+ *
+ * La malla y la trayectoria están en el **mismo marco de cama**, así que la
+ * trayectoria gira igual que la malla —Z arriba en los dos, Y arriba en `three`—
+ * y el recentrado del grupo las afecta a las dos.
+ *
+ * Si ya había una trayectoria, se quita antes: la escena puede receberla dos
+ * veces —si ya estaba cuando se leyó el archivo y vuelve a llegar después— y
+ * dibujarla dos veces es dibujar el mismo G-code encima.
+ */
+function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
+  const anterior = grupo.getObjectByName('trayectoria');
+  if (anterior) grupo.remove(anterior);
+
+  const { posiciones, colores } = geometriaTrayectoria(trayectoria);
+  const geometria = new THREE.BufferGeometry();
+  geometria.setAttribute('position', new THREE.BufferAttribute(posiciones, 3));
+  geometria.setAttribute('color', new THREE.BufferAttribute(colores, 3));
+
+  const grupoTrayectoria = new THREE.Group();
+  grupoTrayectoria.name = 'trayectoria';
+  grupoTrayectoria.rotation.x = -Math.PI / 2;
+  grupoTrayectoria.add(
+    new THREE.LineSegments(
+      geometria,
+      new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 })
+    )
+  );
+  grupo.add(grupoTrayectoria);
+}
+
 function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const comandos = useRef<{ encuadrar: () => void; zoom: (factor: number) => void; girar: () => void } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [vista, setVista] = useState('Arrastra para girar; también puedes usar los botones.');
+
+  /*
+   * La trayectoria llega **después** de que el archivo esté montado.
+   *
+   * El archivo se lee con un `FileReader` y el G-code de un 3MF de proyecto se
+   * analiza aparte: las dos cosas son lentas y no tienen por qué acabar a la vez.
+   *
+   * Estos tres `ref` son la puerta por la que la trayectoria entra cuando llega
+   * tarde. El efecto de abajo depende del **archivo**, no de la trayectoria, así
+   * que no se vuelve a ejecutar cuando ésta llega: sin estas referencias, la
+   * trayectoria se leía y no se pintaba nunca.
+   */
+  const trayectoriaRef = useRef<Trayectoria | null>(null);
+  const grupoRef = useRef<THREE.Group | null>(null);
+  const recentrarRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    trayectoriaRef.current = trayectoria ?? null;
+  }, [trayectoria]);
 
   useEffect(() => {
     const currentMount = mountRef.current;
@@ -135,29 +186,15 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         const grupo = new THREE.Group();
         grupo.add(model);
 
-        if (trayectoria && fileType === '3mf') {
-          const { posiciones, colores } = geometriaTrayectoria(trayectoria);
-          const geometria = new THREE.BufferGeometry();
-          geometria.setAttribute('position', new THREE.BufferAttribute(posiciones, 3));
-          geometria.setAttribute('color', new THREE.BufferAttribute(colores, 3));
-          /*
-           * La trayectoria rota **igual que la malla**.
-           *
-           * La malla viene en coordenadas de cama —Z arriba— y `three` trabaja con
-           * Y arriba, así que la malla gira. La trayectoria viene en el mismo marco
-           * de cama, así que **gira lo mismo**: sin esta rotación las dos están
-           * en sistemas distintos y la trayectoria sale al lado de la pieza en vez
-           * de encima.
-           */
-          const grupoTrayectoria = new THREE.Group();
-          grupoTrayectoria.rotation.x = -Math.PI / 2;
-          grupoTrayectoria.add(
-            new THREE.LineSegments(
-              geometria,
-              new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 })
-            )
-          );
-          grupo.add(grupoTrayectoria);
+        /*
+         * La trayectoria, si ya está.
+         *
+         * Si llega después de este punto, la pinta el efecto de más abajo. Si
+         * llegó antes, se pinta aquí y aquél no tendrá nada que hacer.
+         */
+        const tr = trayectoriaRef.current;
+        if (tr && fileType === '3mf') {
+          anadirTrayectoria(grupo, tr);
         }
 
         /*
@@ -173,6 +210,25 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
             grupo.position.set(-center.x, -center.y, -center.z);
           }
         }
+
+        /*
+         * Recentrar otra vez, para cuando la trayectoria llegue tarde.
+         *
+         * El centro del grupo se calculó con la malla y, si la trayectoria ya
+         * estaba, con la trayectoria también. Si llega después, hace falta
+         * recalcularlo: sin esto la línea de colores sale al lado de la pieza en
+         * vez de encima, que es justo lo que el mismo marco de cama debería
+         * evitar.
+         */
+        recentrarRef.current = () => {
+          if (fileType !== '3mf') return;
+          grupo.updateMatrixWorld(true);
+          const caja = new THREE.Box3().setFromObject(grupo);
+          if (caja.isEmpty()) return;
+          const centro = caja.getCenter(new THREE.Vector3());
+          grupo.position.set(-centro.x, -centro.y, -centro.z);
+        };
+        grupoRef.current = grupo;
 
         scene.add(grupo);
 
@@ -229,6 +285,8 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     return () => {
       cancelled = true;
       comandos.current = null;
+      grupoRef.current = null;
+      recentrarRef.current = null;
       if (reader.readyState === FileReader.LOADING) reader.abort();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
@@ -239,6 +297,29 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
       }
     };
   }, [file, fileType]);
+
+  /*
+   * La trayectoria, cuando llega después de que la escena esté montada.
+   *
+   * El efecto de arriba construye la escena cuando el archivo está leído, y su
+   * lista de dependencias es el archivo y el tipo: **no la trayectoria**, porque
+   * la trayectoria no es parte de la lectura del archivo sino de un análisis
+   * aparte, que va por su cuenta y puede tardar más.
+   *
+   * El resultado de eso era que la trayectoria se leía, se tenía en la mano, y
+   * no se pintaba nunca: el efecto no se volvía a ejecutar y el grupo se había
+   * construido sin ella.
+   *
+   * Aquí está la otra puerta. Y el recentrado se recalcula, porque el centro del
+   * grupo se calculó sin la trayectoria y sin recalcularlo la línea de colores
+   * sale al lado de la pieza en vez de encima.
+   */
+  useEffect(() => {
+    const grupo = grupoRef.current;
+    if (!grupo || !trayectoria || fileType !== '3mf') return;
+    anadirTrayectoria(grupo, trayectoria);
+    recentrarRef.current?.();
+  }, [trayectoria, fileType]);
 
   return (
     <>

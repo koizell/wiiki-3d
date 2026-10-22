@@ -157,6 +157,25 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
     [guia, elegidas]
   );
 
+  /**
+   * En qué etapa se está leyendo.
+   *
+   * El recorrido de arriba no sólo dice dónde está cada etapa: dice **dónde
+   * estás**, que con cuatro etapas apiladas es lo que se pierde al bajar.
+   *
+   * **El hook va antes del `return` de guía inexistente**, y no por gusto: los
+   * hooks se llaman en el mismo orden en cada render, y aquí el orden depended
+   * de si la guía ha llegado. La guía puede llegar después por lazy loading, así
+   * que ese `return` sí se puede cruzar entre dos renders: con el hook debajo,
+   * React vería un render con un hook y el siguiente sin él, y lo que eso
+   * produce es un error de «los hooks se han llamado en un orden distinto» en
+   * mitad de la lectura, no una pantalla en blanco.
+   *
+   * Los cuatro `id` son los de las cuatro etapas del contrato y **son los mismos
+   * en todas las guías**, así que el hook puede llamarse sin mirar la guía.
+   */
+  const etapaActiva = useEtapaActiva(['diagnostico', 'montaje', 'conocimiento', 'recomendacion']);
+
   if (!guia) {
     return (
       <div className="guia guia--vacia">
@@ -174,14 +193,6 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
   }
 
   const contestadas = guia.variables.filter((v) => elegidas[v.id] !== undefined).length;
-
-  /**
-   * En qué etapa se está leyendo.
-   *
-   * El recorrido de arriba no sólo dice dónde está cada etapa: dice **dónde
-   * estás**, que con cuatro etapas apiladas es lo que se pierde al bajar.
-   */
-  const etapaActiva = useEtapaActiva(['diagnostico', 'montaje', 'conocimiento', 'recomendacion']);
 
   const contenido = (
     <div className="guia" key={guia.slug}>
