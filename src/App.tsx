@@ -153,7 +153,15 @@ function AppShell() {
   const { fileType, metadata, classification, status, error } = useAnalysis();
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
   const { pathname, hash } = useLocation();
-  const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(pathname));
+  /*
+   * Las URL canónicas de GitHub Pages llevan barra final (`/privacidad/`), pero
+   * las rutas del router se declaran sin ella (`/privacidad`). Comparar el
+   * `pathname` crudo contra `RUTAS_DESPLAZABLES` dejaba esas páginas sin la
+   * clase de columna desplazable al entrar directamente por su URL canónica.
+   * La barra final no distingue una ruta de otra: se normaliza antes de decidir.
+   */
+  const rutaNormalizada = pathname.replace(/\/+$/, '') || '/';
+  const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(rutaNormalizada));
   const conPanel = pathname === '/' && (fileType === 'stl' || fileType === '3mf');
   const conRiel = /^\/wiki\/[^/]+\/?$/.test(pathname);
   const sinLateral = !conPanel && !conRiel;

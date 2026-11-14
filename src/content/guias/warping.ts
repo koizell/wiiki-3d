@@ -31,7 +31,7 @@ export const warping: Guia = {
   ilustracion: { src: '/wiki/warping-pla/ilustracion.png', alt: 'Pieza rectangular sobre la cama con las cuatro esquinas levantadas y curvadas hacia arriba' },
   entrada: 'El PLA es el material rígido que menos warpea, así que cuando sus esquinas se levantan casi nunca es el filamento: es la chapa, la cama o el aire. Esta guía empieza por lo que se ve —una base plana y esquinas que se curvan hacia arriba— y termina con la cifra de cama que toca a tu montaje.',
   autor: AUTOR,
-  actualizado: '2026-10-21',
+  actualizado: '2026-11-14',
   minutos: 3,
 
   diferencial: {
@@ -163,7 +163,7 @@ export const warping: Guia = {
         'Es contracción térmica, no un ajuste mal puesto. El filamento sale fundido y llega frío a la pieza: ese salto es un choque térmico. Durante el enfriamiento el plástico se contrae, y el problema es dónde: los bordes exteriores se enfrían antes que el centro, y esa diferencia genera una tensión que tira de las esquinas hacia arriba.',
       cita: {
         texto:
-          'the edges cool down quicker which causes the material to shrink and pull the corners up',
+          'The outer edges of the print cool faster than the centre, creating tension that pulls corners up.',
         fuente: 'wiki.bambulab.com',
       },
     },
@@ -202,7 +202,8 @@ export const warping: Guia = {
         'La tabla por chapa de Bambu da dos rangos para el PLA, y son los dos extremos de la misma fila leídos por columnas distintas. No se contradicen: con la Cool Plate pide 35–45 °C, y con la Textured PEI, la Smooth PEI y la Engineering pide 45–65 °C. El 35–45 es de la Cool Plate, y si tu chapa es otra no es el tuyo.',
       cifra: { valor: '35–65 °C', nota: 'todo el PLA de Bambu; el rango depende de la chapa' },
       cita: {
-        texto: 'with the Cool Plate the PLA asks for 35 – 45 ℃',
+        texto:
+          'PLA | 35 - 45 ℃ | 45 - 65 ℃ Glue Required | 45 - 65 ℃ | 45 - 65 ℃',
         fuente: 'wiki.bambulab.com',
       },
       enlaza: { guia: 'temperatura-cama', etiqueta: 'Ver las seis cifras' },
@@ -413,12 +414,13 @@ export const warping: Guia = {
     },
     {
       id: 'abierta',
-      accion: 'Abre la puerta frontal y quita la tapa superior',
-      cuando: { camara: 'cerrada', cama: 'alta' },
+      accion: 'Abre la puerta frontal o quita la tapa superior',
+      cuando: { camara: 'cerrada', cama: 'alta', material: ['pla', 'pla-cf'] },
       porque:
-        'Para filamentos que reblandecen por debajo de 60 °C —PLA, PVA, TPU— y cama por encima de 45 °C, Bambu recomienda abrir la puerta y/o quitar la tapa: el calor de la cámara no reblandece el filamento.',
+        'Con PLA, PVA o TPU y cama por encima de 45 °C, Bambu pide abrir la puerta o quitar la tapa para que el calor de la cámara no reblandezca el filamento.',
       fuente: 'Bambu Lab',
-      alcance: 'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Traducirlo como «las dos cosas» le exigiría una conjunción que no pidió.',
+      alcance:
+        'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Para PETG el umbral de la fuente es 60 °C, no 45; esta regla no lo cubre. En ABS, ASA, PC y PA la cámara se mantiene cerrada y caliente, no abierta.',
     },
   ],
 
@@ -427,7 +429,6 @@ export const warping: Guia = {
       sintoma: 'La pieza alta y fina se tumba',
       porQue:
         'Es colapso estructural, no warping: la boquilla la derriba por vibración a alta velocidad y las correas flojas dan holgura al cabezal. Los ajustes son reducir velocidad y aceleración, comprobar correas y habilitar soportes.',
-      guia: 'warping-pla',
     },
     {
       sintoma: 'Las capas se sueltan por dentro y la base está plana',
@@ -467,6 +468,26 @@ export const warping: Guia = {
       url: 'https://forum.prusa3d.com/forum/how-do-i-print-this-printing-help/warping-at-corners/',
       quien: 'Foro de Prusa, 2024',
       que: 'Hilo sobre esquinas arrugadas, con el criterio de quien responde.',
+    },
+    {
+      url: 'https://wiki.bambulab.com/en/general/filament-guide-material-table',
+      quien: 'Bambu Lab',
+      que: 'Tabla de temperatura de cama por material y por chapa.',
+    },
+    {
+      url: 'https://help.prusa3d.com/filament-material-guide',
+      quien: 'Prusa Research',
+      que: 'Tabla de materiales: cama de 50–60 °C para PLA.',
+    },
+    {
+      url: 'https://help.prusa3d.com/article/pla_2062',
+      quien: 'Prusa Research',
+      que: 'Ficha del PLA: temperatura de cama.',
+    },
+    {
+      url: 'https://www.orcaslicer.com/wiki/material_settings/filament/material_temperatures.html',
+      quien: 'OrcaSlicer',
+      que: 'Temperaturas de material del slicer: PLA 50–60 °C.',
     },
   ],
 

@@ -137,16 +137,15 @@ try {
        * Fecha real y declarada, no inventada.
        *
        * El formato antiguo no metía fecha porque no había dato de cuándo se
-       * escribió cada guía, e inventarla era peor que omitirla. Eso cambió: cada
-       * guía declara `actualizado`, así que el HowTo publica `datePublished` y
-       * `dateModified` con ese valor. El guard ya no comprueba «que no esté»,
-       * sino **que sea exactamente la declarada**: si el schema y la guía se
-       * desfasan, o si alguien teclea una fecha a mano en el JSON-LD, sale aquí.
-       * Aprovecha y fija también la autoría, la otra señal nueva.
+       * escribió cada guía, e inventarla era peor que omitirla. Ahora cada guía
+       * declara `actualizado`, que es la última revisión de contenido, y el
+       * HowTo publica `dateModified` con ese valor. **No se publica
+       * `datePublished`**: sería convertir la fecha de revisión en fecha de
+       * nacimiento. Si alguien vuelve a añadirla, sale aquí.
        */
-      comprobar(`${ruta}: publica la fecha declarada y el autor`, () => {
+      comprobar(`${ruta}: publica la fecha de revisión y el autor`, () => {
         const schema = JSON.parse(json);
-        assert.equal(schema.datePublished, guia.actualizado);
+        assert.equal(schema.datePublished, undefined);
         assert.equal(schema.dateModified, guia.actualizado);
         assert.equal(schema.author?.['@type'], 'Organization');
         assert.equal(schema.author?.name, guia.autor.nombre);
@@ -347,6 +346,16 @@ try {
     comprobar(`${ruta}/: metadatos al cargar la URL de GitHub Pages`, () => assert.ok(true));
     assert.equal(await page.locator('head meta[name="robots"]').getAttribute('content'), 'index, follow');
     assert.equal(await page.locator('head link[rel="canonical"]').getAttribute('href'), canonical(ruta));
+    /*
+     * La URL canónica de GitHub Pages lleva barra final. El shell decide si la
+     * columna central se desplaza comparando el `pathname` con una lista de
+     * rutas sin barra; si no normaliza, `/privacidad/` pierde la clase y el
+     * contenido queda recortado. Esta comprobación usa la URL real, no la del
+     * router, y por eso habría fallado antes de la corrección.
+     */
+    const claseShell = await page.locator('.app-container').getAttribute('class');
+    comprobar(`${ruta}/: la barra final no desactiva la columna desplazable`, () =>
+      assert.match(claseShell ?? '', /app-container--columna/));
   }
   comprobar('navegación sin excepciones JavaScript', () => assert.deepEqual(errores, []));
   await con.close();

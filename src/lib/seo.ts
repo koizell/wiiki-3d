@@ -40,7 +40,7 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
   },
   '/autor': {
     path: '/autor/', title: 'Quién está detrás de wiiki-3d | wiiki-3d',
-    description: 'Quién está detrás de wiiki-3d: una publicación independiente sobre impresión 3D con un buzón de contacto directo. Cómo se construye cada guía y las diez publicadas.',
+    description: 'Quién está detrás de wiiki-3d: una publicación independiente sobre impresión 3D con un buzón de contacto directo. Cómo se construye cada guía y las guías publicadas.',
     schema: {
       '@context': 'https://schema.org',
       '@type': 'Organization',
@@ -73,9 +73,12 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
  * `step` es exactamente lo que la guía tiene: un diferencial, unas variables y
  * una lista de acciones.
  *
- * La fecha de publicación y la de modificación **no se inventan**. Sin campo de
- * fecha en la guía no se pone `datePublished`, y una fecha inventada es peor que
- * ninguna: Google la lee y no la puede comprobar.
+ * La fecha de publicación y la de modificación **no se inventan**. La guía sólo
+ * declara `actualizado`, que es la última revisión de contenido, así que el
+ * `HowTo` publica `dateModified` con ese valor y **no** `datePublished`: usar la
+ * fecha de revisión como fecha de publicación sería afirmar que el artículo nació
+ * el día que se corrigió. Sin un dato real de primera publicación, el campo se
+ * omite; Google no lo exige.
  */
 export function seoGuia(guia: {
   slug: string;
@@ -121,7 +124,6 @@ export function seoGuia(guia: {
         url: ORIGEN,
       },
       publisher: { '@type': 'Organization', name: 'wiiki-3d' },
-      datePublished: guia.actualizado,
       dateModified: guia.actualizado,
       step: pasos,
     },
