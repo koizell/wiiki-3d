@@ -7,6 +7,33 @@ import { crearProxy, ejecutar, iniciarSitio } from './taller-navegacion-proxy.mj
 const escuchar = (server) => new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const url = (server) => `http://127.0.0.1:${server.address().port}`;
 
+async function conNavegador(upstream, callback, {
+  crear = crearProxy,
+  lanzar = () => chromium.launch({ args: ['--no-sandbox'], executablePath: process.env.CHROMIUM_PATH || undefined }),
+} = {}) {
+  let proxy;
+  let browser;
+  try {
+    await escuchar(upstream);
+    proxy = await crear(url(upstream));
+    browser = await lanzar();
+    await callback(proxy, browser);
+  } finally {
+    try {
+      if (browser) await browser.close();
+    } finally {
+      try {
+        if (proxy) await proxy.cerrar();
+      } finally {
+        if (upstream.listening) {
+          upstream.closeAllConnections();
+          await new Promise((resolve) => upstream.close(resolve));
+        }
+      }
+    }
+  }
+}
+
 test('redirect absoluto permanece en el proxy y CSP self permite retener cada documento', { timeout: 15000 }, async () => {
   const upstream = createServer((req, res) => {
     if (req.url === '/redirect') {
@@ -16,10 +43,7 @@ test('redirect absoluto permanece en el proxy y CSP self permite retener cada do
       res.end('<html><head></head><body>listo</body></html>');
     }
   });
-  await escuchar(upstream);
-  const proxy = await crearProxy(url(upstream));
-  const browser = await chromium.launch({ args: ['--no-sandbox'], executablePath: process.env.CHROMIUM_PATH || undefined });
-  try {
+  await conNavegador(upstream, async (proxy, browser) => {
     const page = await browser.newPage();
     await page.goto(`${proxy.base}/redirect`, { waitUntil: 'domcontentloaded' });
     assert.equal(page.url(), `${proxy.base}/destino`);
@@ -30,12 +54,31 @@ test('redirect absoluto permanece en el proxy y CSP self permite retener cada do
     assert.equal(proxy.documentos.size, 1);
     assert.equal(proxy.retenidas.size, 1);
     assert.deepEqual([...proxy.documentos.keys()], [...proxy.retenidas]);
-  } finally {
-    await browser.close();
-    await proxy.cerrar();
-    upstream.closeAllConnections();
-    await new Promise((resolve) => upstream.close(resolve));
-  }
+  });
+});
+
+test('fallo real al arrancar Chromium cierra proxy y upstream', { timeout: 5000 }, async () => {
+  const upstream = createServer();
+  let base;
+  await assert.rejects(conNavegador(upstream, () => {}, {
+    crear: async (destino) => {
+      const proxy = await crearProxy(destino);
+      base = proxy.base;
+      return proxy;
+    },
+    lanzar: () => chromium.launch({ executablePath: '/ruta/inexistente/chromium' }),
+  }), /executable/i);
+  assert.ok(base);
+  assert.equal(upstream.listening, false);
+  await assert.rejects(fetch(base));
+});
+
+test('fallo al crear proxy cierra upstream', { timeout: 5000 }, async () => {
+  const upstream = createServer();
+  await assert.rejects(conNavegador(upstream, () => {}, {
+    crear: async () => { throw new Error('fallo simulado del proxy'); },
+  }), /fallo simulado del proxy/);
+  assert.equal(upstream.listening, false);
 });
 
 test('sin BASE_URL arranca y limpia su propio servidor', { timeout: 15000 }, async () => {
@@ -59,9 +102,10 @@ test('el proxy conserva redirecciones, cabeceras y cookies', async () => {
       res.end('<head></head>');
     }
   });
-  await escuchar(upstream);
-  const proxy = await crearProxy(url(upstream));
+  let proxy;
   try {
+    await escuchar(upstream);
+    proxy = await crearProxy(url(upstream));
     const redir = await fetch(`${proxy.base}/redirect`, { redirect: 'manual' });
     assert.equal(redir.status, 302);
     assert.equal(redir.headers.get('location'), '/destino');
@@ -72,9 +116,14 @@ test('el proxy conserva redirecciones, cabeceras y cookies', async () => {
     assert.deepEqual(html.headers.getSetCookie(), ['a=1', 'b=2']);
     assert.match(await html.text(), /__taller_test_retenido__\.js/);
   } finally {
-    await proxy.cerrar();
-    upstream.closeAllConnections();
-    await new Promise((resolve) => upstream.close(resolve));
+    try {
+      if (proxy) await proxy.cerrar();
+    } finally {
+      if (upstream.listening) {
+        upstream.closeAllConnections();
+        await new Promise((resolve) => upstream.close(resolve));
+      }
+    }
   }
 });
 
@@ -87,17 +136,25 @@ test('cerrar cancela peticiones upstream colgadas', { timeout: 5000 }, async () 
     req.socket.once('close', desconectada);
     recibida();
   });
-  await escuchar(upstream);
-  const proxy = await crearProxy(url(upstream));
-  const request = fetch(proxy.base).catch(() => {});
+  let proxy;
   try {
+    await escuchar(upstream);
+    proxy = await crearProxy(url(upstream));
+    const request = fetch(proxy.base).catch(() => {});
     await llegada;
     await proxy.cerrar();
+    proxy = undefined;
     await request;
     await desconexion;
   } finally {
-    upstream.closeAllConnections();
-    await new Promise((resolve) => upstream.close(resolve));
+    try {
+      if (proxy) await proxy.cerrar();
+    } finally {
+      if (upstream.listening) {
+        upstream.closeAllConnections();
+        await new Promise((resolve) => upstream.close(resolve));
+      }
+    }
   }
 });
 
