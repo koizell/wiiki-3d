@@ -458,6 +458,19 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
       assert.ok(prueba.observacion.trim().length > 0, 'la prueba no dice qué mirar');
       assert.ok(prueba.alcance.trim().length > 0, 'la prueba no declara sus límites');
     });
+    /*
+     * Los textos de la prueba se pintan como texto plano: ni la negrita ni el
+     * acento grave se interpretan, así que llegan al lector tal cual. Una frase
+     * con `Calib_Retraction_tower` entre acentos graves no es un tecnicismo, es
+     * una marca de Markdown que se quedó a medio renderizar.
+     */
+    comprobar(`${guia.slug}: la prueba no arrastra marcas de Markdown`, () => {
+      const textos = [prueba.titulo, prueba.fuente, prueba.observacion, prueba.alcance, ...prueba.materiales, ...prueba.pasos];
+      for (const texto of textos) {
+        assert.ok(!texto.includes('**'), `negrita sin renderizar: ${texto}`);
+        assert.ok(!texto.includes('`'), `acento grave sin renderizar: ${texto}`);
+      }
+    });
   }
 
   comprobar(`${guia.slug}: el diferencial tiene salida si declara siNo`, () => {

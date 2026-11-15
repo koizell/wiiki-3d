@@ -532,8 +532,8 @@ export const stringing: Guia = {
     pasos: [
       'Genera la torre de retracción. En OrcaSlicer, para extrusor directo empieza en 0 mm y termina en 2 mm con paso de 0,1 mm; para Bowden, de 1 a 6 mm con paso de 0,2 mm.',
       'Imprime la torre sin cambios de capa ni de temperatura para que la única variable sea la longitud de retracción.',
-      'Busca el comentario `Calib_Retraction_tower` en la vista previa del G-code y anota a qué altura cambia cada tramo.',
-      'Inspecciona cada sección y elige la longitud más corta que deje la torre limpia. No uses los comentarios `; retract`, que no muestran el retract amount before wipe.',
+      'Busca el comentario «Calib_Retraction_tower» en la vista previa del G-code y anota a qué altura cambia cada tramo.',
+      'Inspecciona cada sección y elige la longitud más corta que deje la torre limpia. No uses los comentarios «; retract», que no muestran el retract amount before wipe.',
       'Si sigues con hilos altos, baja la temperatura 5-10 °C y repite antes de subir la retracción.',
       'Una vez elegido el valor, guárdalo en el preset del filamento y pruébalo en una pieza con voladizos, no solo en la torre.',
     ],
