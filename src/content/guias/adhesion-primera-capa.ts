@@ -55,7 +55,7 @@ export const adhesion: Guia = {
   ilustracion: { src: '/wiki/adhesion-primera-capa/ilustracion.png', alt: 'Boquilla depositando la primera capa: a la izquierda línea demasiado alta, a la derecha demasiado baja' },
   entrada: 'La primera capa no pega, o pega y sale frágil. Son dos fallos distintos con dos arreglos distintos, y apretar la boquilla para forzarla cambia de fallo. Aquí se empieza por saber cuál de los dos tienes.',
   autor: AUTOR,
-  actualizado: '2026-10-21',
+  actualizado: '2026-11-14',
   minutos: 3,
 
   /*
@@ -624,4 +624,25 @@ export const adhesion: Guia = {
 
   campos: [],
   leeDelAnalisis: ['material'],
+
+  prueba: {
+    titulo: 'Cómo ajustar la primera capa',
+    materiales: [
+      'Una placa limpia: smooth, satin o textured',
+      'Perfiles de hoja separados para smooth y textured',
+    ],
+    pasos: [
+      'En una Prusa i3, ejecuta la calibración de primera capa: LCD-menu > Calibración > Primera capa, también al final de la XYZ. Gira la perilla mientras imprime el patrón en zigzag.',
+      'Parte de cero y avanza hacia valores negativos hasta que las líneas queden juntas y ligeramente aplastadas. El rango habitual es de -0,400 a -1,500, pero depende del sensor y de la máquina.',
+      'Si está demasiado alta verás huecos entre líneas y un cuadrado final abierto; si está demasiado baja la línea queda aplanada, aparecen surcos y los bordes se curvan. En el extremo el filamento se transparenta y puede obstruir el hotend.',
+      'Usa perfiles de hoja distintos para smooth y textured: la calibración no se comparte.',
+      'En Bambu, selecciona el tipo de placa correcto. En Textured PEI, la impresora baja la boquilla 0,04 mm tras el nivelado; con otra placa queda demasiado alta.',
+      'Lava la placa con agua caliente y detergente y no la toques con los dedos.',
+    ],
+    observacion:
+      'El objetivo es una superficie uniforme, sin huecos ni surcos, con el plástico ligeramente aplastado. El número no es universal: depende de la posición del sensor P.I.N.D.A./SuperPINDA y cambia con el uso. Una capa visualmente correcta puede seguir sin pegar si la placa está grasienta o hay subextrusión. No midas la primera capa con calibre para calibrarla.',
+    alcance:
+      'La guía de Prusa es para MK3/MK3S/MK3.5/MMU y modelos antiguos; los modelos con otros menús no usan la perilla del LCD. La guía de Bambu no da temperaturas ni Z-offset; su única cifra es la bajada automática de 0,04 mm en Textured PEI. Lavar la placa resuelve la mayoría de los casos, pero solo si los ajustes y el tipo de placa son correctos.',
+    fuente: 'Prusa Knowledge Base, «First Layer Calibration» (i3); Bambu Lab Wiki, «First layer not sticking».',
+  },
 };

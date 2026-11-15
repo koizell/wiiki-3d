@@ -443,6 +443,23 @@ comprobar(`${guia.slug}: hay fuentes declaradas y son URLs`, () => {
     );
   });
 
+  /*
+   * La prueba reproducible es opcional, pero si se publica debe ser útil: una
+   * lista vacía o un solo paso sin interpretación no es una prueba, es relleno
+   * que llevaría el mismo título.
+   */
+  if (guia.prueba) {
+    const prueba = guia.prueba;
+    comprobar(`${guia.slug}: la prueba declarada tiene materiales y al menos dos pasos`, () => {
+      assert.ok(prueba.materiales.length > 0, 'la prueba no declara materiales');
+      assert.ok(prueba.pasos.length >= 2, 'la prueba tiene menos de dos pasos');
+    });
+    comprobar(`${guia.slug}: la prueba declarada dice qué mirar y sus límites`, () => {
+      assert.ok(prueba.observacion.trim().length > 0, 'la prueba no dice qué mirar');
+      assert.ok(prueba.alcance.trim().length > 0, 'la prueba no declara sus límites');
+    });
+  }
+
   comprobar(`${guia.slug}: el diferencial tiene salida si declara siNo`, () => {
     if (!guia.diferencial.siNo) return;
     assert.ok(GUIAS.some((g) => g.slug === guia.diferencial.siNo.guia));

@@ -21,7 +21,7 @@ export const flowRate: Guia = {
   entrada:
     'La pieza está bien adherida y las capas no se abren por dentro: lo que se ve es que las líneas no llenan o que sobra material. Subir la cama o la boquilla no lo arregla. Lo que falla es la cantidad de filamento que sale, y las dos capas que la ajustan (slicer y firmware) son distintas.',
   autor: AUTOR,
-  actualizado: '2026-10-21',
+  actualizado: '2026-11-14',
   minutos: 8,
 
   diferencial: {
@@ -872,4 +872,25 @@ export const flowRate: Guia = {
 
   campos: [],
   leeDelAnalisis: ['material'],
+
+  prueba: {
+    titulo: 'Cómo calibrar el flujo en tu impresora',
+    materiales: [
+      'Un calibre o micrómetro; si no tienes, sirve el método visual de Prusa',
+      'Cubo STL del método de precisión o del visual',
+      'Boquilla limpia de 0,4 mm y filamento seco',
+    ],
+    pasos: [
+      'Imprime el cubo en modo vaso (Spiral vase) con tu altura de capa habitual, boquilla 0,4 y multiplicador 1. [Prusa KB]',
+      'Mide tres veces cada pared en el centro y calcula el espesor medio. [Prusa KB]',
+      'Calcula: multiplicador = 0,45 / espesor medio medido. Ajústalo en los ajustes del filamento y repite. [Prusa KB]',
+      'Alternativa Bambu (solo serie X1): Calibración > Flow Rate > Auto-Calibration, declarando boquilla, placa y filamento. [Bambu Wiki]',
+      'Calibración manual en Bambu: gruesa del 80 al 120 % con paso de 5 %; fina del 91 al 100 % con paso de 1 %. Guarda el valor en un preset. [Bambu Wiki]',
+    ],
+    observacion:
+      'La sobreextrusión deja marcas de las capas inferiores y acumulación en las superiores; la subextrusión leve deja huecos entre líneas. Los valores ajustados suelen quedar entre 0,9 y 1,1. En Bambu mira el centro de los rectángulos: el principio y el final pueden mostrar una ligera sobreextrusión que se considera normal.',
+    alcance:
+      'El valor cambia con cada material, color e incluso bobina. El método de precisión asume boquilla 0,4 y alturas de 0,1-0,2 mm; con otra boquilla u otra altura hay que ajustar esos supuestos. La auto-calibración solo existe en la serie X1 y puede empeorar con filamentos transparentes o muy reflectantes. La página de Bambu no da un rango «correcto» y sus números son solo un ejemplo.',
+    fuente: 'Prusa Knowledge Base, «Extrusion multiplier calibration»; Bambu Lab Wiki, «Calibration / Flow Rate».',
+  },
 };

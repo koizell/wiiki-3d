@@ -258,6 +258,34 @@ export default function GuiaRoute({ exportEstatico = false }: { exportEstatico?:
       />
 
       <FueraDeAlcance guia={guia} />
+      {guia.prueba && (
+        <section className="etapa etapa--prueba" id="prueba">
+          <h2 className="etapa-titulo">{guia.prueba.titulo}</h2>
+          <p className="guia-prueba-nota">
+            Esta publicación no ha hecho esta prueba: es un protocolo para que la repitas
+            en tu impresora y sepas qué mirar.
+          </p>
+          <h3>Qué necesitas</h3>
+          <ul className="guia-prueba-lista">
+            {guia.prueba.materiales.map((material) => (
+              <li key={material}>{material}</li>
+            ))}
+          </ul>
+          <h3>Cómo se hace</h3>
+          <ol className="guia-prueba-pasos">
+            {guia.prueba.pasos.map((paso) => (
+              <li key={paso}>{paso}</li>
+            ))}
+          </ol>
+          <p>
+            <strong>Qué mirar:</strong> {guia.prueba.observacion}
+          </p>
+          <p>
+            <strong>Límites de la prueba:</strong> {guia.prueba.alcance}
+          </p>
+          <p className="guia-prueba-fuente">Fuentes del protocolo: {guia.prueba.fuente}</p>
+        </section>
+      )}
 
       <section className="guia-fuentes" id="fuentes">
         <h2 className="etapa-titulo">De dónde sale esto</h2>

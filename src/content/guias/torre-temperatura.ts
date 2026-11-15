@@ -11,7 +11,7 @@ export const torreTemperatura: Guia = {
   entrada:
     'Una torre compara temperaturas de boquilla para un filamento observando hilos, unión entre capas, puentes y voladizos. Se busca cambiar sólo la temperatura entre secciones, sin dar por descartados otros factores: incluso los huecos pueden aparecer por temperatura baja. Aquí puedes preparar la prueba y comparar resultados sin confundir la sección más bonita con una garantía de imprimibilidad.',
   autor: AUTOR,
-  actualizado: '2026-10-17',
+  actualizado: '2026-11-14',
   minutos: 6,
   campos: [],
   diferencial: {
@@ -1023,4 +1023,24 @@ export const torreTemperatura: Guia = {
       que: 'Testimonio de torre PLA y paro posterior, con sospecha de obstrucción no confirmada; consejo de Diem sobre posible humedad y opinión PLA de Avinash. Sin ensayo causal ni secado documentado.',
     },
   ],
+
+  // Un protocolo para medir la temperatura en tu propia máquina.
+  prueba: {
+    titulo: 'Cómo encontrar tu temperatura con una torre',
+    materiales: [
+      'Un modelo de torre de temperatura para tu slicer (OrcaSlicer lo genera).',
+      'El filamento que vas a imprimir, seco y del mismo lote.',
+    ],
+    pasos: [
+      'Elige la calibración de torre de temperatura en el slicer; la torre tiene bloques internos con temperaturas distintas [torre-temperatura-bambu.md].',
+      'Imprímela sin tocar otros ajustes: misma altura, velocidad y retracción que usarás después [torre-temperatura-bambu.md].',
+      'Compara cada tramo: stringing, adhesión entre capas, warping y bridging [torre-temperatura-bambu.md].',
+      'Elige el tramo con mejor equilibrio, no el que menos stringing tenga solo [torre-temperatura-bambu.md].',
+    ],
+    observacion:
+      'Un hilo del foro de Prusa comparó una torre de PLA de 180 °C abajo a 250 °C arriba: vio mejor aspecto en 180 °C, pero esa boquilla se obstruyó. Un miembro estimó el rango útil en 205-215 °C y el autor terminó en 200 °C. Una temperatura baja puede verse mejor en la torre y fallar en una pieza real.',
+    alcance:
+      'La wiki de Bambu explica el método de inspección, no temperaturas concretas. El hilo de Prusa es la experiencia de una persona con una bobina concreta, y sus cifras son observaciones, no un protocolo validado. La torre no garantiza la temperatura óptima para todas las geometrías ni sustituye revisar el secado del filamento.',
+    fuente: 'Bambu Lab Wiki, «Temperature tower»; foro de Prusa, hilo de torre de PLA.',
+  },
 };

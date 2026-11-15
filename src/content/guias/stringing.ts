@@ -31,7 +31,7 @@ export const stringing: Guia = {
   entrada:
     'El stringing son hilos finos de plástico que aparecen entre piezas o en voladizos, causados por plástico que gotea de la boquilla mientras el extrusor se mueve. Es también lo que otras fuentes llaman oozing, whiskers o hairy prints: el mismo defecto, no dos, y no hay un ajuste distinto para cada nombre. Lo que hay son varias causas posibles y un orden para descartarlas, que es lo que esta guía te da.',
   autor: AUTOR,
-  actualizado: '2026-10-21',
+  actualizado: '2026-11-14',
   minutos: 5,
 
   /*
@@ -522,4 +522,25 @@ export const stringing: Guia = {
       que: 'Ajustes de retracción del extrusor: wipe, travel distance threshold, retract on layer change, extra length on restart.',
     },
   ],
+
+  prueba: {
+    titulo: 'Cómo afinar la retracción con una torre',
+    materiales: [
+      'Una torre de retracción generada por tu slicer (OrcaSlicer la trae en el menú de calibración)',
+      'Filamento seco y boquilla limpia y bien instalada',
+    ],
+    pasos: [
+      'Genera la torre de retracción. En OrcaSlicer, para extrusor directo empieza en 0 mm y termina en 2 mm con paso de 0,1 mm; para Bowden, de 1 a 6 mm con paso de 0,2 mm.',
+      'Imprime la torre sin cambios de capa ni de temperatura para que la única variable sea la longitud de retracción.',
+      'Busca el comentario `Calib_Retraction_tower` en la vista previa del G-code y anota a qué altura cambia cada tramo.',
+      'Inspecciona cada sección y elige la longitud más corta que deje la torre limpia. No uses los comentarios `; retract`, que no muestran el retract amount before wipe.',
+      'Si sigues con hilos altos, baja la temperatura 5-10 °C y repite antes de subir la retracción.',
+      'Una vez elegido el valor, guárdalo en el preset del filamento y pruébalo en una pieza con voladizos, no solo en la torre.',
+    ],
+    observacion:
+      'El stringing son hilos finos entre piezas o paredes cuando el filamento sigue fluyendo durante el desplazamiento. Un valor demasiado alto rompe el filamento dentro del hotend o salta pasos en el extrusor; uno demasiado bajo deja hilos. Si el filamento está húmedo o la boquilla en mal estado, la retracción no lo arregla: las fuentes derivan a secar y limpiar.',
+    alcance:
+      'Los límites dependen de la máquina: Prusa da un máximo de 2 mm en MK2.5/S y MK3/S/+ y 3,2 mm por defecto en MINI/MINI+ (Bowden); OrcaSlicer propone 1-6 mm para Bowden. Ninguna de las dos fuentes demuestra que la retracción corrija el stringing por filamento húmedo o boquilla obstruida, y la torre puede dar un valor que no funcione en una pieza real con voladizos y puentes. Las cifras son puntos de partida, no valores universales.',
+    fuente: 'OrcaSlicer, «Retraction calibration»; Prusa Knowledge Base, «Stringing and oozing».',
+  },
 };

@@ -342,6 +342,28 @@ export interface Autor {
   perfil?: string;
 }
 
+/**
+ * Un protocolo que el lector puede repetir en su impresora.
+ *
+ * **No es una medición de este sitio.** Es una receta: qué imprimir, con qué
+ * ajustes y qué mirar. Quien obtiene el resultado es el lector, con su material,
+ * y la guía no presenta como propia una cifra que no ha medido.
+ */
+export interface Prueba {
+  /** Frase corta que resume qué mide la prueba. */
+  titulo: string;
+  /** Qué hace falta: archivo, piezas de calibración, material o ajuste inicial. */
+  materiales: string[];
+  /** Los pasos, en orden. Cada uno con una acción y un criterio. */
+  pasos: string[];
+  /** Qué observar en la pieza impresa y qué significa cada resultado. */
+  observacion: string;
+  /** Hasta dónde llega la interpretación y qué no se puede concluir. */
+  alcance: string;
+  /** Quién sostiene los números del protocolo. Igual que en una tarjeta: sin esto no hay prueba. */
+  fuente: string;
+}
+
 /** Una guía completa. */
 export interface Guia {
   slug: string;
@@ -435,6 +457,15 @@ export interface Guia {
    * la propia app acaba de hacer, con su incertidumbre incluida.
    */
   leeDelAnalisis?: string[];
+
+  /**
+   * Una prueba reproducible que el lector puede hacer en su impresora.
+   *
+   * Opcional a propósito: no todas las guías tienen una prueba que valga la pena,
+   * y rellenar esta sección con una impresión trivial rebajaría el valor del
+   * campo. Cuando existe, es un protocolo, no una medición de este sitio.
+   */
+  prueba?: Prueba;
 }
 
 /** Los dibujos del índice. Cada uno es un SVG en línea, no una imagen. */
