@@ -240,6 +240,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
     SEO_PAGINAS['/contacto'],
     SEO_PAGINAS['/privacidad'],
     SEO_PAGINAS['/autor'],
+    SEO_PAGINAS['/metodologia'],
     SEO_PAGINAS['/maquinas'],
     ...GUIAS.map(seoGuia),
   ];
@@ -259,6 +260,7 @@ export function paginasEstaticas(): { seo: SeoPagina; html: string }[] {
                 <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
                 <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
                 <Route path="/autor" element={<InfoRoute pagina="autor" />} />
+                <Route path="/metodologia" element={<InfoRoute pagina="metodologia" />} />
                 <Route path="/maquinas" element={<MaquinasRoute exportEstatico />} />
               </Routes>
             </Pagina>

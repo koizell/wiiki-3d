@@ -47,6 +47,9 @@ export default function SiteFooter() {
             <Link to="/autor">Autor</Link>
           </li>
           <li>
+            <Link to="/metodologia">Método</Link>
+          </li>
+          <li>
             <Link to="/maquinas">Máquinas</Link>
           </li>
         </ul>

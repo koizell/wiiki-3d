@@ -116,6 +116,7 @@ const RUTAS_DESPLAZABLES = [
   /^\/contacto$/,
   /^\/privacidad$/,
   /^\/autor$/,
+  /^\/metodologia$/,
   /^\/maquinas$/,
   /^\/taller$/,
   /^\/historial$/,
@@ -452,6 +453,7 @@ function App() {
               <Route path="/contacto" element={<InfoRoute pagina="contacto" />} />
               <Route path="/privacidad" element={<InfoRoute pagina="privacidad" />} />
               <Route path="/autor" element={<InfoRoute pagina="autor" />} />
+              <Route path="/metodologia" element={<InfoRoute pagina="metodologia" />} />
               <Route path="/maquinas" element={<MaquinasRoute />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

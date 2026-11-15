@@ -62,7 +62,7 @@ interface Seccion {
 const CONTACTO = 'contacto@wiiki-3d.com';
 
 /** Las secciones de cada página, en el orden en que se leen. */
-const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titulo: string; secciones: Seccion[] }> = {
+const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor' | 'metodologia', { titulo: string; secciones: Seccion[] }> = {
   'acerca-de': {
     titulo: 'Acerca de wiiki-3d',
     secciones: [
@@ -426,6 +426,10 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
               vez de elegir una y callar la otra. Ninguna cifra aparece sin la fuente de
               la que sale.
             </p>
+            <p>
+              El método completo —qué se comprueba, qué no se promete y cómo se corrige
+              un error— está en <Link to="/metodologia">cómo se verifica una guía</Link>.
+            </p>
           </>
         ),
       },
@@ -439,6 +443,119 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
               </li>
             ))}
           </ul>
+        ),
+      },
+    ],
+  },
+  metodologia: {
+    titulo: 'Cómo se verifica una guía',
+    secciones: [
+      {
+        titulo: 'Qué puedes esperar',
+        cuerpo: (
+          <>
+            <p>
+              Cada afirmación técnica de <Link to="/wiki">una guía</Link> apunta a la fuente de la que sale: una
+              ficha de fabricante, una base de conocimiento o, cuando no hay nada mejor,
+              un foro identificado como tal. La guía no copia la fuente: extrae lo que
+              sostiene y declara su alcance.
+            </p>
+            <p>
+              Cuando dos fuentes se contradicen, se muestran las dos y se explica el
+              matiz. Cuando ninguna responde, la guía lo dice en vez de rellenar el hueco
+              con una recomendación inventada.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Qué no encontrarás aquí',
+        cuerpo: (
+          <>
+            <p>
+              Esta publicación no tiene un laboratorio propio ni presenta como prueba una
+              fotografía que no haya hecho. Tampoco publica cifras de máquinas que no
+              haya podido contrastar con su ficha.
+            </p>
+            <p>
+              Eso significa que una guía puede ser correcta y, aun así, no cubrir tu caso:
+              la impresora, la versión del slicer y el lote de filamento cambian el
+              resultado. Los límites se declaran en cada guía en vez de prometer una
+              precisión que no existe.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Cómo se comprueba antes de publicar',
+        cuerpo: (
+          <>
+            <p>
+              La revisión tiene seis comprobaciones, y una guía no se publica si falla
+              una:
+            </p>
+            <ol>
+              <li>Que la pregunta y el alcance estén claros: qué problema resuelve y qué deja fuera.</li>
+              <li>Que cada afirmación se pueda localizar en una fuente, con archivo y fecha.</li>
+              <li>Que la atribución sea correcta: qué dice el fabricante, qué dice un foro y qué es inferencia.</li>
+              <li>Que las reglas no se apliquen fuera de su material o su máquina.</li>
+              <li>Que los enlaces, los slugs y las fechas sean reales.</li>
+              <li>Que haya valor propio y no relleno.</li>
+            </ol>
+          </>
+        ),
+      },
+      {
+        titulo: 'Un error real, corregido',
+        cuerpo: (
+          <>
+            <p>
+              En la revisión de <Link to="/wiki/warping-pla/">la guía de warping</Link> se encontraron dos citas entre comillas
+              que no eran literales y una regla que recomendaba abrir la cámara también
+              para ABS y PC, cuando esas fuentes piden lo contrario.
+            </p>
+            <p>
+              Se corrigieron las tres cosas, se añadieron las fuentes que faltaban y la
+              guía se volvió a revisar antes de publicarse. El informe de la primera
+              revisión y el de la segunda se conservan y se pueden pedir por correo. Un método que no
+              enseña sus correcciones no es un método: es una promesa.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Cómo se corrige hoy',
+        cuerpo: (
+          <>
+            <p>
+              Si una guía se equivoca, escribe a{' '}
+              <a href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. La corrección se aplica, se
+              cambia la fecha de actualización y se dice qué cambió. No se reescribe una
+              guía entera para tapar un error: se corrige el punto y se deja rastro.
+            </p>
+            <p>
+              Las fechas no se renuevan por renovar. Una guía mantiene su fecha mientras el
+              contenido siga siendo cierto; cuando cambia una recomendación, cambia la
+              fecha.
+            </p>
+          </>
+        ),
+      },
+      {
+        titulo: 'La herramienta también declara sus límites',
+        cuerpo: (
+          <>
+            <p>
+              <Link to="/taller">El análisis de G-code</Link> se ejecuta en tu navegador y lee lo que el archivo
+              dice: material, temperaturas, altura de capa, filamento y tiempo. No adivina
+              la marca de la máquina ni la calidad de la impresión.
+            </p>
+            <p>
+              La calculadora de coste usa los gramos del archivo y el precio que tú
+              indicas; no incluye electricidad, mano de obra ni amortización. Son límites
+              del cálculo, no letra pequeña.
+            </p>
+          </>
         ),
       },
     ],

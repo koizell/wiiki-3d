@@ -48,6 +48,10 @@ export const SEO_PAGINAS: Record<string, SeoPagina> = {
       url: `${ORIGEN}/autor/`,
     },
   },
+  '/metodologia': {
+    path: '/metodologia/', title: 'Cómo se verifica una guía de impresión 3D | wiiki-3d',
+    description: 'El método de wiiki-3d: fuentes primarias, citas literales, alcance declarado, contradicciones a la vista, correcciones con fecha y límites explícitos. Sin pruebas inventadas.',
+  },
   '/maquinas': {
     path: '/maquinas/', title: 'Catálogo de impresoras 3D comparadas | wiiki-3d',
     description: 'Catálogo de ocho impresoras 3D habituales con el origen de cada cifra —fabricante, terceros o pendiente de fichar—. Elige un filamento y ve compatibilidad, cámara y warping.',
