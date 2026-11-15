@@ -22,6 +22,8 @@ import { MODO_CLASIFICACION } from './services/JevService';
 import { AnalysisProvider } from './state/AnalysisContext';
 import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
 import { ProveedorGuia } from './state/useGuia.tsx';
+import { useRevisionMalla } from './state/useRevisionMalla';
+import RevisionMalla from './components/RevisionMalla';
 
 /*
  * Las rutas de la wiki y las tres páginas de información van en `lazy`, y no por
@@ -151,7 +153,8 @@ const RUTAS_DESPLAZABLES = [
  * interconexión que no depende de que haya un artículo largo detrás.
  */
 function AppShell() {
-  const { fileType, metadata, classification, status, error } = useAnalysis();
+  const { file, fileType, metadata, classification, status, error } = useAnalysis();
+  const revision = useRevisionMalla(file, fileType);
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
   const { pathname, hash } = useLocation();
   /*
@@ -280,7 +283,7 @@ function AppShell() {
               La clave por ruta hace visible el estado de la nueva navegación.
             */}
             <Suspense key={pathname} fallback={<p className="ruta-cargando" role="status">Cargando página…</p>}>
-              <Outlet />
+              <Outlet context={revision} />
             </Suspense>
           </main>
 
@@ -300,14 +303,14 @@ function AppShell() {
           {!sinLateral && <aside className="sidebar-right">
             {conPanel ? (
               <>
-                <div className="panel-header">
+                <div className={`panel-header${fileType === 'stl' ? ' panel-header--malla' : ''}`}>
                   {/*
                     `h2`, y no `h3`. El panel es una sección de la página, y va debajo
                     del `h1` de la vista, así que le corresponde un nivel 2. Con `h3`
                     la jerarquía saltaba de 1 a 3, y quien navega por encabezados se
                     perdía ese tramo entero.
                   */}
-                  <h2>Panel de Análisis</h2>
+                  <h2>{fileType === 'stl' ? 'Revisión de malla' : 'Panel de Análisis'}</h2>
                   {/*
                     La insignia dice en qué modo está la clasificación, y no dice
                     «Jev» a secas.
@@ -317,7 +320,7 @@ function AppShell() {
                     es una estimación. Poner «Jev» sin más hacía creer que había un
                     modelo de verdad detrás, y no lo había.
                   */}
-                  <Link
+                  {fileType !== 'stl' && <Link
                     to="/privacidad/"
                     className={'badge badge-modo badge-modo-' + MODO_CLASIFICACION}
                     title={
@@ -327,9 +330,9 @@ function AppShell() {
                     }
                   >
                     {MODO_CLASIFICACION === 'real' ? 'Jev' : 'Demo'}
-                  </Link>
+                  </Link>}
                 </div>
-                <AnalysisPanel
+                {fileType === 'stl' && file ? <RevisionMalla revision={revision} nombre={file.name} /> : <AnalysisPanel
                   modoClasificacion={MODO_CLASIFICACION}
                   status={status}
                   metadata={metadata}
@@ -342,7 +345,7 @@ function AppShell() {
                    * recibe sólo la función.
                    */
                   explicar={articuloParaCampo}
-                />
+                />}
               </>
             ) : (
               <RielWiki />
