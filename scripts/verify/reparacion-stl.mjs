@@ -443,27 +443,51 @@ try {
         return canvas?.getAttribute('aria-label')?.includes(nombre) && !document.querySelector('.visor-controles button')?.disabled && window.escenaPrueba?.children.some(x => x.type === 'Group')
       }, name)
     }
-    const datos3mf = Buffer.from(crear3mfSintetico(crearGcodeSintetico()))
+    const datosGcode = Buffer.from(crearGcodeSintetico())
+    const datos3mf = Buffer.from(crear3mfSintetico(datosGcode.toString()))
     const datosObj = Buffer.from('v -10 4 2\nv 20 4 2\nv -10 14 12\nf 1 2 3\n')
     const instantanea = async trayectoria => {
       if (trayectoria) await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
-      return visor.evaluate(() => {
+      return visor.evaluate(async normalizarGrupo => {
+        const url = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+        const { Matrix4 } = await import(/* @vite-ignore */ url)
         const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
         grupo.updateMatrixWorld(true)
-        const objetos = []
+        // El recentrado absoluto 3MF depende del orden de llegada preexistente.
+        // Conservar la transformación relativa al grupo comprueba orientación y
+        // alineación malla/trayectoria sin comparar esa traslación variable.
+        const objetos = normalizarGrupo ? [{ type: 'marco', quaternion: grupo.quaternion.toArray(), scale: grupo.scale.toArray() }] : []
         grupo.traverse(o => {
           if (!o.isMesh && !o.isLineSegments && o.name !== 'trayectoria') return
           const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []
+          const relativa = new Matrix4()
+          for (let actual = o; actual !== grupo; actual = actual.parent) relativa.premultiply(actual.matrix)
           objetos.push({
-            type: o.type, name: o.name, matrix: o.matrixWorld.toArray(),
+            type: o.type, name: o.name, matrix: normalizarGrupo ? relativa.toArray() : o.matrixWorld.toArray(),
             positions: o.geometry?.getAttribute('position') ? Array.from(o.geometry.getAttribute('position').array) : null,
             colors: o.geometry?.getAttribute('color') ? Array.from(o.geometry.getAttribute('color').array) : null,
             materials: mats.map(m => ({ type: m.type, color: m.color?.getHexString(), vertexColors: m.vertexColors, opacity: m.opacity })),
           })
         })
         return objetos
-      })
+      }, trayectoria)
     }
+    const seleccionarGcode = async nombre => {
+      await visor.locator('#file-upload').setInputFiles({ name: nombre, mimeType: 'text/plain', buffer: datosGcode })
+      await visor.getByRole('heading', { name: `Archivo: ${nombre}` }).waitFor()
+      await visor.locator('.visor-trayectoria-lienzo canvas').waitFor()
+      await visor.waitForFunction(() => window.escenaPrueba?.children.filter(x => x.type === 'LineSegments').length === 2)
+    }
+    const instantaneaGcode = () => visor.evaluate(() => {
+      const lineas = window.escenaPrueba.children.filter(x => x.type === 'LineSegments')
+      return lineas.map(o => ({
+        positions: Array.from(o.geometry.getAttribute('position').array),
+        colors: Array.from(o.geometry.getAttribute('color').array),
+        drawRange: o.geometry.drawRange, visible: o.visible,
+        matrix: o.matrix.toArray(),
+        material: { color: o.material.color.getHexString(), vertexColors: o.material.vertexColors, opacity: o.material.opacity },
+      }))
+    })
     await seleccionarVisor('referencia.3mf', datos3mf, 'model/3mf')
     const referencia3mf = await instantanea(true)
     assert.ok(referencia3mf.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
@@ -472,11 +496,23 @@ try {
     const referenciaObj = await instantanea(false)
     assert.ok(referenciaObj.some(o => o.type === 'Mesh'), 'Falta malla OBJ en referencia')
     assert.ok(referenciaObj.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia OBJ debe distinguirse del rojo STL')
-    await seleccionarVisor('previo-3mf.stl', baseOpen, 'model/stl')
-    await visor.getByRole('radio', { name: 'Rojo' }).check()
-    await seleccionarVisor('transicion.3mf', datos3mf, 'model/3mf')
-    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
-    assert.deepEqual(await instantanea(true), referencia3mf, 'STL → 3MF debe conservar materiales, posiciones y trayectoria')
+    await seleccionarGcode('referencia.gcode')
+    const referenciaGcode = await instantaneaGcode()
+    assert.equal(referenciaGcode.length, 2)
+    assert.ok(referenciaGcode[0].positions.length && referenciaGcode[0].colors.length && referenciaGcode[0].material.vertexColors, 'La referencia debe contener trayectoria coloreada')
+    assert.ok(new Set(referenciaGcode[0].colors).size > 1, 'La referencia debe distinguir colores de trayectoria')
+    for (let i = 0; i < 3; i++) {
+      await seleccionarVisor(`previo-3mf-${i}.stl`, baseOpen, 'model/stl')
+      await visor.getByRole('radio', { name: 'Rojo' }).check()
+      await seleccionarVisor(`transicion-${i}.3mf`, datos3mf, 'model/3mf')
+      assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+      assert.deepEqual(await instantanea(true), referencia3mf, 'STL → 3MF debe conservar materiales, geometría y posiciones relativas de la trayectoria')
+      await seleccionarVisor(`previo-gcode-${i}.stl`, baseOpen, 'model/stl')
+      await visor.getByRole('radio', { name: 'Rojo' }).check()
+      await seleccionarGcode(`transicion-${i}.gcode`)
+      assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+      assert.deepEqual(await instantaneaGcode(), referenciaGcode, 'STL → G-code debe conservar trayectoria, colores y materiales')
+    }
     await seleccionarVisor('previo-obj.stl', baseOpen, 'model/stl')
     await visor.getByRole('radio', { name: 'Rojo' }).check()
     await seleccionarVisor('transicion.obj', datosObj, 'model/obj')
