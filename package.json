@@ -20,6 +20,7 @@
     "verify:fuentes": "node scripts/wiki/fuentes.mjs --verificar",
     "verify:seo": "node scripts/verify/seo.mjs",
     "verify:taller": "node scripts/verify/taller.mjs",
+    "verify:taller:navegacion": "node --test scripts/verify/taller-navegacion-selftest.mjs && node scripts/verify/taller-navegacion-test.mjs",
     "verify:historial": "node scripts/verify/historial.mjs",
     "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
     "verify:gcode": "node --experimental-strip-types scripts/verify/gcode.mjs",
