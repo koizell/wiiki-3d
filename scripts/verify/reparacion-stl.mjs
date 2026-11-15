@@ -109,6 +109,16 @@ try {
       assert.equal((await diagnostico.locator('dl > div').filter({ has: page.locator('dt', { hasText: nombre }) }).locator('dd').innerText()).trim(), String(valor))
     }
     assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
+    const originalBytes = stl(faces.slice(2))
+    const referenciaReparacion = await page.evaluate(async bytes => {
+      const { crearSesionMalla } = await import('/src/services/reparacionMalla.ts')
+      const sesion = await crearSesionMalla()
+      try {
+        await sesion.analizar(new Uint8Array(bytes).buffer)
+        await sesion.reparar()
+        return [...new Uint8Array(await sesion.exportar())]
+      } finally { sesion.dispose() }
+    }, [...originalBytes])
     await page.evaluate(() => {
       const read = File.prototype.arrayBuffer
       const post = Worker.prototype.postMessage
@@ -126,7 +136,6 @@ try {
         return read.call(this)
       }
     })
-    const originalBytes = stl(faces.slice(2))
     await select('abierto.stl', originalBytes)
     await page.getByRole('status').filter({ hasText: 'Analizando geometría' }).waitFor()
     assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
@@ -134,11 +143,13 @@ try {
     await page.evaluate(() => window.liberarMotor())
     await visible('Incidencias detectadas')
     await comprobarDisposicion()
+    await page.getByRole('radio', { name: 'Rojo' }).check()
     await page.evaluate(() => { window.esperarMotor = 'repair' })
     await page.getByRole('button', { name: 'Reparar copia' }).filter({ visible: true }).click()
     await page.getByRole('status').filter({ hasText: 'Reparando la copia' }).waitFor()
     assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).isDisabled(), true)
     await page.waitForFunction(() => window.esperarMotor === '')
+    await page.getByRole('radio', { name: 'Verde' }).check()
     await page.evaluate(() => { window.liberarMotor(); window.restaurarPost() })
     const link = page.getByRole('link', { name: 'Descargar STL reparado' }).filter({ visible: true })
     await link.waitFor()
@@ -188,6 +199,7 @@ try {
     const download = await downloadPromise
     assert.equal(download.suggestedFilename(), 'abierto-reparado.stl')
     const downloaded = await readFile(await download.path())
+    assert.deepEqual([...downloaded], referenciaReparacion, 'El color antes y durante la reparación no debe alterar la exportación')
     assert.equal(downloaded.readUInt32LE(80), 12)
     assert.equal(downloaded.length, 84 + 12 * 50)
     assert.notDeepEqual(downloaded, originalBytes)
@@ -312,6 +324,11 @@ try {
     await visor.evaluate(async version => {
       const threeUrl = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
       const three = await import(/* @vite-ignore */ threeUrl)
+      const dispatch = three.EventDispatcher.prototype.dispatchEvent
+      three.EventDispatcher.prototype.dispatchEvent = function(event) {
+        if (this.object?.isPerspectiveCamera && this.target?.isVector3) window.controlesPrueba = this
+        return dispatch.call(this, event)
+      }
       const add = three.Object3D.prototype.add
       three.Object3D.prototype.add = function(...objects) {
         if (this.type === 'Scene') window.escenaPrueba = this
@@ -374,13 +391,28 @@ try {
         const { Box3 } = await import(/* @vite-ignore */ url)
         const mesh = window.escenaPrueba.children.find(x => x.type === 'Group')?.children[0]
         const rotated = new Box3().setFromObject(mesh)
-        return { min: rotated.min.toArray(), max: rotated.max.toArray(), color: mesh.material.color.getHexString() }
+        const original = new Box3().setFromBufferAttribute(mesh.geometry.getAttribute('position'))
+        return { min: rotated.min.toArray(), max: rotated.max.toArray(), originalMin: original.min.toArray(), originalMax: original.max.toArray(), vertices: Array.from(mesh.geometry.getAttribute('position').array), rotation: mesh.rotation.toArray().slice(0, 3), color: mesh.material.color.getHexString() }
       })
       assert.ok(Math.abs(caja.min[1]) < 1e-5, `Base fuera de la cama: ${JSON.stringify(caja)}`)
+      for (const eje of [0, 2]) assert.ok(Math.abs(caja.min[eje] + caja.max[eje]) < 1e-5, `Centrado horizontal incorrecto: ${JSON.stringify(caja)}`)
+      assert.deepEqual(caja.originalMin, offset)
+      assert.deepEqual(caja.originalMax, offset.map((v, i) => v + scale[i]))
+      assert.deepEqual(caja.vertices, faces.slice(2).flatMap(tri => tri.flatMap(v => vertices[v].map((n, i) => n * scale[i] + offset[i]))))
+      assert.ok(Math.abs(caja.rotation[0] + Math.PI / 2) < 1e-12 && caja.rotation[1] === 0 && caja.rotation[2] === 0)
       assert.ok(Math.abs((caja.max[1] - caja.min[1]) - scale[2]) < 1e-5)
+      assert.ok(Math.abs((caja.max[0] - caja.min[0]) - scale[0]) < 1e-5)
+      assert.ok(Math.abs((caja.max[2] - caja.min[2]) - scale[1]) < 1e-5)
       assert.equal(caja.color, '3b82f6')
     }
     await visor.setViewportSize({ width: 390, height: 844 })
+    for (const nombre of ['Azul', 'Rojo', 'Verde', 'Blanco', 'Gris']) {
+      const opcion = visor.getByRole('radio', { name: nombre })
+      assert.equal(await opcion.isVisible(), true, `${nombre} debe estar visible`)
+      const bounds = await opcion.locator('..').boundingBox()
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 390, `${nombre} fuera del ancho móvil`)
+    }
+    assert.ok(await visor.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'Desbordamiento horizontal móvil')
     await visor.getByRole('radio', { name: 'Azul' }).focus()
     await visor.keyboard.press('ArrowRight')
     assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).isChecked(), true)
@@ -389,14 +421,68 @@ try {
     await visor.setViewportSize({ width: 1440, height: 900 })
     await visor.locator('.viewer-3d-container').scrollIntoViewIfNeeded()
     await visor.screenshot({ path: '/tmp/opencode/visor-color-escritorio.png' })
-    await visor.getByRole('radio', { name: 'Rojo' }).check()
-    const antesColor = await visor.evaluate(() => { window.escenaPruebaCanvas = document.querySelector('canvas'); return { camera: window.camaraPrueba.position.toArray(), analysis: window.analisisSTL } })
+    const camaraInicial = await visor.evaluate(() => window.camaraPrueba.position.toArray())
+    await visor.getByRole('button', { name: 'Girar modelo' }).click()
+    await visor.getByRole('button', { name: 'Acercar modelo' }).click()
+    await visor.waitForFunction(() => !!window.controlesPrueba)
+    const antesColor = await visor.evaluate(() => { window.escenaPruebaCanvas = document.querySelector('canvas'); return { camera: window.camaraPrueba.position.toArray(), quaternion: window.camaraPrueba.quaternion.toArray(), target: window.controlesPrueba.target.toArray(), analysis: window.analisisSTL } })
+    assert.ok(Math.hypot(...antesColor.camera.map((v, i) => v - camaraInicial[i])) > 1, 'La cámara debe moverse antes de cambiar color')
     await visor.getByRole('radio', { name: 'Verde' }).check()
-    const despuesColor = await visor.evaluate(() => ({ same: document.querySelector('canvas') === window.escenaPruebaCanvas, camera: window.camaraPrueba.position.toArray(), analysis: window.analisisSTL, color: window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString() }))
+    const despuesColor = await visor.evaluate(() => ({ same: document.querySelector('canvas') === window.escenaPruebaCanvas, camera: window.camaraPrueba.position.toArray(), quaternion: window.camaraPrueba.quaternion.toArray(), target: window.controlesPrueba.target.toArray(), analysis: window.analisisSTL, color: window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString() }))
     assert.deepEqual(despuesColor.camera, antesColor.camera)
+    assert.deepEqual(despuesColor.quaternion, antesColor.quaternion)
+    assert.deepEqual(despuesColor.target, antesColor.target)
     assert.equal(despuesColor.same, true)
     assert.equal(despuesColor.analysis, antesColor.analysis)
     assert.equal(despuesColor.color, '22c55e')
+    const seleccionarVisor = async (name, buffer, type) => {
+      await visor.locator('#file-upload').setInputFiles({ name, mimeType: type, buffer })
+      await visor.getByRole('heading', { name: `Archivo: ${name}` }).waitFor()
+      await visor.waitForFunction(nombre => {
+        const canvas = document.querySelector('.viewer-3d-container canvas')
+        return canvas?.getAttribute('aria-label')?.includes(nombre) && !document.querySelector('.visor-controles button')?.disabled && window.escenaPrueba?.children.some(x => x.type === 'Group')
+      }, name)
+    }
+    const datos3mf = Buffer.from(crear3mfSintetico(crearGcodeSintetico()))
+    const datosObj = Buffer.from('v -10 4 2\nv 20 4 2\nv -10 14 12\nf 1 2 3\n')
+    const instantanea = async trayectoria => {
+      if (trayectoria) await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+      return visor.evaluate(() => {
+        const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+        grupo.updateMatrixWorld(true)
+        const objetos = []
+        grupo.traverse(o => {
+          if (!o.isMesh && !o.isLineSegments && o.name !== 'trayectoria') return
+          const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []
+          objetos.push({
+            type: o.type, name: o.name, matrix: o.matrixWorld.toArray(),
+            positions: o.geometry?.getAttribute('position') ? Array.from(o.geometry.getAttribute('position').array) : null,
+            colors: o.geometry?.getAttribute('color') ? Array.from(o.geometry.getAttribute('color').array) : null,
+            materials: mats.map(m => ({ type: m.type, color: m.color?.getHexString(), vertexColors: m.vertexColors, opacity: m.opacity })),
+          })
+        })
+        return objetos
+      })
+    }
+    await seleccionarVisor('referencia.3mf', datos3mf, 'model/3mf')
+    const referencia3mf = await instantanea(true)
+    assert.ok(referencia3mf.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
+    assert.ok(referencia3mf.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia 3MF debe distinguirse del rojo STL')
+    await seleccionarVisor('referencia.obj', datosObj, 'model/obj')
+    const referenciaObj = await instantanea(false)
+    assert.ok(referenciaObj.some(o => o.type === 'Mesh'), 'Falta malla OBJ en referencia')
+    assert.ok(referenciaObj.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia OBJ debe distinguirse del rojo STL')
+    await seleccionarVisor('previo-3mf.stl', baseOpen, 'model/stl')
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    await seleccionarVisor('transicion.3mf', datos3mf, 'model/3mf')
+    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    assert.deepEqual(await instantanea(true), referencia3mf, 'STL → 3MF debe conservar materiales, posiciones y trayectoria')
+    await seleccionarVisor('previo-obj.stl', baseOpen, 'model/stl')
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    await seleccionarVisor('transicion.obj', datosObj, 'model/obj')
+    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    assert.deepEqual(await instantanea(false), referenciaObj, 'STL → OBJ debe conservar materiales y posiciones')
+    console.log('OK color antes/durante reparación, cama, cámara, móvil y transiciones directas')
     await visor.evaluate(() => { window.geometriasSTL = [] })
     for (const solid of [true, false]) for (const extra of [true, false]) {
       const original = Buffer.from(baseOpen)
