@@ -55,13 +55,25 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
           <div><dt>Caras eliminadas al soldar</dt><dd>{revision.resumen.reparacion.weld.facesRemoved}</dd></div>
           <div><dt>Caras degeneradas eliminadas</dt><dd>{revision.resumen.reparacion.removeDegenerates.degenerateRemoved}</dd></div>
           <div><dt>Caras duplicadas eliminadas</dt><dd>{revision.resumen.reparacion.removeDegenerates.duplicateRemoved}</dd></div>
+          <div><dt>Triángulos aislados eliminados</dt><dd>{revision.resumen.reparacion.fillHoles.flapsRemoved}</dd></div>
+          {revision.resumen.rellenoForzado && <div><dt>Triángulos aislados eliminados en relleno adicional</dt><dd>{revision.resumen.rellenoForzado.flapsRemoved}</dd></div>}
+          <div><dt>Caras omitidas al soldar</dt><dd>{revision.resumen.reparacion.weld.skippedFaces}</dd></div>
+          <div><dt>Caras omitidas al orientar normales</dt><dd>{revision.resumen.reparacion.fixNormals.skippedFaces}</dd></div>
         </dl>
+        <p className="malla-limite">Las caras omitidas se cuentan por operación; una misma cara puede aparecer en más de un recuento. El motor puede omitir caras por problemas de conectividad.</p>
       </div>}
       <div className="malla-resumen">
         <span className="malla-eyebrow">{revision.resumen ? 'RESULTADO DE LA COPIA' : 'DIAGNÓSTICO INICIAL'}</span>
         <h3>{revision.resumen ? 'Incidencias pendientes' : problemas ? 'Incidencias detectadas' : 'Sin incidencias detectadas'}</h3>
         <p>{actual.incidencias.length ? `${actual.incidencias.length} ${actual.incidencias.length === 1 ? 'tipo de incidencia' : 'tipos de incidencia'}` : 'No se han detectado incidencias en esta revisión.'}</p>
-        <dl><div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div></dl>
+        <dl><div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div>
+          <div><dt>Componentes</dt><dd>{actual.analysis.connectedComponents}</dd></div>
+          <div><dt>Agujeros</dt><dd>{actual.analysis.holeCount}</dd></div>
+          <div><dt>Aristas de borde</dt><dd>{actual.analysis.boundaryEdges}</dd></div>
+          <div><dt>Normales invertidas</dt><dd>{actual.analysis.flippedNormalCount}</dd></div>
+          <div><dt>Triángulos degenerados</dt><dd>{actual.analysis.degenerateTriangleCount}</dd></div>
+          <div><dt>Caras duplicadas</dt><dd>{actual.analysis.duplicateFaceCount}</dd></div>
+        </dl>
         {actual.incidencias.length > 0 && <ul>{actual.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
       </div>
       {revision.analisis && <Perdidas titulo="Lectura inicial" analisis={revision.analisis} />}
@@ -80,8 +92,8 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
 }
 
 function Perdidas({ titulo, analisis }: { titulo: string; analisis: AnalisisMalla }) {
-  if (!analisis.carasNoFinitasEliminadas && !analisis.carasPerdidasAuditoria && !analisis.colorsDropped) return null;
-  return <p className="malla-aviso"><strong>{titulo}:</strong> se descartaron {analisis.carasNoFinitasEliminadas} caras no finitas, {analisis.carasPerdidasAuditoria} caras en auditoría{analisis.colorsDropped ? ' y colores' : ''}.</p>;
+  if (!analisis.carasNoFinitasEliminadas && !analisis.carasPerdidasAuditoria && !analisis.analysis.skippedFaces && !analisis.colorsDropped) return null;
+  return <p className="malla-aviso"><strong>{titulo}:</strong> se descartaron {analisis.carasNoFinitasEliminadas} caras no finitas, {analisis.carasPerdidasAuditoria} caras en auditoría{analisis.colorsDropped ? ' y colores' : ''}. El análisis informó de {analisis.analysis.skippedFaces} caras omitidas; este recuento puede solaparse con otros.</p>;
 }
 
 function ConfirmarRelleno({ ocupado, rellenar }: { ocupado: boolean; rellenar: () => void }) {

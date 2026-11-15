@@ -94,11 +94,12 @@ class Motor {
 
 async function validarSTL(buffer: ArrayBuffer, check: () => void) {
   if (buffer.byteLength < 15) throw new Error('STL vacío o inválido')
-  // Un encabezado binario también puede comenzar por "solid". Sólo se acepta
-  // como texto si es UTF-8 imprimible y contiene la estructura ASCII completa.
+  // El recuento y el tramo completo identifican el binario incluso si su
+  // cabecera empieza por "solid". La librería necesita el tramo sin apéndice;
+  // no se modifica el File original ni se incluye el apéndice en la reparación.
   if (buffer.byteLength >= 84) {
     const count = new DataView(buffer).getUint32(80, true)
-    if (84 + count * 50 === buffer.byteLength) return
+    if (count > 0 && 84 + count * 50 <= buffer.byteLength) return 84 + count * 50
   }
   const decoder = new TextDecoder('utf-8', { fatal: true })
   const bytes = new Uint8Array(buffer)
@@ -193,8 +194,8 @@ export async function crearSesionMalla(opciones: OpcionesSesionMalla = {}): Prom
   return {
     analizar(buffer) {
       return exclusiva(async () => {
-        await validarSTL(buffer, check)
-        const copia = buffer.slice(0)
+        const finBinario = await validarSTL(buffer, check)
+        const copia = buffer.slice(0, finBinario)
         const motor = await crearMotor()
         const data = await motor.call<DatosAnalisis>('analyzeDetailed', { format: 'stl' }, copia.slice(0))
         if (!data.analysis.faceCount) throw new Error('STL vacío o inválido')

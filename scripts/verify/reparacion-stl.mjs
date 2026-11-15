@@ -80,6 +80,10 @@ try {
     page.on('request', request => requests.push({ url: request.url(), method: request.method(), body: request.postDataBuffer()?.length ?? 0 }))
     await select('cerrado.stl', stl(faces))
     await visible('Sin incidencias detectadas')
+    const diagnostico = page.locator('.malla-resumen').first()
+    for (const [nombre, valor] of [['Componentes', 1], ['Agujeros', 0], ['Aristas de borde', 0], ['Normales invertidas', 0], ['Triángulos degenerados', 0], ['Caras duplicadas', 0]]) {
+      assert.equal((await diagnostico.locator('dl > div').filter({ has: page.locator('dt', { hasText: nombre }) }).locator('dd').innerText()).trim(), String(valor))
+    }
     assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
     await page.evaluate(() => {
       const read = File.prototype.arrayBuffer
@@ -227,10 +231,10 @@ try {
       const { default: RevisionMalla } = await import('/src/components/RevisionMalla.tsx')
       const target = document.createElement('div'); document.body.append(target)
       const root = (client.default ?? client).createRoot(target)
-      const analisis = (n, audit, colors) => ({ analysis: { vertexCount: 8, faceCount: 10 }, incidencias: [], aberturas: [], esCerrada: true, esManifold: true, carasNoFinitasEliminadas: n, carasPerdidasAuditoria: audit, reconstruccionesConectividad: 0, colorsDropped: colors })
-      const inicial = analisis(2, 3, true), posterior = analisis(4, 5, true)
-      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0 }, fixNormals: { facesFlipped: 0 }, weld: { facesRemoved: 0 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
-      const revision = { fase: 'reparado', analisis: inicial, resumen: { analisis: posterior, reparacion: repair }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
+      const analisis = (n, audit, colors, skipped) => ({ analysis: { vertexCount: 8, faceCount: 10, connectedComponents: 1, holeCount: 0, boundaryEdges: 0, flippedNormalCount: 0, degenerateTriangleCount: 0, duplicateFaceCount: 0, skippedFaces: skipped }, incidencias: [], aberturas: [], esCerrada: true, esManifold: true, carasNoFinitasEliminadas: n, carasPerdidasAuditoria: audit, reconstruccionesConectividad: 0, colorsDropped: colors })
+      const inicial = analisis(2, 3, true, 6), posterior = analisis(4, 5, true, 7)
+      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0, flapsRemoved: 8 }, fixNormals: { facesFlipped: 0, skippedFaces: 9 }, weld: { facesRemoved: 0, skippedFaces: 10 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
+      const revision = { fase: 'reparado', analisis: inicial, resumen: { analisis: posterior, reparacion: repair, rellenoForzado: { holesFilled: 2, flapsRemoved: 11 } }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
       root.render(React.createElement(RevisionMalla, { revision, nombre: 'perdidas.stl' }))
       await new Promise(resolve => setTimeout(resolve, 100))
       const text = target.innerText
@@ -239,6 +243,12 @@ try {
     })
     assert.match(persistence, /Lectura inicial[\s\S]*2 caras no finitas[\s\S]*3 caras en auditoría[\s\S]*colores/)
     assert.match(persistence, /Copia reparada[\s\S]*4 caras no finitas[\s\S]*5 caras en auditoría[\s\S]*colores/)
+    assert.match(persistence, /Lectura inicial[\s\S]*6 caras omitidas/)
+    assert.match(persistence, /Copia reparada[\s\S]*7 caras omitidas/)
+    assert.match(persistence, /Triángulos aislados eliminados[\s\S]*8/)
+    assert.match(persistence, /Triángulos aislados eliminados en relleno adicional[\s\S]*11/)
+    assert.match(persistence, /Caras omitidas al soldar[\s\S]*10/)
+    assert.match(persistence, /Caras omitidas al orientar normales[\s\S]*9/)
   }
   if (!preview) {
     const lifecycle = await page.evaluate(async () => {
@@ -521,6 +531,27 @@ try {
   assert.ok(result.normal.reparacion.fillHoles.holesSkippedAsFeature > 0)
   assert.ok(result.fill.rellenoForzado.holesFilled > 0)
   for (const file of ['worker.js', 'meshfix-core.js', 'meshfix-core.wasm']) assert.ok(assets.has(`${base}meshfix/${file}`), `No se cargó ${file}`)
+  const binaryTrailing = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    const s = await crearSesionMalla()
+    try {
+      const stl = solid => {
+        const bytes = new Uint8Array(141)
+        if (solid) bytes.set(new TextEncoder().encode('solid binary'))
+        const view = new DataView(bytes.buffer)
+        view.setUint32(80, 1, true)
+        view.setFloat32(108, 1, true); view.setFloat32(124, 1, true)
+        bytes.set([1,2,3,4,5,6,7], 134)
+        return bytes.buffer
+      }
+      const plain = await s.analizar(stl(false))
+      const solid = await s.analizar(stl(true))
+      let truncated = false
+      try { await s.analizar(stl(true).slice(0, 133)) } catch { truncated = true }
+      return { plain: plain.analysis.faceCount, solid: solid.analysis.faceCount, truncated }
+    } finally { s.dispose() }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  assert.deepEqual(binaryTrailing, { plain: 1, solid: 1, truncated: true })
   const robustness = await page.evaluate(async moduleUrl => {
     const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
     const ascii = new TextEncoder().encode('solid test\nfacet normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n').buffer
