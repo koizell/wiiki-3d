@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+/public/meshfix/
 # Borradores de imágenes; sólo las aceptadas pasan a public/wiki/.
 /output/
 *.local
