@@ -16,7 +16,8 @@ export function VeredictoMalla({ revision }: { revision: Estado }) {
   const texto = revision.fase === 'analizando' || revision.fase === 'inactivo' ? 'Analizando la malla localmente…'
     : revision.fase === 'reparando' ? 'Preparando una copia reparada…'
       : revision.fase === 'error' ? 'No se ha podido completar la revisión.'
-        : revision.resumen ? 'Reparación completada'
+        : revision.resumen && ((!revision.resumen.rellenoForzado && revision.resumen.reparacion.fillHoles.holesSkippedAsFeature > 0) || (actual && (actual.incidencias.length > 0 || !actual.esCerrada || !actual.esManifold))) ? 'Reparación parcial: problemas pendientes'
+          : revision.resumen ? 'Reparación completada'
         : actual && (actual.incidencias.length || !actual.esCerrada || !actual.esManifold)
           ? 'Incidencias detectadas en la malla' : 'Sin incidencias detectadas';
   return <div className="malla-veredicto" role="status" aria-live="polite">
