@@ -32,6 +32,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { REDIRECCIONES_LEGACY } from '../redirecciones-legacy.mjs';
 
 const raiz = new URL('../../', import.meta.url).pathname;
 const dist = resolve(process.env.DIST_DIR ?? join(raiz, 'dist'));
@@ -86,15 +87,25 @@ function textoDe(html) {
     .trim();
 }
 
-const paginas = htmls(dist);
-assert.ok(paginas.length > 0, `no hay HTML en ${dist}: ejecuta npm run build antes`);
-
 /** La ruta pública de una página: `dist/wiki/warping-pla/index.html` → `/wiki/warping-pla/`. */
 function rutaDe(fichero) {
   const dentro = fichero.slice(dist.length).replace(/\\/g, '/');
   const sinIndex = dentro.replace(/\/index\.html$/, '');
   return sinIndex === '' ? '/' : `${sinIndex}/`;
 }
+
+/*
+ * Los puentes del blog antiguo no son páginas del renderizador: son ficheros
+ * que declaran adónde va una URL muerta. Contarlos aquí rompería la aritmética
+ * entre exportado, indexable y sitemap, y meterlos en el sitemap sería declarar
+ * como contenido lo que no lo es. Su comprobación vive en
+ * `scripts/verify/redirecciones.mjs`, que además verifica que ningún destino es
+ * otro puente.
+ */
+const RUTAS_LEGACY = new Set(REDIRECCIONES_LEGACY.map((r) => r.desde));
+const esPuenteLegacy = (fichero) => RUTAS_LEGACY.has(fichero.slice(dist.length).replace(/\\/g, '/'));
+const paginas = htmls(dist).filter((fichero) => !esPuenteLegacy(fichero));
+assert.ok(paginas.length > 0, `no hay HTML en ${dist}: ejecuta npm run build antes`);
 
 const htmlPorRuta = new Map(paginas.map((f) => [rutaDe(f), f]));
 const esNoindex = (ruta) => {

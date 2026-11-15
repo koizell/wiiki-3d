@@ -1,8 +1,10 @@
 /** Exportación HTML para GitHub Pages, sin servidor ni dependencias nuevas. */
 import { createServer } from 'vite';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REDIRECCIONES_LEGACY } from './redirecciones-legacy.mjs';
 
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const dist = join(raiz, 'dist');
@@ -35,6 +37,45 @@ function documento(seo, html) {
     .replace(/(<meta\s+name="twitter:description"[\s\S]*?content=")[^"]*(")/, `$1${escapar(seo.description)}$2`)
     .replace('</head>', `${head}</head>`)
     .replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+}
+
+/**
+ * Puente para una URL del blog antiguo.
+ *
+ * No lleva `noindex` a propósito. El objetivo de esta página no es rankear ni
+ * competir: es declarar adónde va la URL vieja. Un `noindex` aquí puede hacer
+ * que Google trate la página como excluida y no siga el refresco, y entonces el
+ * problema no se cierra, sólo cambia de categoría. Con `canonical` y `refresh`
+ * a la guía, la URL antigua se consolida en la nueva sin entrar al índice.
+ */
+function puenteLegacy(hacia) {
+  const destino = `${ORIGEN}${hacia}`;
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Esta página se ha mudado | wiiki-3d</title>
+<link rel="canonical" href="${escapar(destino)}" />
+<meta http-equiv="refresh" content="0; url=${escapar(destino)}" />
+<script>location.replace(${JSON.stringify(destino).replaceAll('<', '\\u003c')});</script>
+<style>
+  html { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #0f1115; color: #e8ecf1;
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 34rem; padding: 2rem; text-align: center; }
+  a { color: #60a5fa; }
+</style>
+</head>
+<body>
+<main>
+  <p>Esta página se ha mudado.</p>
+  <p><a href="${escapar(destino)}">Continuar en wiiki-3d.com</a></p>
+</main>
+</body>
+</html>
+`;
 }
 
 const servidor = await createServer({ root: raiz, server: { middlewareMode: true }, appType: 'custom' });
@@ -83,6 +124,27 @@ try {
   }, '<main class="wiki-info"><h1>Página no encontrada</h1><p><a href="/wiki">Consultar la wiki</a></p></main>'));
 
   /*
+   * Los puentes del blog antiguo se escriben como ficheros, no como redirecciones
+   * de servidor: GitHub Pages no las tiene. Van después de las páginas reales y
+   * antes del sitemap, y comprueban que no pisan nada: si algún día una de estas
+   * rutas se convierte en una guía de verdad, el build falla en vez de taparla.
+   */
+  for (const { desde, hacia } of REDIRECCIONES_LEGACY) {
+    if (!desde.endsWith('.html')) {
+      throw new Error(`La ruta legacy debe terminar en .html: ${desde}`);
+    }
+    const fichero = resolve(dist, `.${desde}`);
+    if (!fichero.startsWith(`${dist}/`)) {
+      throw new Error(`Ruta legacy fuera de dist/: ${desde}`);
+    }
+    if (existsSync(fichero)) {
+      throw new Error(`La ruta legacy ${desde} ya existe como página real`);
+    }
+    await mkdir(dirname(fichero), { recursive: true });
+    await writeFile(fichero, puenteLegacy(hacia));
+  }
+
+  /*
    * El sitemap lleva lo indexable, y sólo lo indexable: las páginas que declaran
    * `noindex` —`/historial` y `/proyectos`— no entran. Declarar en el sitemap una
    * URL que la propia página marca como no indexable es una contradicción que
@@ -101,7 +163,7 @@ try {
     indexables.map((p) => `<url><loc>${escapar(`${ORIGEN}${p.path}`)}</loc>${p.lastmod ? `<lastmod>${p.lastmod}</lastmod>` : ''}</url>`).join('\n') + '\n</urlset>\n');
   console.log(
     `Exportadas ${paginas.length} páginas por el renderizador; sitemap: ${indexables.length} URLs ` +
-    `(${paginas.length - indexables.length} con noindex).`
+    `(${paginas.length - indexables.length} con noindex); ${REDIRECCIONES_LEGACY.length} puentes legacy.`
   );
 } finally {
   await servidor.close();

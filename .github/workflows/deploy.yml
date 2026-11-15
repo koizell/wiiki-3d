@@ -80,6 +80,13 @@ jobs:
       - name: SEO
         run: npm run verify:seo
 
+      # Los puentes del blog antiguo. El dominio viejo conserva la ruta al
+      # redirigir, así que un fichero que falte deja la cadena en 404 y Search
+      # Console lo llama «Error de redirección». Esta comprobación mira que cada
+      # ruta tenga su puente, que el destino exista y que no se encadenen.
+      - name: Redirecciones legacy
+        run: npm run verify:redirecciones
+
       # Y la wiki renderizada, que es lo que lee la gente.
       #
       # Esta puerta estuvo cerrada mucho tiempo, y no era culpa del sitio: la
