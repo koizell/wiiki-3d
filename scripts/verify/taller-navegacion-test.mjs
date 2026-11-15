@@ -1,21 +1,29 @@
 // Regresión: un script externo sin respuesta no debe impedir verificar Taller.
 import assert from 'node:assert/strict';
-import { crearProxy, ejecutar } from './taller-navegacion-proxy.mjs';
+import { crearProxy, ejecutar, iniciarSitio } from './taller-navegacion-proxy.mjs';
 
-const proxy = await crearProxy(process.env.BASE_URL ?? 'http://127.0.0.1:5199');
+const sitio = await iniciarSitio(process.env.BASE_URL);
+let proxy;
 try {
+  proxy = await crearProxy(sitio.base);
   const { exit, output, agotado } = await ejecutar(
     process.execPath,
     ['scripts/verify/taller.mjs'],
     { ...process.env, BASE_URL: proxy.base },
     Number(process.env.TALLER_TEST_TIMEOUT_MS ?? 120000),
   );
-  assert.ok(proxy.retenidas.has('/taller'), 'no se retuvo un script en /taller');
+  assert.ok([...proxy.documentos.values()].includes('/taller'), 'no se sirvió /taller');
   assert.ok(!agotado, 'verify:taller quedó bloqueado esperando load');
   assert.equal(exit, 0, `verify:taller falló:\n${output}`);
   assert.match(output, /TODAS LAS COMPROBACIONES PASAN/);
-  assert.ok(proxy.retenidas.has('/'), 'no se retuvo un script en /');
+  assert.ok([...proxy.documentos.values()].includes('/'), 'no se sirvió /');
+  const sinRetener = [...proxy.documentos].filter(([id]) => !proxy.retenidas.has(id));
+  assert.deepEqual(sinRetener, [], 'hay documentos sin script retenido');
   console.log('OK: verify:taller termina con scripts externos retenidos en /taller y /');
 } finally {
-  await proxy.cerrar();
+  try {
+    if (proxy) await proxy.cerrar();
+  } finally {
+    await sitio.cerrar();
+  }
 }

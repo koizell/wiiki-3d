@@ -12,13 +12,14 @@ const cerrarServidor = (server) => new Promise((resolve, reject) => {
 
 export async function crearProxy(upstream) {
   const retenidas = new Set();
+  const documentos = new Map();
   const pendientes = new Set();
-  const externo = createServer((req) => {
-    retenidas.add(new URL(req.url, 'http://externo').searchParams.get('documento'));
-    // La respuesta queda abierta hasta cerrar el proxy.
-  });
-  await escuchar(externo);
   const proxy = createServer(async (req, res) => {
+    const solicitud = new URL(req.url, 'http://proxy');
+    if (solicitud.pathname === '/__taller_test_retenido__.js') {
+      retenidas.add(solicitud.searchParams.get('id'));
+      return; // La respuesta queda abierta hasta cerrar el proxy.
+    }
     const controller = new AbortController();
     pendientes.add(controller);
     const abortar = () => { if (!res.writableFinished) controller.abort(); };
@@ -38,17 +39,26 @@ export async function crearProxy(upstream) {
       if (cookies.length) salida['set-cookie'] = cookies;
       delete salida.connection;
       delete salida['transfer-encoding'];
+      if (salida.location && respuesta.status >= 300 && respuesta.status < 400) {
+        const destino = new URL(salida.location, respuesta.url);
+        if (destino.origin !== new URL(upstream).origin) {
+          throw new Error(`Redirección fuera del proxy: ${destino.href}`);
+        }
+        salida.location = `${destino.pathname}${destino.search}${destino.hash}`;
+      }
       const html = respuesta.ok && req.method !== 'HEAD' &&
         (respuesta.headers.get('content-type') ?? '').includes('text/html');
       if (html) {
         const contenido = await respuesta.text();
-        const documento = encodeURIComponent(new URL(req.url, upstream).pathname);
-        const inyeccion = `<script async src="http://127.0.0.1:${externo.address().port}/retenido.js?documento=${documento}"></script>`;
+        if (!/<\/head\s*>/i.test(contenido)) throw new Error('HTML sin cierre de head');
+        const id = String(documentos.size + 1);
+        documentos.set(id, new URL(req.url, upstream).pathname);
+        const inyeccion = `<script async src="/__taller_test_retenido__.js?id=${id}"></script>`;
         delete salida['content-length'];
         delete salida['content-encoding'];
         delete salida.etag;
         res.writeHead(respuesta.status, salida);
-        res.end(contenido.replace('</head>', `${inyeccion}</head>`));
+        res.end(contenido.replace(/<\/head\s*>/i, `${inyeccion}</head>`));
       } else {
         const contenido = Buffer.from(await respuesta.arrayBuffer());
         // fetch descomprime respuestas codificadas incluso si se pidió identity.
@@ -69,20 +79,32 @@ export async function crearProxy(upstream) {
       res.off('close', abortar);
     }
   });
-  try {
-    await escuchar(proxy);
-  } catch (error) {
-    await cerrarServidor(externo);
-    throw error;
-  }
+  await escuchar(proxy);
   return {
     base: `http://127.0.0.1:${proxy.address().port}`,
     retenidas,
+    documentos,
     async cerrar() {
       for (const controller of pendientes) controller.abort();
-      await Promise.all([cerrarServidor(proxy), cerrarServidor(externo)]);
+      await cerrarServidor(proxy);
     },
   };
+}
+
+export async function iniciarSitio(base) {
+  if (base) return { base, cerrar: async () => {} };
+  const { createServer: createViteServer } = await import('vite');
+  const server = await createViteServer({ server: { host: '127.0.0.1', port: 0 } });
+  try {
+    await server.listen();
+    return {
+      base: `http://127.0.0.1:${server.httpServer.address().port}`,
+      cerrar: () => server.close(),
+    };
+  } catch (error) {
+    await server.close();
+    throw error;
+  }
 }
 
 export async function ejecutar(comando, args, env, timeoutMs) {
