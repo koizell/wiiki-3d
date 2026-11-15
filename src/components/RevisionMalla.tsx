@@ -34,6 +34,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
   return <section id="revision-malla" className="revision-malla" aria-label="Detalle de revisión STL" tabIndex={0}>
     <p className="malla-intro">La revisión se realiza en tu navegador. El visor muestra siempre el archivo original; la reparación crea una copia.</p>
     {revision.avisoTamano && <p className="malla-aviso">Archivo de más de 60 MB (millones de bytes). Puede necesitar mucha memoria; el límite es 150 MB.</p>}
+    {!!revision.analisis?.bytesAdicionales && <p className="malla-aviso">El archivo contiene {revision.analisis.bytesAdicionales.toLocaleString('es-ES')} bytes adicionales al final. Esos datos no se han analizado y no se conservarán en la descarga reparada. El archivo original no se modifica.</p>}
     {ocupado && <p role="status" className="malla-estado">{revision.fase === 'analizando' ? 'Analizando geometría…' : `Reparando la copia…${revision.progreso ? ` Paso ${revision.progreso.stepIndex + 1} de ${revision.progreso.totalSteps}.` : ''}`}</p>}
     {revision.error && <div role="alert" className="malla-error"><p>No se ha podido completar la operación: {revision.error}</p><p>El visor y el resto de la aplicación siguen disponibles. Si el problema continúa, puedes <Link to="/contacto">Contactar</Link>.</p></div>}
     {actual && <>
@@ -58,6 +59,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
           <div><dt>Triángulos aislados eliminados</dt><dd>{revision.resumen.reparacion.fillHoles.flapsRemoved}</dd></div>
           {revision.resumen.rellenoForzado && <div><dt>Triángulos aislados eliminados en relleno adicional</dt><dd>{revision.resumen.rellenoForzado.flapsRemoved}</dd></div>}
           <div><dt>Caras omitidas al soldar</dt><dd>{revision.resumen.reparacion.weld.skippedFaces}</dd></div>
+          <div><dt>Caras omitidas al separar vértices</dt><dd>{revision.resumen.reparacion.splitVertices.skippedFaces}</dd></div>
           <div><dt>Caras omitidas al orientar normales</dt><dd>{revision.resumen.reparacion.fixNormals.skippedFaces}</dd></div>
         </dl>
         <p className="malla-limite">Las caras omitidas se cuentan por operación; una misma cara puede aparecer en más de un recuento. El motor puede omitir caras por problemas de conectividad.</p>

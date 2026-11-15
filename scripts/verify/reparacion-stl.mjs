@@ -70,7 +70,7 @@ try {
     assert.match(viteVersion ?? '', /^[a-f0-9]{8}$/, 'Falta la versión de dependencias de Vite')
     const origin = 'http://127.0.0.1:4179'
     const rutas = [
-      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts',
+      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts', '/src/lib/stl-binario.ts',
       '/meshfix/worker.js', '/meshfix/meshfix-core.js', '/meshfix/meshfix-core.wasm',
       ...['meshfix-wasm', 'three_examples_jsm_loaders_STLLoader__js', 'three_examples_jsm_loaders_3MFLoader__js', 'three_examples_jsm_loaders_OBJLoader__js']
         .map(nombre => `/node_modules/.vite/deps/${nombre}.js?v=${viteVersion}`),
@@ -224,6 +224,65 @@ try {
     await page.unroute('**/meshfix/worker.js')
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     console.log('OK interfaz STL: selección, arrastre, reparación, teclado y viewports')
+    const visor = await browser.newPage()
+    await visor.goto(`http://127.0.0.1:4179${base}`)
+    await visor.evaluate(async version => {
+      const mod = await import(/* @vite-ignore */ `/node_modules/.vite/deps/three_examples_jsm_loaders_STLLoader__js.js?v=${version}`)
+      const parse = mod.STLLoader.prototype.parse
+      window.geometriasSTL = []
+      mod.STLLoader.prototype.parse = function(data) {
+        const geometry = parse.call(this, data)
+        window.geometriasSTL.push(Array.from(geometry.getAttribute('position')?.array ?? []))
+        return geometry
+      }
+      const post = Worker.prototype.postMessage
+      window.analisisSTL = 0
+      Worker.prototype.postMessage = function(message, transfer) {
+        if (message.method === 'analyzeDetailed') window.analisisSTL++
+        return post.call(this, message, transfer)
+      }
+      const read = File.prototype.arrayBuffer
+      File.prototype.arrayBuffer = function() {
+        window.archivoSTL = this
+        return read.call(this)
+      }
+    }, viteVersion)
+    const baseOpen = stl(faces.slice(2))
+    for (const solid of [true, false]) for (const extra of [true, false]) {
+      const original = Buffer.from(baseOpen)
+      if (solid) original.write('solid binary', 0)
+      const inputBytes = extra ? Buffer.concat([original, Buffer.from([1, 2, 3, 4, 5, 6, 7])]) : original
+      const filename = `modelo-${solid}-${extra}.stl`
+      const calls = await visor.evaluate(() => window.analisisSTL)
+      await visor.locator('#file-upload').setInputFiles({ name: filename, mimeType: 'model/stl', buffer: inputBytes })
+      await visor.getByRole('heading', { name: `Archivo: ${filename}` }).waitFor()
+      await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+      await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+      const positions = await visor.evaluate(() => window.geometriasSTL.shift())
+      assert.equal(positions.length / 9, 10, `${filename}: visor y diagnóstico deben tener 10 caras`)
+      assert.deepEqual(positions, faces.slice(2).flatMap(tri => tri.flatMap(v => vertices[v])))
+      assert.equal(await visor.locator('.malla-resumen').first().locator('dl > div').filter({ has: visor.getByText('Caras', { exact: true }) }).locator('dd').innerText(), '10')
+      assert.equal(await visor.evaluate(() => window.analisisSTL), calls + 1, 'El visor no debe iniciar un segundo análisis')
+      if (extra) {
+        const warning = visor.getByText('7 bytes adicionales', { exact: false })
+        await warning.waitFor()
+        assert.match(await warning.innerText(), /no se han analizado/i)
+        assert.match(await warning.innerText(), /no se conservarán/i)
+        await visor.getByRole('button', { name: 'Reparar copia' }).click()
+        await visor.getByRole('link', { name: 'Descargar STL reparado' }).waitFor()
+        await warning.waitFor()
+      } else assert.equal(await visor.getByText('bytes adicionales', { exact: false }).count(), 0)
+      assert.deepEqual(Buffer.from(await visor.evaluate(async () => [...new Uint8Array(await window.archivoSTL.arrayBuffer())])), inputBytes)
+    }
+    for (const solid of [false, true]) {
+      const original = Buffer.from(baseOpen)
+      if (solid) original.write('solid binary', 0)
+      await visor.locator('#file-upload').setInputFiles({ name: `truncado-${solid}.stl`, mimeType: 'model/stl', buffer: original.subarray(0, original.length - 1) })
+      await visor.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+      await visor.getByText('Error al procesar el archivo STL.').waitFor()
+    }
+    await visor.close()
+    console.log('OK visor y diagnóstico: cabeceras binarias, apéndices, truncados y archivo original')
     const persistence = await page.evaluate(async () => {
       const ReactModule = await import('/node_modules/.vite/deps/react.js')
       const React = ReactModule.default ?? ReactModule
@@ -233,7 +292,7 @@ try {
       const root = (client.default ?? client).createRoot(target)
       const analisis = (n, audit, colors, skipped) => ({ analysis: { vertexCount: 8, faceCount: 10, connectedComponents: 1, holeCount: 0, boundaryEdges: 0, flippedNormalCount: 0, degenerateTriangleCount: 0, duplicateFaceCount: 0, skippedFaces: skipped }, incidencias: [], aberturas: [], esCerrada: true, esManifold: true, carasNoFinitasEliminadas: n, carasPerdidasAuditoria: audit, reconstruccionesConectividad: 0, colorsDropped: colors })
       const inicial = analisis(2, 3, true, 6), posterior = analisis(4, 5, true, 7)
-      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0, flapsRemoved: 8 }, fixNormals: { facesFlipped: 0, skippedFaces: 9 }, weld: { facesRemoved: 0, skippedFaces: 10 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
+      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0, flapsRemoved: 8 }, fixNormals: { facesFlipped: 0, skippedFaces: 9 }, weld: { facesRemoved: 0, skippedFaces: 10 }, splitVertices: { skippedFaces: 12 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
       const revision = { fase: 'reparado', analisis: inicial, resumen: { analisis: posterior, reparacion: repair, rellenoForzado: { holesFilled: 2, flapsRemoved: 11 } }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
       root.render(React.createElement(RevisionMalla, { revision, nombre: 'perdidas.stl' }))
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -248,6 +307,8 @@ try {
     assert.match(persistence, /Triángulos aislados eliminados[\s\S]*8/)
     assert.match(persistence, /Triángulos aislados eliminados en relleno adicional[\s\S]*11/)
     assert.match(persistence, /Caras omitidas al soldar[\s\S]*10/)
+    assert.match(persistence, /Caras omitidas al separar vértices[\s\S]*12/)
+    console.log('OK recuento de caras omitidas al separar vértices')
     assert.match(persistence, /Caras omitidas al orientar normales[\s\S]*9/)
   }
   if (!preview) {
@@ -548,10 +609,10 @@ try {
       const solid = await s.analizar(stl(true))
       let truncated = false
       try { await s.analizar(stl(true).slice(0, 133)) } catch { truncated = true }
-      return { plain: plain.analysis.faceCount, solid: solid.analysis.faceCount, truncated }
+      return { plain: plain.analysis.faceCount, solid: solid.analysis.faceCount, bytesPlain: plain.bytesAdicionales, bytesSolid: solid.bytesAdicionales, truncated }
     } finally { s.dispose() }
   }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
-  assert.deepEqual(binaryTrailing, { plain: 1, solid: 1, truncated: true })
+  assert.deepEqual(binaryTrailing, { plain: 1, solid: 1, bytesPlain: 7, bytesSolid: 7, truncated: true })
   const robustness = await page.evaluate(async moduleUrl => {
     const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
     const ascii = new TextEncoder().encode('solid test\nfacet normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n').buffer

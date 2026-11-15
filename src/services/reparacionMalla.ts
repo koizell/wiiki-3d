@@ -1,6 +1,8 @@
 import type { MeshAnalysis, MeshIssue, RepairResult, FillHolesResult, ProgressEvent, HoleInfo } from 'meshfix-wasm'
+import { finBinarioSTL } from '../lib/stl-binario'
 
 export interface AnalisisMalla {
+  bytesAdicionales: number
   analysis: MeshAnalysis
   incidencias: MeshIssue[]
   aberturas: HoleInfo[]
@@ -97,10 +99,8 @@ async function validarSTL(buffer: ArrayBuffer, check: () => void) {
   // El recuento y el tramo completo identifican el binario incluso si su
   // cabecera empieza por "solid". La librería necesita el tramo sin apéndice;
   // no se modifica el File original ni se incluye el apéndice en la reparación.
-  if (buffer.byteLength >= 84) {
-    const count = new DataView(buffer).getUint32(80, true)
-    if (count > 0 && 84 + count * 50 <= buffer.byteLength) return 84 + count * 50
-  }
+  const fin = finBinarioSTL(buffer)
+  if (fin !== null) return fin
   const decoder = new TextDecoder('utf-8', { fatal: true })
   const bytes = new Uint8Array(buffer)
   let inicio = '', cola = '', facet = false, end = false, valido = true
@@ -166,7 +166,7 @@ export async function crearSesionMalla(opciones: OpcionesSesionMalla = {}): Prom
     const carasNoFinitasEliminadas = await motor.call<number>('nonFiniteFacesRemoved')
     const reconstruccionesConectividad = await motor.call<number>('connectivityRebuilds')
     const carasPerdidasAuditoria = await motor.call<number>('facesDroppedByAudit')
-    return { analysis: data.analysis, incidencias: buildIssues(data.analysis), aberturas, esCerrada: data.analysis.isWatertight, esManifold: data.analysis.isManifold, colorsDropped: data.colorsDropped, carasNoFinitasEliminadas, reconstruccionesConectividad, carasPerdidasAuditoria }
+    return { analysis: data.analysis, incidencias: buildIssues(data.analysis), aberturas, esCerrada: data.analysis.isWatertight, esManifold: data.analysis.isManifold, colorsDropped: data.colorsDropped, carasNoFinitasEliminadas, reconstruccionesConectividad, carasPerdidasAuditoria, bytesAdicionales: 0 }
   }
   const exclusiva = async <T>(accion: () => Promise<T>): Promise<T> => {
     check()
@@ -199,7 +199,7 @@ export async function crearSesionMalla(opciones: OpcionesSesionMalla = {}): Prom
         const motor = await crearMotor()
         const data = await motor.call<DatosAnalisis>('analyzeDetailed', { format: 'stl' }, copia.slice(0))
         if (!data.analysis.faceCount) throw new Error('STL vacío o inválido')
-        const analisis = await resultado(motor, data)
+        const analisis = { ...await resultado(motor, data), bytesAdicionales: finBinario === undefined ? 0 : buffer.byteLength - finBinario }
         check()
         publicar(motor)
         original = copia
