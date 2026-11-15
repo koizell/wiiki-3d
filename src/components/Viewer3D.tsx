@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import ControlesVisor from './ControlesVisor';
 import { geometriaTrayectoria } from '../lib/trayectoria-render';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
-import { finBinarioSTL } from '../lib/stl-binario';
+import { finBinarioSTL, validarSTL } from '../lib/stl-binario';
 
 /**
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
@@ -186,7 +186,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     };
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       if (cancelled) return;
       const contents = reader.result;
       if (!(contents instanceof ArrayBuffer)) {
@@ -194,6 +194,10 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         return;
       }
       try {
+        if (fileType === 'stl') {
+          await validarSTL(contents, () => { if (cancelled) throw new Error('Lectura cancelada'); });
+          if (cancelled) return;
+        }
         const model = buildModel(fileType, contents);
 
         // Un 3MF sin geometría no está roto: es un proyecto recién creado, solo
@@ -285,6 +289,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
 
         setLoading(false);
       } catch (err) {
+        if (cancelled) return;
         console.error(err);
         fail(LOAD_ERROR_MESSAGE[fileType]);
       }
@@ -425,15 +430,6 @@ function buildObj(data: ArrayBuffer): THREE.Object3D | null {
 /** STL: una sola malla sin color, así que se le aplica el material de la app. */
 function buildStl(data: ArrayBuffer): THREE.Object3D {
   const fin = finBinarioSTL(data);
-  // El parser de Three no siempre lee los dos bytes finales de cada cara;
-  // sin esta comprobación puede pintar un binario truncado como si fuera válido.
-  if (fin === null && data.byteLength >= 84) {
-    const bytes = new Uint8Array(data, 80, 4);
-    const caras = new DataView(data).getUint32(80, true);
-    if (bytes.includes(0) && caras > 0 && 84 + caras * 50 > data.byteLength) {
-      throw new Error('STL binario truncado');
-    }
-  }
   const geometry = new STLLoader().parse(fin !== null && fin < data.byteLength ? data.slice(0, fin) : data);
   if (!geometry.getAttribute('position')?.count) {
     geometry.dispose();

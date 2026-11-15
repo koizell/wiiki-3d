@@ -281,8 +281,51 @@ try {
       await visor.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
       await visor.getByText('Error al procesar el archivo STL.').waitFor()
     }
+    const ascii = Buffer.from(`solid x\n${' '.repeat(76)}\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid x\n`)
+    const falso = Buffer.from(ascii)
+    falso.set([1, 1, 1, 1], 80)
+    assert.equal(falso.readUInt32LE(80), 0x01010101)
+    await visor.locator('#file-upload').setInputFiles({ name: 'adversarial.stl', mimeType: 'model/stl', buffer: falso })
+    await visor.getByRole('heading', { name: 'Archivo: adversarial.stl' }).waitFor()
+    await visor.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+    await visor.getByText('Error al procesar el archivo STL.').waitFor()
+    assert.equal(await visor.evaluate(() => window.geometriasSTL.length), 0, 'El visor no debe dibujar el STL rechazado')
+    await visor.locator('#file-upload').setInputFiles({ name: 'valido-ascii.stl', mimeType: 'model/stl', buffer: ascii })
+    await visor.getByRole('heading', { name: 'Archivo: valido-ascii.stl' }).waitFor()
+    await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+    await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+    assert.equal((await visor.evaluate(() => window.geometriasSTL.shift())).length / 9, 1)
+    await visor.evaluate(bytes => {
+      const decode = TextDecoder.prototype.decode
+      const read = File.prototype.arrayBuffer
+      window.bloquesVisor = 0
+      File.prototype.arrayBuffer = function() {
+        if (this.name === 'lento.stl') return new Promise(() => {})
+        return read.call(this)
+      }
+      TextDecoder.prototype.decode = function(input, options) {
+        if (input?.byteLength === 65536 && ++window.bloquesVisor === 16) {
+          setTimeout(() => {
+            const input = document.querySelector('#file-upload')
+            const dt = new DataTransfer()
+            dt.items.add(new File([new Uint8Array(bytes)], 'sustituto.stl', { type: 'model/stl' }))
+            input.files = dt.files
+            input.dispatchEvent(new Event('change', { bubbles: true }))
+          }, 0)
+        }
+        return decode.call(this, input, options)
+      }
+    }, [...baseOpen])
+    const largo = Buffer.concat([Buffer.from('solid x\nfacet normal 0 0 1\n'), Buffer.alloc(8_000_000, 32), Buffer.from('\nendsolid x\n')])
+    await visor.locator('#file-upload').setInputFiles({ name: 'lento.stl', mimeType: 'model/stl', buffer: largo })
+    await visor.getByRole('heading', { name: 'Archivo: sustituto.stl' }).waitFor()
+    await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+    await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+    assert.equal((await visor.evaluate(() => window.geometriasSTL.shift())).length / 9, 10)
+    const bloques = await visor.evaluate(() => window.bloquesVisor)
+    assert.ok(bloques >= 16 && bloques < Math.floor(largo.length / 65536), `Validación del visor no cancelada o sin ceder: ${bloques} bloques`)
     await visor.close()
-    console.log('OK visor y diagnóstico: cabeceras binarias, apéndices, truncados y archivo original')
+    console.log('OK visor y diagnóstico: binarios, ASCII, adversarial, cancelación incremental y archivo original')
     const persistence = await page.evaluate(async () => {
       const ReactModule = await import('/node_modules/.vite/deps/react.js')
       const React = ReactModule.default ?? ReactModule
