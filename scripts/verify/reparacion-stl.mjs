@@ -34,6 +34,135 @@ try {
     await route.fulfill({ status: 200, contentType: 'application/javascript', body: await readFile(resolve(bundleDir, name)) })
   })
   await page.goto(`http://127.0.0.1:4179${base}`)
+  if (!preview) {
+    const lifecycle = await page.evaluate(async () => {
+      const reactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = reactModule.default ?? reactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { createRoot } = client.default ?? client
+      const { useRevisionMalla } = await import('/src/state/useRevisionMalla.ts')
+      const NativeWorker = window.Worker
+      const originalCreate = URL.createObjectURL
+      const originalRevoke = URL.revokeObjectURL
+      let mode = '', terminated = 0, blocked = 0, revoked = [], last
+      class ControlledWorker extends NativeWorker {
+        postMessage(message, transfer) {
+          if (mode === `hang-${message.method}`) { blocked++; return }
+          if (mode === `fail-${message.method}`) {
+            mode = ''
+            queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo simulado', cancelable: true })))
+            return
+          }
+          super.postMessage(message, transfer)
+        }
+        terminate() { terminated++; super.terminate() }
+      }
+      window.Worker = ControlledWorker
+      URL.revokeObjectURL = url => { revoked.push(url); originalRevoke(url) }
+      const root = createRoot(document.createElement('div'))
+      function Test({ file, type = 'stl' }) { last = useRevisionMalla(file, type); return null }
+      const render = async (file, type) => { root.render(React.createElement(Test, { file, type })); await new Promise(resolve => setTimeout(resolve, 30)) }
+      const wait = async predicate => {
+        for (let i = 0; i < 500; i++) {
+          if (predicate()) return
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        throw new Error(`Timeout: ${JSON.stringify(last)}`)
+      }
+      const ascii = 'solid test\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid test\n'
+      const file = name => new File([ascii], name)
+      const fake = size => ({ size, arrayBuffer: async () => { throw new Error('lectura simulada') } })
+      try {
+        let release
+        const delayed = { size: ascii.length, arrayBuffer: () => new Promise(resolve => { release = resolve }) }
+        await render(delayed)
+        await wait(() => !!release)
+        await render(file('posterior.stl'))
+        await wait(() => last.fase === 'listo')
+        release(new TextEncoder().encode(ascii).buffer)
+        await new Promise(resolve => setTimeout(resolve, 50))
+        if (last.fase !== 'listo') throw new Error('La lectura antigua alteró la sesión nueva')
+        mode = 'hang-init'
+        const blockedBeforeInit = blocked
+        await render(file('init.stl'))
+        await wait(() => blocked > blockedBeforeInit)
+        const beforeInit = terminated
+        mode = ''
+        await render(file('tras-init.stl'))
+        await wait(() => last.fase === 'listo')
+        if (terminated <= beforeInit) throw new Error('No se canceló el inicio del worker')
+        mode = 'hang-analyzeDetailed'
+        const blockedBeforeAnalysis = blocked
+        await render(file('a.stl'))
+        await wait(() => last?.fase === 'analizando' && blocked > blockedBeforeAnalysis)
+        const before = terminated
+        mode = ''
+        await render(file('b.stl'))
+        await wait(() => last?.fase === 'listo')
+        if (terminated <= before) throw new Error('No se cerró el worker durante análisis')
+        mode = 'hang-repair'
+        const blockedBeforeRepair = blocked
+        last.reparar()
+        await wait(() => last.fase === 'reparando' && blocked > blockedBeforeRepair)
+        const beforeRepair = terminated
+        mode = ''
+        await render(file('c.stl'))
+        await wait(() => last.fase === 'listo')
+        if (terminated <= beforeRepair) throw new Error('No se cerró el worker durante reparación')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const url = last.urlDescarga
+        if (!url) throw new Error('Falta descarga')
+        mode = 'fail-repair'
+        last.rellenarAberturas()
+        await wait(() => last.fase === 'error')
+        if (last.urlDescarga !== url || revoked.includes(url)) throw new Error('Se perdió la primera descarga')
+        await render(null)
+        await wait(() => last.fase === 'inactivo')
+        if (!revoked.includes(url) || last.urlDescarga) throw new Error('URL no revocada')
+        const MB = 1000000
+        for (const [size, warning, rejected] of [[60*MB,false,false],[60*MB+1,true,false],[150*MB,true,false],[150*MB+1,true,true]]) {
+          let reads = 0
+          const f = fake(size)
+          f.arrayBuffer = async () => { reads++; throw new Error('lectura simulada') }
+          await render(f)
+          await wait(() => last.fase === 'error')
+          if (last.avisoTamano !== warning || (reads === 0) !== rejected) throw new Error(`Límite incorrecto ${size}, ${reads}`)
+        }
+        mode = 'fail-init'
+        await render(file('fail-init.stl'))
+        await wait(() => last.fase === 'error')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        for (const method of ['repair', 'exportMesh']) {
+          await render(file(`${method}.stl`))
+          await wait(() => last.fase === 'listo')
+          mode = `fail-${method}`
+          last.reparar()
+          await wait(() => last.fase === 'error')
+          if (last.urlDescarga) throw new Error('Resultado incompleto publicado')
+          last.reparar()
+          await wait(() => last.fase === 'reparado')
+        }
+        await render(null)
+        await wait(() => last.fase === 'inactivo')
+        mode = 'hang-init'
+        const unmountBlocked = blocked
+        await render(file('unmount.stl'))
+        await wait(() => blocked > unmountBlocked)
+        const beforeUnmount = terminated
+        root.unmount()
+        if (terminated <= beforeUnmount) throw new Error('No se cerró el worker al desmontar')
+        return 'OK ciclo de vida, límites y reintentos'
+      } finally {
+        try { root.unmount() } catch {}
+        window.Worker = NativeWorker
+        URL.createObjectURL = originalCreate
+        URL.revokeObjectURL = originalRevoke
+      }
+    })
+    console.log(lifecycle)
+  }
   const result = await page.evaluate(async moduleUrl => {
     const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
     const vertices = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]]

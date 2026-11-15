@@ -102,7 +102,10 @@ function validarSTL(buffer: ArrayBuffer) {
   }
   let text = ''
   try { text = new TextDecoder('utf-8', { fatal: true }).decode(buffer) } catch { /* binario */ }
-  const ascii = !/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text)
+  const ascii = !Array.from(text).some(char => {
+    const code = char.charCodeAt(0)
+    return code < 32 && code !== 9 && code !== 10 && code !== 13
+  })
     && /^\s*solid(?:\s|$)/i.test(text)
     && /\bfacet\s+normal\b/i.test(text)
     && /\bendsolid(?:\s|$)/i.test(text)
