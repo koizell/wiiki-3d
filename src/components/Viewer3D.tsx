@@ -70,9 +70,20 @@ const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mo
  * veces —si ya estaba cuando se leyó el archivo y vuelve a llegar después— y
  * dibujarla dos veces es dibujar el mismo G-code encima.
  */
-function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
+function quitarTrayectoria(grupo: THREE.Group): void {
   const anterior = grupo.getObjectByName('trayectoria');
-  if (anterior) grupo.remove(anterior);
+  if (!anterior) return;
+  grupo.remove(anterior);
+  anterior.traverse(objeto => {
+    if (!(objeto instanceof THREE.LineSegments)) return;
+    objeto.geometry.dispose();
+    const materiales = Array.isArray(objeto.material) ? objeto.material : [objeto.material];
+    materiales.forEach(material => material.dispose());
+  });
+}
+
+function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
+  quitarTrayectoria(grupo);
 
   const { posiciones, colores } = geometriaTrayectoria(trayectoria);
   const geometria = new THREE.BufferGeometry();
@@ -182,6 +193,9 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     // 3. Controles de órbita
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    let usuarioIntervino = false;
+    const registrarInteraccion = () => { usuarioIntervino = true; };
+    controls.addEventListener('start', registrarInteraccion);
 
     // 4. Cargar el archivo
     //
@@ -260,13 +274,13 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          *
          * El centro del grupo se calculó con la malla y, si la trayectoria ya
          * estaba, con la trayectoria también. Si llega después, hace falta
-         * recalcularlo: sin esto la línea de colores sale al lado de la pieza en
-         * vez de encima, que es justo lo que el mismo marco de cama debería
-         * evitar.
+         * recalcularlo para centrar la unión, sin alterar la relación entre las
+         * coordenadas compartidas de malla y trayectoria.
          */
         recentrarRef.current = () => {
           if (fileType !== '3mf') return;
           recentrarGrupo3mf(grupo);
+          if (!usuarioIntervino) frameCamera(camera, controls, grupo);
         };
         grupoRef.current = grupo;
 
@@ -279,14 +293,19 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         frameCamera(camera, controls, grupo);
 
         comandos.current = {
-          encuadrar: () => frameCamera(camera, controls, model),
+          encuadrar: () => {
+            registrarInteraccion();
+            frameCamera(camera, controls, fileType === '3mf' ? grupo : model);
+          },
           zoom: (factor) => {
+            registrarInteraccion();
             const offset = camera.position.clone().sub(controls.target);
             const distancia = THREE.MathUtils.clamp(offset.length() * factor, 1, camera.far * 0.8);
             camera.position.copy(controls.target).add(offset.setLength(distancia));
             controls.update();
           },
           girar: () => {
+            registrarInteraccion();
             const offset = camera.position.clone().sub(controls.target);
             offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 6);
             camera.position.copy(controls.target).add(offset);
@@ -332,6 +351,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
       if (reader.readyState === FileReader.LOADING) reader.abort();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      controls.removeEventListener('start', registrarInteraccion);
       controls.dispose();
       renderer.dispose();
       if (currentMount.contains(renderer.domElement)) {
@@ -352,14 +372,14 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
    * no se pintaba nunca: el efecto no se volvía a ejecutar y el grupo se había
    * construido sin ella.
    *
-   * Aquí está la otra puerta. Y el recentrado se recalcula, porque el centro del
-   * grupo se calculó sin la trayectoria y sin recalcularlo la línea de colores
-   * sale al lado de la pieza en vez de encima.
+   * Aquí está la otra puerta: al añadir o quitar la trayectoria se recalcula el
+   * centro de la unión sin cambiar las coordenadas relativas.
    */
   useEffect(() => {
     const grupo = grupoRef.current;
-    if (!grupo || !trayectoria || fileType !== '3mf') return;
-    anadirTrayectoria(grupo, trayectoria);
+    if (!grupo || fileType !== '3mf') return;
+    if (trayectoria) anadirTrayectoria(grupo, trayectoria);
+    else quitarTrayectoria(grupo);
     recentrarRef.current?.();
   }, [trayectoria, fileType]);
 

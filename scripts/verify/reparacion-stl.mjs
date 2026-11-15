@@ -448,6 +448,112 @@ try {
     const datosGcode = Buffer.from(crearGcodeSintetico())
     const datos3mf = Buffer.from(crear3mfSintetico(datosGcode.toString()))
     const datosObj = Buffer.from('v -10 4 2\nv 20 4 2\nv -10 14 12\nf 1 2 3\n')
+    // Montaje React real: cambiamos la prop sin sustituir el archivo ni la escena.
+    await visor.getByRole('button', { name: 'Cerrar archivo' }).click()
+    await visor.evaluate(async bytes => {
+      const recursos = performance.getEntriesByType('resource').map(e => e.name)
+      const react = await import(/* @vite-ignore */ recursos.find(u => /\/react\.js\?v=/.test(u)))
+      const dom = await import(/* @vite-ignore */ recursos.find(u => /\/react-dom_client\.js\?v=/.test(u)))
+      const { default: Viewer3D } = await import('/src/components/Viewer3D.tsx')
+      const contenedor = document.createElement('div')
+      contenedor.id = 'prueba-react-3mf'
+      contenedor.style.cssText = 'position:fixed;top:0;left:0;width:800px;height:600px;z-index:9999;background:#111'
+      const estilo = document.createElement('style')
+      estilo.textContent = '#prueba-react-3mf .viewer-3d-container { width: 800px; height: 400px; }'
+      document.head.appendChild(estilo)
+      document.body.appendChild(contenedor)
+      let root = (dom.createRoot ?? dom.default.createRoot)(contenedor)
+      const archivo = new File([new Uint8Array(bytes)], 'react.3mf', { type: 'model/3mf' })
+      const tramos = [
+        { x: 10, y: 10, z: 0.6, viaje: true },
+        { x: 20, y: 10, z: 0.6, viaje: false, tipo: 'Outer wall' },
+        { x: 600, y: 10, z: 0.6, viaje: false, tipo: 'Outer wall' },
+      ]
+      window.trayectoriaReact = { tramos }
+      window.renderReact3mf = trayectoria => root.render((react.createElement ?? react.default.createElement)(Viewer3D, { file: archivo, fileType: '3mf', trayectoria }))
+      window.reiniciarReact3mf = trayectoria => {
+        root.unmount()
+        root = (dom.createRoot ?? dom.default.createRoot)(contenedor)
+        window.renderReact3mf(trayectoria)
+      }
+      window.cerrarReact3mf = () => { root.unmount(); contenedor.remove(); estilo.remove() }
+      window.renderReact3mf(null)
+    }, Array.from(datos3mf))
+    const reactVisor = visor.locator('#prueba-react-3mf')
+    await reactVisor.locator('.visor-controles button:not([disabled])').first().waitFor()
+    const estadoReact = () => visor.evaluate(() => {
+      const T = window.threePrueba
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      grupo.updateWorldMatrix(true, true)
+      const caja = new T.Box3().setFromObject(grupo)
+      const linea = grupo.getObjectByName('trayectoria')?.children[0]
+      const malla = grupo.children[0].getObjectByProperty('isMesh', true)
+      const puntos = malla.geometry.getAttribute('position')
+      let vertice
+      for (let i = 0; i < puntos.count; i++) {
+        if (Math.abs(puntos.getX(i) - 10) < 1e-5 && Math.abs(puntos.getY(i) - 10) < 1e-5 && Math.abs(puntos.getZ(i) - 0.6) < 1e-5) {
+          vertice = new T.Vector3().fromBufferAttribute(puntos, i).applyMatrix4(malla.matrixWorld)
+          break
+        }
+      }
+      const inicio = linea && new T.Vector3().fromBufferAttribute(linea.geometry.getAttribute('position'), 0).applyMatrix4(linea.matrixWorld)
+      const extremo = linea && new T.Vector3().fromBufferAttribute(linea.geometry.getAttribute('position'), 3).applyMatrix4(linea.matrixWorld).project(window.camaraPrueba)
+      return {
+        centro: caja.getCenter(new T.Vector3()).toArray(),
+        camara: window.camaraPrueba.position.toArray(), target: window.controlesPrueba.target.toArray(),
+        distancia: window.camaraPrueba.position.distanceTo(window.controlesPrueba.target),
+        alineacion: inicio && vertice ? inicio.distanceTo(vertice) : null,
+        extremo: extremo?.toArray(),
+        aspect: window.camaraPrueba.aspect,
+        trayectoria: !!linea,
+      }
+    })
+    const antesTardia = await estadoReact()
+    await visor.evaluate(() => window.renderReact3mf(window.trayectoriaReact))
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    const tardia = await estadoReact()
+    assert.ok(tardia.alineacion !== null && tardia.alineacion < 1e-5, `Punto de malla y trayectoria no coincide: ${tardia.alineacion}`)
+    assert.ok(tardia.distancia > antesTardia.distancia * 2, 'La trayectoria exterior debe ampliar el encuadre automático')
+    assert.ok(tardia.target.every((v, i) => Math.abs(v - tardia.centro[i]) < 1e-5), 'El objetivo debe ser el centro de la unión')
+    assert.ok(tardia.extremo.every(v => Math.abs(v) <= 1), `Extremo exterior fuera del encuadre: ${tardia.extremo}; aspecto ${tardia.aspect}`)
+    await visor.evaluate(() => {
+      const linea = window.escenaPrueba.getObjectByName('trayectoria').children[0]
+      window.disposeReact = { geometria: false, material: false }
+      linea.geometry.addEventListener('dispose', () => { window.disposeReact.geometria = true })
+      linea.material.addEventListener('dispose', () => { window.disposeReact.material = true })
+      window.renderReact3mf(null)
+    })
+    await visor.waitForFunction(() => !window.escenaPrueba?.getObjectByName('trayectoria'))
+    const quitada = await estadoReact()
+    assert.ok(quitada.centro.every(v => Math.abs(v) < 1e-5), 'Al quitar trayectoria se recentra la malla')
+    assert.deepEqual(await visor.evaluate(() => window.disposeReact), { geometria: true, material: true })
+    await reactVisor.getByRole('button', { name: 'Girar modelo' }).click()
+    const movida = await estadoReact()
+    await visor.evaluate(() => window.renderReact3mf(window.trayectoriaReact))
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    const preservada = await estadoReact()
+    assert.deepEqual(preservada.camara, movida.camara, 'La trayectoria tardía no debe resetear la cámara manipulada')
+    assert.deepEqual(preservada.target, movida.target, 'La trayectoria tardía no debe resetear el objetivo manipulado')
+    await reactVisor.getByRole('button', { name: 'Encuadrar modelo' }).click()
+    const encuadradaReact = await estadoReact()
+    assert.ok(encuadradaReact.distancia > movida.distancia * 2, 'El botón debe encuadrar la unión 3MF')
+    assert.ok(encuadradaReact.target.every((v, i) => Math.abs(v - encuadradaReact.centro[i]) < 1e-5))
+    await visor.evaluate(() => window.renderReact3mf(undefined))
+    await visor.waitForFunction(() => !window.escenaPrueba?.getObjectByName('trayectoria'))
+    const quitadaTrasInteraccion = await estadoReact()
+    assert.deepEqual(quitadaTrasInteraccion.camara, encuadradaReact.camara)
+    assert.deepEqual(quitadaTrasInteraccion.target, encuadradaReact.target)
+    await visor.evaluate(() => window.reiniciarReact3mf(window.trayectoriaReact))
+    await reactVisor.locator('.visor-controles button:not([disabled])').first().waitFor()
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    const temprana = await estadoReact()
+    assert.ok(temprana.alineacion !== null && temprana.alineacion < 1e-5, `Alineación con trayectoria temprana: ${temprana.alineacion}`)
+    assert.ok(temprana.centro.every(v => Math.abs(v) < 1e-5))
+    assert.ok(temprana.target.every((v, i) => Math.abs(v - temprana.centro[i]) < 1e-5))
+    assert.ok(temprana.extremo.every(v => Math.abs(v) <= 1))
+    assert.ok(Math.abs(temprana.distancia - tardia.distancia) < 1e-5, 'El encuadre debe coincidir en ambos órdenes')
+    await visor.evaluate(() => window.cerrarReact3mf())
+    console.log('OK React 3MF: trayectoria tardía y temprana, alineación, retirada y encuadre')
     // Dos puertas independientes: FileReader carga la malla y arrayBuffer el
     // proyecto/G-code. Se retiene una hasta que la otra haya terminado.
     await visor.evaluate(() => {
