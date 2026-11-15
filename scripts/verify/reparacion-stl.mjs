@@ -45,11 +45,23 @@ try {
     const input = page.locator('#file-upload')
     const select = async (name, buffer) => input.setInputFiles({ name, mimeType: 'model/stl', buffer })
     const visible = async text => page.getByText(text, { exact: false }).filter({ visible: true }).first().waitFor()
+    const requests = []
+    page.on('request', request => requests.push({ url: request.url(), method: request.method(), body: request.postDataBuffer()?.length ?? 0 }))
     await select('cerrado.stl', stl(faces))
     await visible('Sin incidencias detectadas')
     assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
     await page.evaluate(() => {
       const read = File.prototype.arrayBuffer
+      const post = Worker.prototype.postMessage
+      window.esperarMotor = 'analyzeDetailed'
+      window.liberarMotor = () => {}
+      window.restaurarPost = () => { Worker.prototype.postMessage = post }
+      Worker.prototype.postMessage = function(message, transfer) {
+        if (message.method === window.esperarMotor) {
+          window.esperarMotor = ''
+          window.liberarMotor = () => post.call(this, message, transfer)
+        } else post.call(this, message, transfer)
+      }
       File.prototype.arrayBuffer = function() {
         if (this.name === 'abierto.stl') window.originalSTL = this
         return read.call(this)
@@ -57,14 +69,45 @@ try {
     })
     const originalBytes = stl(faces.slice(2))
     await select('abierto.stl', originalBytes)
+    await page.getByRole('status').filter({ hasText: 'Analizando geometría' }).waitFor()
+    await page.waitForFunction(() => window.esperarMotor === '')
+    await page.evaluate(() => window.liberarMotor())
     await visible('Incidencias detectadas')
+    await page.evaluate(() => { window.esperarMotor = 'repair' })
     await page.getByRole('button', { name: 'Reparar copia' }).filter({ visible: true }).click()
+    await page.getByRole('status').filter({ hasText: 'Reparando la copia' }).waitFor()
+    await page.waitForFunction(() => window.esperarMotor === '')
+    await page.evaluate(() => { window.liberarMotor(); window.restaurarPost() })
     const link = page.getByRole('link', { name: 'Descargar STL reparado' }).filter({ visible: true })
     await link.waitFor()
+    const comparacion = page.locator('[aria-label="Cambios de la reparación"]')
+    assert.match(await comparacion.innerText(), /Vértices[\s\S]*8[\s\S]*8/)
+    assert.match(await comparacion.innerText(), /Caras[\s\S]*10[\s\S]*12/)
+    assert.match(await comparacion.innerText(), /Aberturas rellenadas[\s\S]*1/)
+    assert.match(await comparacion.innerText(), /Normales corregidas[\s\S]*\d/)
+    assert.match(await comparacion.innerText(), /Caras eliminadas[\s\S]*\d/)
+    const downloadPromise = page.waitForEvent('download')
+    await link.click()
+    const download = await downloadPromise
+    assert.equal(download.suggestedFilename(), 'abierto-reparado.stl')
+    const downloaded = await readFile(await download.path())
+    assert.equal(downloaded.readUInt32LE(80), 12)
+    assert.equal(downloaded.length, 84 + 12 * 50)
+    assert.notDeepEqual(downloaded, originalBytes)
+    assert.ok(requests.some(r => r.url.includes('/meshfix/worker.js')))
+    assert.deepEqual(requests.filter(r => !['GET', 'HEAD'].includes(r.method) || r.body), [], 'No debe enviarse contenido por red durante el análisis ni la reparación')
     assert.equal(await link.getAttribute('download'), 'abierto-reparado.stl')
     assert.equal(await page.locator('.file-name').textContent(), 'Archivo: abierto.stl')
     assert.deepEqual(Buffer.from(await page.evaluate(async () => [...new Uint8Array(await window.originalSTL.arrayBuffer())])), originalBytes)
     await visible('Incidencias pendientes')
+    const invalido = Buffer.concat([originalBytes, Buffer.alloc(50)])
+    invalido.writeUInt32LE(11, 80)
+    invalido.writeFloatLE(NaN, originalBytes.length + 12)
+    await select('perdida.stl', invalido)
+    await visible('Lectura inicial: se descartaron 1 caras no finitas')
+    await page.getByRole('button', { name: 'Reparar copia' }).click()
+    await page.getByRole('link', { name: 'Descargar STL reparado' }).waitFor()
+    await visible('Lectura inicial: se descartaron 1 caras no finitas')
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     await page.setViewportSize({ width: 390, height: 844 })
     const sheet = stl(faces.slice(0, 2))
@@ -72,7 +115,21 @@ try {
       const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(bytes)], 'lamina.stl', { type: 'model/stl' })); return dt
     }, { bytes: [...sheet] }) })
     await visible('Incidencias detectadas')
-    await page.getByRole('button', { name: 'Reparar copia' }).filter({ visible: true }).focus()
+    async function tabHasta(locator) {
+      for (let i = 0; i < 100; i++) {
+        await page.keyboard.press('Tab')
+        if (await locator.evaluate(el => el === document.activeElement)) return
+      }
+      throw new Error(`No se alcanzó con Tab: ${await locator.getAttribute('class')}`)
+    }
+    await page.keyboard.press('Tab')
+    await tabHasta(page.getByRole('link', { name: /Ver revisión y opciones/ }))
+    await page.keyboard.press('Enter')
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'revision-malla')
+    const mobileScroll = await page.evaluate(() => window.scrollY)
+    await page.keyboard.press('PageDown')
+    await page.waitForFunction(before => window.scrollY > before, mobileScroll, { timeout: 3000 })
+    await tabHasta(page.getByRole('button', { name: 'Reparar copia' }))
     await page.keyboard.press('Enter')
     await visible('Descargar STL reparado')
     await visible('heurística')
@@ -97,6 +154,14 @@ try {
     await page.evaluate(() => window.restaurarWorker())
     await page.screenshot({ path: '/tmp/opencode/revision-stl-movil.png', fullPage: true })
     await page.setViewportSize({ width: 1440, height: 900 })
+    await tabHasta(page.getByRole('link', { name: /Ver revisión y opciones/ }))
+    await page.keyboard.press('Enter')
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'revision-malla')
+    const scroll = await page.locator('#revision-malla').evaluate(el => ({ before: el.scrollTop, height: el.scrollHeight, client: el.clientHeight }))
+    await page.keyboard.press('PageDown')
+    await page.waitForFunction(before => document.querySelector('#revision-malla').scrollTop > before, scroll.before, { timeout: 3000 })
+    const afterScroll = await page.locator('#revision-malla').evaluate(el => el.scrollTop)
+    assert.ok(scroll.height > scroll.client && afterScroll > scroll.before, `El detalle debe desplazarse por teclado: ${JSON.stringify({scroll, afterScroll})}`)
     await page.screenshot({ path: '/tmp/opencode/revision-stl-escritorio.png', fullPage: true })
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     await select('archivo.gcode', Buffer.from('; generated by test\nG1 X1 Y1\n'))
@@ -107,10 +172,32 @@ try {
     await page.route('**/meshfix/worker.js', route => route.abort())
     await select('fallo.stl', stl(faces))
     await page.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+    await visible('El visor y el resto de la aplicación siguen disponibles')
+    assert.equal(await page.getByRole('link', { name: 'Contactar' }).getAttribute('href'), '/contacto')
+    assert.equal(await page.locator('.viewer-3d-container').isVisible(), true)
     assert.equal(await page.getByRole('link', { name: 'Descargar STL reparado' }).count(), 0)
     await page.unroute('**/meshfix/worker.js')
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     console.log('OK interfaz STL: selección, arrastre, reparación, teclado y viewports')
+    const persistence = await page.evaluate(async () => {
+      const ReactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = ReactModule.default ?? ReactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { default: RevisionMalla } = await import('/src/components/RevisionMalla.tsx')
+      const target = document.createElement('div'); document.body.append(target)
+      const root = (client.default ?? client).createRoot(target)
+      const analisis = (n, audit, colors) => ({ analysis: { vertexCount: 8, faceCount: 10 }, incidencias: [], aberturas: [], esCerrada: true, esManifold: true, carasNoFinitasEliminadas: n, carasPerdidasAuditoria: audit, reconstruccionesConectividad: 0, colorsDropped: colors })
+      const inicial = analisis(2, 3, true), posterior = analisis(4, 5, true)
+      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0 }, fixNormals: { facesFlipped: 0 }, weld: { facesRemoved: 0 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
+      const revision = { fase: 'reparado', analisis: inicial, resumen: { analisis: posterior, reparacion: repair }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
+      root.render(React.createElement(RevisionMalla, { revision, nombre: 'perdidas.stl' }))
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const text = target.innerText
+      root.unmount(); target.remove()
+      return text
+    })
+    assert.match(persistence, /Lectura inicial[\s\S]*2 caras no finitas[\s\S]*3 caras en auditoría[\s\S]*colores/)
+    assert.match(persistence, /Copia reparada[\s\S]*4 caras no finitas[\s\S]*5 caras en auditoría[\s\S]*colores/)
   }
   if (!preview) {
     const lifecycle = await page.evaluate(async () => {

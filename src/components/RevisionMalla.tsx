@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { RevisionMalla as Estado } from '../state/useRevisionMalla';
+import type { AnalisisMalla } from '../services/reparacionMalla';
+import { Link } from 'react-router-dom';
 import './revision-malla.css';
 
 const nombres: Record<string, string> = {
@@ -29,20 +31,41 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
   const posibles = (revision.analisis?.aberturas.filter(a => a.looksDeliberate).length ?? 0);
   const omitidas = revision.resumen?.reparacion.fillHoles.holesSkippedAsFeature ?? 0;
   const ocupado = revision.fase === 'analizando' || revision.fase === 'reparando';
-  return <section id="revision-malla" className="revision-malla" aria-label="Detalle de revisión STL">
+  return <section id="revision-malla" className="revision-malla" aria-label="Detalle de revisión STL" tabIndex={0}>
     <p className="malla-intro">La revisión se realiza en tu navegador. El visor muestra siempre el archivo original; la reparación crea una copia.</p>
     {revision.avisoTamano && <p className="malla-aviso">Archivo de más de 60 MB (millones de bytes). Puede necesitar mucha memoria; el límite es 150 MB.</p>}
     {ocupado && <p role="status" className="malla-estado">{revision.fase === 'analizando' ? 'Analizando geometría…' : `Reparando la copia…${revision.progreso ? ` Paso ${revision.progreso.stepIndex + 1} de ${revision.progreso.totalSteps}.` : ''}`}</p>}
-    {revision.error && <p role="alert" className="malla-error">No se ha podido completar la operación: {revision.error}</p>}
+    {revision.error && <div role="alert" className="malla-error"><p>No se ha podido completar la operación: {revision.error}</p><p>El visor y el resto de la aplicación siguen disponibles. Si el problema continúa, puedes <Link to="/contacto">Contactar</Link>.</p></div>}
     {actual && <>
+      {revision.resumen && revision.analisis && <div className="malla-resumen">
+        <span className="malla-eyebrow">ANTES DE REPARAR</span>
+        <h3>Diagnóstico inicial</h3>
+        <p>{revision.analisis.incidencias.length ? `${revision.analisis.incidencias.length} tipos de incidencia` : 'Sin incidencias detectadas.'}</p>
+        <dl><div><dt>Vértices</dt><dd>{revision.analisis.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{revision.analisis.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{revision.analisis.esCerrada ? 'Sí' : 'No'}</dd></div></dl>
+        {revision.analisis.incidencias.length > 0 && <ul>{revision.analisis.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
+      </div>}
+      {revision.resumen && <div className="malla-resumen" aria-label="Cambios de la reparación" role="group">
+        <span className="malla-eyebrow">ANTES → DESPUÉS</span>
+        <h3>Qué cambió en la copia</h3>
+        <dl>
+          <div><dt>Vértices</dt><dd>{revision.resumen.reparacion.verticesBefore} → {revision.resumen.analisis.analysis.vertexCount}</dd></div>
+          <div><dt>Caras</dt><dd>{revision.resumen.reparacion.facesBefore} → {revision.resumen.analisis.analysis.faceCount}</dd></div>
+          <div><dt>Aberturas rellenadas</dt><dd>{revision.resumen.reparacion.fillHoles.holesFilled + (revision.resumen.rellenoForzado?.holesFilled ?? 0)}</dd></div>
+          <div><dt>Normales corregidas (caras)</dt><dd>{revision.resumen.reparacion.fixNormals.facesFlipped}</dd></div>
+          <div><dt>Caras eliminadas al soldar</dt><dd>{revision.resumen.reparacion.weld.facesRemoved}</dd></div>
+          <div><dt>Caras degeneradas eliminadas</dt><dd>{revision.resumen.reparacion.removeDegenerates.degenerateRemoved}</dd></div>
+          <div><dt>Caras duplicadas eliminadas</dt><dd>{revision.resumen.reparacion.removeDegenerates.duplicateRemoved}</dd></div>
+        </dl>
+      </div>}
       <div className="malla-resumen">
         <span className="malla-eyebrow">{revision.resumen ? 'RESULTADO DE LA COPIA' : 'DIAGNÓSTICO INICIAL'}</span>
         <h3>{revision.resumen ? 'Incidencias pendientes' : problemas ? 'Incidencias detectadas' : 'Sin incidencias detectadas'}</h3>
         <p>{actual.incidencias.length ? `${actual.incidencias.length} ${actual.incidencias.length === 1 ? 'tipo de incidencia' : 'tipos de incidencia'}` : 'No se han detectado incidencias en esta revisión.'}</p>
-        <dl><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div></dl>
+        <dl><div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div></dl>
         {actual.incidencias.length > 0 && <ul>{actual.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
-        {(actual.carasNoFinitasEliminadas > 0 || actual.carasPerdidasAuditoria > 0 || actual.colorsDropped) && <p className="malla-aviso">Durante la lectura se descartaron datos: {actual.carasNoFinitasEliminadas} caras no finitas, {actual.carasPerdidasAuditoria} caras en auditoría{actual.colorsDropped ? ' y colores' : ''}.</p>}
       </div>
+      {revision.analisis && <Perdidas titulo="Lectura inicial" analisis={revision.analisis} />}
+      {revision.resumen && <Perdidas titulo="Copia reparada" analisis={revision.resumen.analisis} />}
       {!revision.resumen && problemas && <button className="btn-primary malla-accion" type="button" disabled={ocupado} onClick={revision.reparar}>Reparar copia</button>}
     </>}
     {revision.fase === 'error' && !revision.analisis && <p>Prueba a seleccionar el archivo de nuevo o elige otro STL.</p>}
@@ -54,6 +77,11 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
     </div>}
     <p className="malla-limite">Esta revisión no garantiza que la pieza sea imprimible. Comprueba la copia antes de usarla.</p>
   </section>;
+}
+
+function Perdidas({ titulo, analisis }: { titulo: string; analisis: AnalisisMalla }) {
+  if (!analisis.carasNoFinitasEliminadas && !analisis.carasPerdidasAuditoria && !analisis.colorsDropped) return null;
+  return <p className="malla-aviso"><strong>{titulo}:</strong> se descartaron {analisis.carasNoFinitasEliminadas} caras no finitas, {analisis.carasPerdidasAuditoria} caras en auditoría{analisis.colorsDropped ? ' y colores' : ''}.</p>;
 }
 
 function ConfirmarRelleno({ ocupado, rellenar }: { ocupado: boolean; rellenar: () => void }) {
