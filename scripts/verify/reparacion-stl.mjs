@@ -10,6 +10,18 @@ const preview = process.argv.includes('--preview') || subruta
 const base = subruta ? '/subruta/' : '/'
 const bundleDir = '/tmp/opencode/reparacion-stl-bundle'
 const subrutaDir = '/tmp/opencode/reparacion-stl-dist-subruta'
+function validarSolicitudes(requests, permitidas) {
+  assert.deepEqual(requests.filter(r => !['GET', 'HEAD'].includes(r.method) || r.body || !permitidas.has(r.url)), [], 'Solicitud inesperada')
+}
+const permitidasPrueba = new Set(['http://127.0.0.1:4179/meshfix/worker.js', 'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=12345678'])
+validarSolicitudes([{ url: [...permitidasPrueba][0], method: 'GET', body: 0 }], permitidasPrueba)
+for (const url of [
+  'http://127.0.0.1:4179/meshfix/worker.js?datos=QUJD',
+  'http://127.0.0.1:4179/meshfix/QUJD',
+  'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=12345678&datos=QUJD',
+  'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=51554a44',
+  'https://example.org/recibir?datos=QUJD',
+]) assert.throws(() => validarSolicitudes([{ url, method: 'GET', body: 0 }], permitidasPrueba), /Solicitud inesperada/)
 if (subruta) await build({ base, build: { outDir: subrutaDir, emptyOutDir: true } })
 if (preview) {
   await build({ configFile: false, base, build: { outDir: bundleDir, emptyOutDir: true, lib: { entry: resolve('src/services/reparacionMalla.ts'), formats: ['es'], fileName: () => 'service.js' } } })
@@ -27,6 +39,9 @@ try {
   assert.ok(ready, 'Vite no arrancó')
   browser = await chromium.launch({ headless: true })
   const page = await browser.newPage()
+  // Aislar anuncios externos de la prueba; cualquier intento posterior sigue
+  // registrándose y se rechaza por la lista de solicitudes admitidas.
+  await page.route(/^https:\/\//, route => route.abort())
   const assets = new Set()
   page.on('response', response => { if (response.url().includes('/meshfix/') && response.ok()) assets.add(new URL(response.url()).pathname) })
   if (preview) await page.route('**/verify-bundle/**', async route => {
@@ -45,6 +60,22 @@ try {
     const input = page.locator('#file-upload')
     const select = async (name, buffer) => input.setInputFiles({ name, mimeType: 'model/stl', buffer })
     const visible = async text => page.getByText(text, { exact: false }).filter({ visible: true }).first().waitFor()
+    // La versión de Vite se fija desde una dependencia ya cargada ANTES de
+    // seleccionar el archivo; no se aceptan parámetros adicionales ni otros hashes.
+    const viteVersion = await page.evaluate(() => {
+      const urls = performance.getEntriesByType('resource').map(e => e.name)
+      const match = urls.map(url => url.match(/\/node_modules\/\.vite\/deps\/[^/?]+\.js\?v=([a-f0-9]{8})$/)).find(Boolean)
+      return match?.[1]
+    })
+    assert.match(viteVersion ?? '', /^[a-f0-9]{8}$/, 'Falta la versión de dependencias de Vite')
+    const origin = 'http://127.0.0.1:4179'
+    const rutas = [
+      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts',
+      '/meshfix/worker.js', '/meshfix/meshfix-core.js', '/meshfix/meshfix-core.wasm',
+      ...['meshfix-wasm', 'three_examples_jsm_loaders_STLLoader__js', 'three_examples_jsm_loaders_3MFLoader__js', 'three_examples_jsm_loaders_OBJLoader__js']
+        .map(nombre => `/node_modules/.vite/deps/${nombre}.js?v=${viteVersion}`),
+    ]
+    const permitidas = new Set(rutas.map(ruta => origin + ruta))
     const requests = []
     page.on('request', request => requests.push({ url: request.url(), method: request.method(), body: request.postDataBuffer()?.length ?? 0 }))
     await select('cerrado.stl', stl(faces))
@@ -95,7 +126,17 @@ try {
     assert.equal(downloaded.length, 84 + 12 * 50)
     assert.notDeepEqual(downloaded, originalBytes)
     assert.ok(requests.some(r => r.url.includes('/meshfix/worker.js')))
-    assert.deepEqual(requests.filter(r => !['GET', 'HEAD'].includes(r.method) || r.body), [], 'No debe enviarse contenido por red durante el análisis ni la reparación')
+    console.log('Solicitudes observadas:', JSON.stringify(requests))
+    validarSolicitudes(requests, permitidas)
+    // La petición se satisface localmente para probar que el observador real la
+    // captura, sin transmitir el marcador a ningún servidor.
+    const exfil = `${origin}/meshfix/worker.js?datos=QUJD`
+    await page.route(exfil, route => route.fulfill({ status: 204 }))
+    const antes = requests.length
+    await page.evaluate(url => fetch(url), exfil)
+    assert.ok(requests.slice(antes).some(r => r.url === exfil))
+    assert.throws(() => validarSolicitudes(requests.slice(antes), permitidas), /Solicitud inesperada/)
+    await page.unroute(exfil)
     assert.equal(await link.getAttribute('download'), 'abierto-reparado.stl')
     assert.equal(await page.locator('.file-name').textContent(), 'Archivo: abierto.stl')
     assert.deepEqual(Buffer.from(await page.evaluate(async () => [...new Uint8Array(await window.originalSTL.arrayBuffer())])), originalBytes)
