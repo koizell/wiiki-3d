@@ -142,6 +142,9 @@ try {
     await page.evaluate(() => { window.liberarMotor(); window.restaurarPost() })
     const link = page.getByRole('link', { name: 'Descargar STL reparado' }).filter({ visible: true })
     await link.waitFor()
+    const bytesAntesColor = await page.evaluate(async url => [...new Uint8Array(await (await fetch(url)).arrayBuffer())], await link.getAttribute('href'))
+    await page.getByRole('radio', { name: 'Rojo' }).check()
+    assert.deepEqual(await page.evaluate(async url => [...new Uint8Array(await (await fetch(url)).arrayBuffer())], await link.getAttribute('href')), bytesAntesColor)
     assert.match(await page.locator('.malla-veredicto').innerText(), /Reparación completada/)
     await page.getByRole('button', { name: 'Encuadrar modelo' }).waitFor({ state: 'visible' })
     await page.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
@@ -276,6 +279,7 @@ try {
     const gcode = crearGcodeSintetico()
     await select('archivo.gcode', Buffer.from(gcode))
     await page.getByRole('heading', { name: 'Archivo: archivo.gcode' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
     await page.locator('.analisis-principal').waitFor()
     await page.getByText('PLA', { exact: false }).first().waitFor()
     await page.locator('.visor-trayectoria').first().waitFor()
@@ -283,11 +287,15 @@ try {
     assert.equal(await page.locator('.sidebar-right').count(), 0)
     await select('archivo.3mf', Buffer.from(crear3mfSintetico(gcode)))
     await page.getByRole('heading', { name: 'Archivo: archivo.3mf' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
     await page.locator('.viewer-3d-container canvas').waitFor()
     await page.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
     await page.locator('.sidebar-right').getByText('PLA', { exact: false }).first().waitFor()
     assert.equal(await page.locator('#revision-malla').count(), 0)
     assert.equal(await page.locator('.sidebar-right').count(), 1)
+    await select('archivo.obj', Buffer.from('v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n'))
+    await page.getByRole('heading', { name: 'Archivo: archivo.obj' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     await page.route('**/meshfix/worker.js', route => route.abort())
     await select('fallo.stl', stl(faces))
@@ -302,6 +310,18 @@ try {
     const visor = await browser.newPage()
     await visor.goto(`http://127.0.0.1:4179${base}`)
     await visor.evaluate(async version => {
+      const threeUrl = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+      const three = await import(/* @vite-ignore */ threeUrl)
+      const add = three.Object3D.prototype.add
+      three.Object3D.prototype.add = function(...objects) {
+        if (this.type === 'Scene') window.escenaPrueba = this
+        return add.apply(this, objects)
+      }
+      const update = three.PerspectiveCamera.prototype.updateMatrixWorld
+      three.PerspectiveCamera.prototype.updateMatrixWorld = function(...args) {
+        window.camaraPrueba = this
+        return update.apply(this, args)
+      }
       const mod = await import(/* @vite-ignore */ `/node_modules/.vite/deps/three_examples_jsm_loaders_STLLoader__js.js?v=${version}`)
       const parse = mod.STLLoader.prototype.parse
       window.geometriasSTL = []
@@ -323,6 +343,61 @@ try {
       }
     }, viteVersion)
     const baseOpen = stl(faces.slice(2))
+    // Retener la lectura del visor para elegir color antes de completar la carga.
+    await visor.evaluate(() => {
+      const read = FileReader.prototype.readAsArrayBuffer
+      FileReader.prototype.readAsArrayBuffer = function(file) {
+        if (file.name === 'espera.stl') window.liberarVisor = () => read.call(this, file)
+        else read.call(this, file)
+      }
+    })
+    await visor.locator('#file-upload').setInputFiles({ name: 'espera.stl', mimeType: 'model/stl', buffer: baseOpen })
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    await visor.evaluate(() => window.liberarVisor())
+    await visor.waitForFunction(() => window.escenaPrueba?.children.some(x => x.type === 'Group'))
+    assert.equal(await visor.evaluate(() => window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString()), 'ef4444')
+    await visor.getByRole('radio', { name: 'Azul' }).check()
+    // Coordenadas negativas y alturas distintas: medir después de la rotación,
+    // no la caja de la geometría original.
+    for (const [offset, scale] of [[[-20, -10, -30], [4, 6, 8]], [[50, -80, 100], [90, 60, 80]]]) {
+      const bytes = Buffer.from(baseOpen)
+      for (let i = 0; i < 10; i++) for (let j = 0; j < 3; j++) for (let k = 0; k < 3; k++) {
+        const pos = 84 + i * 50 + 12 + j * 12 + k * 4
+        bytes.writeFloatLE(bytes.readFloatLE(pos) * scale[k] + offset[k], pos)
+      }
+      await visor.locator('#file-upload').setInputFiles({ name: 'caja.stl', mimeType: 'model/stl', buffer: bytes })
+      await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+      await visor.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
+      await visor.waitForFunction(() => window.escenaPrueba?.children.some(x => x.type === 'Group'))
+      const caja = await visor.evaluate(async () => {
+        const url = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+        const { Box3 } = await import(/* @vite-ignore */ url)
+        const mesh = window.escenaPrueba.children.find(x => x.type === 'Group')?.children[0]
+        const rotated = new Box3().setFromObject(mesh)
+        return { min: rotated.min.toArray(), max: rotated.max.toArray(), color: mesh.material.color.getHexString() }
+      })
+      assert.ok(Math.abs(caja.min[1]) < 1e-5, `Base fuera de la cama: ${JSON.stringify(caja)}`)
+      assert.ok(Math.abs((caja.max[1] - caja.min[1]) - scale[2]) < 1e-5)
+      assert.equal(caja.color, '3b82f6')
+    }
+    await visor.setViewportSize({ width: 390, height: 844 })
+    await visor.getByRole('radio', { name: 'Azul' }).focus()
+    await visor.keyboard.press('ArrowRight')
+    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).isChecked(), true)
+    await visor.locator('.viewer-3d-container').scrollIntoViewIfNeeded()
+    await visor.screenshot({ path: '/tmp/opencode/visor-color-movil.png' })
+    await visor.setViewportSize({ width: 1440, height: 900 })
+    await visor.locator('.viewer-3d-container').scrollIntoViewIfNeeded()
+    await visor.screenshot({ path: '/tmp/opencode/visor-color-escritorio.png' })
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    const antesColor = await visor.evaluate(() => { window.escenaPruebaCanvas = document.querySelector('canvas'); return { camera: window.camaraPrueba.position.toArray(), analysis: window.analisisSTL } })
+    await visor.getByRole('radio', { name: 'Verde' }).check()
+    const despuesColor = await visor.evaluate(() => ({ same: document.querySelector('canvas') === window.escenaPruebaCanvas, camera: window.camaraPrueba.position.toArray(), analysis: window.analisisSTL, color: window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString() }))
+    assert.deepEqual(despuesColor.camera, antesColor.camera)
+    assert.equal(despuesColor.same, true)
+    assert.equal(despuesColor.analysis, antesColor.analysis)
+    assert.equal(despuesColor.color, '22c55e')
+    await visor.evaluate(() => { window.geometriasSTL = [] })
     for (const solid of [true, false]) for (const extra of [true, false]) {
       const original = Buffer.from(baseOpen)
       if (solid) original.write('solid binary', 0)

@@ -31,6 +31,13 @@ interface Viewer3DProps {
 
 /** Margen extra al encuadrar, para que el modelo no toque los bordes del visor. */
 const FRAME_MARGIN = 1.3;
+const COLORES_STL = [
+  { nombre: 'Azul', valor: '#3b82f6' },
+  { nombre: 'Rojo', valor: '#ef4444' },
+  { nombre: 'Verde', valor: '#22c55e' },
+  { nombre: 'Blanco', valor: '#e8ecf1' },
+  { nombre: 'Gris', valor: '#8b95a5' },
+] as const;
 
 /**
  * Dirección desde la que se mira la escena al encuadrar: tres cuartos, no
@@ -89,6 +96,9 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [vista, setVista] = useState('Arrastra para girar; también puedes usar los botones.');
+  const [color, setColor] = useState<string>(COLORES_STL[0].valor);
+  const colorRef = useRef<string>(COLORES_STL[0].valor);
+  const materialStlRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
   /*
    * La trayectoria llega **después** de que el archivo esté montado.
@@ -207,6 +217,11 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
           fail(EMPTY_3MF_MESSAGE);
           return;
         }
+        if (fileType === 'stl' && model instanceof THREE.Mesh) {
+          const material = model.material as THREE.MeshStandardMaterial;
+          material.color.set(colorRef.current);
+          materialStlRef.current = material;
+        }
 
         /*
          * La malla y la trayectoria, en el **mismo grupo**.
@@ -321,6 +336,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
       comandos.current = null;
       grupoRef.current = null;
       recentrarRef.current = null;
+      materialStlRef.current = null;
       if (reader.readyState === FileReader.LOADING) reader.abort();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
@@ -361,6 +377,22 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
       {loading && <div className="viewer-overlay">Cargando modelo 3D...</div>}
       {error && <div className="viewer-overlay error" role="alert"><p>{error}</p>{onChooseFile && <button type="button" className="btn-primary" onClick={onChooseFile}>Elegir otro archivo</button>}</div>}
     </div>
+    {fileType === 'stl' && <fieldset className="visor-color">
+      <legend>Color de la pieza</legend>
+      <span className="visor-color-ayuda">Solo cambia la vista, no el archivo.</span>
+      <div className="visor-color-opciones">
+        {COLORES_STL.map(opcion => <label className="visor-color-opcion" key={opcion.valor}>
+          <input type="radio" name="color-stl" value={opcion.valor} checked={color === opcion.valor}
+            onChange={() => {
+              colorRef.current = opcion.valor;
+              setColor(opcion.valor);
+              materialStlRef.current?.color.set(opcion.valor);
+            }} />
+          <span className="visor-color-muestra" style={{ backgroundColor: opcion.valor }} aria-hidden="true" />
+          <span>{opcion.nombre}</span>
+        </label>)}
+      </div>
+    </fieldset>}
     <ControlesVisor disabled={loading || !!error}
       mensaje={loading ? 'Preparando el visor…' : error ? 'Puedes elegir otro archivo para continuar.' : vista}
       onAcercar={() => { comandos.current?.zoom(0.8); setVista('Vista ampliada.'); }}
@@ -436,8 +468,6 @@ function buildStl(data: ArrayBuffer): THREE.Object3D {
     throw new Error('STL vacío o inválido');
   }
 
-  // Centrar la geometría
-  geometry.center();
   geometry.computeVertexNormals();
 
   const material = new THREE.MeshStandardMaterial({
@@ -452,6 +482,12 @@ function buildStl(data: ArrayBuffer): THREE.Object3D {
   // y se convierte a Y-up, que es lo que espera three.js por defecto. El usuario
   // puede girar con los controles si la pieza venía con otra orientación.
   mesh.rotation.x = -Math.PI / 2;
+  mesh.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(mesh);
+  if (!box.isEmpty()) {
+    const center = box.getCenter(new THREE.Vector3());
+    mesh.position.set(-center.x, -box.min.y, -center.z);
+  }
   return mesh;
 }
 
