@@ -70,9 +70,12 @@ const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mo
  * veces —si ya estaba cuando se leyó el archivo y vuelve a llegar después— y
  * dibujarla dos veces es dibujar el mismo G-code encima.
  */
+const trayectoriasPropias = new WeakMap<THREE.Group, THREE.Group>();
+
 function quitarTrayectoria(grupo: THREE.Group): void {
-  const anterior = grupo.getObjectByName('trayectoria');
+  const anterior = trayectoriasPropias.get(grupo);
   if (!anterior) return;
+  trayectoriasPropias.delete(grupo);
   grupo.remove(anterior);
   anterior.traverse(objeto => {
     if (!(objeto instanceof THREE.LineSegments)) return;
@@ -100,6 +103,7 @@ function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
     )
   );
   grupo.add(grupoTrayectoria);
+  trayectoriasPropias.set(grupo, grupoTrayectoria);
 }
 
 function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) {
@@ -279,8 +283,15 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          */
         recentrarRef.current = () => {
           if (fileType !== '3mf') return;
+          const posicionAnterior = grupo.getWorldPosition(new THREE.Vector3());
           recentrarGrupo3mf(grupo);
-          if (!usuarioIntervino) frameCamera(camera, controls, grupo);
+          if (!usuarioIntervino) {
+            frameCamera(camera, controls, grupo);
+          } else {
+            const desplazamiento = grupo.getWorldPosition(new THREE.Vector3()).sub(posicionAnterior);
+            camera.position.add(desplazamiento);
+            controls.target.add(desplazamiento);
+          }
         };
         grupoRef.current = grupo;
 
@@ -345,6 +356,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     return () => {
       cancelled = true;
       comandos.current = null;
+      if (grupoRef.current) quitarTrayectoria(grupoRef.current);
       grupoRef.current = null;
       recentrarRef.current = null;
       materialStlRef.current = null;
