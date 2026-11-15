@@ -80,6 +80,29 @@ try {
     page.on('request', request => requests.push({ url: request.url(), method: request.method(), body: request.postDataBuffer()?.length ?? 0 }))
     await select('cerrado.stl', stl(faces))
     await visible('Sin incidencias detectadas')
+    async function comprobarDisposicion() {
+      const layout = await page.evaluate(() => {
+        const informe = document.querySelector('#revision-malla')
+        const visor = document.querySelector('.viewer-3d-container')
+        const estilo = getComputedStyle(informe)
+        return {
+          informes: document.querySelectorAll('#revision-malla').length,
+          lateral: !!informe.closest('.sidebar-right'),
+          abajo: informe.getBoundingClientRect().top >= visor.getBoundingClientRect().bottom,
+          overflow: estilo.overflowY,
+          recortado: informe.scrollHeight > informe.clientHeight + 1,
+          anchoDocumento: document.documentElement.scrollWidth,
+          anchoVentana: document.documentElement.clientWidth,
+        }
+      })
+      assert.equal(layout.informes, 1, 'Debe existir un único informe')
+      assert.equal(layout.lateral, false, 'El STL no debe ocupar el lateral')
+      assert.equal(layout.abajo, true, 'El informe debe estar debajo del visor')
+      assert.ok(!['auto', 'scroll'].includes(layout.overflow) && !layout.recortado, `Informe con scroll o recorte: ${JSON.stringify(layout)}`)
+      assert.ok(layout.anchoDocumento <= layout.anchoVentana + 1, `Desbordamiento horizontal: ${JSON.stringify(layout)}`)
+      assert.equal(await page.locator('.sidebar-right').count(), 0)
+    }
+    await comprobarDisposicion()
     const diagnostico = page.locator('.malla-resumen').first()
     for (const [nombre, valor] of [['Componentes', 1], ['Agujeros', 0], ['Aristas de borde', 0], ['Normales invertidas', 0], ['Triángulos degenerados', 0], ['Caras duplicadas', 0]]) {
       assert.equal((await diagnostico.locator('dl > div').filter({ has: page.locator('dt', { hasText: nombre }) }).locator('dd').innerText()).trim(), String(valor))
@@ -105,16 +128,21 @@ try {
     const originalBytes = stl(faces.slice(2))
     await select('abierto.stl', originalBytes)
     await page.getByRole('status').filter({ hasText: 'Analizando geometría' }).waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
     await page.waitForFunction(() => window.esperarMotor === '')
     await page.evaluate(() => window.liberarMotor())
     await visible('Incidencias detectadas')
+    await comprobarDisposicion()
     await page.evaluate(() => { window.esperarMotor = 'repair' })
     await page.getByRole('button', { name: 'Reparar copia' }).filter({ visible: true }).click()
     await page.getByRole('status').filter({ hasText: 'Reparando la copia' }).waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).isDisabled(), true)
     await page.waitForFunction(() => window.esperarMotor === '')
     await page.evaluate(() => { window.liberarMotor(); window.restaurarPost() })
     const link = page.getByRole('link', { name: 'Descargar STL reparado' }).filter({ visible: true })
     await link.waitFor()
+    assert.ok(await page.getByRole('button', { name: 'Encuadrar modelo' }).isVisible())
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-escritorio.png', fullPage: true })
     const comparacion = page.locator('[aria-label="Cambios de la reparación"]')
     assert.match(await comparacion.innerText(), /Vértices[\s\S]*8[\s\S]*8/)
     assert.match(await comparacion.innerText(), /Caras[\s\S]*10[\s\S]*12/)
@@ -160,6 +188,8 @@ try {
       const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(bytes)], 'lamina.stl', { type: 'model/stl' })); return dt
     }, { bytes: [...sheet] }) })
     await visible('Incidencias detectadas')
+    await comprobarDisposicion()
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-movil.png', fullPage: true })
     async function tabHasta(locator) {
       for (let i = 0; i < 100; i++) {
         await page.keyboard.press('Tab')
@@ -178,6 +208,7 @@ try {
     await page.keyboard.press('Enter')
     await visible('Descargar STL reparado')
     await visible('heurística')
+    await comprobarDisposicion()
     assert.ok(await page.getByRole('status').count())
     const firstUrl = await link.getAttribute('href')
     const fill = page.getByRole('button', { name: 'Rellenar posibles aberturas' })
@@ -197,22 +228,21 @@ try {
     assert.equal(await link.getAttribute('href'), firstUrl)
     assert.equal(await page.evaluate(async url => (await fetch(url)).ok, firstUrl), true)
     await page.evaluate(() => window.restaurarWorker())
-    await page.screenshot({ path: '/tmp/opencode/revision-stl-movil.png', fullPage: true })
     await page.setViewportSize({ width: 1440, height: 900 })
     await tabHasta(page.getByRole('link', { name: /Ver revisión y opciones/ }))
     await page.keyboard.press('Enter')
     assert.equal(await page.evaluate(() => document.activeElement?.id), 'revision-malla')
-    const scroll = await page.locator('#revision-malla').evaluate(el => ({ before: el.scrollTop, height: el.scrollHeight, client: el.clientHeight }))
+    await comprobarDisposicion()
+    const scroll = await page.evaluate(() => window.scrollY)
     await page.keyboard.press('PageDown')
-    await page.waitForFunction(before => document.querySelector('#revision-malla').scrollTop > before, scroll.before, { timeout: 3000 })
-    const afterScroll = await page.locator('#revision-malla').evaluate(el => el.scrollTop)
-    assert.ok(scroll.height > scroll.client && afterScroll > scroll.before, `El detalle debe desplazarse por teclado: ${JSON.stringify({scroll, afterScroll})}`)
-    await page.screenshot({ path: '/tmp/opencode/revision-stl-escritorio.png', fullPage: true })
+    await page.waitForFunction(before => window.scrollY > before, scroll, { timeout: 3000 })
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     await select('archivo.gcode', Buffer.from('; generated by test\nG1 X1 Y1\n'))
     assert.equal(await page.locator('#revision-malla').count(), 0)
+    assert.equal(await page.locator('.sidebar-right').count(), 0)
     await select('archivo.3mf', Buffer.from('no es un 3mf'))
     assert.equal(await page.locator('#revision-malla').count(), 0)
+    assert.equal(await page.locator('.sidebar-right').count(), 1)
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     await page.route('**/meshfix/worker.js', route => route.abort())
     await select('fallo.stl', stl(faces))

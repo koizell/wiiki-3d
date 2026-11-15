@@ -23,7 +23,6 @@ import { AnalysisProvider } from './state/AnalysisContext';
 import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
 import { ProveedorGuia } from './state/useGuia.tsx';
 import { useRevisionMalla } from './state/useRevisionMalla';
-import RevisionMalla from './components/RevisionMalla';
 
 /*
  * Las rutas de la wiki y las tres páginas de información van en `lazy`, y no por
@@ -144,9 +143,8 @@ const RUTAS_DESPLAZABLES = [
  * eso es media pantalla, y durante casi toda la sesión de quien lee la guía no hay
  * ningún archivo cargado.
  *
- * Ahora la columna acompaña sólo al visor STL/3MF y a las guías. El resultado
- * G-code vive en el área principal de UploadRoute. Las demás rutas no añaden
- * un lateral sin relación con su tarea.
+ * Ahora la columna acompaña al visor 3MF y a las guías. El informe STL y el
+ * resultado G-code viven en el área principal de UploadRoute.
  *
  * Y el panel de análisis sigue enlazando a la guía: dice «riesgo de warping, 35 %»
  * y el enlace de debajo lleva a la guía que explica ese 35 %. Esa es la
@@ -166,7 +164,7 @@ function AppShell() {
    */
   const rutaNormalizada = pathname.replace(/\/+$/, '') || '/';
   const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(rutaNormalizada));
-  const conPanel = pathname === '/' && (fileType === 'stl' || fileType === '3mf');
+  const conPanel = pathname === '/' && fileType === '3mf';
   const conRiel = /^\/wiki\/[^/]+\/?$/.test(pathname);
   const sinLateral = !conPanel && !conRiel;
 
@@ -303,14 +301,14 @@ function AppShell() {
           {!sinLateral && <aside className="sidebar-right">
             {conPanel ? (
               <>
-                <div className={`panel-header${fileType === 'stl' ? ' panel-header--malla' : ''}`}>
+                <div className="panel-header">
                   {/*
                     `h2`, y no `h3`. El panel es una sección de la página, y va debajo
                     del `h1` de la vista, así que le corresponde un nivel 2. Con `h3`
                     la jerarquía saltaba de 1 a 3, y quien navega por encabezados se
                     perdía ese tramo entero.
                   */}
-                  <h2>{fileType === 'stl' ? 'Revisión de malla' : 'Panel de Análisis'}</h2>
+                  <h2>Panel de Análisis</h2>
                   {/*
                     La insignia dice en qué modo está la clasificación, y no dice
                     «Jev» a secas.
@@ -320,7 +318,7 @@ function AppShell() {
                     es una estimación. Poner «Jev» sin más hacía creer que había un
                     modelo de verdad detrás, y no lo había.
                   */}
-                  {fileType !== 'stl' && <Link
+                  <Link
                     to="/privacidad/"
                     className={'badge badge-modo badge-modo-' + MODO_CLASIFICACION}
                     title={
@@ -330,9 +328,9 @@ function AppShell() {
                     }
                   >
                     {MODO_CLASIFICACION === 'real' ? 'Jev' : 'Demo'}
-                  </Link>}
+                  </Link>
                 </div>
-                {fileType === 'stl' && file ? <RevisionMalla revision={revision} nombre={file.name} /> : <AnalysisPanel
+                <AnalysisPanel
                   modoClasificacion={MODO_CLASIFICACION}
                   status={status}
                   metadata={metadata}
@@ -345,7 +343,7 @@ function AppShell() {
                    * recibe sólo la función.
                    */
                   explicar={articuloParaCampo}
-                />}
+                />
               </>
             ) : (
               <RielWiki />

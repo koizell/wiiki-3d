@@ -16,6 +16,7 @@ export function VeredictoMalla({ revision }: { revision: Estado }) {
   const texto = revision.fase === 'analizando' || revision.fase === 'inactivo' ? 'Analizando la malla localmente…'
     : revision.fase === 'reparando' ? 'Preparando una copia reparada…'
       : revision.fase === 'error' ? 'No se ha podido completar la revisión.'
+        : revision.resumen ? 'Reparación completada'
         : actual && (actual.incidencias.length || !actual.esCerrada || !actual.esManifold)
           ? 'Incidencias detectadas en la malla' : 'Sin incidencias detectadas';
   return <div className="malla-veredicto" role="status" aria-live="polite">
@@ -32,19 +33,35 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
   const omitidas = revision.resumen?.reparacion.fillHoles.holesSkippedAsFeature ?? 0;
   const ocupado = revision.fase === 'analizando' || revision.fase === 'reparando';
   return <section id="revision-malla" className="revision-malla" aria-label="Detalle de revisión STL" tabIndex={0}>
+    <span className="malla-eyebrow">REVISIÓN DE MALLA</span>
+    <h2>{revision.resumen ? 'Resultado de la copia' : 'Diagnóstico inicial'}</h2>
     <p className="malla-intro">La revisión se realiza en tu navegador. El visor muestra siempre el archivo original; la reparación crea una copia.</p>
     {revision.avisoTamano && <p className="malla-aviso">Archivo de más de 60 MB (millones de bytes). Puede necesitar mucha memoria; el límite es 150 MB.</p>}
     {!!revision.analisis?.bytesAdicionales && <p className="malla-aviso">El archivo contiene {revision.analisis.bytesAdicionales.toLocaleString('es-ES')} bytes adicionales al final. Esos datos no se han analizado y no se conservarán en la descarga reparada. El archivo original no se modifica.</p>}
     {ocupado && <p role="status" className="malla-estado">{revision.fase === 'analizando' ? 'Analizando geometría…' : `Reparando la copia…${revision.progreso ? ` Paso ${revision.progreso.stepIndex + 1} de ${revision.progreso.totalSteps}.` : ''}`}</p>}
     {revision.error && <div role="alert" className="malla-error"><p>No se ha podido completar la operación: {revision.error}</p><p>El visor y el resto de la aplicación siguen disponibles. Si el problema continúa, puedes <Link to="/contacto">Contactar</Link>.</p></div>}
+    {revision.analisis && <Perdidas titulo="Lectura inicial" analisis={revision.analisis} />}
+    {revision.resumen && <Perdidas titulo="Copia reparada" analisis={revision.resumen.analisis} />}
     {actual && <>
-      {revision.resumen && revision.analisis && <div className="malla-resumen">
-        <span className="malla-eyebrow">ANTES DE REPARAR</span>
-        <h3>Diagnóstico inicial</h3>
-        <p>{revision.analisis.incidencias.length ? `${revision.analisis.incidencias.length} tipos de incidencia` : 'Sin incidencias detectadas.'}</p>
-        <dl><div><dt>Vértices</dt><dd>{revision.analisis.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{revision.analisis.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{revision.analisis.esCerrada ? 'Sí' : 'No'}</dd></div></dl>
-        {revision.analisis.incidencias.length > 0 && <ul>{revision.analisis.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
-      </div>}
+      <div className="malla-resumen">
+        <span className="malla-eyebrow">{revision.resumen ? 'RESULTADO DE LA COPIA' : 'DIAGNÓSTICO INICIAL'}</span>
+        <h3>{revision.resumen ? 'Incidencias pendientes' : problemas ? 'Incidencias detectadas' : 'Sin incidencias detectadas'}</h3>
+        <p>{actual.incidencias.length ? `${actual.incidencias.length} ${actual.incidencias.length === 1 ? 'tipo de incidencia' : 'tipos de incidencia'}` : 'No se han detectado incidencias en esta revisión.'}</p>
+        {actual.incidencias.length > 0 && <ul>{actual.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
+        {!revision.resumen && problemas && <button className="btn-primary malla-accion" type="button" disabled={ocupado} onClick={revision.reparar}>Reparar copia</button>}
+        {revision.urlDescarga && <a className="btn-primary malla-descarga" href={revision.urlDescarga} download={`${nombre.replace(/\.stl$/i, '')}-reparado.stl`}>Descargar STL reparado</a>}
+        <h3>Datos de la {revision.resumen ? 'copia' : 'malla'}</h3>
+        <dl><div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div>
+          <div><dt>Componentes</dt><dd>{actual.analysis.connectedComponents}</dd></div>
+          <div><dt>Agujeros</dt><dd>{actual.analysis.holeCount}</dd></div>
+          <div><dt>Aristas de borde</dt><dd>{actual.analysis.boundaryEdges}</dd></div>
+          <div><dt>Normales invertidas</dt><dd>{actual.analysis.flippedNormalCount}</dd></div>
+          <div><dt>Triángulos degenerados</dt><dd>{actual.analysis.degenerateTriangleCount}</dd></div>
+          <div><dt>Caras duplicadas</dt><dd>{actual.analysis.duplicateFaceCount}</dd></div>
+        </dl>
+      </div>
+    </>}
+    {revision.fase === 'error' && !revision.analisis && <p>Prueba a seleccionar el archivo de nuevo o elige otro STL.</p>}
       {revision.resumen && <div className="malla-resumen" aria-label="Cambios de la reparación" role="group">
         <span className="malla-eyebrow">ANTES → DESPUÉS</span>
         <h3>Qué cambió en la copia</h3>
@@ -64,26 +81,13 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
         </dl>
         <p className="malla-limite">Las caras omitidas se cuentan por operación; una misma cara puede aparecer en más de un recuento. El motor puede omitir caras por problemas de conectividad.</p>
       </div>}
-      <div className="malla-resumen">
-        <span className="malla-eyebrow">{revision.resumen ? 'RESULTADO DE LA COPIA' : 'DIAGNÓSTICO INICIAL'}</span>
-        <h3>{revision.resumen ? 'Incidencias pendientes' : problemas ? 'Incidencias detectadas' : 'Sin incidencias detectadas'}</h3>
-        <p>{actual.incidencias.length ? `${actual.incidencias.length} ${actual.incidencias.length === 1 ? 'tipo de incidencia' : 'tipos de incidencia'}` : 'No se han detectado incidencias en esta revisión.'}</p>
-        <dl><div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div>
-          <div><dt>Componentes</dt><dd>{actual.analysis.connectedComponents}</dd></div>
-          <div><dt>Agujeros</dt><dd>{actual.analysis.holeCount}</dd></div>
-          <div><dt>Aristas de borde</dt><dd>{actual.analysis.boundaryEdges}</dd></div>
-          <div><dt>Normales invertidas</dt><dd>{actual.analysis.flippedNormalCount}</dd></div>
-          <div><dt>Triángulos degenerados</dt><dd>{actual.analysis.degenerateTriangleCount}</dd></div>
-          <div><dt>Caras duplicadas</dt><dd>{actual.analysis.duplicateFaceCount}</dd></div>
-        </dl>
-        {actual.incidencias.length > 0 && <ul>{actual.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
-      </div>
-      {revision.analisis && <Perdidas titulo="Lectura inicial" analisis={revision.analisis} />}
-      {revision.resumen && <Perdidas titulo="Copia reparada" analisis={revision.resumen.analisis} />}
-      {!revision.resumen && problemas && <button className="btn-primary malla-accion" type="button" disabled={ocupado} onClick={revision.reparar}>Reparar copia</button>}
-    </>}
-    {revision.fase === 'error' && !revision.analisis && <p>Prueba a seleccionar el archivo de nuevo o elige otro STL.</p>}
-    {revision.urlDescarga && <a className="btn-primary malla-descarga" href={revision.urlDescarga} download={`${nombre.replace(/\.stl$/i, '')}-reparado.stl`}>Descargar STL reparado</a>}
+      {revision.resumen && revision.analisis && <div className="malla-resumen">
+        <span className="malla-eyebrow">ANTES DE REPARAR</span>
+        <h3>Diagnóstico inicial</h3>
+        <p>{revision.analisis.incidencias.length ? `${revision.analisis.incidencias.length} tipos de incidencia` : 'Sin incidencias detectadas.'}</p>
+        <dl><div><dt>Vértices</dt><dd>{revision.analisis.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{revision.analisis.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{revision.analisis.esCerrada ? 'Sí' : 'No'}</dd></div></dl>
+        {revision.analisis.incidencias.length > 0 && <ul>{revision.analisis.incidencias.map((i, index) => <li key={`${i.type}-${index}`}><span>{nombres[i.type] ?? i.type}</span><strong>{i.count}</strong></li>)}</ul>}
+      </div>}
     {(posibles > 0 || omitidas > 0) && <div className="malla-aberturas">
       <h3>Aberturas que podrían ser parte del diseño</h3>
       <p>El motor usa una heurística, no puede saber si son intencionadas. {omitidas > 0 && `La reparación dejó ${omitidas} sin rellenar.`}</p>

@@ -12,8 +12,8 @@ import SeccionAnalisis from "../components/SeccionAnalisis";
 import Preflight from "../components/Preflight";
 import ControlesVisor from "../components/ControlesVisor";
 import { useOutletContext } from "react-router-dom";
-import type { RevisionMalla } from "../state/useRevisionMalla";
-import { VeredictoMalla } from "../components/RevisionMalla";
+import type { RevisionMalla as EstadoRevisionMalla } from "../state/useRevisionMalla";
+import RevisionMalla, { VeredictoMalla } from "../components/RevisionMalla";
 
 /**
  * El visor 3D se carga bajo demanda, y desde aquí.
@@ -50,7 +50,7 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
-  const revision = useOutletContext<RevisionMalla>();
+  const revision = useOutletContext<EstadoRevisionMalla>();
   const { file, fileType, metadata, trayectoria, classification, status } = useAnalysis();
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
@@ -211,7 +211,7 @@ function UploadRoute() {
 
   return (
     <>
-       <div className={showGcodeNotice ? 'analisis-trabajo' : 'viewer-container'}>
+       <div className={showGcodeNotice ? 'analisis-trabajo' : `viewer-container${fileType === 'stl' ? ' viewer-container--stl' : ''}`}>
          {/*
            Cabecera de plano de la ruta (§5 y §7.2 de la spec).
 
@@ -306,6 +306,8 @@ function UploadRoute() {
             />
           )}
         </Suspense>
+
+        {fileType === 'stl' && <RevisionMalla revision={revision} nombre={file.name} />}
 
         {showGcodeNotice && (
           <>
