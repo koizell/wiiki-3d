@@ -881,11 +881,11 @@ export const flowRate: Guia = {
       'Boquilla limpia de 0,4 mm y filamento seco',
     ],
     pasos: [
-      'Imprime el cubo en modo vaso (Spiral vase) con tu altura de capa habitual, boquilla 0,4 y multiplicador 1. [Prusa KB]',
-      'Mide tres veces cada pared en el centro y calcula el espesor medio. [Prusa KB]',
-      'Calcula: multiplicador = 0,45 / espesor medio medido. Ajústalo en los ajustes del filamento y repite. [Prusa KB]',
-      'Alternativa Bambu (solo serie X1): Calibración > Flow Rate > Auto-Calibration, declarando boquilla, placa y filamento. [Bambu Wiki]',
-      'Calibración manual en Bambu: gruesa del 80 al 120 % con paso de 5 %; fina del 91 al 100 % con paso de 1 %. Guarda el valor en un preset. [Bambu Wiki]',
+      'Imprime el cubo en modo vaso (Spiral vase) con tu altura de capa habitual, boquilla 0,4 y multiplicador 1.',
+      'Mide tres veces cada pared en el centro y calcula el espesor medio.',
+      'Calcula: multiplicador = 0,45 / espesor medio medido. Ajústalo en los ajustes del filamento y repite.',
+      'Alternativa Bambu (solo serie X1): Calibración > Flow Rate > Auto-Calibration, declarando boquilla, placa y filamento.',
+      'Calibración manual en Bambu: gruesa del 80 al 120 % con paso de 5 %; fina del 91 al 100 % con paso de 1 %. Guarda el valor en un preset.',
     ],
     observacion:
       'La sobreextrusión deja marcas de las capas inferiores y acumulación en las superiores; la subextrusión leve deja huecos entre líneas. Los valores ajustados suelen quedar entre 0,9 y 1,1. En Bambu mira el centro de los rectángulos: el principio y el final pueden mostrar una ligera sobreextrusión que se considera normal.',

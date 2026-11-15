@@ -1032,10 +1032,10 @@ export const torreTemperatura: Guia = {
       'El filamento que vas a imprimir, seco y del mismo lote.',
     ],
     pasos: [
-      'Elige la calibración de torre de temperatura en el slicer; la torre tiene bloques internos con temperaturas distintas [torre-temperatura-bambu.md].',
-      'Imprímela sin tocar otros ajustes: misma altura, velocidad y retracción que usarás después [torre-temperatura-bambu.md].',
-      'Compara cada tramo: stringing, adhesión entre capas, warping y bridging [torre-temperatura-bambu.md].',
-      'Elige el tramo con mejor equilibrio, no el que menos stringing tenga solo [torre-temperatura-bambu.md].',
+      'Elige la calibración de torre de temperatura en el slicer; la torre tiene bloques internos con temperaturas distintas.',
+      'Imprímela sin tocar otros ajustes: misma altura, velocidad y retracción que usarás después.',
+      'Compara cada tramo: stringing, adhesión entre capas, warping y bridging.',
+      'Elige el tramo con mejor equilibrio, no el que menos stringing tenga solo.',
     ],
     observacion:
       'Un hilo del foro de Prusa comparó una torre de PLA de 180 °C abajo a 250 °C arriba: vio mejor aspecto en 180 °C, pero esa boquilla se obstruyó. Un miembro estimó el rango útil en 205-215 °C y el autor terminó en 200 °C. Una temperatura baja puede verse mejor en la torre y fallar en una pieza real.',

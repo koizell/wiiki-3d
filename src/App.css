@@ -3549,6 +3549,61 @@ body {
   font-weight: 700;
 }
 
+/*
+ * La prueba reproducible.
+ *
+ * Va en un panel propio y no suelta en la página porque su estatus es distinto
+ * al del resto de la guía: no es una afirmación respaldada por una fuente, es
+ * una receta que el lector ejecuta. El borde de la izquierda la separa sin
+ * convertirla en un aviso, y las listas recuperan el marcador: aquí el orden de
+ * los pasos es el contenido, no un adorno.
+ */
+.etapa--prueba {
+  padding: 1.15rem 1.3rem 1.25rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
+}
+
+.guia-prueba-nota {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 40rem;
+}
+
+.etapa--prueba h3 {
+  font-size: var(--texto-md);
+  margin: 1.15rem 0 0.5rem;
+}
+
+.guia-prueba-lista,
+.guia-prueba-pasos {
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.45rem;
+  line-height: 1.6;
+}
+
+.guia-prueba-lista {
+  list-style: disc;
+}
+
+.guia-prueba-pasos {
+  list-style: decimal;
+}
+
+.etapa--prueba p {
+  line-height: 1.6;
+  margin-top: 1rem;
+}
+
+.guia-prueba-fuente {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .etapa-intro {
   color: var(--text-secondary);
   line-height: 1.6;
