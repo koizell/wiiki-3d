@@ -71,7 +71,7 @@ try {
     assert.match(viteVersion ?? '', /^[a-f0-9]{8}$/, 'Falta la versión de dependencias de Vite')
     const origin = 'http://127.0.0.1:4179'
     const rutas = [
-      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts', '/src/lib/stl-binario.ts',
+      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts', '/src/lib/stl-binario.ts', '/src/lib/recentrar-grupo-3mf.ts',
       '/meshfix/worker.js', '/meshfix/meshfix-core.js', '/meshfix/meshfix-core.wasm',
       ...['meshfix-wasm', 'three_examples_jsm_loaders_STLLoader__js', 'three_examples_jsm_loaders_3MFLoader__js', 'three_examples_jsm_loaders_OBJLoader__js']
         .map(nombre => `/node_modules/.vite/deps/${nombre}.js?v=${viteVersion}`),
@@ -324,6 +324,7 @@ try {
     await visor.evaluate(async version => {
       const threeUrl = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
       const three = await import(/* @vite-ignore */ threeUrl)
+      window.threePrueba = three
       const dispatch = three.EventDispatcher.prototype.dispatchEvent
       three.EventDispatcher.prototype.dispatchEvent = function(event) {
         if (this.object?.isPerspectiveCamera && this.target?.isVector3) window.controlesPrueba = this
@@ -532,11 +533,50 @@ try {
       const referencia = await instantanea(true)
       assert.ok(referencia.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
       assert.ok(referencia.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia 3MF debe distinguirse del rojo STL')
+      const centro = await visor.evaluate(() => {
+        const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+        return new window.threePrueba.Box3().setFromObject(grupo).getCenter(new window.threePrueba.Vector3()).toArray()
+      })
+      assert.ok(centro.every(v => Math.abs(v) < 1e-6), `Unión 3MF descentrada (${orden}): ${centro}`)
       referencias3mf[orden] = referencia
     }
-    console.log('Posición absoluta 3MF por orden (se compara solo con el mismo orden):', JSON.stringify(Object.fromEntries(
-      Object.entries(referencias3mf).map(([orden, objetos]) => [orden, objetos[0].matrix.slice(12, 15)])
-    )))
+    assert.deepEqual(referencias3mf['malla-primero'], referencias3mf['trayectoria-primero'], 'Los dos órdenes deben producir la misma escena 3MF')
+    const reemplazos = await visor.evaluate(async () => {
+      const { recentrarGrupo3mf } = await import('/src/lib/recentrar-grupo-3mf.ts')
+      const T = window.threePrueba
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group').clone(true)
+      const padre = new T.Group()
+      padre.position.set(7, -4, 3)
+      padre.rotation.set(0.2, 0.4, -0.1)
+      padre.scale.set(2, 0.8, 1.3)
+      padre.add(grupo)
+      const trayectoria = grupo.getObjectByName('trayectoria')
+      const centro = () => new T.Box3().setFromObject(grupo).getCenter(new T.Vector3()).toArray()
+      const reemplazar = nueva => {
+        grupo.remove(grupo.getObjectByName('trayectoria'))
+        grupo.add(nueva)
+        recentrarGrupo3mf(grupo)
+        grupo.updateWorldMatrix(true, true)
+        return { centro: centro(), posicion: grupo.position.toArray() }
+      }
+      const primera = reemplazar(trayectoria.clone(true))
+      const repetida = reemplazar(trayectoria.clone(true))
+      const exterior = trayectoria.clone(true)
+      exterior.position.set(200, 0, 0)
+      const fuera = reemplazar(exterior)
+      const fueraRepetida = reemplazar(exterior.clone(true))
+      const vacia = new T.Group()
+      vacia.name = 'trayectoria'
+      const sinTrazos = reemplazar(vacia)
+      const sinTrazosRepetida = reemplazar(vacia.clone())
+      return { primera, repetida, fuera, fueraRepetida, sinTrazos, sinTrazosRepetida }
+    })
+    for (const [a, b] of [['primera', 'repetida'], ['fuera', 'fueraRepetida'], ['sinTrazos', 'sinTrazosRepetida']]) {
+      for (const resultado of [reemplazos[a], reemplazos[b]]) {
+        assert.ok(resultado.centro.every(v => Math.abs(v) < 1e-6), `Reemplazo ${a}: unión descentrada ${resultado.centro}`)
+      }
+      assert.ok(reemplazos[a].posicion.every((v, i) => Math.abs(v - reemplazos[b].posicion[i]) < 1e-6), `Reemplazo ${a}: recentrado no idempotente`)
+    }
     await seleccionarGcode('referencia.gcode')
     const referenciaGcode = await instantaneaGcode()
     assert.equal(referenciaGcode.length, 2)

@@ -8,6 +8,7 @@ import ControlesVisor from './ControlesVisor';
 import { geometriaTrayectoria } from '../lib/trayectoria-render';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
 import { finBinarioSTL, validarSTL } from '../lib/stl-binario';
+import { recentrarGrupo3mf } from '../lib/recentrar-grupo-3mf';
 
 /**
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
@@ -251,12 +252,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          * calcularla antes dejaría la pieza descentrada.
          */
         if (fileType === '3mf') {
-          grupo.updateMatrixWorld(true);
-          const box = new THREE.Box3().setFromObject(grupo);
-          if (!box.isEmpty()) {
-            const center = box.getCenter(new THREE.Vector3());
-            grupo.position.set(-center.x, -center.y, -center.z);
-          }
+          recentrarGrupo3mf(grupo);
         }
 
         /*
@@ -270,11 +266,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          */
         recentrarRef.current = () => {
           if (fileType !== '3mf') return;
-          grupo.updateMatrixWorld(true);
-          const caja = new THREE.Box3().setFromObject(grupo);
-          if (caja.isEmpty()) return;
-          const centro = caja.getCenter(new THREE.Vector3());
-          grupo.position.set(-centro.x, -centro.y, -centro.z);
+          recentrarGrupo3mf(grupo);
         };
         grupoRef.current = grupo;
 
