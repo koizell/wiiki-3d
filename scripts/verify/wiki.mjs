@@ -1286,6 +1286,17 @@ try {
     for (const g of GUIAS) {
       const page = await sinJs.newPage();
       await page.goto(`${BASE}/wiki/${g.slug}/`, { waitUntil: 'domcontentloaded' });
+      /*
+       * `domcontentloaded` no espera a las hojas de estilo. Medir aquí es medir
+       * el texto sin maquetar: `altura-capa` devolvía 1584 px porque todavía no
+       * tenía CSS, no porque desbordara. Se espera a que la hoja esté aplicada;
+       * el tope evita colgar la comprobación si un día deja de cargar.
+       */
+      let conCss = false;
+      for (let intento = 0; intento < 250 && !conCss; intento += 1) {
+        conCss = await page.evaluate(() => document.styleSheets.length > 0);
+        if (!conCss) await page.waitForTimeout(20);
+      }
       const plano = await page.evaluate(() => ({
         barras: document.querySelectorAll('.tu-archivo').length,
         anclas: document.querySelectorAll('.variable[id], .tarjeta[id]').length,
