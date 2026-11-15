@@ -212,7 +212,7 @@ try {
       const page = await browser.newPage({
         viewport: { width: tramo.width, height: tramo.height },
       });
-      await page.goto(`${BASE}/taller`);
+      await page.goto(`${BASE}/taller`, { waitUntil: 'domcontentloaded' });
       if (!(await esperarOMarcar(page, '.taller',
         `${tramo.nombre} · estado ${estado.numero} (${estado.etiqueta}): /taller no pinta la vista de Taller`))) {
         await page.close();
@@ -272,7 +272,7 @@ try {
         // archivo estando en `/taller` y luego navegaba a `/`. El guardado ocurre
         // en un efecto que necesita medio segundo, y la navegación lo mataba:
         // la entrada no llegaba a existir.
-        await page.goto(`${BASE}/`);
+        await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
         await page.setInputFiles('input[type="file"]', GCODE_FIXTURE);
         const hayBoton = await esperarOMarcar(
           page,
@@ -371,7 +371,7 @@ try {
 
     // --- Estado 5: la aritmética, los tres formatos y los tres precios malos ---
     const page = await browser.newPage({ viewport: { width: tramo.width, height: tramo.height } });
-    await page.goto(`${BASE}/taller`);
+    await page.goto(`${BASE}/taller`, { waitUntil: 'domcontentloaded' });
     if (!(await esperarOMarcar(page, '.taller',
       `${tramo.nombre} · estado 5: /taller no pinta la vista de Taller`))) {
       await page.close();
