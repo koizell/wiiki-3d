@@ -17,7 +17,8 @@
  * 3. Que el sitemap coincida con lo que se exportó.
  * 4. Que la política de privacidad diga la verdad del día.
  * 5. Que la cadena de AdSense esté entera: `ads.txt`, meta, etiqueta y
- *    Consent Mode v2 en `denied` declarado antes que la etiqueta.
+ *    Consent Mode v2 con la publicidad denegada por defecto y la analítica
+ *    según región, declarado antes que la etiqueta.
  *
  * **Cómo se comprueba que comprueba.** Un script que nunca ha fallado no está
  * comprobado. Cada comprobación de este fichero se ha roto a propósito una
@@ -301,14 +302,49 @@ comprobar('la etiqueta de AdSense está en la portada y en cada guía exportada'
 });
 
 /**
- * Consent Mode v2: los cuatro parámetros en `denied` por defecto, y declarados
- * **antes** de la etiqueta. Si el orden se invierte, Google puede leer cookies
- * antes de que el visitante acepte, y eso es uno de los fallos que enumera la
- * auditoría de la EU User Consent Policy.
+ * Consent Mode v2 con dos estados por defecto:
+ *
+ * 1. EEE, Reino Unido y Suiza: los cuatro parámetros en `denied`. El aviso
+ *    europeo los actualiza.
+ * 2. Resto del mundo: la analítica se concede y la publicidad sigue denegada.
+ *
+ * El estado regional va primero. Google resuelve por especificidad de `region`
+ * y no por orden, pero el orden declarado es el que documenta y el que se lee
+ * de arriba abajo. La comprobación mira los dos bloques por separado para que
+ * un `granted` de analítica no tape una publicidad concedida por error.
  */
-comprobar('Consent Mode v2 con los cuatro parámetros en denied', () => {
+const bloquesConsentimiento = [...metaHome.matchAll(/gtag\('consent', 'default',\s*\{([\s\S]*?)\}\);/g)]
+  .map((m) => m[1]);
+
+comprobar('Consent Mode v2 declara dos estados por defecto', () => {
+  assert.equal(bloquesConsentimiento.length, 2, `hay ${bloquesConsentimiento.length} defaults, no 2`);
+});
+
+const consentimientoRegional = bloquesConsentimiento.find((bloque) => bloque.includes('region:'));
+const consentimientoGlobal = bloquesConsentimiento.find((bloque) => !bloque.includes('region:'));
+
+comprobar('el estado regional deniega los cuatro parámetros', () => {
+  assert.ok(consentimientoRegional, 'no hay default con region');
   for (const parametro of ['ad_storage', 'ad_user_data', 'ad_personalization', 'analytics_storage']) {
-    assert.match(metaHome, new RegExp(`${parametro}\\s*:\\s*'denied'`), `falta ${parametro}: 'denied'`);
+    assert.match(consentimientoRegional, new RegExp(`${parametro}\\s*:\\s*'denied'`), `falta ${parametro}: 'denied' en el estado regional`);
+  }
+  assert.match(consentimientoRegional, /wait_for_update:\s*500/, 'el estado regional no espera al aviso');
+});
+
+comprobar('el estado regional cubre el EEE, Reino Unido y Suiza', () => {
+  assert.ok(consentimientoRegional, 'no hay default con region');
+  const codigos = [...consentimientoRegional.matchAll(/'([A-Z]{2})'/g)].map((m) => m[1]);
+  for (const obligado of ['ES', 'FR', 'DE', 'IT', 'PT', 'IS', 'LI', 'NO', 'GB', 'CH']) {
+    assert.ok(codigos.includes(obligado), `falta ${obligado} en la región del aviso`);
+  }
+  assert.ok(codigos.length >= 32, `sólo ${codigos.length} códigos de región`);
+});
+
+comprobar('fuera del EEE la analítica se concede y la publicidad sigue denegada', () => {
+  assert.ok(consentimientoGlobal, 'no hay default sin region');
+  assert.match(consentimientoGlobal, /analytics_storage\s*:\s*'granted'/, 'la analítica no se concede fuera del EEE');
+  for (const parametro of ['ad_storage', 'ad_user_data', 'ad_personalization']) {
+    assert.match(consentimientoGlobal, new RegExp(`${parametro}\\s*:\\s*'denied'`), `falta ${parametro}: 'denied' fuera del EEE`);
   }
 });
 

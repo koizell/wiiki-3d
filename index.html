@@ -109,16 +109,25 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <!--
-      Consentimiento (Consent Mode v2), denegado por defecto y declarado ANTES
-      de que cargue cualquier etiqueta de Google. Los cuatro parámetros de v2
-      son `ad_storage`, `ad_user_data`, `ad_personalization` y
-      `analytics_storage`.
+      Consentimiento (Consent Mode v2) declarado ANTES de que cargue cualquier
+      etiqueta de Google. Los cuatro parámetros de v2 son `ad_storage`,
+      `ad_user_data`, `ad_personalization` y `analytics_storage`.
 
-      Quien actualiza el estado es el aviso europeo, con el Consent Mode
-      activado en su configuración (en advanced mode no exige nada más en la
-      página). El aviso llega solo a visitantes del EEE, Reino Unido y Suiza;
-      fuera de ahí el estado se queda denegado, como promete la política de
-      privacidad.
+      Se declaran dos estados por defecto, y el orden importa:
+
+      1. Para el EEE, Reino Unido y Suiza —donde el aviso europeo es
+         obligatorio— todo queda denegado hasta que la persona acepte. El aviso
+         europeo actualiza el estado con Consent Mode avanzado.
+      2. Para el resto del mundo la analítica se concede por defecto: allí no
+         hay aviso que la habilite y, sin este segundo estado, GA4 aceptaría los
+         hits pero no poblaría los informes. La publicidad sigue denegada hasta
+         que exista un consentimiento que la habilite.
+
+      El parámetro `region` usa códigos ISO 3166-2 y lo resuelve la etiqueta con
+      la ubicación de la persona: no hay petición de geolocalización propia. La
+      lista son los 27 países de la UE más Islandia, Liechtenstein y Noruega
+      (EEE), el Reino Unido y Suiza. Si el ámbito del aviso cambia, esta lista y
+      la política de privacidad se cambian a la vez.
     -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -130,7 +139,18 @@
         ad_user_data: 'denied',
         ad_personalization: 'denied',
         analytics_storage: 'denied',
+        region: [
+          'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE',
+          'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT',
+          'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'GB', 'CH',
+        ],
         wait_for_update: 500,
+      });
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'granted',
       });
     </script>
     <!--

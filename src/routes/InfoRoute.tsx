@@ -272,7 +272,7 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         cuerpo: (
           <>
             <p>
-              Este sitio mide audiencia con <strong>Google Analytics (GA4)</strong> a través de la etiqueta de Google, que se carga en <strong>modo de consentimiento denegado por defecto</strong>: <strong>mientras no lo aceptes, GA4 no instala cookies</strong> y sólo cuenta visitas de forma limitada y sin identificarte. El historial de análisis sigue en <strong>IndexedDB</strong>, no en cookies, y no hay cuentas de usuario.
+              Este sitio mide audiencia con <strong>Google Analytics (GA4)</strong> a través de la etiqueta de Google. En el <strong>Espacio Económico Europeo, Reino Unido y Suiza</strong> la medición se carga con el <strong>consentimiento denegado por defecto</strong>: hasta que lo aceptes, GA4 no instala cookies y sólo cuenta visitas de forma limitada y sin identificarte. <strong>Fuera de esas regiones</strong> la medición se activa por defecto y GA4 puede instalar sus cookies de analítica (<code>_ga</code> y <code>_ga_*</code>) para distinguir visitas y sesiones; puedes borrarlas o bloquearlas desde los controles de tu navegador. El historial de análisis sigue en <strong>IndexedDB</strong>, no en cookies, y no hay cuentas de usuario.
             </p>
             <p>
               El sitio se sirve desde <strong>GitHub Pages</strong>, que como
@@ -386,10 +386,10 @@ const PAGINAS: Record<'acerca-de' | 'contacto' | 'privacidad' | 'autor', { titul
         titulo: 'Cambios en esta política',
         cuerpo: (
           <p>
-            Cuando se active la publicidad o una herramienta de analítica, esta
-            página se actualizará para decirlo <strong>antes</strong> de que el cambio
-            llegue al sitio publicado. Lo que lees aquí describe lo que el código hace
-            hoy, no lo que podría llegar a hacer.
+            Cuando se active la publicidad, o cambie la herramienta de analítica,
+            esta página se actualizará para decirlo <strong>antes</strong> de que el
+            cambio llegue al sitio publicado. Lo que lees aquí describe lo que el
+            código hace hoy, no lo que podría llegar a hacer.
           </p>
         ),
       },
