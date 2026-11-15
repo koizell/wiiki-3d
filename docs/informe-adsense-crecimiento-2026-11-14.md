@@ -6,16 +6,22 @@
 
 ## Resumen
 
-El trabajo de esta sesión deja el repositorio preparado y verificado, pero **no
-publicado**. Producción sigue sirviendo el despliegue del 22-oct-2026. La aprobación
-de AdSense y el crecimiento orgánico no se pueden declarar desde aquí: dependen de
-cuentas y de decisiones externas.
+El trabajo de esta sesión está **publicado y verificado en producción** (commits
+`9c4b950`, `fe14424`, `6860cce` y `e5b6ac2`; último despliegue correcto:
+`actions/runs/43657605789`). La aprobación de AdSense y el crecimiento orgánico no se
+pueden declarar desde aquí: dependen de cuentas y de decisiones externas.
 
 Lo que sí está hecho y comprobado: los cuatro agentes editoriales tienen contratos
 nuevos con evidencia localizable, se añadió un estratega de crecimiento, se
 corrigieron tres defectos reproducibles con su prueba, se ejecutó un piloto de
-revisión sobre `warping-pla` que encontró y corrigió errores reales, y todas las
-verificaciones del proyecto pasan sobre un build fresco.
+revisión sobre `warping-pla` que encontró y corrigió errores reales, se publicaron 28
+puentes para las rutas legacy de Blogger, y todas las verificaciones del proyecto
+pasan sobre un build fresco.
+
+El diagnóstico de Search Console está cerrado: 30 páginas indexadas y 71 no
+indexadas. De las no indexadas, sólo dos grupos requieren trabajo —16 errores de
+redirección y 10 errores 404, casi todos rutas del blog antiguo—; el resto son
+normalizaciones de GitHub Pages y páginas nuevas que Google todavía no ha rastreado.
 
 ## 1 · Qué se ha implementado
 
@@ -70,6 +76,22 @@ La aprobación es local: la hizo la misma sesión porque el subagente revisor no
 arrancar por el límite de uso del proveedor. No sustituye a una revisión
 independiente de otra persona.
 
+### Redirecciones legacy y favicon
+
+Search Console mostró 16 «Errores de redirección» y 10 «404». La causa no era el
+sitemap: el dominio antiguo `www.wiiki-3d.com` hace un 301 que **conserva la ruta**
+hacia `wiiki-3d.com`, y esa ruta ya no existe; la cadena termina en 404. GitHub Pages
+no permite redirecciones de servidor, así que se generan 28 páginas puente estáticas
+en el export (`scripts/redirecciones-legacy.mjs`): `canonical`, `meta refresh` a la
+guía equivalente y enlace visible. No llevan `noindex`, porque un noindex puede hacer
+que Google ignore el refresco. Los temas sin guía equivalente apuntan a `/wiki/`, no
+a la portada. Se añadió `verify:redirecciones` (5 comprobaciones) al build y al
+workflow, y un `favicon.ico` real para cerrar el 404 de `/favicon.ico`.
+
+Las 12 «Páginas con redirección», las 8 «Alternativas canónicas», la única bloqueada
+por `robots.txt` y las 13 «Descubiertas sin indexar» son normales en un sitio joven:
+no se tocan.
+
 ## 2 · Pruebas ejecutadas
 
 | Comprobación | Resultado |
@@ -79,7 +101,8 @@ independiente de otra persona.
 | `npm run verify:guias` | 1124/1124 |
 | `npm run verify:contenido` | Todas pasan; 0 porqués largos, 0 tarjetas sin puntos |
 | `npm run verify:seo` | 467/467 |
-| `npm run verify:dist` | 220/220 |
+| `npm run verify:dist` | 220/220 + 5/5 de redirecciones |
+| `npm run verify:redirecciones` | 5/5; 28 rutas, 16 destinos distintos |
 | `npm run verify:revision` | 16/16 |
 | `npm run verify:revision-selftest` | 17/17 mutaciones detectadas |
 | `git diff --check` | Sin errores |
@@ -89,7 +112,11 @@ independiente de otra persona.
 Producción comprobada con `curl`: `/`, `/wiki/`, `/taller/`, `/acerca-de/`,
 `/contacto/`, `/privacidad/`, `/autor/`, `/maquinas/`, `/wiki/warping-pla/`,
 `/wiki/material/`, `/wiki/slicer/`, `robots.txt`, `ads.txt` y `sitemap.xml`
-devuelven 200; una URL inexistente devuelve 404.
+devuelven 200; una URL inexistente devuelve 404. Las 41 URLs del sitemap responden
+200 y ninguna publica `datePublished`. Los 28 puentes devuelven 200 con canonical y
+refresco al destino; la cadena completa `www` → ápice → guía funciona en navegador
+(probada con Playwright en cuatro rutas). `/favicon.ico` devuelve 200 como
+`image/vnd.microsoft.icon` y el sitemap sigue teniendo 41 URLs, sin puentes.
 
 ## 3 · AdSense: qué está listo y qué no
 
@@ -120,8 +147,10 @@ Resumen:
 - GA4 `G-6W0LKP3ETS` envía el `page_view` inicial. Las navegaciones SPA dependen de
   la medición mejorada de historial, que se configura en la interfaz de GA4. **No se
   cambia el código a ciegas**: primero hay que comprobar esa opción.
-- Search Console tiene el sitemap publicado con 41 URLs; falta verificar la lectura
-  y la indexación con acceso autenticado.
+- Search Console tiene el sitemap correcto, con 41 URLs y última lectura el 11-nov.
+  El diagnóstico de indexación está hecho (30 indexadas, 71 no indexadas) y las
+  causas accionables ya están corregidas; queda esperar el re rastreo. GA4 y AdSense
+  siguen sin inspeccionar con acceso autenticado.
 - El benchmark (Ellis, All3DP, Prusa KB, Bambu Wiki) deja un hueco claro: nadie en
   español combina trazabilidad afirmación→fuente con una guía que calcula la
   recomendación según el montaje.
@@ -131,12 +160,12 @@ Resumen:
 
 ## 5 · Bloqueos externos
 
-1. **Sin acceso autenticado a AdSense, GA4 y Search Console.** No se puede
-   verificar CMP, recepción de eventos, indexación ni aprobación.
+1. **Sin acceso autenticado a AdSense y GA4.** Search Console se pudo leer con la
+   sesión del navegador, pero sigue sin verificar la recepción de eventos ni la
+   aprobación de AdSense.
 2. **El subagente revisor no pudo arrancar** por `Free usage limit reached`. El
    piloto se completó a mano; la limitación queda declarada.
-3. **Producción no está actualizada.** Los cambios locales no se han desplegado.
-4. **`graphify` no está instalado.** No se pudo ejecutar `graphify update .`; no hay
+3. **`graphify` no está instalado.** No se pudo ejecutar `graphify update .`; no hay
    `graphify-out/` que actualizar.
 
 ## 6 · Qué no se ha tocado
@@ -146,15 +175,18 @@ Resumen:
 - Los directorios no versionados `public/wiki/{material,max-volumetric-speed,...}`
   se han preservado. Sus imágenes no se referencian desde las guías y no se han
   borrado.
-- No se ha hecho commit ni push.
+- Se publicaron cuatro commits en `main`: `9c4b950` (agentes y documentación),
+  `fe14424` (rutas, fechas y piloto), `6860cce` (reintento de CI) y `e5b6ac2`
+  (puentes legacy y favicon). No se ha validado ninguna corrección dentro de Search
+  Console.
 
 ## 7 · Próximos pasos recomendados
 
-1. Publicar el build actual y comprobar en producción que desaparece
-   `datePublished` y que `/privacidad/` conserva la columna desplazable.
+1. En Search Console, esperar el re rastreo de las 16 URLs con error y comprobar que
+   bajan; si se quiere acelerar, pulsar «Validar corrección» es una acción de la
+   cuenta, no del repositorio.
 2. En GA4, comprobar la medición mejorada de historial antes de tocar el código.
-3. En Search Console, confirmar el sitemap y exportar consultas/páginas.
-4. En AdSense, publicar el mensaje CMP y solicitar la revisión.
-5. Cuando haya datos, ejecutar el plan de 28 días del informe de crecimiento.
-6. En la próxima actualización de `warping-pla`, retrofitear los IDs `A-###` del
+3. En AdSense, publicar el mensaje CMP y solicitar la revisión.
+4. Cuando haya datos, ejecutar el plan de 28 días del informe de crecimiento.
+5. En la próxima actualización de `warping-pla`, retrofitear los IDs `A-###` del
    cooked para que la traza sea reutilizable.
