@@ -332,6 +332,7 @@ try {
       const add = three.Object3D.prototype.add
       three.Object3D.prototype.add = function(...objects) {
         if (this.type === 'Scene') window.escenaPrueba = this
+        if (objects.some(o => o.name === 'trayectoria')) window.ordenObservado3mf = this.parent?.type === 'Scene' ? 'malla-primero' : 'trayectoria-primero'
         return add.apply(this, objects)
       }
       const update = three.PerspectiveCamera.prototype.updateMatrixWorld
@@ -446,31 +447,64 @@ try {
     const datosGcode = Buffer.from(crearGcodeSintetico())
     const datos3mf = Buffer.from(crear3mfSintetico(datosGcode.toString()))
     const datosObj = Buffer.from('v -10 4 2\nv 20 4 2\nv -10 14 12\nf 1 2 3\n')
+    // Dos puertas independientes: FileReader carga la malla y arrayBuffer el
+    // proyecto/G-code. Se retiene una hasta que la otra haya terminado.
+    await visor.evaluate(() => {
+      const leerMalla = FileReader.prototype.readAsArrayBuffer
+      const leerProyecto = File.prototype.arrayBuffer
+      FileReader.prototype.readAsArrayBuffer = function(file) {
+        if (file.name.startsWith('orden-') && window.ordenForzado3mf === 'trayectoria-primero') {
+          window.liberarOrden3mf = () => leerMalla.call(this, file)
+        } else leerMalla.call(this, file)
+      }
+      File.prototype.arrayBuffer = function() {
+        if (this.name.startsWith('orden-') && window.ordenForzado3mf === 'malla-primero') {
+          return new Promise(resolve => { window.liberarOrden3mf = () => resolve(leerProyecto.call(this)) })
+        }
+        return leerProyecto.call(this)
+      }
+    })
+    const seleccionar3mfOrdenado = async (nombre, orden) => {
+      await visor.evaluate(orden => {
+        window.ordenForzado3mf = orden
+        window.ordenObservado3mf = null
+        window.liberarOrden3mf = null
+      }, orden)
+      await visor.locator('#file-upload').setInputFiles({ name: nombre, mimeType: 'model/3mf', buffer: datos3mf })
+      await visor.getByRole('heading', { name: `Archivo: ${nombre}` }).waitFor()
+      await visor.waitForFunction(() => typeof window.liberarOrden3mf === 'function')
+      if (orden === 'malla-primero') {
+        await visor.waitForFunction(nombre => {
+          const canvas = document.querySelector('.viewer-3d-container canvas')
+          return canvas?.getAttribute('aria-label')?.includes(nombre) && !document.querySelector('.visor-controles button')?.disabled && window.escenaPrueba?.children.some(x => x.type === 'Group')
+        }, nombre)
+        assert.equal(await visor.evaluate(() => !!window.escenaPrueba.getObjectByName('trayectoria')), false)
+      } else {
+        await visor.locator('.sidebar-right').getByText('PLA', { exact: false }).first().waitFor()
+        assert.equal(await visor.evaluate(() => window.escenaPrueba?.children.some(x => x.type === 'Group') ?? false), false)
+      }
+      await visor.evaluate(() => window.liberarOrden3mf())
+      await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+      assert.equal(await visor.evaluate(() => window.ordenObservado3mf), orden, `Orden de llegada no reproducido: ${nombre}`)
+    }
     const instantanea = async trayectoria => {
       if (trayectoria) await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
-      return visor.evaluate(async normalizarGrupo => {
-        const url = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
-        const { Matrix4 } = await import(/* @vite-ignore */ url)
+      return visor.evaluate(() => {
         const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
         grupo.updateMatrixWorld(true)
-        // El recentrado absoluto 3MF depende del orden de llegada preexistente.
-        // Conservar la transformación relativa al grupo comprueba orientación y
-        // alineación malla/trayectoria sin comparar esa traslación variable.
-        const objetos = normalizarGrupo ? [{ type: 'marco', quaternion: grupo.quaternion.toArray(), scale: grupo.scale.toArray() }] : []
+        const objetos = [{ type: 'marco', matrix: grupo.matrixWorld.toArray() }]
         grupo.traverse(o => {
           if (!o.isMesh && !o.isLineSegments && o.name !== 'trayectoria') return
           const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []
-          const relativa = new Matrix4()
-          for (let actual = o; actual !== grupo; actual = actual.parent) relativa.premultiply(actual.matrix)
           objetos.push({
-            type: o.type, name: o.name, matrix: normalizarGrupo ? relativa.toArray() : o.matrixWorld.toArray(),
+            type: o.type, name: o.name, matrix: o.matrixWorld.toArray(),
             positions: o.geometry?.getAttribute('position') ? Array.from(o.geometry.getAttribute('position').array) : null,
             colors: o.geometry?.getAttribute('color') ? Array.from(o.geometry.getAttribute('color').array) : null,
             materials: mats.map(m => ({ type: m.type, color: m.color?.getHexString(), vertexColors: m.vertexColors, opacity: m.opacity })),
           })
         })
         return objetos
-      }, trayectoria)
+      })
     }
     const seleccionarGcode = async nombre => {
       await visor.locator('#file-upload').setInputFiles({ name: nombre, mimeType: 'text/plain', buffer: datosGcode })
@@ -488,25 +522,34 @@ try {
         material: { color: o.material.color.getHexString(), vertexColors: o.material.vertexColors, opacity: o.material.opacity },
       }))
     })
-    await seleccionarVisor('referencia.3mf', datos3mf, 'model/3mf')
-    const referencia3mf = await instantanea(true)
-    assert.ok(referencia3mf.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
-    assert.ok(referencia3mf.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia 3MF debe distinguirse del rojo STL')
     await seleccionarVisor('referencia.obj', datosObj, 'model/obj')
     const referenciaObj = await instantanea(false)
     assert.ok(referenciaObj.some(o => o.type === 'Mesh'), 'Falta malla OBJ en referencia')
     assert.ok(referenciaObj.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia OBJ debe distinguirse del rojo STL')
+    const referencias3mf = {}
+    for (const orden of ['malla-primero', 'trayectoria-primero']) {
+      await seleccionar3mfOrdenado(`orden-referencia-${orden}.3mf`, orden)
+      const referencia = await instantanea(true)
+      assert.ok(referencia.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
+      assert.ok(referencia.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia 3MF debe distinguirse del rojo STL')
+      referencias3mf[orden] = referencia
+    }
+    console.log('Posición absoluta 3MF por orden (se compara solo con el mismo orden):', JSON.stringify(Object.fromEntries(
+      Object.entries(referencias3mf).map(([orden, objetos]) => [orden, objetos[0].matrix.slice(12, 15)])
+    )))
     await seleccionarGcode('referencia.gcode')
     const referenciaGcode = await instantaneaGcode()
     assert.equal(referenciaGcode.length, 2)
     assert.ok(referenciaGcode[0].positions.length && referenciaGcode[0].colors.length && referenciaGcode[0].material.vertexColors, 'La referencia debe contener trayectoria coloreada')
     assert.ok(new Set(referenciaGcode[0].colors).size > 1, 'La referencia debe distinguir colores de trayectoria')
     for (let i = 0; i < 3; i++) {
-      await seleccionarVisor(`previo-3mf-${i}.stl`, baseOpen, 'model/stl')
-      await visor.getByRole('radio', { name: 'Rojo' }).check()
-      await seleccionarVisor(`transicion-${i}.3mf`, datos3mf, 'model/3mf')
-      assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
-      assert.deepEqual(await instantanea(true), referencia3mf, 'STL → 3MF debe conservar materiales, geometría y posiciones relativas de la trayectoria')
+      for (const orden of ['malla-primero', 'trayectoria-primero']) {
+        await seleccionarVisor(`previo-3mf-${orden}-${i}.stl`, baseOpen, 'model/stl')
+        await visor.getByRole('radio', { name: 'Rojo' }).check()
+        await seleccionar3mfOrdenado(`orden-transicion-${orden}-${i}.3mf`, orden)
+        assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+        assert.deepEqual(await instantanea(true), referencias3mf[orden], `STL → 3MF (${orden}): materiales, geometría y posiciones absolutas`)
+      }
       await seleccionarVisor(`previo-gcode-${i}.stl`, baseOpen, 'model/stl')
       await visor.getByRole('radio', { name: 'Rojo' }).check()
       await seleccionarGcode(`transicion-${i}.gcode`)
