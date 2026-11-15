@@ -92,7 +92,7 @@ class Motor {
   }
 }
 
-function validarSTL(buffer: ArrayBuffer) {
+async function validarSTL(buffer: ArrayBuffer, check: () => void) {
   if (buffer.byteLength < 15) throw new Error('STL vacío o inválido')
   // Un encabezado binario también puede comenzar por "solid". Sólo se acepta
   // como texto si es UTF-8 imprimible y contiene la estructura ASCII completa.
@@ -100,15 +100,32 @@ function validarSTL(buffer: ArrayBuffer) {
     const count = new DataView(buffer).getUint32(80, true)
     if (84 + count * 50 === buffer.byteLength) return
   }
-  let text = ''
-  try { text = new TextDecoder('utf-8', { fatal: true }).decode(buffer) } catch { /* binario */ }
-  const ascii = !Array.from(text).some(char => {
-    const code = char.charCodeAt(0)
-    return code < 32 && code !== 9 && code !== 10 && code !== 13
-  })
-    && /^\s*solid(?:\s|$)/i.test(text)
-    && /\bfacet\s+normal\b/i.test(text)
-    && /\bendsolid(?:\s|$)/i.test(text)
+  const decoder = new TextDecoder('utf-8', { fatal: true })
+  const bytes = new Uint8Array(buffer)
+  let inicio = '', cola = '', facet = false, end = false, valido = true
+  for (let offset = 0; offset < bytes.length; offset += 65536) {
+    check()
+    let text: string
+    try {
+      text = decoder.decode(bytes.subarray(offset, offset + 65536), { stream: offset + 65536 < bytes.length })
+    } catch { valido = false; break }
+    // La expresión recorre cada bloque sin crear una matriz de caracteres.
+    // eslint-disable-next-line no-control-regex
+    if (/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text)) { valido = false; break }
+    const normalizado = text.replace(/\s+/g, ' ')
+    if (inicio.length < 16) inicio = (inicio + normalizado).replace(/^ +/, '').slice(0, 16)
+    const tramo = cola + normalizado
+    const completo = offset + 65536 >= bytes.length ? tramo : tramo.replace(/[a-z0-9_]+$/i, '')
+    facet ||= /\bfacet\s+normal\b/i.test(completo)
+    end ||= /\bendsolid(?:\s|$)/i.test(completo)
+    cola = tramo.replace(/\s+/g, ' ').slice(-64)
+    // Ceder al navegador permite cancelar una selección grande durante la validación.
+    if (offset + 65536 < bytes.length && (offset / 65536) % 16 === 15) {
+      await new Promise<void>(resolve => setTimeout(resolve, 0))
+    }
+  }
+  check()
+  const ascii = valido && /^solid(?:\s|$)/i.test(inicio) && facet && end
   if (!ascii) throw new Error('STL binario truncado o STL inválido')
 }
 
@@ -176,7 +193,7 @@ export async function crearSesionMalla(opciones: OpcionesSesionMalla = {}): Prom
   return {
     analizar(buffer) {
       return exclusiva(async () => {
-        validarSTL(buffer)
+        await validarSTL(buffer, check)
         const copia = buffer.slice(0)
         const motor = await crearMotor()
         const data = await motor.call<DatosAnalisis>('analyzeDetailed', { format: 'stl' }, copia.slice(0))

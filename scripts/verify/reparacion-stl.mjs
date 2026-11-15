@@ -41,13 +41,16 @@ try {
       const client = await import('/node_modules/.vite/deps/react-dom_client.js')
       const { createRoot } = client.default ?? client
       const { useRevisionMalla } = await import('/src/state/useRevisionMalla.ts')
+      const domUrl = performance.getEntriesByType('resource').find(entry => /\/react-dom\.js\?/.test(entry.name))?.name
+      const domModule = await import(/* @vite-ignore */ domUrl ?? '/node_modules/.vite/deps/react-dom.js')
+      const { flushSync } = domModule.t ? domModule.t() : domModule.default ?? domModule
       const NativeWorker = window.Worker
       const originalCreate = URL.createObjectURL
       const originalRevoke = URL.revokeObjectURL
-      let mode = '', terminated = 0, blocked = 0, revoked = [], last
+      let mode = '', terminated = 0, blocked = 0, revoked = [], last, lateWorker, lateRequest
       class ControlledWorker extends NativeWorker {
         postMessage(message, transfer) {
-          if (mode === `hang-${message.method}`) { blocked++; return }
+          if (mode === `hang-${message.method}`) { blocked++; lateWorker = this; lateRequest = message; return }
           if (mode === `fail-${message.method}`) {
             mode = ''
             queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo simulado', cancelable: true })))
@@ -62,6 +65,7 @@ try {
       const root = createRoot(document.createElement('div'))
       function Test({ file, type = 'stl' }) { last = useRevisionMalla(file, type); return null }
       const render = async (file, type) => { root.render(React.createElement(Test, { file, type })); await new Promise(resolve => setTimeout(resolve, 30)) }
+      const renderNow = (file, type) => flushSync(() => root.render(React.createElement(Test, { file, type })))
       const wait = async predicate => {
         for (let i = 0; i < 500; i++) {
           if (predicate()) return
@@ -79,9 +83,10 @@ try {
         await wait(() => !!release)
         await render(file('posterior.stl'))
         await wait(() => last.fase === 'listo')
+        const expectedAnalysis = last.analisis
         release(new TextEncoder().encode(ascii).buffer)
         await new Promise(resolve => setTimeout(resolve, 50))
-        if (last.fase !== 'listo') throw new Error('La lectura antigua alteró la sesión nueva')
+        if (last.fase !== 'listo' || last.analisis !== expectedAnalysis || last.resumen || last.urlDescarga) throw new Error('La lectura antigua alteró los datos de la sesión nueva')
         mode = 'hang-init'
         const blockedBeforeInit = blocked
         await render(file('init.stl'))
@@ -96,30 +101,64 @@ try {
         await render(file('a.stl'))
         await wait(() => last?.fase === 'analizando' && blocked > blockedBeforeAnalysis)
         const before = terminated
+        const staleWorker = lateWorker, staleRequest = lateRequest
         mode = ''
         await render(file('b.stl'))
         await wait(() => last?.fase === 'listo')
+        const newAnalysis = last.analisis
+        staleWorker.dispatchEvent(new MessageEvent('message', { data: { id: staleRequest.id, result: { analysis: { faceCount: 999999 } } } }))
+        await new Promise(resolve => setTimeout(resolve, 20))
+        if (last.fase !== 'listo' || last.analisis !== newAnalysis || last.resumen || last.urlDescarga) throw new Error('Respuesta tardía del worker alteró datos nuevos')
         if (terminated <= before) throw new Error('No se cerró el worker durante análisis')
         mode = 'hang-repair'
         const blockedBeforeRepair = blocked
         last.reparar()
         await wait(() => last.fase === 'reparando' && blocked > blockedBeforeRepair)
         const beforeRepair = terminated
+        const staleRepairWorker = lateWorker, staleRepairRequest = lateRequest
         mode = ''
         await render(file('c.stl'))
         await wait(() => last.fase === 'listo')
         if (terminated <= beforeRepair) throw new Error('No se cerró el worker durante reparación')
+        const currentAnalysis = last.analisis
+        staleRepairWorker.dispatchEvent(new MessageEvent('message', { data: { type: 'progress', requestId: staleRepairRequest.id, stage: 'tardío', progress: 1 } }))
+        staleRepairWorker.dispatchEvent(new MessageEvent('message', { data: { id: staleRepairRequest.id, result: { facesAfter: 999999 } } }))
+        await new Promise(resolve => setTimeout(resolve, 20))
+        if (last.fase !== 'listo' || last.analisis !== currentAnalysis || last.progreso || last.resumen || last.urlDescarga) throw new Error('Reparación tardía alteró la selección nueva')
         last.reparar()
         await wait(() => last.fase === 'reparado')
         const url = last.urlDescarga
         if (!url) throw new Error('Falta descarga')
+        const same = file('misma.stl')
+        await render(same)
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const sameUrl = last.urlDescarga
+        renderNow(null)
+        if (last.fase !== 'inactivo' || last.analisis || last.resumen || last.urlDescarga) throw new Error(`Datos antiguos visibles al limpiar: ${JSON.stringify(last)}`)
+        renderNow(same)
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga) throw new Error('Datos antiguos visibles al volver al mismo File')
+        if (!revoked.includes(sameUrl)) throw new Error('URL anterior no revocada')
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const beforeOther = last.urlDescarga
+        renderNow(file('intermedio.stl'))
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga) throw new Error('Datos antiguos visibles al sustituir File')
+        renderNow(same)
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga || !revoked.includes(beforeOther)) throw new Error('Datos antiguos visibles en A → B → A')
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const currentUrl = last.urlDescarga
         mode = 'fail-repair'
         last.rellenarAberturas()
         await wait(() => last.fase === 'error')
-        if (last.urlDescarga !== url || revoked.includes(url)) throw new Error('Se perdió la primera descarga')
+        if (last.urlDescarga !== currentUrl || revoked.includes(currentUrl)) throw new Error('Se perdió la primera descarga')
         await render(null)
         await wait(() => last.fase === 'inactivo')
-        if (!revoked.includes(url) || last.urlDescarga) throw new Error('URL no revocada')
+        if (!revoked.includes(currentUrl) || last.urlDescarga) throw new Error('URL no revocada')
         const MB = 1000000
         for (const [size, warning, rejected] of [[60*MB,false,false],[60*MB+1,true,false],[150*MB,true,false],[150*MB+1,true,true]]) {
           let reads = 0
@@ -162,6 +201,52 @@ try {
       }
     })
     console.log(lifecycle)
+  }
+  if (!preview) {
+    const largeAscii = await page.evaluate(async () => {
+      const { crearSesionMalla } = await import('/src/services/reparacionMalla.ts')
+      const controller = new AbortController()
+      const session = await crearSesionMalla({ signal: controller.signal })
+      const bytes = new Uint8Array(61_000_000)
+      bytes.fill(32)
+      bytes.set(new TextEncoder().encode('solid test\nfacet normal 0 0 1\n'))
+      bytes.set(new TextEncoder().encode('\nendsolid test\n'), bytes.length - 15)
+      const decode = TextDecoder.prototype.decode
+      const postMessage = Worker.prototype.postMessage
+      let largest = 0, calls = 0
+      TextDecoder.prototype.decode = function(input, options) {
+        if (input) { largest = Math.max(largest, input.byteLength); calls++ }
+        return decode.call(this, input, options)
+      }
+      try {
+        const pending = session.analizar(bytes.buffer).then(() => false, () => true)
+        await new Promise(resolve => setTimeout(resolve, 0))
+        controller.abort()
+        const rejected = await pending
+        if (largest > 65536 || calls < 1 || calls >= Math.ceil(bytes.length / 65536)) throw new Error(`Validación no incremental/cancelable: bloque=${largest}, lecturas=${calls}`)
+        if (!rejected) throw new Error('La validación no se canceló')
+        const cancelledCalls = calls
+        const second = await crearSesionMalla()
+        let reachedWorker = false, yielded = false
+        Worker.prototype.postMessage = function(message, transfer) {
+          if (message.method === 'analyzeDetailed') {
+            reachedWorker = true
+            queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'análisis interceptado', cancelable: true })))
+          } else postMessage.call(this, message, transfer)
+        }
+        calls = 0
+        setTimeout(() => { yielded = true }, 0)
+        await second.analizar(bytes.buffer).catch(() => {})
+        second.dispose()
+        if (!reachedWorker || !yielded || calls !== Math.ceil(bytes.length / 65536)) throw new Error(`Validación completa fallida: worker=${reachedWorker}, yield=${yielded}, bloques=${calls}`)
+        return { largest, cancelledCalls, fullCalls: calls, rejected }
+      } finally {
+        Worker.prototype.postMessage = postMessage
+        TextDecoder.prototype.decode = decode
+        session.dispose()
+      }
+    })
+    console.log('OK ASCII grande incremental y cancelable', largeAscii)
   }
   const result = await page.evaluate(async moduleUrl => {
     const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
@@ -241,6 +326,12 @@ try {
     view.setFloat32(84 + 12 + 24 + 4, 1, true)
     const s = await crearSesionMalla()
     const asciiResult = await s.analizar(ascii)
+    const padding = ' '.repeat(65536 - 'solid test\nfacet '.length)
+    const boundary = new TextEncoder().encode(`solid test\nfacet ${padding}normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n`).buffer
+    const boundaryResult = await s.analizar(boundary)
+    const falseBoundary = new TextEncoder().encode(`solid test\nfacet ${padding}normalxyz\nendsolid test\n`).buffer
+    let falseBoundaryRejected = false
+    try { await s.analizar(falseBoundary) } catch { falseBoundaryRejected = true }
     const before = Array.from(new Uint8Array(await s.exportar()))
     let truncated = false
     try { await s.analizar(binary.slice(0, 100)) } catch { truncated = true }
@@ -256,9 +347,9 @@ try {
     nv.setFloat32(134 + 12, NaN, true)
     const lost = await s.analizar(nonfinite)
     s.dispose()
-    return { ascii: asciiResult.analysis.faceCount, truncated, preserved: JSON.stringify(before) === JSON.stringify(after), rejected, losses, nonfinite: lost.carasNoFinitasEliminadas }
+    return { ascii: asciiResult.analysis.faceCount, boundary: boundaryResult.analysis.faceCount, falseBoundaryRejected, truncated, preserved: JSON.stringify(before) === JSON.stringify(after), rejected, losses, nonfinite: lost.carasNoFinitasEliminadas }
   }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
-  assert.deepEqual(robustness, { ascii: 1, truncated: true, preserved: true, rejected: true, losses: [0, 0, 0], nonfinite: 1 })
+  assert.deepEqual(robustness, { ascii: 1, boundary: 1, falseBoundaryRejected: true, truncated: true, preserved: true, rejected: true, losses: [0, 0, 0], nonfinite: 1 })
   const faults = await page.evaluate(async moduleUrl => {
     const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
     const NativeWorker = window.Worker

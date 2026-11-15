@@ -33,18 +33,23 @@ const aviso = (file: File) => file.size > LIMITE_AVISO_MB * 1_000_000
 const mensaje = (error: unknown) => error instanceof Error ? error.message : String(error)
 
 export function useRevisionMalla(file: File | null, fileType: FileType | null): RevisionMalla {
-  const [estado, setEstado] = useState<{ file: File | null; datos: Datos }>({ file: null, datos: vacio })
+  // Una identidad por transición, incluso si más tarde vuelve el mismo File.
+  const [seleccion, setSeleccion] = useState(() => ({ file, fileType }))
+  if (seleccion.file !== file || seleccion.fileType !== fileType) {
+    setSeleccion({ file, fileType })
+  }
+  const [estado, setEstado] = useState<{ seleccion: typeof seleccion | null; datos: Datos }>({ seleccion: null, datos: vacio })
   const control = useRef<Control | null>(null)
 
   useEffect(() => {
     if (!file || fileType !== 'stl') {
       let activo = true
-      queueMicrotask(() => { if (activo) setEstado({ file: null, datos: vacio }) })
+      queueMicrotask(() => { if (activo) setEstado({ seleccion, datos: vacio }) })
       return () => { activo = false }
     }
     const actual: Control = { file, controller: new AbortController(), busy: true, activo: true }
     control.current = actual
-    const publicar = (datos: Datos) => { if (actual.activo) setEstado({ file, datos }) }
+    const publicar = (datos: Datos) => { if (actual.activo) setEstado({ seleccion, datos }) }
     const iniciar = async () => {
       const inicial = { ...vacio, fase: 'analizando' as const, avisoTamano: aviso(file) }
       publicar(inicial)
@@ -71,14 +76,14 @@ export function useRevisionMalla(file: File | null, fileType: FileType | null): 
       if (actual.url) URL.revokeObjectURL(actual.url)
       if (control.current === actual) control.current = null
     }
-  }, [file, fileType])
+  }, [file, fileType, seleccion])
 
   const ejecutar = useCallback((forzar: boolean) => {
     const actual = control.current
     if (!actual || actual.file !== file || fileType !== 'stl' || !actual.activo || actual.busy) return
     actual.busy = true
     const actualizar = (cambio: (datos: Datos) => Datos) => {
-      if (actual.activo) setEstado(prev => prev.file === actual.file ? { ...prev, datos: cambio(prev.datos) } : prev)
+      if (actual.activo) setEstado(prev => prev.seleccion === seleccion ? { ...prev, datos: cambio(prev.datos) } : prev)
     }
     void (async () => {
       actualizar(d => ({ ...d, fase: 'reparando', progreso: null, error: null }))
@@ -107,12 +112,12 @@ export function useRevisionMalla(file: File | null, fileType: FileType | null): 
         actualizar(d => ({ ...d, fase: 'error', progreso: null, error: mensaje(error) }))
       } finally { actual.busy = false }
     })()
-  }, [file, fileType])
+  }, [file, fileType, seleccion])
 
   const reparar = useCallback(() => ejecutar(false), [ejecutar])
   const rellenarAberturas = useCallback(() => ejecutar(true), [ejecutar])
   const seleccionado = fileType === 'stl' ? file : null
-  const datos = estado.file === seleccionado ? estado.datos : seleccionado
+  const datos = estado.seleccion === seleccion ? estado.datos : seleccionado
     ? { ...vacio, fase: 'analizando' as const, avisoTamano: aviso(seleccionado) }
     : vacio
   return { ...datos, reparar, rellenarAberturas }
