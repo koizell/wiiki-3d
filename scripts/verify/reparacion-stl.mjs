@@ -350,6 +350,7 @@ try {
     assert.equal((await filaDe('Medidas').innerText()).trim(), '100 × 60 × 20 mm')
     assert.ok(await filaDe('Volumen de la malla').count(), 'la malla cerrada muestra el volumen')
     assert.match(await filaDe('Volumen de la malla').innerText(), /mm³/)
+    assert.match(await filaDe('Volumen de la malla').innerText(), /120\.000 mm³/, 'el volumen es el de la caja, no cualquier número')
     const notaUnidades = page.getByText('no declara unidades', { exact: false }).first()
     await notaUnidades.waitFor()
     assert.match(await notaUnidades.innerText(), /milímetros/)
@@ -363,7 +364,11 @@ try {
     await visible('Sin incidencias detectadas')
     assert.equal(await page.locator('.malla-escala').count(), 1)
     assert.match(await page.locator('.malla-escala').innerText(), /×25,4/)
-    assert.equal(await page.locator('.malla-encaje').count(), 0, 'con aviso de escala no hay veredicto de encaje')
+    // Con máquina elegida el aviso tiene que callar el veredicto: sin máquina
+    // no habría veredicto de todos modos y el assert no probaría la supresión.
+    await page.locator('#revision-maquina').selectOption('prusa-mk4s')
+    await esperarTexto('.malla-escala', '×25,4')
+    assert.equal(await page.locator('.malla-encaje').count(), 0, 'con aviso de escala no hay veredicto aunque haya máquina elegida')
     assert.match(await seccionImpresora.innerText(), /resuelvan las unidades/i)
     /*
      * El brief pedía «un STL de 8 mm» para este caso, pero el umbral acordado es
@@ -377,14 +382,17 @@ try {
     await visible('Sin incidencias detectadas')
     await esperarTexto('#revision-malla', '400 × 400 × 400 mm')
     assert.match(await page.locator('.malla-escala').innerText(), /÷25,4/)
-    assert.equal(await page.locator('.malla-encaje').count(), 0)
+    assert.equal(await page.locator('#revision-maquina').inputValue(), 'prusa-mk4s')
+    assert.equal(await page.locator('.malla-encaje').count(), 0, 'el aviso grande también calla el veredicto con máquina elegida')
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.locator('#revision-malla').scrollIntoViewIfNeeded()
     await page.locator('#revision-malla').screenshot({ path: '/tmp/opencode/medidas-encaje-escala-escritorio.png' })
     // Sin máquina: se ve el selector y ningún veredicto.
+    await page.locator('#revision-maquina').selectOption('')
     await select('cubo100.stl', stlDeCaja(100, 100, 100))
     await visible('Sin incidencias detectadas')
     assert.equal(await page.locator('#revision-maquina').count(), 1)
+    assert.ok(await page.locator('#revision-maquina').isVisible(), 'el selector se ve sin máquina elegida')
     assert.equal(await page.locator('#revision-maquina').inputValue(), '')
     assert.equal(await page.locator('.malla-encaje').count(), 0, 'sin máquina no hay veredicto')
     assert.match(await seccionImpresora.innerText(), /Elige tu impresora/i)
@@ -434,6 +442,7 @@ try {
       return texto
     })
     assert.match(diff, /tras reparar, la copia sí cabe; antes no/i)
+    await page.evaluate(() => localStorage.clear())
     console.log('OK medidas, aviso de escala y encaje en la impresora')
     const visor = await browser.newPage()
     await visor.goto(`http://127.0.0.1:4179${base}`)

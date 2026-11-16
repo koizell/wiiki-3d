@@ -36,8 +36,9 @@ function textoDeCaja(caja: Caja): string {
  * para que un análisis incompleto no pinte «undefined».
  */
 function cajaDe(analisis: AnalisisMalla | null | undefined): Caja | null {
-  if (!analisis) return null;
-  const { dimX, dimY, dimZ } = analisis.analysis;
+  const medidas = analisis?.analysis;
+  if (!medidas) return null;
+  const { dimX, dimY, dimZ } = medidas;
   if (![dimX, dimY, dimZ].every((n) => Number.isFinite(n))) return null;
   return [dimX, dimY, dimZ];
 }
@@ -66,7 +67,7 @@ function avisoDeEscala(caja: Caja): AvisoEscala | null {
 function textoAvisoEscala(aviso: AvisoEscala, caja: Caja): string {
   return aviso.estado === 'pequena'
     ? `La pieza mide ${textoDeCaja(caja)}, un tamaño muy pequeño. Puede ser una pieza diminuta de verdad, o un archivo en pulgadas: en ese caso el tamaño real sería ×25,4 (${aviso.real}), no lo que se ve. Esta web no puede saberlo.`
-    : `La pieza mide ${textoDeCaja(caja)}, más grande que la cama de casi cualquier impresora. Si el archivo está en pulgadas, el tamaño real sería ÷25,4 (${aviso.real}), no lo que se ve. Esta web no puede saberlo.`;
+    : `La pieza mide ${textoDeCaja(caja)}, más grande que la cama de casi cualquier impresora. Si la escala se aplicó dos veces al convertir de pulgadas, el tamaño real sería ÷25,4 (${aviso.real}), no lo que se ve. Esta web no puede saberlo.`;
 }
 
 /** Texto corto de cada veredicto, para la línea de cambio. */
@@ -93,7 +94,7 @@ function textoDeEncaje(estado: Encaje, orientacion: string | undefined, maquina:
   if (estado === 'cabe') return `Cabe en la cama de ${nombre}${camaTexto}.`;
   if (estado === 'cabe-girada') {
     const giro = orientacion ? DESCRIPCION_ORIENTACION[orientacion] ?? `en orientación ${orientacion}` : 'en una orientación distinta';
-    return `Cabe girada 90° ${giro} en la cama de ${nombre}${camaTexto}.`;
+    return `Cabe girada 90° ${giro}: entra en la cama de ${nombre}${camaTexto}.`;
   }
   if (estado === 'no-cabe') {
     return `No cabe: mide ${textoDeCaja(caja)} y la cama de ${nombre} es ${cama ? `${cama.map(mm).join(' × ')} mm` : 'desconocida'}.`;
@@ -143,9 +144,10 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
   // hay veredicto que comparar.
   const cajaInicial = cajaDe(revision.analisis);
   const cajaCopia = cajaDe(revision.resumen?.analisis);
+  const avisoInicial = cajaInicial ? avisoDeEscala(cajaInicial) : null;
   const encajeInicial = cajaInicial && maquina ? cabeEnLaMaquina(cajaInicial, maquina) : null;
   const encajeCopia = cajaCopia && maquina ? cabeEnLaMaquina(cajaCopia, maquina) : null;
-  const cambio = !aviso && encajeInicial && encajeCopia && encajeInicial.estado !== encajeCopia.estado
+  const cambio = !aviso && !avisoInicial && encajeInicial && encajeCopia && encajeInicial.estado !== encajeCopia.estado
     ? textoDeCambio(encajeInicial.estado, encajeCopia.estado)
     : null;
   return <section id="revision-malla" className="revision-malla" aria-label="Detalle de revisión STL" tabIndex={0}>
@@ -167,7 +169,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
         {!revision.resumen && problemas && <button className="btn-primary malla-accion" type="button" disabled={ocupado} onClick={revision.reparar}>Reparar copia</button>}
         {revision.urlDescarga && <a className="btn-primary malla-descarga" href={revision.urlDescarga} download={`${nombre.replace(/\.stl$/i, '')}-reparado.stl`}>Descargar STL reparado</a>}
         <h3>Datos de la {revision.resumen ? 'copia' : 'malla'}</h3>
-        <dl>{caja && <div><dt>Medidas</dt><dd>{textoDeCaja(caja)}</dd></div>}{caja && actual.analysis.isWatertight && <div><dt>Volumen de la malla</dt><dd>{mm(Math.abs(actual.analysis.volume))} mm³</dd></div>}<div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div>
+        <dl>{caja && <div><dt>Medidas</dt><dd>{textoDeCaja(caja)}</dd></div>}{caja && actual.analysis.isWatertight && Number.isFinite(actual.analysis.volume) && <div><dt>Volumen de la malla</dt><dd>{mm(Math.abs(actual.analysis.volume))} mm³</dd></div>}<div><dt>Vértices</dt><dd>{actual.analysis.vertexCount.toLocaleString('es-ES')}</dd></div><div><dt>Caras</dt><dd>{actual.analysis.faceCount.toLocaleString('es-ES')}</dd></div><div><dt>Malla cerrada</dt><dd>{actual.esCerrada ? 'Sí' : 'No'}</dd></div><div><dt>Manifold</dt><dd>{actual.esManifold ? 'Sí' : 'No'}</dd></div>
           <div><dt>Componentes</dt><dd>{actual.analysis.connectedComponents}</dd></div>
           <div><dt>Agujeros</dt><dd>{actual.analysis.holeCount}</dd></div>
           <div><dt>Aristas de borde</dt><dd>{actual.analysis.boundaryEdges}</dd></div>
@@ -192,7 +194,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
             ? <p className="malla-ayuda">Elige tu impresora para saber si la pieza cabe en su cama.</p>
             : encajeTexto && <p className="malla-encaje" role="status">{encajeTexto}</p>}
         {cambio && <p className="malla-cambio">{cambio}</p>}
-        <p className="malla-nota">El veredicto compara cajas envolventes: la pieza puede entrar en la cama aunque su caja no quepa, por ejemplo en diagonal.</p>
+        {encajeTexto && <p className="malla-nota">El veredicto compara cajas envolventes: la pieza puede entrar en la cama aunque su caja no quepa, por ejemplo en diagonal.</p>}
       </div>
     </>}
     {revision.fase === 'error' && !revision.analisis && <p>Prueba a seleccionar el archivo de nuevo o elige otro STL.</p>}
