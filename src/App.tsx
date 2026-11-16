@@ -22,6 +22,7 @@ import { MODO_CLASIFICACION } from './services/JevService';
 import { AnalysisProvider } from './state/AnalysisContext';
 import { useAnalysis, useAnalysisActions } from './state/useAnalysis';
 import { ProveedorGuia } from './state/useGuia.tsx';
+import { useRevisionMalla } from './state/useRevisionMalla';
 
 /*
  * Las rutas de la wiki y las tres páginas de información van en `lazy`, y no por
@@ -142,16 +143,16 @@ const RUTAS_DESPLAZABLES = [
  * eso es media pantalla, y durante casi toda la sesión de quien lee la guía no hay
  * ningún archivo cargado.
  *
- * Ahora la columna acompaña sólo al visor STL/3MF y a las guías. El resultado
- * G-code vive en el área principal de UploadRoute. Las demás rutas no añaden
- * un lateral sin relación con su tarea.
+ * Ahora la columna acompaña al visor 3MF y a las guías. El informe STL y el
+ * resultado G-code viven en el área principal de UploadRoute.
  *
  * Y el panel de análisis sigue enlazando a la guía: dice «riesgo de warping, 35 %»
  * y el enlace de debajo lleva a la guía que explica ese 35 %. Esa es la
  * interconexión que no depende de que haya un artículo largo detrás.
  */
 function AppShell() {
-  const { fileType, metadata, classification, status, error } = useAnalysis();
+  const { file, fileType, metadata, classification, status, error } = useAnalysis();
+  const revision = useRevisionMalla(file, fileType);
   const { loadFile, openFilePicker, fileInputRef } = useAnalysisActions();
   const { pathname, hash } = useLocation();
   /*
@@ -163,7 +164,7 @@ function AppShell() {
    */
   const rutaNormalizada = pathname.replace(/\/+$/, '') || '/';
   const desplazable = RUTAS_DESPLAZABLES.some((r) => r.test(rutaNormalizada));
-  const conPanel = pathname === '/' && (fileType === 'stl' || fileType === '3mf');
+  const conPanel = pathname === '/' && fileType === '3mf';
   const conRiel = /^\/wiki\/[^/]+\/?$/.test(pathname);
   const sinLateral = !conPanel && !conRiel;
 
@@ -280,7 +281,7 @@ function AppShell() {
               La clave por ruta hace visible el estado de la nueva navegación.
             */}
             <Suspense key={pathname} fallback={<p className="ruta-cargando" role="status">Cargando página…</p>}>
-              <Outlet />
+              <Outlet context={revision} />
             </Suspense>
           </main>
 

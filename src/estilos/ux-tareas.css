@@ -104,6 +104,34 @@
 .visor-controles { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .visor-controles button { min-width: 44px; min-height: 44px; background: var(--bg-panel); }
 .visor-controles button:disabled { cursor: wait; color: var(--text-secondary); }
+
+.visor-color {
+  min-width: 0;
+  margin: 1rem 0;
+  padding: .8rem 1rem 1rem;
+  border: 1px solid #303b4b;
+  border-radius: 12px;
+  background: #161c26;
+}
+.visor-color legend { padding: 0 .35rem; color: #e8ecf1; font-weight: 700; }
+.visor-color-ayuda { display: block; margin-bottom: .7rem; color: #b5c0cf; font-size: .85rem; }
+.visor-color-opciones { display: flex; flex-wrap: wrap; gap: .5rem; }
+.visor-color-opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 44px;
+  padding: .4rem .65rem;
+  border: 1px solid #394557;
+  border-radius: 8px;
+  color: #e8ecf1;
+  cursor: pointer;
+}
+.visor-color-opcion:has(input:checked) { border-color: #8cb8ff; background: #263a56; }
+.visor-color-opcion:has(input:focus-visible) { outline: 3px solid #8cb8ff; outline-offset: 2px; }
+.visor-color-opcion input { position: absolute; opacity: 0; }
+.visor-color-muestra { width: 1.1rem; height: 1.1rem; border: 1px solid #ffffff80; border-radius: 50%; }
 .viewer-overlay.error { flex-direction: column; gap: 1rem; text-align: center; padding: 1rem; }
 
 @media (max-width: 639.98px) {

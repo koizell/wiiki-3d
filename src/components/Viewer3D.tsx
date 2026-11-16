@@ -7,6 +7,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import ControlesVisor from './ControlesVisor';
 import { geometriaTrayectoria } from '../lib/trayectoria-render';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
+import { finBinarioSTL, validarSTL } from '../lib/stl-binario';
+import { recentrarGrupo3mf } from '../lib/recentrar-grupo-3mf';
 
 /**
  * Formatos de malla que Viewer3D sabe construir en la escena. El enrutado desde
@@ -30,6 +32,13 @@ interface Viewer3DProps {
 
 /** Margen extra al encuadrar, para que el modelo no toque los bordes del visor. */
 const FRAME_MARGIN = 1.3;
+const COLORES_STL = [
+  { nombre: 'Azul', valor: '#3b82f6' },
+  { nombre: 'Rojo', valor: '#ef4444' },
+  { nombre: 'Verde', valor: '#22c55e' },
+  { nombre: 'Blanco', valor: '#e8ecf1' },
+  { nombre: 'Gris', valor: '#8b95a5' },
+] as const;
 
 /**
  * Dirección desde la que se mira la escena al encuadrar: tres cuartos, no
@@ -61,9 +70,23 @@ const EMPTY_3MF_MESSAGE = 'El archivo 3MF no contiene geometría que se pueda mo
  * veces —si ya estaba cuando se leyó el archivo y vuelve a llegar después— y
  * dibujarla dos veces es dibujar el mismo G-code encima.
  */
+const trayectoriasPropias = new WeakMap<THREE.Group, THREE.Group>();
+
+function quitarTrayectoria(grupo: THREE.Group): void {
+  const anterior = trayectoriasPropias.get(grupo);
+  if (!anterior) return;
+  trayectoriasPropias.delete(grupo);
+  grupo.remove(anterior);
+  anterior.traverse(objeto => {
+    if (!(objeto instanceof THREE.LineSegments)) return;
+    objeto.geometry.dispose();
+    const materiales = Array.isArray(objeto.material) ? objeto.material : [objeto.material];
+    materiales.forEach(material => material.dispose());
+  });
+}
+
 function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
-  const anterior = grupo.getObjectByName('trayectoria');
-  if (anterior) grupo.remove(anterior);
+  quitarTrayectoria(grupo);
 
   const { posiciones, colores } = geometriaTrayectoria(trayectoria);
   const geometria = new THREE.BufferGeometry();
@@ -80,6 +103,7 @@ function anadirTrayectoria(grupo: THREE.Group, trayectoria: Trayectoria): void {
     )
   );
   grupo.add(grupoTrayectoria);
+  trayectoriasPropias.set(grupo, grupoTrayectoria);
 }
 
 function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) {
@@ -88,6 +112,9 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [vista, setVista] = useState('Arrastra para girar; también puedes usar los botones.');
+  const [color, setColor] = useState<string>(COLORES_STL[0].valor);
+  const colorRef = useRef<string>(COLORES_STL[0].valor);
+  const materialStlRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
   /*
    * La trayectoria llega **después** de que el archivo esté montado.
@@ -170,6 +197,9 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     // 3. Controles de órbita
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    let usuarioIntervino = false;
+    const registrarInteraccion = () => { usuarioIntervino = true; };
+    controls.addEventListener('start', registrarInteraccion);
 
     // 4. Cargar el archivo
     //
@@ -185,7 +215,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     };
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       if (cancelled) return;
       const contents = reader.result;
       if (!(contents instanceof ArrayBuffer)) {
@@ -193,6 +223,10 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         return;
       }
       try {
+        if (fileType === 'stl') {
+          await validarSTL(contents, () => { if (cancelled) throw new Error('Lectura cancelada'); });
+          if (cancelled) return;
+        }
         const model = buildModel(fileType, contents);
 
         // Un 3MF sin geometría no está roto: es un proyecto recién creado, solo
@@ -201,6 +235,11 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         if (!model) {
           fail(EMPTY_3MF_MESSAGE);
           return;
+        }
+        if (fileType === 'stl' && model instanceof THREE.Mesh) {
+          const material = model.material as THREE.MeshStandardMaterial;
+          material.color.set(colorRef.current);
+          materialStlRef.current = material;
         }
 
         /*
@@ -231,12 +270,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          * calcularla antes dejaría la pieza descentrada.
          */
         if (fileType === '3mf') {
-          grupo.updateMatrixWorld(true);
-          const box = new THREE.Box3().setFromObject(grupo);
-          if (!box.isEmpty()) {
-            const center = box.getCenter(new THREE.Vector3());
-            grupo.position.set(-center.x, -center.y, -center.z);
-          }
+          recentrarGrupo3mf(grupo);
         }
 
         /*
@@ -244,17 +278,20 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
          *
          * El centro del grupo se calculó con la malla y, si la trayectoria ya
          * estaba, con la trayectoria también. Si llega después, hace falta
-         * recalcularlo: sin esto la línea de colores sale al lado de la pieza en
-         * vez de encima, que es justo lo que el mismo marco de cama debería
-         * evitar.
+         * recalcularlo para centrar la unión, sin alterar la relación entre las
+         * coordenadas compartidas de malla y trayectoria.
          */
         recentrarRef.current = () => {
           if (fileType !== '3mf') return;
-          grupo.updateMatrixWorld(true);
-          const caja = new THREE.Box3().setFromObject(grupo);
-          if (caja.isEmpty()) return;
-          const centro = caja.getCenter(new THREE.Vector3());
-          grupo.position.set(-centro.x, -centro.y, -centro.z);
+          const posicionAnterior = grupo.getWorldPosition(new THREE.Vector3());
+          recentrarGrupo3mf(grupo);
+          if (!usuarioIntervino) {
+            frameCamera(camera, controls, grupo);
+          } else {
+            const desplazamiento = grupo.getWorldPosition(new THREE.Vector3()).sub(posicionAnterior);
+            camera.position.add(desplazamiento);
+            controls.target.add(desplazamiento);
+          }
         };
         grupoRef.current = grupo;
 
@@ -267,14 +304,19 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
         frameCamera(camera, controls, grupo);
 
         comandos.current = {
-          encuadrar: () => frameCamera(camera, controls, model),
+          encuadrar: () => {
+            registrarInteraccion();
+            frameCamera(camera, controls, fileType === '3mf' ? grupo : model);
+          },
           zoom: (factor) => {
+            registrarInteraccion();
             const offset = camera.position.clone().sub(controls.target);
             const distancia = THREE.MathUtils.clamp(offset.length() * factor, 1, camera.far * 0.8);
             camera.position.copy(controls.target).add(offset.setLength(distancia));
             controls.update();
           },
           girar: () => {
+            registrarInteraccion();
             const offset = camera.position.clone().sub(controls.target);
             offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 6);
             camera.position.copy(controls.target).add(offset);
@@ -284,6 +326,7 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
 
         setLoading(false);
       } catch (err) {
+        if (cancelled) return;
         console.error(err);
         fail(LOAD_ERROR_MESSAGE[fileType]);
       }
@@ -313,11 +356,14 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
     return () => {
       cancelled = true;
       comandos.current = null;
+      if (grupoRef.current) quitarTrayectoria(grupoRef.current);
       grupoRef.current = null;
       recentrarRef.current = null;
+      materialStlRef.current = null;
       if (reader.readyState === FileReader.LOADING) reader.abort();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      controls.removeEventListener('start', registrarInteraccion);
       controls.dispose();
       renderer.dispose();
       if (currentMount.contains(renderer.domElement)) {
@@ -338,14 +384,14 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
    * no se pintaba nunca: el efecto no se volvía a ejecutar y el grupo se había
    * construido sin ella.
    *
-   * Aquí está la otra puerta. Y el recentrado se recalcula, porque el centro del
-   * grupo se calculó sin la trayectoria y sin recalcularlo la línea de colores
-   * sale al lado de la pieza en vez de encima.
+   * Aquí está la otra puerta: al añadir o quitar la trayectoria se recalcula el
+   * centro de la unión sin cambiar las coordenadas relativas.
    */
   useEffect(() => {
     const grupo = grupoRef.current;
-    if (!grupo || !trayectoria || fileType !== '3mf') return;
-    anadirTrayectoria(grupo, trayectoria);
+    if (!grupo || fileType !== '3mf') return;
+    if (trayectoria) anadirTrayectoria(grupo, trayectoria);
+    else quitarTrayectoria(grupo);
     recentrarRef.current?.();
   }, [trayectoria, fileType]);
 
@@ -355,6 +401,22 @@ function Viewer3D({ file, fileType, trayectoria, onChooseFile }: Viewer3DProps) 
       {loading && <div className="viewer-overlay">Cargando modelo 3D...</div>}
       {error && <div className="viewer-overlay error" role="alert"><p>{error}</p>{onChooseFile && <button type="button" className="btn-primary" onClick={onChooseFile}>Elegir otro archivo</button>}</div>}
     </div>
+    {fileType === 'stl' && <fieldset className="visor-color">
+      <legend>Color de la pieza</legend>
+      <span className="visor-color-ayuda">Solo cambia la vista, no el archivo.</span>
+      <div className="visor-color-opciones">
+        {COLORES_STL.map(opcion => <label className="visor-color-opcion" key={opcion.valor}>
+          <input type="radio" name="color-stl" value={opcion.valor} checked={color === opcion.valor}
+            onChange={() => {
+              colorRef.current = opcion.valor;
+              setColor(opcion.valor);
+              materialStlRef.current?.color.set(opcion.valor);
+            }} />
+          <span className="visor-color-muestra" style={{ backgroundColor: opcion.valor }} aria-hidden="true" />
+          <span>{opcion.nombre}</span>
+        </label>)}
+      </div>
+    </fieldset>}
     <ControlesVisor disabled={loading || !!error}
       mensaje={loading ? 'Preparando el visor…' : error ? 'Puedes elegir otro archivo para continuar.' : vista}
       onAcercar={() => { comandos.current?.zoom(0.8); setVista('Vista ampliada.'); }}
@@ -423,10 +485,13 @@ function buildObj(data: ArrayBuffer): THREE.Object3D | null {
 
 /** STL: una sola malla sin color, así que se le aplica el material de la app. */
 function buildStl(data: ArrayBuffer): THREE.Object3D {
-  const geometry = new STLLoader().parse(data);
+  const fin = finBinarioSTL(data);
+  const geometry = new STLLoader().parse(fin !== null && fin < data.byteLength ? data.slice(0, fin) : data);
+  if (!geometry.getAttribute('position')?.count) {
+    geometry.dispose();
+    throw new Error('STL vacío o inválido');
+  }
 
-  // Centrar la geometría
-  geometry.center();
   geometry.computeVertexNormals();
 
   const material = new THREE.MeshStandardMaterial({
@@ -441,6 +506,12 @@ function buildStl(data: ArrayBuffer): THREE.Object3D {
   // y se convierte a Y-up, que es lo que espera three.js por defecto. El usuario
   // puede girar con los controles si la pieza venía con otra orientación.
   mesh.rotation.x = -Math.PI / 2;
+  mesh.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(mesh);
+  if (!box.isEmpty()) {
+    const center = box.getCenter(new THREE.Vector3());
+    mesh.position.set(-center.x, -box.min.y, -center.z);
+  }
   return mesh;
 }
 

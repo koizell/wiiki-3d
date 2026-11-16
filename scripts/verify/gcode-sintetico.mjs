@@ -88,7 +88,7 @@ export const CAJA_SINTETICA = { x0: 10, x1: 20, y0: 10, y1: 20, z0: 0, z1: 0.6 }
  * pieza, es una caja que ocupa su sitio en la cama, que es lo que hace falta
  * para comprobar que la trayectoria y la malla se alinean.
  */
-export function crear3mfSintetico(gcode) {
+export function crear3mfSintetico(gcode, nombreObjeto = '') {
   const { x0, x1, y0, y1, z0, z1 } = CAJA_SINTETICA;
   const vertices = [
     [x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0],
@@ -104,7 +104,7 @@ export function crear3mfSintetico(gcode) {
 <model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
   <metadata name="Application">wiiki-3d sintético</metadata>
   <resources>
-    <object id="1" type="model">
+    <object id="1" type="model"${nombreObjeto ? ` name="${nombreObjeto}"` : ''}>
       <mesh>
         <vertices>
 ${vertices.map(([x, y, z]) => `          <vertex x="${x}" y="${y}" z="${z}" />`).join('\n')}

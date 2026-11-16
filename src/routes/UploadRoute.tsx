@@ -11,6 +11,9 @@ import CabeceraRuta from "../components/CabeceraRuta";
 import SeccionAnalisis from "../components/SeccionAnalisis";
 import Preflight from "../components/Preflight";
 import ControlesVisor from "../components/ControlesVisor";
+import { useOutletContext } from "react-router-dom";
+import type { RevisionMalla as EstadoRevisionMalla } from "../state/useRevisionMalla";
+import RevisionMalla, { VeredictoMalla } from "../components/RevisionMalla";
 
 /**
  * El visor 3D se carga bajo demanda, y desde aquí.
@@ -47,6 +50,7 @@ const LazyViewer3D = lazy(() => import("../components/Viewer3D"));
  * de la app sería inalcanzable con teclado. Medido con `npm run verify:teclado`.
  */
 function UploadRoute() {
+  const revision = useOutletContext<EstadoRevisionMalla>();
   const { file, fileType, metadata, trayectoria, classification, status } = useAnalysis();
   const { clearFile, openFilePicker, loadFile } = useAnalysisActions();
   const [arrastrando, setArrastrando] = useState(false);
@@ -186,8 +190,7 @@ function UploadRoute() {
                <strong>G-code:</strong> consulta material, temperaturas, gramos y tiempo.
     </p>
     <p>
-      <strong>STL o 3MF</strong>: visor 3D. No se analiza: no lleva datos de
-      impresión dentro.
+      <strong>STL:</strong> visor 3D y revisión local de la malla. <strong>3MF:</strong> visor 3D; los proyectos pueden incluir datos de impresión.
     </p>
     <button
       type="button"
@@ -208,7 +211,7 @@ function UploadRoute() {
 
   return (
     <>
-       <div className={showGcodeNotice ? 'analisis-trabajo' : 'viewer-container'}>
+       <div className={showGcodeNotice ? 'analisis-trabajo' : `viewer-container${fileType === 'stl' ? ' viewer-container--stl' : ''}`}>
          {/*
            Cabecera de plano de la ruta (§5 y §7.2 de la spec).
 
@@ -261,6 +264,7 @@ function UploadRoute() {
             <Recomendacion recomendacion={veredicto} demo={MODO_CLASIFICACION === 'demo'} />
           </div>
         ) : null}
+        {fileType === 'stl' && <VeredictoMalla revision={revision} />}
 
         {metadata && <Preflight metadata={metadata} trayectoria={trayectoria} />}
 
@@ -302,6 +306,8 @@ function UploadRoute() {
             />
           )}
         </Suspense>
+
+        {fileType === 'stl' && <RevisionMalla revision={revision} nombre={file.name} />}
 
         {showGcodeNotice && (
           <>

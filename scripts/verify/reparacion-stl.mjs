@@ -1,0 +1,1389 @@
+import { chromium } from 'playwright'
+import { spawn } from 'node:child_process'
+import assert from 'node:assert/strict'
+import { build } from 'vite'
+import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { crearGcodeSintetico, crear3mfSintetico } from './gcode-sintetico.mjs'
+
+const subruta = process.argv.includes('--subruta')
+const preview = process.argv.includes('--preview') || subruta
+const base = subruta ? '/subruta/' : '/'
+const bundleDir = '/tmp/opencode/reparacion-stl-bundle'
+const subrutaDir = '/tmp/opencode/reparacion-stl-dist-subruta'
+function validarSolicitudes(requests, permitidas) {
+  assert.deepEqual(requests.filter(r => !['GET', 'HEAD'].includes(r.method) || r.body || !permitidas.has(r.url)), [], 'Solicitud inesperada')
+}
+const permitidasPrueba = new Set(['http://127.0.0.1:4179/meshfix/worker.js', 'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=12345678'])
+validarSolicitudes([{ url: [...permitidasPrueba][0], method: 'GET', body: 0 }], permitidasPrueba)
+for (const url of [
+  'http://127.0.0.1:4179/meshfix/worker.js?datos=QUJD',
+  'http://127.0.0.1:4179/meshfix/QUJD',
+  'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=12345678&datos=QUJD',
+  'http://127.0.0.1:4179/node_modules/.vite/deps/meshfix-wasm.js?v=51554a44',
+  'https://example.org/recibir?datos=QUJD',
+]) assert.throws(() => validarSolicitudes([{ url, method: 'GET', body: 0 }], permitidasPrueba), /Solicitud inesperada/)
+if (subruta) await build({ base, build: { outDir: subrutaDir, emptyOutDir: true } })
+if (preview) {
+  await build({ configFile: false, base, build: { outDir: bundleDir, emptyOutDir: true, lib: { entry: resolve('src/services/reparacionMalla.ts'), formats: ['es'], fileName: () => 'service.js' } } })
+}
+const args = ['run', preview ? 'preview' : 'dev', '--', '--host', '127.0.0.1', '--port', '4179', '--strictPort']
+if (subruta) args.push('--base', base, '--outDir', subrutaDir)
+const server = spawn('npm', args, { stdio: 'inherit' })
+let browser
+try {
+  let ready = false
+  for (let i = 0; i < 100; i++) {
+    try { if ((await fetch(`http://127.0.0.1:4179${base}`)).ok) { ready = true; break } } catch {}
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  assert.ok(ready, 'Vite no arrancó')
+  browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage()
+  // Aislar anuncios externos de la prueba; cualquier intento posterior sigue
+  // registrándose y se rechaza por la lista de solicitudes admitidas.
+  await page.route(/^https:\/\//, route => route.abort())
+  const assets = new Set()
+  page.on('response', response => { if (response.url().includes('/meshfix/') && response.ok()) assets.add(new URL(response.url()).pathname) })
+  if (preview) await page.route('**/verify-bundle/**', async route => {
+    const name = new URL(route.request().url()).pathname.split('/').pop()
+    await route.fulfill({ status: 200, contentType: 'application/javascript', body: await readFile(resolve(bundleDir, name)) })
+  })
+  await page.goto(`http://127.0.0.1:4179${base}`)
+  if (!preview) {
+    const vertices = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]]
+    const faces = [[0,2,1],[0,3,2],[4,5,6],[4,6,7],[0,1,5],[0,5,4],[1,2,6],[1,6,5],[2,3,7],[2,7,6],[3,0,4],[3,4,7]]
+    const stl = tris => {
+      const b = Buffer.alloc(84 + tris.length * 50); b.writeUInt32LE(tris.length, 80)
+      tris.forEach((tri, i) => tri.forEach((v, j) => vertices[v].forEach((x, k) => b.writeFloatLE(x, 84 + i * 50 + 12 + j * 12 + k * 4))))
+      return b
+    }
+    const input = page.locator('#file-upload')
+    const select = async (name, buffer) => input.setInputFiles({ name, mimeType: 'model/stl', buffer })
+    const visible = async text => page.getByText(text, { exact: false }).filter({ visible: true }).first().waitFor()
+    // La versión de Vite se fija desde una dependencia ya cargada ANTES de
+    // seleccionar el archivo; no se aceptan parámetros adicionales ni otros hashes.
+    const viteVersion = await page.evaluate(() => {
+      const urls = performance.getEntriesByType('resource').map(e => e.name)
+      const match = urls.map(url => url.match(/\/node_modules\/\.vite\/deps\/[^/?]+\.js\?v=([a-f0-9]{8})$/)).find(Boolean)
+      return match?.[1]
+    })
+    assert.match(viteVersion ?? '', /^[a-f0-9]{8}$/, 'Falta la versión de dependencias de Vite')
+    const origin = 'http://127.0.0.1:4179'
+    const rutas = [
+      '/src/components/Viewer3D.tsx', '/src/services/reparacionMalla.ts', '/src/lib/stl-binario.ts', '/src/lib/recentrar-grupo-3mf.ts',
+      '/meshfix/worker.js', '/meshfix/meshfix-core.js', '/meshfix/meshfix-core.wasm',
+      ...['meshfix-wasm', 'three_examples_jsm_loaders_STLLoader__js', 'three_examples_jsm_loaders_3MFLoader__js', 'three_examples_jsm_loaders_OBJLoader__js']
+        .map(nombre => `/node_modules/.vite/deps/${nombre}.js?v=${viteVersion}`),
+    ]
+    const permitidas = new Set(rutas.map(ruta => origin + ruta))
+    const requests = []
+    page.on('request', request => requests.push({ url: request.url(), method: request.method(), body: request.postDataBuffer()?.length ?? 0 }))
+    await select('cerrado.stl', stl(faces))
+    await visible('Sin incidencias detectadas')
+    async function comprobarDisposicion() {
+      const layout = await page.evaluate(() => {
+        const informe = document.querySelector('#revision-malla')
+        const visor = document.querySelector('.viewer-3d-container')
+        const estilo = getComputedStyle(informe)
+        return {
+          informes: document.querySelectorAll('#revision-malla').length,
+          lateral: !!informe.closest('.sidebar-right'),
+          abajo: informe.getBoundingClientRect().top >= visor.getBoundingClientRect().bottom,
+          overflow: estilo.overflowY,
+          recortado: informe.scrollHeight > informe.clientHeight + 1,
+          anchoDocumento: document.documentElement.scrollWidth,
+          anchoVentana: document.documentElement.clientWidth,
+        }
+      })
+      assert.equal(layout.informes, 1, 'Debe existir un único informe')
+      assert.equal(layout.lateral, false, 'El STL no debe ocupar el lateral')
+      assert.equal(layout.abajo, true, 'El informe debe estar debajo del visor')
+      assert.ok(!['auto', 'scroll'].includes(layout.overflow) && !layout.recortado, `Informe con scroll o recorte: ${JSON.stringify(layout)}`)
+      assert.ok(layout.anchoDocumento <= layout.anchoVentana + 1, `Desbordamiento horizontal: ${JSON.stringify(layout)}`)
+      assert.equal(await page.locator('.sidebar-right').count(), 0)
+    }
+    await comprobarDisposicion()
+    const diagnostico = page.locator('.malla-resumen').first()
+    for (const [nombre, valor] of [['Componentes', 1], ['Agujeros', 0], ['Aristas de borde', 0], ['Normales invertidas', 0], ['Triángulos degenerados', 0], ['Caras duplicadas', 0]]) {
+      assert.equal((await diagnostico.locator('dl > div').filter({ has: page.locator('dt', { hasText: nombre }) }).locator('dd').innerText()).trim(), String(valor))
+    }
+    assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
+    const originalBytes = stl(faces.slice(2))
+    const referenciaReparacion = await page.evaluate(async bytes => {
+      const { crearSesionMalla } = await import('/src/services/reparacionMalla.ts')
+      const sesion = await crearSesionMalla()
+      try {
+        await sesion.analizar(new Uint8Array(bytes).buffer)
+        await sesion.reparar()
+        return [...new Uint8Array(await sesion.exportar())]
+      } finally { sesion.dispose() }
+    }, [...originalBytes])
+    await page.evaluate(() => {
+      const read = File.prototype.arrayBuffer
+      const post = Worker.prototype.postMessage
+      window.esperarMotor = 'analyzeDetailed'
+      window.liberarMotor = () => {}
+      window.restaurarPost = () => { Worker.prototype.postMessage = post }
+      Worker.prototype.postMessage = function(message, transfer) {
+        if (message.method === window.esperarMotor) {
+          window.esperarMotor = ''
+          window.liberarMotor = () => post.call(this, message, transfer)
+        } else post.call(this, message, transfer)
+      }
+      File.prototype.arrayBuffer = function() {
+        if (this.name === 'abierto.stl') window.originalSTL = this
+        return read.call(this)
+      }
+    })
+    await select('abierto.stl', originalBytes)
+    await page.getByRole('status').filter({ hasText: 'Analizando geometría' }).waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).count(), 0)
+    await page.waitForFunction(() => window.esperarMotor === '')
+    await page.evaluate(() => window.liberarMotor())
+    await visible('Incidencias detectadas')
+    await comprobarDisposicion()
+    await page.getByRole('radio', { name: 'Rojo' }).check()
+    await page.evaluate(() => { window.esperarMotor = 'repair' })
+    await page.getByRole('button', { name: 'Reparar copia' }).filter({ visible: true }).click()
+    await page.getByRole('status').filter({ hasText: 'Reparando la copia' }).waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Reparar copia' }).isDisabled(), true)
+    await page.waitForFunction(() => window.esperarMotor === '')
+    await page.getByRole('radio', { name: 'Verde' }).check()
+    await page.evaluate(() => { window.liberarMotor(); window.restaurarPost() })
+    const link = page.getByRole('link', { name: 'Descargar STL reparado' }).filter({ visible: true })
+    await link.waitFor()
+    const bytesAntesColor = await page.evaluate(async url => [...new Uint8Array(await (await fetch(url)).arrayBuffer())], await link.getAttribute('href'))
+    await page.getByRole('radio', { name: 'Rojo' }).check()
+    assert.deepEqual(await page.evaluate(async url => [...new Uint8Array(await (await fetch(url)).arrayBuffer())], await link.getAttribute('href')), bytesAntesColor)
+    assert.match(await page.locator('.malla-veredicto').innerText(), /Reparación completada/)
+    await page.getByRole('button', { name: 'Encuadrar modelo' }).waitFor({ state: 'visible' })
+    await page.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
+    await page.evaluate(async () => {
+      const url = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+      if (!url) throw new Error('No se encontró el módulo three.js cargado')
+      const { PerspectiveCamera } = await import(/* @vite-ignore */ url)
+      const original = PerspectiveCamera.prototype.updateMatrixWorld
+      window.restaurarCamara = () => { PerspectiveCamera.prototype.updateMatrixWorld = original }
+      PerspectiveCamera.prototype.updateMatrixWorld = function(...args) {
+        window.camaraVisor = this
+        return original.apply(this, args)
+      }
+    })
+    await page.waitForFunction(() => !!window.camaraVisor)
+    const posicion = () => page.evaluate(() => window.camaraVisor.position.toArray())
+    const distancia = p => Math.hypot(...p)
+    const inicial = await posicion()
+    await page.getByRole('button', { name: 'Acercar modelo' }).click()
+    const cerca = await posicion()
+    assert.ok(distancia(cerca) < distancia(inicial), `Acercar no movió la cámara: ${inicial} → ${cerca}`)
+    await page.getByRole('button', { name: 'Alejar modelo' }).click()
+    const lejos = await posicion()
+    assert.ok(distancia(lejos) > distancia(cerca), `Alejar no movió la cámara: ${cerca} → ${lejos}`)
+    await page.getByRole('button', { name: 'Girar modelo' }).click()
+    const girada = await posicion()
+    assert.ok(Math.hypot(girada[0] - lejos[0], girada[2] - lejos[2]) > 0.01, `Girar no movió la cámara: ${lejos} → ${girada}`)
+    await page.getByRole('button', { name: 'Encuadrar modelo' }).click()
+    const encuadrada = await posicion()
+    assert.ok(Math.hypot(...encuadrada.map((v, i) => v - girada[i])) > 0.01, `Encuadrar no movió la cámara: ${girada} → ${encuadrada}`)
+    await page.evaluate(() => window.restaurarCamara())
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-escritorio.png', fullPage: true })
+    const comparacion = page.locator('[aria-label="Cambios de la reparación"]')
+    assert.match(await comparacion.innerText(), /Vértices[\s\S]*8[\s\S]*8/)
+    assert.match(await comparacion.innerText(), /Caras[\s\S]*10[\s\S]*12/)
+    assert.match(await comparacion.innerText(), /Aberturas rellenadas[\s\S]*1/)
+    assert.match(await comparacion.innerText(), /Normales corregidas[\s\S]*\d/)
+    assert.match(await comparacion.innerText(), /Caras eliminadas[\s\S]*\d/)
+    const downloadPromise = page.waitForEvent('download')
+    await link.click()
+    const download = await downloadPromise
+    assert.equal(download.suggestedFilename(), 'abierto-reparado.stl')
+    const downloaded = await readFile(await download.path())
+    assert.deepEqual([...downloaded], referenciaReparacion, 'El color antes y durante la reparación no debe alterar la exportación')
+    assert.equal(downloaded.readUInt32LE(80), 12)
+    assert.equal(downloaded.length, 84 + 12 * 50)
+    assert.notDeepEqual(downloaded, originalBytes)
+    assert.ok(requests.some(r => r.url.includes('/meshfix/worker.js')))
+    console.log('Solicitudes observadas:', JSON.stringify(requests))
+    validarSolicitudes(requests, permitidas)
+    // La petición se satisface localmente para probar que el observador real la
+    // captura, sin transmitir el marcador a ningún servidor.
+    const exfil = `${origin}/meshfix/worker.js?datos=QUJD`
+    await page.route(exfil, route => route.fulfill({ status: 204 }))
+    const antes = requests.length
+    await page.evaluate(url => fetch(url), exfil)
+    assert.ok(requests.slice(antes).some(r => r.url === exfil))
+    assert.throws(() => validarSolicitudes(requests.slice(antes), permitidas), /Solicitud inesperada/)
+    await page.unroute(exfil)
+    assert.equal(await link.getAttribute('download'), 'abierto-reparado.stl')
+    assert.equal(await page.locator('.file-name').textContent(), 'Archivo: abierto.stl')
+    assert.deepEqual(Buffer.from(await page.evaluate(async () => [...new Uint8Array(await window.originalSTL.arrayBuffer())])), originalBytes)
+    await visible('Incidencias pendientes')
+    const invalido = Buffer.concat([originalBytes, Buffer.alloc(50)])
+    invalido.writeUInt32LE(11, 80)
+    invalido.writeFloatLE(NaN, originalBytes.length + 12)
+    await select('perdida.stl', invalido)
+    await visible('Lectura inicial: se descartaron 1 caras no finitas')
+    await page.getByRole('button', { name: 'Reparar copia' }).click()
+    await page.getByRole('link', { name: 'Descargar STL reparado' }).waitFor()
+    await visible('Lectura inicial: se descartaron 1 caras no finitas')
+    await page.getByRole('button', { name: 'Cerrar archivo' }).click()
+    await page.setViewportSize({ width: 390, height: 844 })
+    const sheet = stl(faces.slice(0, 2))
+    await page.locator('.upload-zone').dispatchEvent('drop', { dataTransfer: await page.evaluateHandle(({ bytes }) => {
+      const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(bytes)], 'lamina.stl', { type: 'model/stl' })); return dt
+    }, { bytes: [...sheet] }) })
+    await visible('Incidencias detectadas')
+    await comprobarDisposicion()
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-movil.png', fullPage: true })
+    async function tabHasta(locator) {
+      for (let i = 0; i < 100; i++) {
+        await page.keyboard.press('Tab')
+        if (await locator.evaluate(el => el === document.activeElement)) return
+      }
+      throw new Error(`No se alcanzó con Tab: ${await locator.getAttribute('class')}`)
+    }
+    await page.keyboard.press('Tab')
+    await tabHasta(page.getByRole('link', { name: /Ver revisión y opciones/ }))
+    await page.keyboard.press('Enter')
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'revision-malla')
+    const mobileScroll = await page.evaluate(() => window.scrollY)
+    await page.keyboard.press('PageDown')
+    await page.waitForFunction(before => window.scrollY > before, mobileScroll, { timeout: 3000 })
+    await tabHasta(page.getByRole('button', { name: 'Reparar copia' }))
+    await page.keyboard.press('Enter')
+    await visible('Descargar STL reparado')
+    await visible('heurística')
+    assert.match(await page.locator('.malla-veredicto').innerText(), /Reparación parcial.*pendientes/i)
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-parcial-movil.png', fullPage: true })
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.screenshot({ path: '/tmp/opencode/revision-stl-parcial-escritorio.png', fullPage: true })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await comprobarDisposicion()
+    assert.ok(await page.getByRole('status').count())
+    const firstUrl = await link.getAttribute('href')
+    const fill = page.getByRole('button', { name: 'Rellenar posibles aberturas' })
+    assert.equal(await fill.isDisabled(), true)
+    await page.evaluate(() => {
+      const original = Worker.prototype.postMessage
+      window.restaurarWorker = () => { Worker.prototype.postMessage = original }
+      Worker.prototype.postMessage = function(message, transfer) {
+        if (message.method === 'fillHoles') {
+          queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo simulado de relleno', cancelable: true })))
+        } else original.call(this, message, transfer)
+      }
+    })
+    await page.getByLabel('Entiendo que se pueden cerrar detalles de la pieza.').check()
+    await fill.click()
+    await page.getByRole('alert').filter({ hasText: 'fallo simulado de relleno' }).waitFor()
+    assert.equal(await link.getAttribute('href'), firstUrl)
+    assert.equal(await page.evaluate(async url => (await fetch(url)).ok, firstUrl), true)
+    await page.evaluate(() => window.restaurarWorker())
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await tabHasta(page.getByRole('link', { name: /Ver revisión y opciones/ }))
+    await page.keyboard.press('Enter')
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'revision-malla')
+    await comprobarDisposicion()
+    const scroll = await page.evaluate(() => window.scrollY)
+    await page.keyboard.press('PageDown')
+    await page.waitForFunction(before => window.scrollY > before, scroll, { timeout: 3000 })
+    await page.getByRole('button', { name: 'Cerrar archivo' }).click()
+    const gcode = crearGcodeSintetico()
+    await select('archivo.gcode', Buffer.from(gcode))
+    await page.getByRole('heading', { name: 'Archivo: archivo.gcode' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    await page.locator('.analisis-principal').waitFor()
+    await page.getByText('PLA', { exact: false }).first().waitFor()
+    await page.locator('.visor-trayectoria').first().waitFor()
+    assert.equal(await page.locator('#revision-malla').count(), 0)
+    assert.equal(await page.locator('.sidebar-right').count(), 0)
+    await select('archivo.3mf', Buffer.from(crear3mfSintetico(gcode)))
+    await page.getByRole('heading', { name: 'Archivo: archivo.3mf' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    await page.locator('.viewer-3d-container canvas').waitFor()
+    await page.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
+    await page.locator('.sidebar-right').getByText('PLA', { exact: false }).first().waitFor()
+    assert.equal(await page.locator('#revision-malla').count(), 0)
+    assert.equal(await page.locator('.sidebar-right').count(), 1)
+    await select('archivo.obj', Buffer.from('v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n'))
+    await page.getByRole('heading', { name: 'Archivo: archivo.obj' }).waitFor()
+    assert.equal(await page.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    await page.getByRole('button', { name: 'Cerrar archivo' }).click()
+    await page.route('**/meshfix/worker.js', route => route.abort())
+    await select('fallo.stl', stl(faces))
+    await page.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+    await visible('El visor y el resto de la aplicación siguen disponibles')
+    assert.equal(await page.getByRole('link', { name: 'Contactar' }).getAttribute('href'), '/contacto')
+    assert.equal(await page.locator('.viewer-3d-container').isVisible(), true)
+    assert.equal(await page.getByRole('link', { name: 'Descargar STL reparado' }).count(), 0)
+    await page.unroute('**/meshfix/worker.js')
+    await page.getByRole('button', { name: 'Cerrar archivo' }).click()
+    console.log('OK interfaz STL: selección, arrastre, reparación, teclado y viewports')
+    const visor = await browser.newPage()
+    await visor.goto(`http://127.0.0.1:4179${base}`)
+    await visor.evaluate(async version => {
+      const threeUrl = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+      const three = await import(/* @vite-ignore */ threeUrl)
+      window.threePrueba = three
+      const dispatch = three.EventDispatcher.prototype.dispatchEvent
+      three.EventDispatcher.prototype.dispatchEvent = function(event) {
+        if (this.object?.isPerspectiveCamera && this.target?.isVector3) window.controlesPrueba = this
+        return dispatch.call(this, event)
+      }
+      const add = three.Object3D.prototype.add
+      three.Object3D.prototype.add = function(...objects) {
+        if (this.type === 'Scene') window.escenaPrueba = this
+        if (objects.some(o => o.name === 'trayectoria')) window.ordenObservado3mf = this.parent?.type === 'Scene' ? 'malla-primero' : 'trayectoria-primero'
+        return add.apply(this, objects)
+      }
+      const update = three.PerspectiveCamera.prototype.updateMatrixWorld
+      three.PerspectiveCamera.prototype.updateMatrixWorld = function(...args) {
+        window.camaraPrueba = this
+        return update.apply(this, args)
+      }
+      const mod = await import(/* @vite-ignore */ `/node_modules/.vite/deps/three_examples_jsm_loaders_STLLoader__js.js?v=${version}`)
+      const parse = mod.STLLoader.prototype.parse
+      window.geometriasSTL = []
+      mod.STLLoader.prototype.parse = function(data) {
+        const geometry = parse.call(this, data)
+        window.geometriasSTL.push(Array.from(geometry.getAttribute('position')?.array ?? []))
+        return geometry
+      }
+      const post = Worker.prototype.postMessage
+      window.analisisSTL = 0
+      Worker.prototype.postMessage = function(message, transfer) {
+        if (message.method === 'analyzeDetailed') window.analisisSTL++
+        return post.call(this, message, transfer)
+      }
+      const read = File.prototype.arrayBuffer
+      File.prototype.arrayBuffer = function() {
+        window.archivoSTL = this
+        return read.call(this)
+      }
+    }, viteVersion)
+    const baseOpen = stl(faces.slice(2))
+    // Retener la lectura del visor para elegir color antes de completar la carga.
+    await visor.evaluate(() => {
+      const read = FileReader.prototype.readAsArrayBuffer
+      FileReader.prototype.readAsArrayBuffer = function(file) {
+        if (file.name === 'espera.stl') window.liberarVisor = () => read.call(this, file)
+        else read.call(this, file)
+      }
+    })
+    await visor.locator('#file-upload').setInputFiles({ name: 'espera.stl', mimeType: 'model/stl', buffer: baseOpen })
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    await visor.evaluate(() => window.liberarVisor())
+    await visor.waitForFunction(() => window.escenaPrueba?.children.some(x => x.type === 'Group'))
+    assert.equal(await visor.evaluate(() => window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString()), 'ef4444')
+    await visor.getByRole('radio', { name: 'Azul' }).check()
+    // Coordenadas negativas y alturas distintas: medir después de la rotación,
+    // no la caja de la geometría original.
+    for (const [offset, scale] of [[[-20, -10, -30], [4, 6, 8]], [[50, -80, 100], [90, 60, 80]]]) {
+      const bytes = Buffer.from(baseOpen)
+      for (let i = 0; i < 10; i++) for (let j = 0; j < 3; j++) for (let k = 0; k < 3; k++) {
+        const pos = 84 + i * 50 + 12 + j * 12 + k * 4
+        bytes.writeFloatLE(bytes.readFloatLE(pos) * scale[k] + offset[k], pos)
+      }
+      await visor.locator('#file-upload').setInputFiles({ name: 'caja.stl', mimeType: 'model/stl', buffer: bytes })
+      await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+      await visor.waitForFunction(() => !document.querySelector('.visor-controles button')?.disabled)
+      await visor.waitForFunction(() => window.escenaPrueba?.children.some(x => x.type === 'Group'))
+      const caja = await visor.evaluate(async () => {
+        const url = performance.getEntriesByType('resource').map(e => e.name).find(name => /\/three\.js\?v=/.test(name))
+        const { Box3 } = await import(/* @vite-ignore */ url)
+        const mesh = window.escenaPrueba.children.find(x => x.type === 'Group')?.children[0]
+        const rotated = new Box3().setFromObject(mesh)
+        const original = new Box3().setFromBufferAttribute(mesh.geometry.getAttribute('position'))
+        return { min: rotated.min.toArray(), max: rotated.max.toArray(), originalMin: original.min.toArray(), originalMax: original.max.toArray(), vertices: Array.from(mesh.geometry.getAttribute('position').array), rotation: mesh.rotation.toArray().slice(0, 3), color: mesh.material.color.getHexString() }
+      })
+      assert.ok(Math.abs(caja.min[1]) < 1e-5, `Base fuera de la cama: ${JSON.stringify(caja)}`)
+      for (const eje of [0, 2]) assert.ok(Math.abs(caja.min[eje] + caja.max[eje]) < 1e-5, `Centrado horizontal incorrecto: ${JSON.stringify(caja)}`)
+      assert.deepEqual(caja.originalMin, offset)
+      assert.deepEqual(caja.originalMax, offset.map((v, i) => v + scale[i]))
+      assert.deepEqual(caja.vertices, faces.slice(2).flatMap(tri => tri.flatMap(v => vertices[v].map((n, i) => n * scale[i] + offset[i]))))
+      assert.ok(Math.abs(caja.rotation[0] + Math.PI / 2) < 1e-12 && caja.rotation[1] === 0 && caja.rotation[2] === 0)
+      assert.ok(Math.abs((caja.max[1] - caja.min[1]) - scale[2]) < 1e-5)
+      assert.ok(Math.abs((caja.max[0] - caja.min[0]) - scale[0]) < 1e-5)
+      assert.ok(Math.abs((caja.max[2] - caja.min[2]) - scale[1]) < 1e-5)
+      assert.equal(caja.color, '3b82f6')
+    }
+    await visor.setViewportSize({ width: 390, height: 844 })
+    for (const nombre of ['Azul', 'Rojo', 'Verde', 'Blanco', 'Gris']) {
+      const opcion = visor.getByRole('radio', { name: nombre })
+      assert.equal(await opcion.isVisible(), true, `${nombre} debe estar visible`)
+      const bounds = await opcion.locator('..').boundingBox()
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 390, `${nombre} fuera del ancho móvil`)
+    }
+    assert.ok(await visor.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'Desbordamiento horizontal móvil')
+    await visor.getByRole('radio', { name: 'Azul' }).focus()
+    await visor.keyboard.press('ArrowRight')
+    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).isChecked(), true)
+    await visor.locator('.viewer-3d-container').scrollIntoViewIfNeeded()
+    await visor.screenshot({ path: '/tmp/opencode/visor-color-movil.png' })
+    await visor.setViewportSize({ width: 1440, height: 900 })
+    await visor.locator('.viewer-3d-container').scrollIntoViewIfNeeded()
+    await visor.screenshot({ path: '/tmp/opencode/visor-color-escritorio.png' })
+    const camaraInicial = await visor.evaluate(() => window.camaraPrueba.position.toArray())
+    await visor.getByRole('button', { name: 'Girar modelo' }).click()
+    await visor.getByRole('button', { name: 'Acercar modelo' }).click()
+    await visor.waitForFunction(() => !!window.controlesPrueba)
+    const antesColor = await visor.evaluate(() => { window.escenaPruebaCanvas = document.querySelector('canvas'); return { camera: window.camaraPrueba.position.toArray(), quaternion: window.camaraPrueba.quaternion.toArray(), target: window.controlesPrueba.target.toArray(), analysis: window.analisisSTL } })
+    assert.ok(Math.hypot(...antesColor.camera.map((v, i) => v - camaraInicial[i])) > 1, 'La cámara debe moverse antes de cambiar color')
+    await visor.getByRole('radio', { name: 'Verde' }).check()
+    const despuesColor = await visor.evaluate(() => ({ same: document.querySelector('canvas') === window.escenaPruebaCanvas, camera: window.camaraPrueba.position.toArray(), quaternion: window.camaraPrueba.quaternion.toArray(), target: window.controlesPrueba.target.toArray(), analysis: window.analisisSTL, color: window.escenaPrueba.children.find(x => x.type === 'Group').children[0].material.color.getHexString() }))
+    assert.deepEqual(despuesColor.camera, antesColor.camera)
+    assert.deepEqual(despuesColor.quaternion, antesColor.quaternion)
+    assert.deepEqual(despuesColor.target, antesColor.target)
+    assert.equal(despuesColor.same, true)
+    assert.equal(despuesColor.analysis, antesColor.analysis)
+    assert.equal(despuesColor.color, '22c55e')
+    const seleccionarVisor = async (name, buffer, type) => {
+      await visor.locator('#file-upload').setInputFiles({ name, mimeType: type, buffer })
+      await visor.getByRole('heading', { name: `Archivo: ${name}` }).waitFor()
+      await visor.waitForFunction(nombre => {
+        const canvas = document.querySelector('.viewer-3d-container canvas')
+        return canvas?.getAttribute('aria-label')?.includes(nombre) && !document.querySelector('.visor-controles button')?.disabled && window.escenaPrueba?.children.some(x => x.type === 'Group')
+      }, name)
+    }
+    const datosGcode = Buffer.from(crearGcodeSintetico())
+    const datos3mf = Buffer.from(crear3mfSintetico(datosGcode.toString()))
+    const datosObj = Buffer.from('v -10 4 2\nv 20 4 2\nv -10 14 12\nf 1 2 3\n')
+    // Montaje React real: cambiamos la prop sin sustituir el archivo ni la escena.
+    await visor.getByRole('button', { name: 'Cerrar archivo' }).click()
+    await visor.evaluate(async ({ bytes, bytesColision }) => {
+      const recursos = performance.getEntriesByType('resource').map(e => e.name)
+      const react = await import(/* @vite-ignore */ recursos.find(u => /\/react\.js\?v=/.test(u)))
+      const dom = await import(/* @vite-ignore */ recursos.find(u => /\/react-dom_client\.js\?v=/.test(u)))
+      const { default: Viewer3D } = await import('/src/components/Viewer3D.tsx')
+      const contenedor = document.createElement('div')
+      contenedor.id = 'prueba-react-3mf'
+      contenedor.style.cssText = 'position:fixed;top:0;left:0;width:800px;height:600px;z-index:9999;background:#111'
+      const estilo = document.createElement('style')
+      estilo.textContent = '#prueba-react-3mf .viewer-3d-container { width: 800px; height: 400px; }'
+      document.head.appendChild(estilo)
+      document.body.appendChild(contenedor)
+      let root = (dom.createRoot ?? dom.default.createRoot)(contenedor)
+      let archivo = new File([new Uint8Array(bytes)], 'react.3mf', { type: 'model/3mf' })
+      const archivoColision = new File([new Uint8Array(bytesColision)], 'colision.3mf', { type: 'model/3mf' })
+      const tramos = [
+        { x: 10, y: 10, z: 0.6, viaje: true },
+        { x: 20, y: 10, z: 0.6, viaje: false, tipo: 'Outer wall' },
+        { x: 600, y: 10, z: 0.6, viaje: false, tipo: 'Outer wall' },
+      ]
+      window.trayectoriaReact = { tramos }
+      window.renderReact3mf = trayectoria => root.render((react.createElement ?? react.default.createElement)(Viewer3D, { file: archivo, fileType: '3mf', trayectoria }))
+      window.reiniciarReact3mf = (trayectoria, colision = false) => {
+        root.unmount()
+        if (colision) archivo = archivoColision
+        root = (dom.createRoot ?? dom.default.createRoot)(contenedor)
+        window.renderReact3mf(trayectoria)
+      }
+      window.cerrarReact3mf = () => { root.unmount(); contenedor.remove(); estilo.remove() }
+      window.renderReact3mf(null)
+    }, { bytes: Array.from(datos3mf), bytesColision: Array.from(crear3mfSintetico(datosGcode.toString(), 'trayectoria')) })
+    const reactVisor = visor.locator('#prueba-react-3mf')
+    await reactVisor.locator('.visor-controles button:not([disabled])').first().waitFor()
+    const estadoReact = () => visor.evaluate(() => {
+      const T = window.threePrueba
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      grupo.updateWorldMatrix(true, true)
+      const caja = new T.Box3().setFromObject(grupo)
+      const linea = grupo.getObjectByName('trayectoria')?.children[0]
+      const malla = grupo.children[0].getObjectByProperty('isMesh', true)
+      const puntos = malla.geometry.getAttribute('position')
+      let vertice
+      for (let i = 0; i < puntos.count; i++) {
+        if (Math.abs(puntos.getX(i) - 10) < 1e-5 && Math.abs(puntos.getY(i) - 10) < 1e-5 && Math.abs(puntos.getZ(i) - 0.6) < 1e-5) {
+          vertice = new T.Vector3().fromBufferAttribute(puntos, i).applyMatrix4(malla.matrixWorld)
+          break
+        }
+      }
+      const inicio = linea && new T.Vector3().fromBufferAttribute(linea.geometry.getAttribute('position'), 0).applyMatrix4(linea.matrixWorld)
+      const extremo = linea && new T.Vector3().fromBufferAttribute(linea.geometry.getAttribute('position'), 3).applyMatrix4(linea.matrixWorld).project(window.camaraPrueba)
+      return {
+        centro: caja.getCenter(new T.Vector3()).toArray(),
+        camara: window.camaraPrueba.position.toArray(), target: window.controlesPrueba.target.toArray(),
+        grupo: new T.Vector3().setFromMatrixPosition(grupo.matrixWorld).toArray(),
+        quaternion: window.camaraPrueba.quaternion.toArray(),
+        distancia: window.camaraPrueba.position.distanceTo(window.controlesPrueba.target),
+        alineacion: inicio && vertice ? inicio.distanceTo(vertice) : null,
+        extremo: extremo?.toArray(),
+        aspect: window.camaraPrueba.aspect,
+        trayectoria: !!linea,
+      }
+    })
+    const antesTardia = await estadoReact()
+    await visor.evaluate(() => window.renderReact3mf(window.trayectoriaReact))
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    const tardia = await estadoReact()
+    assert.ok(tardia.alineacion !== null && tardia.alineacion < 1e-5, `Punto de malla y trayectoria no coincide: ${tardia.alineacion}`)
+    assert.ok(tardia.distancia > antesTardia.distancia * 2, 'La trayectoria exterior debe ampliar el encuadre automático')
+    assert.ok(tardia.target.every((v, i) => Math.abs(v - tardia.centro[i]) < 1e-5), 'El objetivo debe ser el centro de la unión')
+    assert.ok(tardia.extremo.every(v => Math.abs(v) <= 1), `Extremo exterior fuera del encuadre: ${tardia.extremo}; aspecto ${tardia.aspect}`)
+    await visor.evaluate(() => {
+      const linea = window.escenaPrueba.getObjectByName('trayectoria').children[0]
+      window.disposeReact = { geometria: false, material: false }
+      linea.geometry.addEventListener('dispose', () => { window.disposeReact.geometria = true })
+      linea.material.addEventListener('dispose', () => { window.disposeReact.material = true })
+      window.renderReact3mf(null)
+    })
+    await visor.waitForFunction(() => !window.escenaPrueba?.getObjectByName('trayectoria'))
+    const quitada = await estadoReact()
+    assert.ok(quitada.centro.every(v => Math.abs(v) < 1e-5), 'Al quitar trayectoria se recentra la malla')
+    assert.deepEqual(await visor.evaluate(() => window.disposeReact), { geometria: true, material: true })
+    const estabilizar = async () => {
+      await visor.evaluate(() => { window.estabilidadReact = null })
+      await visor.waitForFunction(() => {
+        const c = window.camaraPrueba
+        const actual = [...c.position.toArray(), ...c.quaternion.toArray(), ...window.controlesPrueba.target.toArray()]
+        const anterior = window.estabilidadReact
+        const igual = anterior && actual.every((v, i) => Math.abs(v - anterior.valores[i]) < 1e-7)
+        window.estabilidadReact = { valores: actual, cuenta: igual ? anterior.cuenta + 1 : 0 }
+        return window.estabilidadReact.cuenta >= 3
+      }, null, { polling: 'raf' })
+    }
+    const compararVistaRelativa = (antes, despues, contexto) => {
+      for (const campo of ['camara', 'target']) {
+        assert.ok(antes[campo].every((v, i) => Math.abs((v - antes.grupo[i]) - (despues[campo][i] - despues.grupo[i])) < 1e-5), `${contexto}: ${campo} relativa al modelo`)
+      }
+      assert.ok(antes.quaternion.every((v, i) => Math.abs(v - despues.quaternion[i]) < 1e-6), `${contexto}: orientación`)
+      assert.ok(Math.abs(antes.distancia - despues.distancia) < 1e-5, `${contexto}: zoom`)
+    }
+    const canvasReact = reactVisor.locator('canvas')
+    const boundsReact = await canvasReact.boundingBox()
+    const xReact = boundsReact.x + boundsReact.width / 2
+    const yReact = boundsReact.y + boundsReact.height / 2
+    let movida
+    for (const interaccion of ['arrastre', 'rueda', 'pan']) {
+      const antesInteraccion = await estadoReact()
+      await visor.mouse.move(xReact, yReact)
+      if (interaccion === 'rueda') await visor.mouse.wheel(0, -180)
+      else {
+        const button = interaccion === 'pan' ? 'right' : 'left'
+        await visor.mouse.down({ button })
+        await visor.mouse.move(xReact + 35, yReact + 20, { steps: 5 })
+        await visor.mouse.up({ button })
+      }
+      await estabilizar()
+      movida = await estadoReact()
+      if (interaccion === 'arrastre') assert.ok(movida.quaternion.some((v, i) => Math.abs(v - antesInteraccion.quaternion[i]) > 1e-4), 'El arrastre debe girar la cámara')
+      if (interaccion === 'rueda') assert.ok(Math.abs(movida.distancia - antesInteraccion.distancia) > 1e-4, 'La rueda debe cambiar el zoom')
+      if (interaccion === 'pan') assert.ok(movida.target.some((v, i) => Math.abs(v - antesInteraccion.target[i]) > 1e-4), 'El pan debe mover el objetivo')
+      await visor.evaluate(() => window.renderReact3mf(window.trayectoriaReact))
+      await visor.waitForFunction(() => !!window.escenaPrueba?.children.find(x => x.type === 'Group')?.children.find(x => x.name === 'trayectoria'))
+      await estabilizar()
+      const preservada = await estadoReact()
+      compararVistaRelativa(movida, preservada, `${interaccion}: adición`)
+      await visor.evaluate(() => window.renderReact3mf(undefined))
+      await visor.waitForFunction(() => !window.escenaPrueba?.children.find(x => x.type === 'Group')?.children.find(x => x.name === 'trayectoria'))
+      await estabilizar()
+      compararVistaRelativa(preservada, await estadoReact(), `${interaccion}: retirada`)
+    }
+    await visor.evaluate(() => window.renderReact3mf(window.trayectoriaReact))
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    await reactVisor.getByRole('button', { name: 'Encuadrar modelo' }).click()
+    const encuadradaReact = await estadoReact()
+    assert.ok(encuadradaReact.distancia > movida.distancia * 2, 'El botón debe encuadrar la unión 3MF')
+    assert.ok(encuadradaReact.target.every((v, i) => Math.abs(v - encuadradaReact.centro[i]) < 1e-5))
+    await visor.evaluate(() => window.renderReact3mf(undefined))
+    await visor.waitForFunction(() => !window.escenaPrueba?.getObjectByName('trayectoria'))
+    const quitadaTrasInteraccion = await estadoReact()
+    compararVistaRelativa(encuadradaReact, quitadaTrasInteraccion, 'retirada tras encuadrar')
+    await visor.evaluate(() => window.reiniciarReact3mf(window.trayectoriaReact))
+    await reactVisor.locator('.visor-controles button:not([disabled])').first().waitFor()
+    await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+    const temprana = await estadoReact()
+    assert.ok(temprana.alineacion !== null && temprana.alineacion < 1e-5, `Alineación con trayectoria temprana: ${temprana.alineacion}`)
+    assert.ok(temprana.centro.every(v => Math.abs(v) < 1e-5))
+    assert.ok(temprana.target.every((v, i) => Math.abs(v - temprana.centro[i]) < 1e-5))
+    assert.ok(temprana.extremo.every(v => Math.abs(v) <= 1))
+    assert.ok(Math.abs(temprana.distancia - tardia.distancia) < 1e-5, 'El encuadre debe coincidir en ambos órdenes')
+    await visor.evaluate(() => window.reiniciarReact3mf(null, true))
+    await reactVisor.locator('.visor-controles button:not([disabled])').first().waitFor()
+    await visor.waitForFunction(() => !!window.escenaPrueba?.children.find(x => x.type === 'Group')?.children[0]?.getObjectByName('trayectoria'))
+    await visor.evaluate(() => {
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      window.modeloColision = grupo.children[0]
+      const malla = window.modeloColision.getObjectByProperty('isMesh', true)
+      window.disposeModeloColision = 0
+      malla.geometry.addEventListener('dispose', () => window.disposeModeloColision++)
+      malla.material.addEventListener('dispose', () => window.disposeModeloColision++)
+      window.renderReact3mf(window.trayectoriaReact)
+    })
+    await visor.waitForFunction(() => window.escenaPrueba.children.find(x => x.type === 'Group').children.length === 2)
+    await visor.evaluate(() => {
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      const linea = grupo.children[1].children[0]
+      window.primeraLineaColision = linea
+      window.disposeColision = { geometria: 0, material: 0 }
+      linea.geometry.addEventListener('dispose', () => window.disposeColision.geometria++)
+      linea.material.addEventListener('dispose', () => window.disposeColision.material++)
+      window.renderReact3mf({ ...window.trayectoriaReact })
+    })
+    await visor.waitForFunction(() => {
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      return grupo.children.some(x => x.children.some(y => y.isLineSegments && y !== window.primeraLineaColision))
+    })
+    const reemplazoColision = await visor.evaluate(() => {
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+      return { modelo: grupo.children[0] === window.modeloColision, nombre: window.modeloColision.getObjectByName('trayectoria')?.name, hijos: grupo.children.length, dispose: window.disposeColision }
+    })
+    assert.deepEqual(reemplazoColision, { modelo: true, nombre: 'trayectoria', hijos: 2, dispose: { geometria: 1, material: 1 } }, 'Reemplazar trayectoria no debe afectar al modelo ni acumular líneas')
+    await visor.evaluate(() => {
+      const linea = window.escenaPrueba.children.find(x => x.type === 'Group').children[1].children[0]
+      window.disposeSegundaColision = { geometria: 0, material: 0 }
+      linea.geometry.addEventListener('dispose', () => window.disposeSegundaColision.geometria++)
+      linea.material.addEventListener('dispose', () => window.disposeSegundaColision.material++)
+      window.renderReact3mf(null)
+    })
+    await visor.waitForFunction(() => window.escenaPrueba.children.find(x => x.type === 'Group').children.length === 1)
+    assert.equal(await visor.evaluate(() => window.escenaPrueba.children.find(x => x.type === 'Group').children[0] === window.modeloColision), true)
+    assert.deepEqual(await visor.evaluate(() => window.disposeSegundaColision), { geometria: 1, material: 1 })
+    assert.equal(await visor.evaluate(() => window.disposeModeloColision), 0)
+    await visor.evaluate(() => window.cerrarReact3mf())
+    console.log('OK React 3MF: trayectoria tardía y temprana, alineación, retirada y encuadre')
+    // Dos puertas independientes: FileReader carga la malla y arrayBuffer el
+    // proyecto/G-code. Se retiene una hasta que la otra haya terminado.
+    await visor.evaluate(() => {
+      const leerMalla = FileReader.prototype.readAsArrayBuffer
+      const leerProyecto = File.prototype.arrayBuffer
+      FileReader.prototype.readAsArrayBuffer = function(file) {
+        if (file.name.startsWith('orden-') && window.ordenForzado3mf === 'trayectoria-primero') {
+          window.liberarOrden3mf = () => leerMalla.call(this, file)
+        } else leerMalla.call(this, file)
+      }
+      File.prototype.arrayBuffer = function() {
+        if (this.name.startsWith('orden-') && window.ordenForzado3mf === 'malla-primero') {
+          return new Promise(resolve => { window.liberarOrden3mf = () => resolve(leerProyecto.call(this)) })
+        }
+        return leerProyecto.call(this)
+      }
+    })
+    const seleccionar3mfOrdenado = async (nombre, orden) => {
+      await visor.evaluate(orden => {
+        window.ordenForzado3mf = orden
+        window.ordenObservado3mf = null
+        window.liberarOrden3mf = null
+      }, orden)
+      await visor.locator('#file-upload').setInputFiles({ name: nombre, mimeType: 'model/3mf', buffer: datos3mf })
+      await visor.getByRole('heading', { name: `Archivo: ${nombre}` }).waitFor()
+      await visor.waitForFunction(() => typeof window.liberarOrden3mf === 'function')
+      if (orden === 'malla-primero') {
+        await visor.waitForFunction(nombre => {
+          const canvas = document.querySelector('.viewer-3d-container canvas')
+          return canvas?.getAttribute('aria-label')?.includes(nombre) && !document.querySelector('.visor-controles button')?.disabled && window.escenaPrueba?.children.some(x => x.type === 'Group')
+        }, nombre)
+        assert.equal(await visor.evaluate(() => !!window.escenaPrueba.getObjectByName('trayectoria')), false)
+      } else {
+        await visor.locator('.sidebar-right').getByText('PLA', { exact: false }).first().waitFor()
+        assert.equal(await visor.evaluate(() => window.escenaPrueba?.children.some(x => x.type === 'Group') ?? false), false)
+      }
+      await visor.evaluate(() => window.liberarOrden3mf())
+      await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+      assert.equal(await visor.evaluate(() => window.ordenObservado3mf), orden, `Orden de llegada no reproducido: ${nombre}`)
+    }
+    const instantanea = async trayectoria => {
+      if (trayectoria) await visor.waitForFunction(() => !!window.escenaPrueba?.getObjectByName('trayectoria'))
+      return visor.evaluate(() => {
+        const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+        grupo.updateMatrixWorld(true)
+        const objetos = [{ type: 'marco', matrix: grupo.matrixWorld.toArray() }]
+        grupo.traverse(o => {
+          if (!o.isMesh && !o.isLineSegments && o.name !== 'trayectoria') return
+          const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []
+          objetos.push({
+            type: o.type, name: o.name, matrix: o.matrixWorld.toArray(),
+            positions: o.geometry?.getAttribute('position') ? Array.from(o.geometry.getAttribute('position').array) : null,
+            colors: o.geometry?.getAttribute('color') ? Array.from(o.geometry.getAttribute('color').array) : null,
+            materials: mats.map(m => ({ type: m.type, color: m.color?.getHexString(), vertexColors: m.vertexColors, opacity: m.opacity })),
+          })
+        })
+        return objetos
+      })
+    }
+    const seleccionarGcode = async nombre => {
+      await visor.locator('#file-upload').setInputFiles({ name: nombre, mimeType: 'text/plain', buffer: datosGcode })
+      await visor.getByRole('heading', { name: `Archivo: ${nombre}` }).waitFor()
+      await visor.locator('.visor-trayectoria-lienzo canvas').waitFor()
+      await visor.waitForFunction(() => window.escenaPrueba?.children.filter(x => x.type === 'LineSegments').length === 2)
+    }
+    const instantaneaGcode = () => visor.evaluate(() => {
+      const lineas = window.escenaPrueba.children.filter(x => x.type === 'LineSegments')
+      return lineas.map(o => ({
+        positions: Array.from(o.geometry.getAttribute('position').array),
+        colors: Array.from(o.geometry.getAttribute('color').array),
+        drawRange: o.geometry.drawRange, visible: o.visible,
+        matrix: o.matrix.toArray(),
+        material: { color: o.material.color.getHexString(), vertexColors: o.material.vertexColors, opacity: o.material.opacity },
+      }))
+    })
+    await seleccionarVisor('referencia.obj', datosObj, 'model/obj')
+    const referenciaObj = await instantanea(false)
+    assert.ok(referenciaObj.some(o => o.type === 'Mesh'), 'Falta malla OBJ en referencia')
+    assert.ok(referenciaObj.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia OBJ debe distinguirse del rojo STL')
+    const referencias3mf = {}
+    for (const orden of ['malla-primero', 'trayectoria-primero']) {
+      await seleccionar3mfOrdenado(`orden-referencia-${orden}.3mf`, orden)
+      const referencia = await instantanea(true)
+      assert.ok(referencia.some(o => o.type === 'LineSegments' && o.colors?.length), 'Falta trayectoria coloreada en referencia')
+      assert.ok(referencia.some(o => o.type === 'Mesh' && o.materials.some(m => m.color !== 'ef4444')), 'La referencia 3MF debe distinguirse del rojo STL')
+      const centro = await visor.evaluate(() => {
+        const grupo = window.escenaPrueba.children.find(x => x.type === 'Group')
+        return new window.threePrueba.Box3().setFromObject(grupo).getCenter(new window.threePrueba.Vector3()).toArray()
+      })
+      assert.ok(centro.every(v => Math.abs(v) < 1e-6), `Unión 3MF descentrada (${orden}): ${centro}`)
+      referencias3mf[orden] = referencia
+    }
+    assert.deepEqual(referencias3mf['malla-primero'], referencias3mf['trayectoria-primero'], 'Los dos órdenes deben producir la misma escena 3MF')
+    const reemplazos = await visor.evaluate(async () => {
+      const { recentrarGrupo3mf } = await import('/src/lib/recentrar-grupo-3mf.ts')
+      const T = window.threePrueba
+      const grupo = window.escenaPrueba.children.find(x => x.type === 'Group').clone(true)
+      const padre = new T.Group()
+      padre.position.set(7, -4, 3)
+      padre.rotation.set(0.2, 0.4, -0.1)
+      padre.scale.set(2, 0.8, 1.3)
+      padre.add(grupo)
+      const trayectoria = grupo.getObjectByName('trayectoria')
+      const centro = () => new T.Box3().setFromObject(grupo).getCenter(new T.Vector3()).toArray()
+      const reemplazar = nueva => {
+        grupo.remove(grupo.getObjectByName('trayectoria'))
+        grupo.add(nueva)
+        recentrarGrupo3mf(grupo)
+        grupo.updateWorldMatrix(true, true)
+        return { centro: centro(), posicion: grupo.position.toArray() }
+      }
+      const primera = reemplazar(trayectoria.clone(true))
+      const repetida = reemplazar(trayectoria.clone(true))
+      const exterior = trayectoria.clone(true)
+      exterior.position.set(200, 0, 0)
+      const fuera = reemplazar(exterior)
+      const fueraRepetida = reemplazar(exterior.clone(true))
+      const vacia = new T.Group()
+      vacia.name = 'trayectoria'
+      const sinTrazos = reemplazar(vacia)
+      const sinTrazosRepetida = reemplazar(vacia.clone())
+      return { primera, repetida, fuera, fueraRepetida, sinTrazos, sinTrazosRepetida }
+    })
+    for (const [a, b] of [['primera', 'repetida'], ['fuera', 'fueraRepetida'], ['sinTrazos', 'sinTrazosRepetida']]) {
+      for (const resultado of [reemplazos[a], reemplazos[b]]) {
+        assert.ok(resultado.centro.every(v => Math.abs(v) < 1e-6), `Reemplazo ${a}: unión descentrada ${resultado.centro}`)
+      }
+      assert.ok(reemplazos[a].posicion.every((v, i) => Math.abs(v - reemplazos[b].posicion[i]) < 1e-6), `Reemplazo ${a}: recentrado no idempotente`)
+    }
+    await seleccionarGcode('referencia.gcode')
+    const referenciaGcode = await instantaneaGcode()
+    assert.equal(referenciaGcode.length, 2)
+    assert.ok(referenciaGcode[0].positions.length && referenciaGcode[0].colors.length && referenciaGcode[0].material.vertexColors, 'La referencia debe contener trayectoria coloreada')
+    assert.ok(new Set(referenciaGcode[0].colors).size > 1, 'La referencia debe distinguir colores de trayectoria')
+    for (let i = 0; i < 3; i++) {
+      for (const orden of ['malla-primero', 'trayectoria-primero']) {
+        await seleccionarVisor(`previo-3mf-${orden}-${i}.stl`, baseOpen, 'model/stl')
+        await visor.getByRole('radio', { name: 'Rojo' }).check()
+        await seleccionar3mfOrdenado(`orden-transicion-${orden}-${i}.3mf`, orden)
+        assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+        assert.deepEqual(await instantanea(true), referencias3mf[orden], `STL → 3MF (${orden}): materiales, geometría y posiciones absolutas`)
+      }
+      await seleccionarVisor(`previo-gcode-${i}.stl`, baseOpen, 'model/stl')
+      await visor.getByRole('radio', { name: 'Rojo' }).check()
+      await seleccionarGcode(`transicion-${i}.gcode`)
+      assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+      assert.deepEqual(await instantaneaGcode(), referenciaGcode, 'STL → G-code debe conservar trayectoria, colores y materiales')
+    }
+    await seleccionarVisor('previo-obj.stl', baseOpen, 'model/stl')
+    await visor.getByRole('radio', { name: 'Rojo' }).check()
+    await seleccionarVisor('transicion.obj', datosObj, 'model/obj')
+    assert.equal(await visor.getByRole('radio', { name: 'Rojo' }).count(), 0)
+    assert.deepEqual(await instantanea(false), referenciaObj, 'STL → OBJ debe conservar materiales y posiciones')
+    console.log('OK color antes/durante reparación, cama, cámara, móvil y transiciones directas')
+    await visor.evaluate(() => { window.geometriasSTL = [] })
+    for (const solid of [true, false]) for (const extra of [true, false]) {
+      const original = Buffer.from(baseOpen)
+      if (solid) original.write('solid binary', 0)
+      const inputBytes = extra ? Buffer.concat([original, Buffer.from([1, 2, 3, 4, 5, 6, 7])]) : original
+      const filename = `modelo-${solid}-${extra}.stl`
+      const calls = await visor.evaluate(() => window.analisisSTL)
+      await visor.locator('#file-upload').setInputFiles({ name: filename, mimeType: 'model/stl', buffer: inputBytes })
+      await visor.getByRole('heading', { name: `Archivo: ${filename}` }).waitFor()
+      await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+      await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+      const positions = await visor.evaluate(() => window.geometriasSTL.shift())
+      assert.equal(positions.length / 9, 10, `${filename}: visor y diagnóstico deben tener 10 caras`)
+      assert.deepEqual(positions, faces.slice(2).flatMap(tri => tri.flatMap(v => vertices[v])))
+      assert.equal(await visor.locator('.malla-resumen').first().locator('dl > div').filter({ has: visor.getByText('Caras', { exact: true }) }).locator('dd').innerText(), '10')
+      assert.equal(await visor.evaluate(() => window.analisisSTL), calls + 1, 'El visor no debe iniciar un segundo análisis')
+      if (extra) {
+        const warning = visor.getByText('7 bytes adicionales', { exact: false })
+        await warning.waitFor()
+        assert.match(await warning.innerText(), /no se han analizado/i)
+        assert.match(await warning.innerText(), /no se conservarán/i)
+        await visor.getByRole('button', { name: 'Reparar copia' }).click()
+        await visor.getByRole('link', { name: 'Descargar STL reparado' }).waitFor()
+        await warning.waitFor()
+      } else assert.equal(await visor.getByText('bytes adicionales', { exact: false }).count(), 0)
+      assert.deepEqual(Buffer.from(await visor.evaluate(async () => [...new Uint8Array(await window.archivoSTL.arrayBuffer())])), inputBytes)
+    }
+    for (const solid of [false, true]) {
+      const original = Buffer.from(baseOpen)
+      if (solid) original.write('solid binary', 0)
+      await visor.locator('#file-upload').setInputFiles({ name: `truncado-${solid}.stl`, mimeType: 'model/stl', buffer: original.subarray(0, original.length - 1) })
+      await visor.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+      await visor.getByText('Error al procesar el archivo STL.').waitFor()
+    }
+    const ascii = Buffer.from(`solid x\n${' '.repeat(76)}\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid x\n`)
+    const falso = Buffer.from(ascii)
+    falso.set([1, 1, 1, 1], 80)
+    assert.equal(falso.readUInt32LE(80), 0x01010101)
+    await visor.locator('#file-upload').setInputFiles({ name: 'adversarial.stl', mimeType: 'model/stl', buffer: falso })
+    await visor.getByRole('heading', { name: 'Archivo: adversarial.stl' }).waitFor()
+    await visor.getByRole('alert').filter({ hasText: 'No se ha podido completar' }).waitFor()
+    await visor.getByText('Error al procesar el archivo STL.').waitFor()
+    assert.equal(await visor.evaluate(() => window.geometriasSTL.length), 0, 'El visor no debe dibujar el STL rechazado')
+    await visor.locator('#file-upload').setInputFiles({ name: 'valido-ascii.stl', mimeType: 'model/stl', buffer: ascii })
+    await visor.getByRole('heading', { name: 'Archivo: valido-ascii.stl' }).waitFor()
+    await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+    await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+    assert.equal((await visor.evaluate(() => window.geometriasSTL.shift())).length / 9, 1)
+    await visor.evaluate(bytes => {
+      const decode = TextDecoder.prototype.decode
+      const read = File.prototype.arrayBuffer
+      window.bloquesVisor = 0
+      File.prototype.arrayBuffer = function() {
+        if (this.name === 'lento.stl') return new Promise(() => {})
+        return read.call(this)
+      }
+      TextDecoder.prototype.decode = function(input, options) {
+        if (input?.byteLength === 65536 && ++window.bloquesVisor === 16) {
+          setTimeout(() => {
+            const input = document.querySelector('#file-upload')
+            const dt = new DataTransfer()
+            dt.items.add(new File([new Uint8Array(bytes)], 'sustituto.stl', { type: 'model/stl' }))
+            input.files = dt.files
+            input.dispatchEvent(new Event('change', { bubbles: true }))
+          }, 0)
+        }
+        return decode.call(this, input, options)
+      }
+    }, [...baseOpen])
+    const largo = Buffer.concat([Buffer.from('solid x\nfacet normal 0 0 1\n'), Buffer.alloc(8_000_000, 32), Buffer.from('\nendsolid x\n')])
+    await visor.locator('#file-upload').setInputFiles({ name: 'lento.stl', mimeType: 'model/stl', buffer: largo })
+    await visor.getByRole('heading', { name: 'Archivo: sustituto.stl' }).waitFor()
+    await visor.getByText('Incidencias detectadas', { exact: false }).first().waitFor()
+    await visor.waitForFunction(() => window.geometriasSTL.length > 0)
+    assert.equal((await visor.evaluate(() => window.geometriasSTL.shift())).length / 9, 10)
+    const bloques = await visor.evaluate(() => window.bloquesVisor)
+    assert.ok(bloques >= 16 && bloques < Math.floor(largo.length / 65536), `Validación del visor no cancelada o sin ceder: ${bloques} bloques`)
+    await visor.close()
+    console.log('OK visor y diagnóstico: binarios, ASCII, adversarial, cancelación incremental y archivo original')
+    const persistence = await page.evaluate(async () => {
+      const ReactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = ReactModule.default ?? ReactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { default: RevisionMalla } = await import('/src/components/RevisionMalla.tsx')
+      const target = document.createElement('div'); document.body.append(target)
+      const root = (client.default ?? client).createRoot(target)
+      const analisis = (n, audit, colors, skipped) => ({ analysis: { vertexCount: 8, faceCount: 10, connectedComponents: 1, holeCount: 0, boundaryEdges: 0, flippedNormalCount: 0, degenerateTriangleCount: 0, duplicateFaceCount: 0, skippedFaces: skipped }, incidencias: [], aberturas: [], esCerrada: true, esManifold: true, carasNoFinitasEliminadas: n, carasPerdidasAuditoria: audit, reconstruccionesConectividad: 0, colorsDropped: colors })
+      const inicial = analisis(2, 3, true, 6), posterior = analisis(4, 5, true, 7)
+      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0, flapsRemoved: 8 }, fixNormals: { facesFlipped: 0, skippedFaces: 9 }, weld: { facesRemoved: 0, skippedFaces: 10 }, splitVertices: { skippedFaces: 12 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
+      const revision = { fase: 'reparado', analisis: inicial, resumen: { analisis: posterior, reparacion: repair, rellenoForzado: { holesFilled: 2, flapsRemoved: 11 } }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
+      root.render(React.createElement(RevisionMalla, { revision, nombre: 'perdidas.stl' }))
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const text = target.innerText
+      root.unmount(); target.remove()
+      return text
+    })
+    assert.match(persistence, /Lectura inicial[\s\S]*2 caras no finitas[\s\S]*3 caras en auditoría[\s\S]*colores/)
+    assert.match(persistence, /Copia reparada[\s\S]*4 caras no finitas[\s\S]*5 caras en auditoría[\s\S]*colores/)
+    assert.match(persistence, /Lectura inicial[\s\S]*6 caras omitidas/)
+    assert.match(persistence, /Copia reparada[\s\S]*7 caras omitidas/)
+    assert.match(persistence, /Triángulos aislados eliminados[\s\S]*8/)
+    assert.match(persistence, /Triángulos aislados eliminados en relleno adicional[\s\S]*11/)
+    assert.match(persistence, /Caras omitidas al soldar[\s\S]*10/)
+    assert.match(persistence, /Caras omitidas al separar vértices[\s\S]*12/)
+    console.log('OK recuento de caras omitidas al separar vértices')
+    assert.match(persistence, /Caras omitidas al orientar normales[\s\S]*9/)
+    const veredictos = await page.evaluate(async () => {
+      const reactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = reactModule.default ?? reactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { VeredictoMalla } = await import('/src/components/RevisionMalla.tsx')
+      const target = document.createElement('div'); document.body.append(target)
+      const root = (client.default ?? client).createRoot(target)
+      const analisis = { incidencias: [], esCerrada: true, esManifold: true }
+      const resumen = { analisis, reparacion: { fillHoles: { holesSkippedAsFeature: 1 } } }
+      const render = async revision => {
+        root.render(React.createElement(VeredictoMalla, { revision }))
+        await new Promise(resolve => setTimeout(resolve, 30))
+        return target.innerText
+      }
+      try {
+        return [
+          await render({ fase: 'reparado', resumen }),
+          await render({ fase: 'reparado', resumen: { ...resumen, rellenoForzado: { holesFilled: 1 } } }),
+          await render({ fase: 'error', resumen }),
+        ]
+      } finally { root.unmount(); target.remove() }
+    })
+    assert.match(veredictos[0], /Reparación parcial.*pendientes/i, 'Una abertura omitida también implica revisión parcial')
+    assert.match(veredictos[1], /Reparación completada/i, 'Un recuento previo no debe mantener la advertencia tras el relleno adicional')
+    assert.match(veredictos[2], /No se ha podido completar/i, 'El error tiene prioridad sobre el resultado anterior')
+  }
+  if (!preview) {
+    const lifecycle = await page.evaluate(async () => {
+      const reactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = reactModule.default ?? reactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { createRoot } = client.default ?? client
+      const { useRevisionMalla } = await import('/src/state/useRevisionMalla.ts')
+      const domUrl = performance.getEntriesByType('resource').find(entry => /\/react-dom\.js\?/.test(entry.name))?.name
+      const domModule = await import(/* @vite-ignore */ domUrl ?? '/node_modules/.vite/deps/react-dom.js')
+      const { flushSync } = domModule.t ? domModule.t() : domModule.default ?? domModule
+      const NativeWorker = window.Worker
+      const originalCreate = URL.createObjectURL
+      const originalRevoke = URL.revokeObjectURL
+      let mode = '', terminated = 0, blocked = 0, revoked = [], last, lateWorker, lateRequest
+      class ControlledWorker extends NativeWorker {
+        postMessage(message, transfer) {
+          if (mode === `hang-${message.method}`) { blocked++; lateWorker = this; lateRequest = message; return }
+          if (mode === `fail-${message.method}`) {
+            mode = ''
+            queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo simulado', cancelable: true })))
+            return
+          }
+          super.postMessage(message, transfer)
+        }
+        terminate() { terminated++; super.terminate() }
+      }
+      window.Worker = ControlledWorker
+      URL.revokeObjectURL = url => { revoked.push(url); originalRevoke(url) }
+      const root = createRoot(document.createElement('div'))
+      function Test({ file, type = 'stl' }) { last = useRevisionMalla(file, type); return null }
+      const render = async (file, type) => { root.render(React.createElement(Test, { file, type })); await new Promise(resolve => setTimeout(resolve, 30)) }
+      const renderNow = (file, type) => flushSync(() => root.render(React.createElement(Test, { file, type })))
+      const wait = async predicate => {
+        for (let i = 0; i < 500; i++) {
+          if (predicate()) return
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        throw new Error(`Timeout: ${JSON.stringify(last)}`)
+      }
+      const ascii = 'solid test\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid test\n'
+      const file = name => new File([ascii], name)
+      const fake = size => ({ size, arrayBuffer: async () => { throw new Error('lectura simulada') } })
+      try {
+        let release
+        const delayed = { size: ascii.length, arrayBuffer: () => new Promise(resolve => { release = resolve }) }
+        await render(delayed)
+        await wait(() => !!release)
+        await render(file('posterior.stl'))
+        await wait(() => last.fase === 'listo')
+        const expectedAnalysis = last.analisis
+        release(new TextEncoder().encode(ascii).buffer)
+        await new Promise(resolve => setTimeout(resolve, 50))
+        if (last.fase !== 'listo' || last.analisis !== expectedAnalysis || last.resumen || last.urlDescarga) throw new Error('La lectura antigua alteró los datos de la sesión nueva')
+        mode = 'hang-init'
+        const blockedBeforeInit = blocked
+        await render(file('init.stl'))
+        await wait(() => blocked > blockedBeforeInit)
+        const beforeInit = terminated
+        mode = ''
+        await render(file('tras-init.stl'))
+        await wait(() => last.fase === 'listo')
+        if (terminated <= beforeInit) throw new Error('No se canceló el inicio del worker')
+        mode = 'hang-analyzeDetailed'
+        const blockedBeforeAnalysis = blocked
+        await render(file('a.stl'))
+        await wait(() => last?.fase === 'analizando' && blocked > blockedBeforeAnalysis)
+        const before = terminated
+        const staleWorker = lateWorker, staleRequest = lateRequest
+        mode = ''
+        await render(file('b.stl'))
+        await wait(() => last?.fase === 'listo')
+        const newAnalysis = last.analisis
+        staleWorker.dispatchEvent(new MessageEvent('message', { data: { id: staleRequest.id, result: { analysis: { faceCount: 999999 } } } }))
+        await new Promise(resolve => setTimeout(resolve, 20))
+        if (last.fase !== 'listo' || last.analisis !== newAnalysis || last.resumen || last.urlDescarga) throw new Error('Respuesta tardía del worker alteró datos nuevos')
+        if (terminated <= before) throw new Error('No se cerró el worker durante análisis')
+        mode = 'hang-repair'
+        const blockedBeforeRepair = blocked
+        last.reparar()
+        await wait(() => last.fase === 'reparando' && blocked > blockedBeforeRepair)
+        const beforeRepair = terminated
+        const staleRepairWorker = lateWorker, staleRepairRequest = lateRequest
+        mode = ''
+        await render(file('c.stl'))
+        await wait(() => last.fase === 'listo')
+        if (terminated <= beforeRepair) throw new Error('No se cerró el worker durante reparación')
+        const currentAnalysis = last.analisis
+        staleRepairWorker.dispatchEvent(new MessageEvent('message', { data: { type: 'progress', requestId: staleRepairRequest.id, stage: 'tardío', progress: 1 } }))
+        staleRepairWorker.dispatchEvent(new MessageEvent('message', { data: { id: staleRepairRequest.id, result: { facesAfter: 999999 } } }))
+        await new Promise(resolve => setTimeout(resolve, 20))
+        if (last.fase !== 'listo' || last.analisis !== currentAnalysis || last.progreso || last.resumen || last.urlDescarga) throw new Error('Reparación tardía alteró la selección nueva')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const url = last.urlDescarga
+        if (!url) throw new Error('Falta descarga')
+        const same = file('misma.stl')
+        await render(same)
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const sameUrl = last.urlDescarga
+        renderNow(null)
+        if (last.fase !== 'inactivo' || last.analisis || last.resumen || last.urlDescarga) throw new Error(`Datos antiguos visibles al limpiar: ${JSON.stringify(last)}`)
+        renderNow(same)
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga) throw new Error('Datos antiguos visibles al volver al mismo File')
+        if (!revoked.includes(sameUrl)) throw new Error('URL anterior no revocada')
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const beforeOther = last.urlDescarga
+        renderNow(file('intermedio.stl'))
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga) throw new Error('Datos antiguos visibles al sustituir File')
+        renderNow(same)
+        if (last.fase !== 'analizando' || last.analisis || last.resumen || last.urlDescarga || !revoked.includes(beforeOther)) throw new Error('Datos antiguos visibles en A → B → A')
+        await wait(() => last.fase === 'listo')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        const currentUrl = last.urlDescarga
+        mode = 'fail-repair'
+        last.rellenarAberturas()
+        await wait(() => last.fase === 'error')
+        if (last.urlDescarga !== currentUrl || revoked.includes(currentUrl)) throw new Error('Se perdió la primera descarga')
+        await render(null)
+        await wait(() => last.fase === 'inactivo')
+        if (!revoked.includes(currentUrl) || last.urlDescarga) throw new Error('URL no revocada')
+        const MB = 1000000
+        for (const [size, warning, rejected] of [[60*MB,false,false],[60*MB+1,true,false],[150*MB,true,false],[150*MB+1,true,true]]) {
+          let reads = 0
+          const f = fake(size)
+          f.arrayBuffer = async () => { reads++; throw new Error('lectura simulada') }
+          await render(f)
+          await wait(() => last.fase === 'error')
+          if (last.avisoTamano !== warning || (reads === 0) !== rejected) throw new Error(`Límite incorrecto ${size}, ${reads}`)
+        }
+        mode = 'fail-init'
+        await render(file('fail-init.stl'))
+        await wait(() => last.fase === 'error')
+        last.reparar()
+        await wait(() => last.fase === 'reparado')
+        for (const method of ['repair', 'exportMesh']) {
+          await render(file(`${method}.stl`))
+          await wait(() => last.fase === 'listo')
+          mode = `fail-${method}`
+          last.reparar()
+          await wait(() => last.fase === 'error')
+          if (last.urlDescarga) throw new Error('Resultado incompleto publicado')
+          last.reparar()
+          await wait(() => last.fase === 'reparado')
+        }
+        await render(null)
+        await wait(() => last.fase === 'inactivo')
+        mode = 'hang-init'
+        const unmountBlocked = blocked
+        await render(file('unmount.stl'))
+        await wait(() => blocked > unmountBlocked)
+        const beforeUnmount = terminated
+        root.unmount()
+        if (terminated <= beforeUnmount) throw new Error('No se cerró el worker al desmontar')
+        return 'OK ciclo de vida, límites y reintentos'
+      } finally {
+        try { root.unmount() } catch {}
+        window.Worker = NativeWorker
+        URL.createObjectURL = originalCreate
+        URL.revokeObjectURL = originalRevoke
+      }
+    })
+    console.log(lifecycle)
+  }
+  if (!preview) {
+    const largeAscii = await page.evaluate(async () => {
+      const { crearSesionMalla } = await import('/src/services/reparacionMalla.ts')
+      const controller = new AbortController()
+      const session = await crearSesionMalla({ signal: controller.signal })
+      const bytes = new Uint8Array(61_000_000)
+      bytes.fill(32)
+      bytes.set(new TextEncoder().encode('solid test\nfacet normal 0 0 1\n'))
+      bytes.set(new TextEncoder().encode('\nendsolid test\n'), bytes.length - 15)
+      const decode = TextDecoder.prototype.decode
+      const postMessage = Worker.prototype.postMessage
+      let largest = 0, calls = 0
+      TextDecoder.prototype.decode = function(input, options) {
+        if (input) { largest = Math.max(largest, input.byteLength); calls++ }
+        return decode.call(this, input, options)
+      }
+      try {
+        const pending = session.analizar(bytes.buffer).then(() => false, () => true)
+        await new Promise(resolve => setTimeout(resolve, 0))
+        controller.abort()
+        const rejected = await pending
+        if (largest > 65536 || calls < 1 || calls >= Math.ceil(bytes.length / 65536)) throw new Error(`Validación no incremental/cancelable: bloque=${largest}, lecturas=${calls}`)
+        if (!rejected) throw new Error('La validación no se canceló')
+        const cancelledCalls = calls
+        const second = await crearSesionMalla()
+        let reachedWorker = false, yielded = false
+        Worker.prototype.postMessage = function(message, transfer) {
+          if (message.method === 'analyzeDetailed') {
+            reachedWorker = true
+            queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'análisis interceptado', cancelable: true })))
+          } else postMessage.call(this, message, transfer)
+        }
+        calls = 0
+        setTimeout(() => { yielded = true }, 0)
+        await second.analizar(bytes.buffer).catch(() => {})
+        second.dispose()
+        if (!reachedWorker || !yielded || calls !== Math.ceil(bytes.length / 65536)) throw new Error(`Validación completa fallida: worker=${reachedWorker}, yield=${yielded}, bloques=${calls}`)
+        return { largest, cancelledCalls, fullCalls: calls, rejected }
+      } finally {
+        Worker.prototype.postMessage = postMessage
+        TextDecoder.prototype.decode = decode
+        session.dispose()
+      }
+    })
+    console.log('OK ASCII grande incremental y cancelable', largeAscii)
+  }
+  const result = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    const vertices = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]]
+    const faces = [[0,2,1],[0,3,2],[4,5,6],[4,6,7],[0,1,5],[0,5,4],[1,2,6],[1,6,5],[2,3,7],[2,7,6],[3,0,4],[3,4,7]]
+    function stl(tris) {
+      const buffer = new ArrayBuffer(84 + tris.length * 50)
+      const view = new DataView(buffer)
+      view.setUint32(80, tris.length, true)
+      tris.forEach((tri, i) => tri.forEach((v, j) => vertices[v].forEach((x, k) => view.setFloat32(84 + i * 50 + 12 + j * 12 + k * 4, x, true))))
+      return buffer
+    }
+    const closed = await crearSesionMalla()
+    const a = await closed.analizar(stl(faces))
+    closed.dispose()
+    const open = await crearSesionMalla()
+    const b = await open.analizar(stl(faces.slice(2)))
+    const repair = await open.reparar(() => {})
+    const output = await open.exportar()
+    let failedReload = false
+    try { await open.analizar(stl([])) } catch { failedReload = true }
+    const retained = new Uint8Array(await open.exportar())
+    const retainedBytes = retained.length === output.byteLength && retained.every((v, i) => v === new Uint8Array(output)[i])
+    const repairedAgain = await open.reparar()
+    window.sesionPrueba = open
+    const again = await crearSesionMalla()
+    const c = await again.analizar(output)
+    again.dispose()
+    const inverted = await crearSesionMalla()
+    const inv = await inverted.analizar(stl(faces.map(([a,b,c]) => [a,c,b])))
+    const fixed = await inverted.reparar()
+    inverted.dispose()
+    const invalid = await crearSesionMalla()
+    const errors = []
+    for (const buffer of [new ArrayBuffer(0), stl([]), stl(faces).slice(0, 100)]) {
+      try { await invalid.analizar(buffer); errors.push(false) } catch { errors.push(true) }
+    }
+    invalid.dispose()
+    const forced = await crearSesionMalla()
+    // Una lámina abierta: el motor la clasifica como posible abertura diseñada.
+    const sheet = await forced.analizar(stl(faces.slice(0, 2)))
+    const normal = await forced.reparar()
+    const before = await forced.exportar()
+    const fill = await forced.rellenarAberturas()
+    const after = await forced.exportar()
+    forced.dispose()
+    return { a, b, repair, c, bytes: output.byteLength, inv, fixed, errors, sheet, normal, before: before.byteLength, fill, after: after.byteLength, failedReload, retainedBytes, repairedAgain }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  console.log(JSON.stringify(result, null, 2))
+  assert.equal(result.a.esCerrada, true)
+  assert.equal(result.a.esManifold, true)
+  assert.equal(result.b.esCerrada, false)
+  assert.ok(result.b.incidencias.length)
+  assert.ok(result.bytes > 84)
+  assert.equal(result.c.esCerrada, true)
+  assert.equal(result.c.analysis.faceCount, 12)
+  assert.equal(result.b.analysis.boundaryEdges, 4)
+  assert.equal(result.repair.reparacion.fillHoles.holesFilled, 1)
+  assert.equal(result.failedReload, true)
+  assert.equal(result.retainedBytes, true)
+  assert.equal(result.repairedAgain.reparacion.facesBefore, 10)
+  assert.equal(result.inv.esCerrada, true)
+  assert.ok(result.fixed.reparacion.fixNormals.componentsFlipped > 0)
+  assert.deepEqual(result.errors, [true, true, true])
+  assert.ok(result.sheet.aberturas.length > 0)
+  assert.ok(result.normal.reparacion.fillHoles.holesSkippedAsFeature > 0)
+  assert.ok(result.fill.rellenoForzado.holesFilled > 0)
+  for (const file of ['worker.js', 'meshfix-core.js', 'meshfix-core.wasm']) assert.ok(assets.has(`${base}meshfix/${file}`), `No se cargó ${file}`)
+  const binaryTrailing = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    const s = await crearSesionMalla()
+    try {
+      const stl = solid => {
+        const bytes = new Uint8Array(141)
+        if (solid) bytes.set(new TextEncoder().encode('solid binary'))
+        const view = new DataView(bytes.buffer)
+        view.setUint32(80, 1, true)
+        view.setFloat32(108, 1, true); view.setFloat32(124, 1, true)
+        bytes.set([1,2,3,4,5,6,7], 134)
+        return bytes.buffer
+      }
+      const plain = await s.analizar(stl(false))
+      const solid = await s.analizar(stl(true))
+      let truncated = false
+      try { await s.analizar(stl(true).slice(0, 133)) } catch { truncated = true }
+      return { plain: plain.analysis.faceCount, solid: solid.analysis.faceCount, bytesPlain: plain.bytesAdicionales, bytesSolid: solid.bytesAdicionales, truncated }
+    } finally { s.dispose() }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  assert.deepEqual(binaryTrailing, { plain: 1, solid: 1, bytesPlain: 7, bytesSolid: 7, truncated: true })
+  const robustness = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    const ascii = new TextEncoder().encode('solid test\nfacet normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n').buffer
+    const binary = new ArrayBuffer(134)
+    const view = new DataView(binary)
+    new Uint8Array(binary).set(new TextEncoder().encode('solid binary'))
+    view.setUint32(80, 1, true)
+    view.setFloat32(84 + 12 + 12, 1, true)
+    view.setFloat32(84 + 12 + 24 + 4, 1, true)
+    const s = await crearSesionMalla()
+    const asciiResult = await s.analizar(ascii)
+    const padding = ' '.repeat(65536 - 'solid test\nfacet '.length)
+    const boundary = new TextEncoder().encode(`solid test\nfacet ${padding}normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n`).buffer
+    const boundaryResult = await s.analizar(boundary)
+    const falseBoundary = new TextEncoder().encode(`solid test\nfacet ${padding}normalxyz\nendsolid test\n`).buffer
+    let falseBoundaryRejected = false
+    try { await s.analizar(falseBoundary) } catch { falseBoundaryRejected = true }
+    const before = Array.from(new Uint8Array(await s.exportar()))
+    let truncated = false
+    try { await s.analizar(binary.slice(0, 100)) } catch { truncated = true }
+    const after = Array.from(new Uint8Array(await s.exportar()))
+    const first = s.analizar(binary)
+    const competing = s.analizar(ascii).then(() => false, () => true)
+    const [valid, rejected] = await Promise.all([first, competing])
+    const losses = [valid.carasNoFinitasEliminadas, valid.reconstruccionesConectividad, valid.carasPerdidasAuditoria]
+    const nonfinite = new ArrayBuffer(184)
+    new Uint8Array(nonfinite).set(new Uint8Array(binary))
+    const nv = new DataView(nonfinite)
+    nv.setUint32(80, 2, true)
+    nv.setFloat32(134 + 12, NaN, true)
+    const lost = await s.analizar(nonfinite)
+    s.dispose()
+    return { ascii: asciiResult.analysis.faceCount, boundary: boundaryResult.analysis.faceCount, falseBoundaryRejected, truncated, preserved: JSON.stringify(before) === JSON.stringify(after), rejected, losses, nonfinite: lost.carasNoFinitasEliminadas }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  assert.deepEqual(robustness, { ascii: 1, boundary: 1, falseBoundaryRejected: true, truncated: true, preserved: true, rejected: true, losses: [0, 0, 0], nonfinite: 1 })
+  const faults = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    const NativeWorker = window.Worker
+    let mode = ''
+    let terminated = 0
+    class ControlledWorker extends NativeWorker {
+      postMessage(message, transfer) {
+        if (mode === 'hang-init' && message.method === 'init') return
+        if (mode === 'hang-analysis' && message.method === 'analyzeDetailed') return
+        if (mode === 'hang-export' && message.method === 'exportMesh') return
+        if (mode === 'audit' && ['connectivityRebuilds', 'facesDroppedByAudit'].includes(message.method)) {
+          const result = message.method === 'connectivityRebuilds' ? 2 : 3
+          queueMicrotask(() => this.dispatchEvent(new MessageEvent('message', { data: { id: message.id, result } })))
+          return
+        }
+        if (mode === 'crash-analysis' && message.method === 'analyzeDetailed') {
+          mode = ''
+          queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo posterior a init', cancelable: true })))
+          return
+        }
+        if (mode === 'crash-export' && message.method === 'exportMesh') {
+          mode = ''
+          queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'worker muerto', cancelable: true })))
+          return
+        }
+        if (mode === 'crash-repair' && message.method === 'repair') {
+          mode = ''
+          queueMicrotask(() => this.dispatchEvent(new ErrorEvent('error', { message: 'fallo durante reparación', cancelable: true })))
+          return
+        }
+        super.postMessage(message, transfer)
+      }
+      terminate() { terminated++; return super.terminate() }
+    }
+    window.Worker = ControlledWorker
+    const ascii = new TextEncoder().encode('solid test\nfacet normal 0 0 1\n outer loop\n vertex 0 0 0\n vertex 1 0 0\n vertex 0 1 0\n endloop\nendfacet\nendsolid test\n').buffer
+    const rejected = promise => promise.then(() => false, () => true)
+    try {
+      const s = await crearSesionMalla({ plazoMs: 10000 })
+      await s.analizar(ascii)
+      const before = Array.from(new Uint8Array(await s.exportar()))
+      mode = 'crash-analysis'
+      const failed = await rejected(s.analizar(ascii))
+      const after = Array.from(new Uint8Array(await s.exportar()))
+      mode = 'crash-repair'
+      const failedRepair = await rejected(s.reparar())
+      const afterRepair = Array.from(new Uint8Array(await s.exportar()))
+      mode = 'hang-analysis'
+      const pending = s.analizar(ascii)
+      const simultaneousExport = await rejected(s.exportar())
+      const simultaneousRepair = await rejected(s.reparar())
+      const beforeDispose = terminated
+      s.dispose()
+      const cancelledOperation = await rejected(pending)
+      const stoppedOperation = terminated > beforeDispose
+      const afterDispose = await rejected(s.analizar(ascii))
+      mode = ''
+      const initSession = await crearSesionMalla({ plazoMs: 10000 })
+      mode = 'hang-init'
+      const pendingInit = initSession.analizar(ascii)
+      const beforeInitDispose = terminated
+      initSession.dispose()
+      const disposedDuringInit = await rejected(pendingInit)
+      const stoppedCandidateInit = terminated > beforeInitDispose
+      mode = 'hang-init'
+      const controller = new AbortController()
+      const beforeAbort = terminated
+      const init = crearSesionMalla({ signal: controller.signal, plazoMs: 10000 })
+      await new Promise(resolve => setTimeout(resolve, 30))
+      controller.abort()
+      const cancelledInit = await rejected(init)
+      const stoppedInit = terminated > beforeAbort
+      const beforeTimeout = terminated
+      const timedOut = await rejected(crearSesionMalla({ plazoMs: 30 }))
+      const stoppedTimeout = terminated > beforeTimeout
+      mode = ''
+      const fatal = await crearSesionMalla({ plazoMs: 10000 })
+      await fatal.analizar(ascii)
+      mode = 'crash-export'
+      const crashed = await rejected(fatal.exportar())
+      const subsequent = await rejected(fatal.exportar())
+      fatal.dispose()
+      mode = ''
+      const deadline = await crearSesionMalla({ plazoMs: 1000 })
+      await deadline.analizar(ascii)
+      mode = 'hang-export'
+      const operationTimeout = await rejected(deadline.exportar())
+      const afterTimeout = await rejected(deadline.exportar())
+      deadline.dispose()
+      mode = ''
+      const auditSession = await crearSesionMalla()
+      mode = 'audit'
+      const audit = await auditSession.analizar(ascii)
+      mode = ''
+      auditSession.dispose()
+      const countersForwarded = audit.reconstruccionesConectividad === 2 && audit.carasPerdidasAuditoria === 3
+      return { failed, failedRepair, preserved: JSON.stringify(before) === JSON.stringify(after) && JSON.stringify(before) === JSON.stringify(afterRepair), simultaneousExport, simultaneousRepair, cancelledOperation, stoppedOperation, afterDispose, disposedDuringInit, stoppedCandidateInit, cancelledInit, stoppedInit, timedOut, stoppedTimeout, crashed, subsequent, operationTimeout, afterTimeout, countersForwarded }
+    } finally { window.Worker = NativeWorker }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  assert.deepEqual(faults, Object.fromEntries(['failed', 'failedRepair', 'preserved', 'simultaneousExport', 'simultaneousRepair', 'cancelledOperation', 'stoppedOperation', 'afterDispose', 'disposedDuringInit', 'stoppedCandidateInit', 'cancelledInit', 'stoppedInit', 'timedOut', 'stoppedTimeout', 'crashed', 'subsequent', 'operationTimeout', 'afterTimeout', 'countersForwarded'].map(key => [key, true])))
+  console.log('OK exclusión, conservación, contadores y fallos de worker', faults)
+  await page.route('**/meshfix/worker.js', route => route.abort())
+  const failure = await page.evaluate(async moduleUrl => {
+    const { crearSesionMalla } = await import(/* @vite-ignore */ moduleUrl)
+    try { const session = await crearSesionMalla(); session.dispose(); return false } catch { return true }
+  }, preview ? '/verify-bundle/service.js' : '/src/services/reparacionMalla.ts')
+  assert.equal(failure, true, 'El fallo de worker debe rechazarse')
+  const preserved = await page.evaluate(async () => {
+    const session = window.sesionPrueba
+    const before = new Uint8Array(await session.exportar())
+    let rejected = false
+    try { await session.rellenarAberturas() } catch { rejected = true }
+    const after = new Uint8Array(await session.exportar())
+    session.dispose()
+    return rejected && before.length === after.length && before.every((value, index) => value === after[index])
+  })
+  assert.equal(preserved, true, 'Una segunda pasada fallida debe conservar la primera exportación')
+  console.log('OK reparación STL')
+} finally {
+  await browser?.close()
+  server.kill('SIGTERM')
+}

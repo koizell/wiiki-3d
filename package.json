@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copiar-meshfix.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copiar-meshfix.mjs",
     "build": "tsc -b && vite build && node scripts/export-static.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -18,6 +20,7 @@
     "verify:fuentes": "node scripts/wiki/fuentes.mjs --verificar",
     "verify:seo": "node scripts/verify/seo.mjs",
     "verify:taller": "node scripts/verify/taller.mjs",
+    "verify:taller:navegacion": "node --test scripts/verify/taller-navegacion-selftest.mjs && node scripts/verify/taller-navegacion-test.mjs",
     "verify:historial": "node scripts/verify/historial.mjs",
     "verify:guias": "node --experimental-strip-types scripts/verify/guias.mjs",
     "verify:gcode": "node --experimental-strip-types scripts/verify/gcode.mjs",
@@ -31,6 +34,7 @@
     "verify:composicion": "node scripts/verify/composicion.mjs",
     "verify:maquinas": "node --experimental-strip-types scripts/verify/maquinas.mjs",
     "verify:subida": "node scripts/verify/subida-ui.mjs",
+    "verify:reparacion-stl": "node scripts/verify/reparacion-stl.mjs",
     "verify:ui": "node scripts/verify/ui.mjs",
     "verify:e2e": "node scripts/verify/e2e.mjs",
     "verify:revision": "node --experimental-strip-types scripts/verify/revision.mjs",
@@ -41,6 +45,7 @@
   },
   "dependencies": {
     "@types/three": "^0.186.0",
+    "meshfix-wasm": "0.6.1",
     "motion": "^14.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

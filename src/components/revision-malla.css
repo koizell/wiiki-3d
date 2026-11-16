@@ -1,0 +1,36 @@
+.malla-veredicto { display:flex; gap:1rem; align-items:flex-start; padding:1.1rem 1.25rem; border:1px solid #345b94; border-left:3px solid #60a5fa; border-radius:8px; background:#15263a; color:#e8ecf1; }
+.malla-veredicto-marca { color:#75b8ff; font-size:1.6rem; line-height:1; }
+.malla-veredicto strong, .malla-veredicto a, .malla-eyebrow { display:block; }
+.malla-veredicto strong { margin:.35rem 0; font-size:1.1rem; }
+.malla-veredicto a { color:#a8d1ff; font-size:.9rem; }
+.malla-eyebrow { color:#85b9ef; font-size:.7rem; font-weight:700; letter-spacing:.12em; }
+.viewer-container--stl { max-width:1120px; margin-inline:auto; }
+.viewer-container--stl .viewer-3d-container { flex:0 0 auto; height:clamp(300px, 42vw, 440px); min-height:0; aspect-ratio:auto; }
+.revision-malla { padding:2rem 0; line-height:1.55; font-size:1rem; overflow:visible; min-width:0; }
+.revision-malla:focus-visible { outline:2px solid #60a5fa; outline-offset:4px; }
+.revision-malla h2 { margin:.4rem 0 .6rem; color:#e8ecf1; font-size:clamp(1.5rem, 3vw, 1.9rem); }
+.revision-malla p { margin:0 0 1rem; }
+.malla-intro, .malla-limite { color:#b8c3d0; }
+.malla-resumen { border:1px solid #344456; background:#18212d; border-radius:8px; padding:1.25rem; margin-bottom:1.25rem; }
+.malla-resumen h3, .malla-aberturas h3 { font-size:1.15rem; margin:.35rem 0 .5rem; color:#e8ecf1; }
+.malla-resumen dl { margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2rem; }
+.malla-resumen dl div, .malla-resumen li { display:flex; justify-content:space-between; gap:1rem; padding:.65rem 0; border-top:1px solid #344456; min-width:0; }
+.malla-resumen dt { color:#b8c3d0; }
+.malla-resumen dd { margin:0; font-weight:600; text-align:right; }
+.malla-resumen ul { margin:1rem 0 0; padding:0; list-style:none; }
+.malla-accion, .malla-descarga, .malla-secundario { min-height:48px; margin:0 0 1.25rem; }
+.malla-accion, .malla-descarga { width:auto; min-width:220px; }
+.malla-descarga { display:inline-flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; }
+.malla-aberturas, .malla-aviso, .malla-error { border-left:3px solid #e8b761; padding:1rem 1.25rem; background:#30291e; border-radius:8px; }
+.malla-error { border-color:#ee8585; background:#352329; }
+.malla-aberturas { margin-bottom:1.25rem; }
+.malla-aberturas label { display:flex; align-items:flex-start; gap:.6rem; margin-bottom:1rem; }
+.malla-aberturas input { margin-top:.3rem; }
+.malla-secundario { background:transparent; color:#e8ecf1; border:1px solid #e8b761; border-radius:6px; padding:.7rem 1rem; cursor:pointer; }
+.malla-secundario:disabled { opacity:.45; cursor:not-allowed; }
+.malla-limite { font-size:.9rem; }
+@media (max-width:600px) {
+  .viewer-container--stl .viewer-3d-container { height:300px; }
+  .malla-resumen dl { grid-template-columns:1fr; }
+  .malla-accion, .malla-descarga, .malla-secundario { width:100%; }
+}
