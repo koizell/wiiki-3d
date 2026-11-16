@@ -18,9 +18,9 @@ const nombres: Record<string, string> = {
 /** Las tres dimensiones de una pieza, en milímetros: X ancho, Y fondo, Z alto. */
 type Caja = [number, number, number];
 
-/** Milímetros con separador de miles y sin decimales: el redondeo es sólo de presentación. */
+/** Milímetros con separador de miles y un decimal sólo cuando existe: es presentación, no comparación. */
 function mm(valor: number): string {
-  return Math.round(valor).toLocaleString('es-ES');
+  return valor.toLocaleString('es-ES', { maximumFractionDigits: 1 });
 }
 
 /** Ancho × fondo × alto, con el Z del archivo como alto (la convención de los laminadores). */
@@ -178,6 +178,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
           <div><dt>Triángulos degenerados</dt><dd>{actual.analysis.degenerateTriangleCount}</dd></div>
           <div><dt>Caras duplicadas</dt><dd>{actual.analysis.duplicateFaceCount}</dd></div>
         </dl>
+        {caja && !actual.analysis.isWatertight && <p className="malla-nota-volumen">No se muestra el volumen porque la malla está abierta: el volumen sólo tiene sentido en una malla cerrada.</p>}
         <p className="malla-nota-unidades">El STL no declara unidades: se asumen milímetros. Las medidas son ancho × fondo × alto, y el alto es el Z del archivo, como en los laminadores.</p>
         {aviso && caja && <p className="malla-aviso malla-escala" role="status">{textoAvisoEscala(aviso, caja)}</p>}
       </div>
@@ -193,7 +194,9 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
           ? <p className="malla-ayuda" role="status">No se puede saber si la pieza cabe hasta que se resuelvan las unidades del archivo.</p>
           : !maquina
             ? <p className="malla-ayuda">Elige tu impresora para saber si la pieza cabe en su cama.</p>
-            : encajeTexto && <p className="malla-encaje" role="status">{encajeTexto}</p>}
+            : encajeTexto
+              ? <p className="malla-encaje" role="status">{encajeTexto}</p>
+              : <p className="malla-ayuda">No hay medidas suficientes para comprobar el encaje.</p>}
         {cambio && <p className="malla-cambio">{cambio}</p>}
         {encajeTexto && encaje?.estado !== 'indeterminado' && <p className="malla-nota">El veredicto compara cajas envolventes: la pieza puede entrar en la cama aunque su caja no quepa, por ejemplo en diagonal.</p>}
       </div>

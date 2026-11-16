@@ -96,9 +96,10 @@ opuestos y cada uno se corrige en un sentido:
   pieza así no es imprimible, y la explicación más probable es que el archivo
   venga en pulgadas. Si es así, el tamaño real es **25,4 veces mayor** que el
   que se ve.
-- **Números demasiado grandes** (mayor dimensión por encima de 350 mm): superar
-  la cama de casi todas las impresoras de la casa. Si el archivo está en
-  pulgadas, el tamaño real sería **25,4 veces menor** que el que se ve.
+- **Números demasiado grandes** (mayor dimensión por encima de 350 mm): supera
+  la cama de casi todas las impresoras de la casa. Si la escala se aplicó dos
+  veces al convertir de pulgadas, el tamaño real sería **25,4 veces menor** que
+  el que se ve.
 
 Cada aviso da su conversión en el sentido correcto y dice que la web no puede
 saberlo. Son hipótesis, no veredictos: ofrecen una explicación.

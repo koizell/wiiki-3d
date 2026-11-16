@@ -24,7 +24,7 @@
  *  5. **Taller.** Subir, ir a `/taller` por el enlace (no con `goto`), ver el
  *     coste y la aritmética con el `÷ 1000` explícito.
  *
- *  6. **La máquina elegida.** Elegir máquina en el pre-flight, comprobar que
+ *  7. **La máquina elegida.** Elegir máquina en el pre-flight, comprobar que
  *     queda en `localStorage`, que el cambio se avisa con el evento
  *     `wiiki-maquina-cambio` y que la elección sobrevive a una recarga.
  *     Es la preferencia que el informe del STL va a compartir.

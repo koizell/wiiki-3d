@@ -358,6 +358,7 @@ try {
     await select('abiertas.stl', stlDeCaja(100, 60, 20, faces.slice(2)))
     await visible('Incidencias detectadas')
     assert.equal(await filaDe('Volumen de la malla').count(), 0, 'la malla abierta no muestra volumen')
+    await esperarTexto('.malla-nota-volumen', 'No se muestra el volumen porque la malla está abierta')
     assert.equal((await filaDe('Medidas').innerText()).trim(), '100 × 60 × 20 mm')
     // Aviso de escala pequeño: la mayor dimensión por debajo de 5 mm.
     await select('pequena.stl', stlDeCaja(4, 4, 4))
@@ -401,6 +402,7 @@ try {
     // Máquina sin volumen útil: no se puede determinar.
     await page.locator('#revision-maquina').selectOption('elegoo-mars-5-ultra')
     await esperarTexto('.malla-encaje', 'no se puede determinar')
+    assert.equal(await page.locator('.malla-nota').count(), 0, 'sin comparación de cajas no se pinta la nota del veredicto')
     // Máquina elegida: un cubo de 100 mm cabe en la MK4S.
     await page.locator('#revision-maquina').selectOption('prusa-mk4s')
     await esperarTexto('.malla-encaje', 'Cabe en la cama de tu Prusa MK4S')
@@ -421,6 +423,11 @@ try {
     await select('girada.stl', stlDeCaja(240, 220, 200))
     await esperarTexto('#revision-malla', '240 × 220 × 200 mm')
     await esperarTexto('.malla-encaje', 'Cabe girada 90° de canto')
+    // El borde de la cama: 250,4 mm no cabe en 250 y el texto no lo redondea a 250.
+    await select('borde.stl', stlDeCaja(250.4, 100, 100))
+    await esperarTexto('#revision-malla', '250,4 × 100 × 100 mm')
+    await esperarTexto('.malla-encaje', 'No cabe')
+    assert.match(await page.locator('.malla-encaje').innerText(), /250,4 × 100 × 100 mm/)
     // Si el veredicto cambia al reparar, una línea lo dice.
     const diff = await page.evaluate(async () => {
       const reactModule = await import('/node_modules/.vite/deps/react.js')
@@ -439,11 +446,32 @@ try {
       const revision = { fase: 'reparado', analisis: analisis(300), resumen: { analisis: analisis(100), reparacion: repair }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
       root.render(React.createElement(RevisionMalla, { revision, nombre: 'dif.stl' }))
       await new Promise(resolve => setTimeout(resolve, 100))
+      // El segundo consumidor del hook: otro componente que cambia la máquina.
+      // Si el informe no escuchara el cambio, su selector se quedaría atrás.
+      const { useMaquinaSeleccionada } = await import('/src/state/useMaquinaSeleccionada.ts')
+      const targetB = document.createElement('div'); document.body.append(targetB)
+      const rootB = (client.default ?? client).createRoot(targetB)
+      function Otro() {
+        const { slug, setSlug } = useMaquinaSeleccionada()
+        return React.createElement('div', null,
+          React.createElement('span', { id: 'otro-slug' }, slug),
+          React.createElement('button', { id: 'otro-cambiar', type: 'button', onClick: () => setSlug('bambu-p1s') }, 'cambiar'))
+      }
+      rootB.render(React.createElement(Otro))
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const antes = target.querySelector('#revision-maquina').value
+      targetB.querySelector('#otro-cambiar').click()
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const despues = target.querySelector('#revision-maquina').value
+      const otro = targetB.querySelector('#otro-slug').textContent
       const texto = target.innerText
-      root.unmount(); target.remove()
-      return texto
+      root.unmount(); rootB.unmount(); target.remove(); targetB.remove()
+      return { texto, antes, despues, otro }
     })
-    assert.match(diff, /tras reparar, la copia sí cabe; antes no/i)
+    assert.match(diff.texto, /tras reparar, la copia sí cabe; antes no/i)
+    assert.equal(diff.antes, 'prusa-mk4s', 'el informe arranca con la máquina guardada')
+    assert.equal(diff.despues, 'bambu-p1s', 'un consumidor cambia la máquina y el informe se actualiza')
+    assert.equal(diff.otro, 'bambu-p1s', 'el consumidor que cambia también ve el valor nuevo')
     await page.evaluate(() => localStorage.clear())
     console.log('OK medidas, aviso de escala y encaje en la impresora')
     const visor = await browser.newPage()
