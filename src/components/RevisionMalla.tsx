@@ -50,7 +50,8 @@ function cajaDe(analisis: AnalisisMalla | null | undefined): Caja | null {
  *   probable es que el archivo venga en pulgadas. Si es así, el tamaño real es
  *   **×25,4** el que se ve.
  * - **Mayor de 350 mm**: supera la cama de casi todas las impresoras de casa.
- *   Si el archivo está en pulgadas, el tamaño real es **÷25,4** el que se ve.
+ *   Si la escala se aplicó dos veces al convertir de pulgadas, el tamaño real
+ *   es **÷25,4** el que se ve.
  *
  * Son hipótesis, no veredictos: el STL no declara unidades y esta web no puede
  * saberlo. Por eso el aviso ofrece la conversión y no bloquea.
@@ -194,7 +195,7 @@ export default function RevisionMalla({ revision, nombre }: { revision: Estado; 
             ? <p className="malla-ayuda">Elige tu impresora para saber si la pieza cabe en su cama.</p>
             : encajeTexto && <p className="malla-encaje" role="status">{encajeTexto}</p>}
         {cambio && <p className="malla-cambio">{cambio}</p>}
-        {encajeTexto && <p className="malla-nota">El veredicto compara cajas envolventes: la pieza puede entrar en la cama aunque su caja no quepa, por ejemplo en diagonal.</p>}
+        {encajeTexto && encaje?.estado !== 'indeterminado' && <p className="malla-nota">El veredicto compara cajas envolventes: la pieza puede entrar en la cama aunque su caja no quepa, por ejemplo en diagonal.</p>}
       </div>
     </>}
     {revision.fase === 'error' && !revision.analisis && <p>Prueba a seleccionar el archivo de nuevo o elige otro STL.</p>}

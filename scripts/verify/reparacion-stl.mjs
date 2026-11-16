@@ -369,6 +369,7 @@ try {
     await page.locator('#revision-maquina').selectOption('prusa-mk4s')
     await esperarTexto('.malla-escala', '×25,4')
     assert.equal(await page.locator('.malla-encaje').count(), 0, 'con aviso de escala no hay veredicto aunque haya máquina elegida')
+    assert.equal(await page.locator('.malla-nota').count(), 0, 'con aviso tampoco se pinta la nota del veredicto')
     assert.match(await seccionImpresora.innerText(), /resuelvan las unidades/i)
     /*
      * El brief pedía «un STL de 8 mm» para este caso, pero el umbral acordado es
@@ -384,6 +385,7 @@ try {
     assert.match(await page.locator('.malla-escala').innerText(), /÷25,4/)
     assert.equal(await page.locator('#revision-maquina').inputValue(), 'prusa-mk4s')
     assert.equal(await page.locator('.malla-encaje').count(), 0, 'el aviso grande también calla el veredicto con máquina elegida')
+    assert.equal(await page.locator('.malla-nota').count(), 0, 'el aviso grande tampoco pinta la nota del veredicto')
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.locator('#revision-malla').scrollIntoViewIfNeeded()
     await page.locator('#revision-malla').screenshot({ path: '/tmp/opencode/medidas-encaje-escala-escritorio.png' })
