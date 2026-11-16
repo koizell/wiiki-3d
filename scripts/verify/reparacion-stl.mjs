@@ -319,6 +319,122 @@ try {
     await page.unroute('**/meshfix/worker.js')
     await page.getByRole('button', { name: 'Cerrar archivo' }).click()
     console.log('OK interfaz STL: selección, arrastre, reparación, teclado y viewports')
+    // ---- Medidas, aviso de escala y encaje en la impresora ----
+    /*
+     * STL sintéticos de tamaño controlado. Se reutiliza el generador del cubo de
+     * 1 mm de arriba: se escalan sus tres ejes para tener la caja que hace falta.
+     */
+    const stlDeCaja = (ancho, fondo, alto, tris = faces) => {
+      const bytes = Buffer.from(stl(tris))
+      for (let i = 0; i < tris.length; i++) {
+        for (let j = 0; j < 3; j++) {
+          for (let k = 0; k < 3; k++) {
+            const pos = 84 + i * 50 + 12 + j * 12 + k * 4
+            bytes.writeFloatLE(bytes.readFloatLE(pos) * [ancho, fondo, alto][k], pos)
+          }
+        }
+      }
+      return bytes
+    }
+    const filaDe = nombre => page.locator('#revision-malla .malla-resumen').first()
+      .locator('dl > div').filter({ has: page.locator('dt', { hasText: nombre }) }).locator('dd')
+    const seccionImpresora = page.locator('.malla-impresora')
+    const esperarTexto = async (selector, texto) => {
+      await page.waitForFunction(([sel, buscado]) =>
+        [...document.querySelectorAll(sel)].some(n => n.textContent?.toLowerCase().includes(buscado.toLowerCase())), [selector, texto])
+    }
+    await page.evaluate(() => localStorage.clear())
+    // Las medidas salen como ancho × fondo × alto, con el Z del archivo como alto.
+    await select('medidas.stl', stlDeCaja(100, 60, 20))
+    await visible('Sin incidencias detectadas')
+    assert.equal((await filaDe('Medidas').innerText()).trim(), '100 × 60 × 20 mm')
+    assert.ok(await filaDe('Volumen de la malla').count(), 'la malla cerrada muestra el volumen')
+    assert.match(await filaDe('Volumen de la malla').innerText(), /mm³/)
+    const notaUnidades = page.getByText('no declara unidades', { exact: false }).first()
+    await notaUnidades.waitFor()
+    assert.match(await notaUnidades.innerText(), /milímetros/)
+    // El volumen es de la malla: una malla abierta no lo muestra.
+    await select('abiertas.stl', stlDeCaja(100, 60, 20, faces.slice(2)))
+    await visible('Incidencias detectadas')
+    assert.equal(await filaDe('Volumen de la malla').count(), 0, 'la malla abierta no muestra volumen')
+    assert.equal((await filaDe('Medidas').innerText()).trim(), '100 × 60 × 20 mm')
+    // Aviso de escala pequeño: la mayor dimensión por debajo de 5 mm.
+    await select('pequena.stl', stlDeCaja(4, 4, 4))
+    await visible('Sin incidencias detectadas')
+    assert.equal(await page.locator('.malla-escala').count(), 1)
+    assert.match(await page.locator('.malla-escala').innerText(), /×25,4/)
+    assert.equal(await page.locator('.malla-encaje').count(), 0, 'con aviso de escala no hay veredicto de encaje')
+    assert.match(await seccionImpresora.innerText(), /resuelvan las unidades/i)
+    /*
+     * El brief pedía «un STL de 8 mm» para este caso, pero el umbral acordado es
+     * 5 mm: 8 mm no lo cruza. Se comprueba el límite exacto, no el ejemplo.
+     */
+    await select('ocho.stl', stlDeCaja(8, 8, 8))
+    await visible('Sin incidencias detectadas')
+    assert.equal(await page.locator('.malla-escala').count(), 0, '8 mm está por encima del umbral de 5 mm: no hay aviso')
+    // Aviso de escala grande: la mayor dimensión por encima de 350 mm.
+    await select('grande.stl', stlDeCaja(400, 400, 400))
+    await visible('Sin incidencias detectadas')
+    await esperarTexto('#revision-malla', '400 × 400 × 400 mm')
+    assert.match(await page.locator('.malla-escala').innerText(), /÷25,4/)
+    assert.equal(await page.locator('.malla-encaje').count(), 0)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.locator('#revision-malla').scrollIntoViewIfNeeded()
+    await page.locator('#revision-malla').screenshot({ path: '/tmp/opencode/medidas-encaje-escala-escritorio.png' })
+    // Sin máquina: se ve el selector y ningún veredicto.
+    await select('cubo100.stl', stlDeCaja(100, 100, 100))
+    await visible('Sin incidencias detectadas')
+    assert.equal(await page.locator('#revision-maquina').count(), 1)
+    assert.equal(await page.locator('#revision-maquina').inputValue(), '')
+    assert.equal(await page.locator('.malla-encaje').count(), 0, 'sin máquina no hay veredicto')
+    assert.match(await seccionImpresora.innerText(), /Elige tu impresora/i)
+    // Máquina sin volumen útil: no se puede determinar.
+    await page.locator('#revision-maquina').selectOption('elegoo-mars-5-ultra')
+    await esperarTexto('.malla-encaje', 'no se puede determinar')
+    // Máquina elegida: un cubo de 100 mm cabe en la MK4S.
+    await page.locator('#revision-maquina').selectOption('prusa-mk4s')
+    await esperarTexto('.malla-encaje', 'Cabe en la cama de tu Prusa MK4S')
+    assert.match(await page.locator('.malla-encaje').innerText(), /250 × 210 × 220 mm/)
+    // Capturas de la sección nueva: medidas, aviso de escala y encaje.
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.locator('#revision-malla').scrollIntoViewIfNeeded()
+    await page.locator('#revision-malla').screenshot({ path: '/tmp/opencode/medidas-encaje-escritorio.png' })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.locator('#revision-malla').scrollIntoViewIfNeeded()
+    await page.locator('#revision-malla').screenshot({ path: '/tmp/opencode/medidas-encaje-movil.png' })
+    // Los dos veredictos que faltan: no cabe y cabe girada. Piezas de 300 y
+    // 240 mm: ninguna cruza el umbral de escala, así que hay veredicto.
+    await select('nocabe.stl', stlDeCaja(300, 300, 100))
+    await esperarTexto('#revision-malla', '300 × 300 × 100 mm')
+    await esperarTexto('.malla-encaje', 'No cabe')
+    assert.match(await page.locator('.malla-encaje').innerText(), /300 × 300 × 100 mm/)
+    await select('girada.stl', stlDeCaja(240, 220, 200))
+    await esperarTexto('#revision-malla', '240 × 220 × 200 mm')
+    await esperarTexto('.malla-encaje', 'Cabe girada 90° de canto')
+    // Si el veredicto cambia al reparar, una línea lo dice.
+    const diff = await page.evaluate(async () => {
+      const reactModule = await import('/node_modules/.vite/deps/react.js')
+      const React = reactModule.default ?? reactModule
+      const client = await import('/node_modules/.vite/deps/react-dom_client.js')
+      const { default: RevisionMalla } = await import('/src/components/RevisionMalla.tsx')
+      localStorage.setItem('wiiki-maquina', 'prusa-mk4s')
+      const target = document.createElement('div'); document.body.append(target)
+      const root = (client.default ?? client).createRoot(target)
+      const analisis = (dim) => ({
+        analysis: { vertexCount: 8, faceCount: 10, connectedComponents: 1, holeCount: 0, boundaryEdges: 0, flippedNormalCount: 0, degenerateTriangleCount: 0, duplicateFaceCount: 0, skippedFaces: 0, dimX: dim, dimY: dim, dimZ: dim, volume: dim * dim * dim, surfaceArea: 0, isWatertight: true },
+        incidencias: [], aberturas: [], esCerrada: true, esManifold: true,
+        carasNoFinitasEliminadas: 0, carasPerdidasAuditoria: 0, reconstruccionesConectividad: 0, colorsDropped: false,
+      })
+      const repair = { verticesBefore: 8, verticesAfter: 8, facesBefore: 10, facesAfter: 12, fillHoles: { holesFilled: 1, holesSkippedAsFeature: 0, flapsRemoved: 0 }, fixNormals: { facesFlipped: 0, skippedFaces: 0 }, weld: { facesRemoved: 0, skippedFaces: 0 }, splitVertices: { skippedFaces: 0 }, removeDegenerates: { degenerateRemoved: 0, duplicateRemoved: 0 } }
+      const revision = { fase: 'reparado', analisis: analisis(300), resumen: { analisis: analisis(100), reparacion: repair }, avisoTamano: false, error: null, urlDescarga: null, progreso: null, reparar() {}, rellenarAberturas() {} }
+      root.render(React.createElement(RevisionMalla, { revision, nombre: 'dif.stl' }))
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const texto = target.innerText
+      root.unmount(); target.remove()
+      return texto
+    })
+    assert.match(diff, /tras reparar, la copia sí cabe; antes no/i)
+    console.log('OK medidas, aviso de escala y encaje en la impresora')
     const visor = await browser.newPage()
     await visor.goto(`http://127.0.0.1:4179${base}`)
     await visor.evaluate(async version => {

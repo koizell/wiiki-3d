@@ -29,6 +29,17 @@
 .malla-secundario { background:transparent; color:#e8ecf1; border:1px solid #e8b761; border-radius:6px; padding:.7rem 1rem; cursor:pointer; }
 .malla-secundario:disabled { opacity:.45; cursor:not-allowed; }
 .malla-limite { font-size:.9rem; }
+.malla-nota-unidades { margin:.75rem 0 0; color:#9aa4ae; font-size:.86rem; }
+.malla-escala { margin:.75rem 0 0; padding:.75rem 1rem; }
+.malla-impresora { border:1px solid #344456; background:#18212d; border-radius:8px; padding:1.25rem; margin-bottom:1.25rem; }
+.malla-impresora h3 { font-size:1.15rem; margin:.35rem 0 .75rem; color:#e8ecf1; }
+.malla-impresora-etiqueta { display:block; color:#b8c3d0; font-size:.86rem; font-weight:600; margin-bottom:.4rem; }
+.malla-impresora-select { display:block; width:100%; padding:.6rem .75rem; background:#0f1115; color:#e8ecf1; border:1px solid #344456; border-radius:6px; font:inherit; font-size:.94rem; margin-bottom:.75rem; }
+.malla-impresora-select:focus-visible { outline:2px solid #60a5fa; outline-offset:-2px; }
+.malla-encaje { margin:0; font-weight:600; color:#e8ecf1; }
+.malla-ayuda { margin:0; color:#b8c3d0; }
+.malla-cambio { margin:.75rem 0 0; color:#e8b761; font-size:.9rem; }
+.malla-impresora .malla-nota { margin:.75rem 0 0; color:#9aa4ae; font-size:.86rem; }
 @media (max-width:600px) {
   .viewer-container--stl .viewer-3d-container { height:300px; }
   .malla-resumen dl { grid-template-columns:1fr; }
