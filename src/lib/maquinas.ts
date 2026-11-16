@@ -196,6 +196,15 @@ const ORIENTACIONES: { nombre: Orientacion; ejes: readonly [0 | 1 | 2, 0 | 1 | 2
  * decisión del laminador que ocurre **después**, así que allí se compara sólo
  * la orientación tal cual (`permitirGiro: false`).
  *
+ * ## La orientación
+ *
+ * `orientacion` es **la orientación en la que la pieza entra**, y sólo
+ * acompaña a los veredictos en los que entra: `cabe` (siempre `xyz`) y
+ * `cabe-girada` (`yxz` o `xzy`). En `no-cabe` no hay ninguna, y no es una
+ * omisión: se compararon varias orientaciones y ninguna funciona, así que
+ * decir «la de `xyz`» sería contar sólo la primera comparación. En
+ * `indeterminado` tampoco, porque no se comparó ninguna.
+ *
  * @param caja La pieza, en mm: X ancho, Y fondo, Z alto. Sin redondear.
  * @param maquina La máquina elegida, o `null` si no hay ninguna.
  * @param opciones `permitirGiro` (por defecto `true`) decide si se prueban
@@ -221,8 +230,8 @@ export function cabeEnLaMaquina(
     }
   }
 
-  // No cabe en ninguna de las orientaciones probadas. `orientacion` sigue
-  // siendo `'xyz'` —la tal cual, que es la que se comparó primero— porque el
-  // veredicto lo dice el estado, no la orientación.
-  return { estado: 'no-cabe', orientacion: 'xyz' };
+  // No cabe en ninguna de las orientaciones probadas, y no se dice cuál:
+  // se compararon tres, y la que se comparó primero no es «la» orientación.
+  // La orientación que acompaña al veredicto es la en la que la pieza entra.
+  return { estado: 'no-cabe' };
 }

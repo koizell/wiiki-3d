@@ -279,9 +279,29 @@ ok(encaja([300, 100, 100], camaLarga).orientacion === 'yxz', 'la orientación qu
 ok(encaja([300, 100, 100], cama([250, 250, 250])).estado === 'no-cabe',
   '300×100×100 en una cama de 250×250×250 no cabe en ninguna orientación');
 
+/*
+ * La tercera orientación, `xzy`: la pieza se gira de canto, Y y Z se
+ * intercambian. Es la que hace falta cuando la pieza es ancha y alta y la
+ * cama es ancha y baja.
+ *
+ * Sin este caso el mapeo de `xzy` podría estar mal —o no existir— y los
+ * tests seguirían en verde, porque `yxz` ya cubre el giro en planta. Por eso
+ * el caso se comprueba con sus tres números: 190×250×150 no entra ni tal
+ * cual (250 > 200) ni girada en planta (250 > 200), y sí girada de canto
+ * (190 ≤ 200, 150 ≤ 200, 250 ≤ 300).
+ */
+const camaBaja = cama([200, 200, 300]);
+ok(encaja([190, 250, 150], camaBaja).estado === 'cabe-girada',
+  '190×250×150 en una cama de 200×200×300 cabe girada de canto');
+ok(encaja([190, 250, 150], camaBaja).orientacion === 'xzy',
+  'la orientación que funciona es la que gira Y y Z');
+ok(encaja([190, 250, 150], camaBaja, { permitirGiro: false }).estado === 'no-cabe',
+  'sin giro, la pieza que sólo cabe girada de canto no cabe');
+
 // 8c · no cabe
 ok(encaja([300, 300, 300], a1).estado === 'no-cabe', 'una pieza de 300×300×300 no cabe en la A1');
-ok(encaja([300, 300, 300], a1).orientacion === 'xyz', 'cuando no cabe, la orientación es la tal cual');
+ok(encaja([300, 300, 300], a1).orientacion === undefined,
+  'cuando no cabe no hay orientación: se compararon varias y ninguna funciona');
 
 // 8d · indeterminado
 ok(encaja([100, 100, 100], null).estado === 'indeterminado', 'sin máquina elegida no se puede determinar');
@@ -299,10 +319,12 @@ ok(encaja([250, 100, 100], mk4s).estado === 'cabe', '250,0 mm en una cama de 250
 // 8f · sin giro
 ok(encaja([300, 100, 100], camaLarga, { permitirGiro: false }).estado === 'no-cabe',
   'sin giro, la pieza que cabría girada no cabe');
-ok(encaja([300, 100, 100], camaLarga, { permitirGiro: false }).orientacion === 'xyz',
-  'sin giro, la única orientación comparada es la tal cual');
+ok(encaja([300, 100, 100], camaLarga, { permitirGiro: false }).orientacion === undefined,
+  'sin giro, si no cabe tampoco hay orientación: ninguna orientación es la que sirve');
 ok(encaja([100, 100, 100], a1, { permitirGiro: false }).estado === 'cabe',
   'sin giro, lo que cabe tal cual sigue cabiendo');
+ok(encaja([100, 100, 100], a1, { permitirGiro: false }).orientacion === 'xyz',
+  'sin giro, lo que cabe se dice en la orientación tal cual');
 
 /*
  * 9 · El aviso de G-code: el mismo veredicto, pero sin giros
@@ -331,19 +353,22 @@ const avisoGrande = avisoDeArea(mk4s, 300, 100, 100);
 ok(avisoGrande !== undefined, 'una pieza que no cabe dispara el aviso de área');
 ok(avisoGrande && avisoGrande.nivel === 'bloqueante', 'el aviso de área sigue siendo bloqueante');
 ok(avisoGrande && avisoGrande.guia === undefined, 'el aviso de área ya no enlaza a ninguna guía');
+// El texto entero, no un trozo: es una regresión, y una regresión que mira
+// media frase deja media frase sin vigilar.
+ok(avisoGrande && avisoGrande.texto === 'La pieza mide 300×100×100 mm y la cama de tu Prusa MK4S es 250×210×220 mm. No cabe: escala la pieza o cambia de máquina.',
+  'el aviso de área dice la frase entera, sin cambios');
 ok(avisoDeArea(mars, 300, 100, 100) === undefined,
   'sin volumen útil no se avisa: la ausencia de un dato no es un cero');
 ok(avisoDeArea(a1, 100, 100, 100) === undefined, 'una pieza que cabe no dispara el aviso');
 ok(avisoDeArea(camaLarga, 300, 100, 100) !== undefined,
   'el G-code no gira la pieza: la que sólo cabría girada avisa igual');
 
-// El texto redondea como hasta ahora; la comparación, no.
+// El texto redondea como hasta siempre; la comparación, no. La pieza mide
+// 250,4 mm y el aviso dice 250, y aun así avisa: eso es la regresión.
 const avisoBorde = avisoDeArea(mk4s, 250.4, 100, 100);
 ok(avisoBorde !== undefined, '250,4 mm en una cama de 250 mm dispara el aviso');
-ok(avisoBorde && avisoBorde.texto.includes('250×100×100 mm'),
-  'el texto del aviso redondea la medida, como siempre');
-ok(avisoBorde && avisoBorde.texto.includes('250×210×220 mm'),
-  'el texto del aviso enseña la cama de la máquina');
+ok(avisoBorde && avisoBorde.texto === 'La pieza mide 250×100×100 mm y la cama de tu Prusa MK4S es 250×210×220 mm. No cabe: escala la pieza o cambia de máquina.',
+  'el aviso redondea la medida en el texto, pero el veredicto no redondea');
 
 console.log(`\n${fallos === 0 ? 'VERDE' : 'ROJO'}: ${fallos} fallos\n`);
 process.exit(fallos === 0 ? 0 : 1);
