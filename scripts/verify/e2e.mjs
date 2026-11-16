@@ -24,6 +24,11 @@
  *  5. **Taller.** Subir, ir a `/taller` por el enlace (no con `goto`), ver el
  *     coste y la aritmética con el `÷ 1000` explícito.
  *
+ *  6. **La máquina elegida.** Elegir máquina en el pre-flight, comprobar que
+ *     queda en `localStorage`, que el cambio se avisa con el evento
+ *     `wiiki-maquina-cambio` y que la elección sobrevive a una recarga.
+ *     Es la preferencia que el informe del STL va a compartir.
+ *
  * Uso:  npm run verify:e2e
  * Sale con código 1 si algo falla.
  */
@@ -233,6 +238,79 @@ try {
     // El preflight sigue presente y funcional
     assert.equal(await p.locator('.preflight').count(), 1, 'falta el preflight');
     assert.equal(await p.locator('#preflight-maquina').inputValue(), 'ender-3-v3-se', 'la máquina no se seleccionó');
+
+    assert.equal(errores.length, 0, `errores de consola: ${errores.join(' | ')}`);
+  });
+
+  // ── 7. La máquina elegida: se guarda, se recuerda y se comparte ───────────
+  /*
+   * La máquina elegida es una preferencia del navegador, no un dato del
+   * archivo: tiene que sobrevivir a la recarga y la tienen que ver todos los
+   * flujos de la página (el pre-flight del G-code y el informe del STL).
+   *
+   * Lo que se comprueba:
+   *
+   *  1. El slug elegido está en `localStorage['wiiki-maquina']`.
+   *  2. El cambio se avisa con el evento `wiiki-maquina-cambio`, que es lo
+   *     que permite que otro flujo se entere.
+   *  3. Tras recargar la página, el selector sigue con la máquina elegida.
+   *  4. Un cambio hecho desde fuera (el evento) mueve el selector: el que
+   *     escucha manda, no sólo el que escribe.
+   */
+  await probar('la máquina elegida se guarda, se recuerda y se comparte', 1280, 900, async (p, errores) => {
+    // Un oyente en la página, para ver qué avisos manda el hook.
+    await p.evaluate(() => {
+      window.__cambiosMaquina = [];
+      window.addEventListener('wiiki-maquina-cambio', (e) => { window.__cambiosMaquina.push(e.detail); });
+    });
+
+    await p.locator('#file-upload').setInputFiles(GCODE_FIXTURE);
+    await p.locator('.panel-body').waitFor({ timeout: 15000 });
+    await p.locator('#preflight-maquina').waitFor({ timeout: 15000 });
+    await p.waitForTimeout(800);
+
+    await p.locator('#preflight-maquina').selectOption('bambu-p1s');
+    await p.waitForTimeout(300);
+    assert.equal(await p.locator('#preflight-maquina').inputValue(), 'bambu-p1s', 'la máquina no se seleccionó');
+
+    // 1. La elección queda guardada.
+    const guardado = await p.evaluate(() => localStorage.getItem('wiiki-maquina'));
+    assert.equal(guardado, 'bambu-p1s', `localStorage no guardó la máquina: ${guardado}`);
+
+    // 2. El cambio se avisa, para que los demás flujos se enteren.
+    const cambios = await p.evaluate(() => window.__cambiosMaquina);
+    assert.deepEqual(cambios, ['bambu-p1s'], `el evento de cambio no llevó el slug: ${JSON.stringify(cambios)}`);
+
+    // 3. Recargar: la elección sigue ahí.
+    await p.reload({ waitUntil: 'networkidle' });
+    // El input de archivo está oculto (`display: none`), así que se espera a
+    // que esté en el DOM y no a que se vea.
+    await p.locator('#file-upload').waitFor({ state: 'attached', timeout: 15000 });
+    await p.locator('#file-upload').setInputFiles(GCODE_FIXTURE);
+    await p.locator('.panel-body').waitFor({ timeout: 15000 });
+    await p.locator('#preflight-maquina').waitFor({ timeout: 15000 });
+    assert.equal(
+      await p.locator('#preflight-maquina').inputValue(),
+      'bambu-p1s',
+      'la máquina no sobrevivió a la recarga',
+    );
+
+    // 4. Un cambio hecho desde fuera mueve el selector.
+    await p.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('wiiki-maquina-cambio', { detail: 'prusa-mk4s' }));
+    });
+    await p.waitForTimeout(300);
+    assert.equal(
+      await p.locator('#preflight-maquina').inputValue(),
+      'prusa-mk4s',
+      'el selector no siguió al evento de cambio',
+    );
+    const guardadoTrasEvento = await p.evaluate(() => localStorage.getItem('wiiki-maquina'));
+    assert.equal(
+      guardadoTrasEvento,
+      'prusa-mk4s',
+      `el cambio que llega por evento no se guardó: ${guardadoTrasEvento}`,
+    );
 
     assert.equal(errores.length, 0, `errores de consola: ${errores.join(' | ')}`);
   });

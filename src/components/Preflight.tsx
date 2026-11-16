@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import type { ProjectMetadata } from '../services/types';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
-import { MAQUINAS, maquinaPorSlug } from '../content/maquinas/catalogo';
+import { MAQUINAS } from '../content/maquinas/catalogo';
 import { preflight } from '../lib/preflight';
+import { useMaquinaSeleccionada } from '../state/useMaquinaSeleccionada';
 
 /**
  * Comprobaciones previas (pre-flight) para un archivo.
@@ -11,14 +11,12 @@ import { preflight } from '../lib/preflight';
  * pintar tanto en la ruta con archivo como en la restaurada del historial sin
  * duplicar el bloque.
  *
- * La máquina se persiste en `localStorage` para no pedirla cada vez: es una
- * preferencia del navegador, no un dato del análisis.
+ * La máquina no vive aquí: la trae `useMaquinaSeleccionada`, que la guarda en
+ * `localStorage` y la comparte con los demás flujos de la página (el informe
+ * del STL). Es una preferencia del navegador, no un dato del análisis.
  */
 export default function Preflight({ metadata, trayectoria }: { metadata: ProjectMetadata; trayectoria?: Trayectoria | null }) {
-  const [maquinaSlug, setMaquinaSlug] = useState<string>(() => {
-    try { return localStorage.getItem('wiiki-maquina') ?? ''; } catch { return ''; }
-  });
-  const maquina = maquinaSlug ? maquinaPorSlug(maquinaSlug) : null;
+  const { slug: maquinaSlug, maquina, setSlug } = useMaquinaSeleccionada();
   const avisos = preflight(metadata, trayectoria ?? null, maquina);
 
   return (
@@ -31,10 +29,7 @@ export default function Preflight({ metadata, trayectoria }: { metadata: Project
           id="preflight-maquina"
           className="preflight-select"
           value={maquinaSlug}
-          onChange={(e) => {
-            setMaquinaSlug(e.target.value);
-            try { localStorage.setItem('wiiki-maquina', e.target.value); } catch { /* localStorage puede no estar disponible (modo privado). */ }
-          }}
+          onChange={(e) => setSlug(e.target.value)}
         >
           <option value="">Sin seleccionar</option>
           {MAQUINAS.map((m) => (
