@@ -8,8 +8,9 @@
  *
  * Comprueba el catálogo contra sus propias reglas: que no haya slugs repetidos,
  * que un campo marcado como pendiente no lleve valor, que el cerramiento esté
- * declarado con origen, que la regla no afirme lo que no puede saber, y que las
- * combinaciones de la tabla de abajo den el estado esperado.
+ * declarado con origen, que la regla no afirme lo que no puede saber, que las
+ * combinaciones de la tabla de abajo den el estado esperado, y que el veredicto
+ * de encaje y el aviso de G-code digan lo que deben.
  *
  * **No comprueba que las cifras sean verdaderas.** Que la Ender 3 V3 KE tenga
  * 300 °C de boquilla lo decide la fuente de `wiki/cooked/`, no este script: aquí
@@ -24,7 +25,8 @@
  * Uso: npm run verify:maquinas
  */
 import { MAQUINAS, FILAMENTOS, maquinaPorSlug, filamentoPorId } from '../../src/content/maquinas/catalogo.ts';
-import { estadoFilamento, rizaria, duracionCiclo, avisos } from '../../src/lib/maquinas.ts';
+import { estadoFilamento, rizaria, duracionCiclo, avisos, cabeEnLaMaquina } from '../../src/lib/maquinas.ts';
+import { preflight } from '../../src/lib/preflight.ts';
 
 let fallos = 0;
 const ok = (cond, mensaje) => {
@@ -221,6 +223,127 @@ for (const m of MAQUINAS) {
     ok(rizaria(m, abs) === false, `${m.slug}: sin cerramiento verificado no dibuja el rizado`);
   }
 }
+
+/*
+ * 8 · El encaje: cuatro veredictos, y nada más
+ *
+ * La comparación es entre cajas envolventes, en milímetros **sin redondear**:
+ * una pieza de 250,4 mm en una cama de 250 mm no cabe, aunque el texto que se
+ * pinte después redondee a 250. El redondeo es de presentación.
+ *
+ * Los cuatro veredictos:
+ *
+ * - `cabe`: la pieza entra tal cual.
+ * - `cabe-girada`: entra girada 90°, y se dice en qué orientación.
+ * - `no-cabe`: no entra en ninguna de las orientaciones probadas.
+ * - `indeterminado`: no hay máquina elegida, o la máquina no tiene volumen
+ *   útil fichado (la de resina no lo tiene). La ausencia de un dato no es un
+ *   cero: una máquina sin volumen declarado no es una máquina donde nada cabe.
+ */
+
+/**
+ * Una máquina con la cama que hace falta para cada caso.
+ *
+ * `cabeEnLaMaquina` sólo mira `vol`, así que una máquina sintética con las
+ * medidas justas vale para probar la geometría. Donde el volumen del catálogo
+ * importa —la MK4S, la A1, la de resina— se usa la máquina real.
+ */
+const cama = (vol) => ({
+  slug: 'cama-de-prueba', marca: 'Cama', modelo: 'de prueba', familia: 'corexy-cerrada',
+  cerrada: true, color: 0, acento: 0, precioRef: '', dims: null, vol,
+  velMax: null, tNozMax: null, tCamaMax: null, extrusor: null, boquilla: '0,4 mm',
+  nivelacion: null, sensorFilamento: false, origen: {}, fuentes: [],
+});
+
+const encaja = (caja, maquina, opciones) => cabeEnLaMaquina(caja, maquina, opciones);
+
+// 8a · cabe
+ok(encaja([100, 100, 100], a1).estado === 'cabe', 'una pieza de 100×100×100 cabe en la A1 (256×256×256)');
+ok(encaja([100, 100, 100], a1).orientacion === 'xyz', 'la que cabe sin girar se dice en la orientación tal cual');
+ok(encaja([250, 100, 100], mk4s).estado === 'cabe', '250 mm caben justos en la cama de 250 de la MK4S');
+
+// 8b · cabe girada
+/*
+ * La pieza del brief: 300×100×100.
+ *
+ * En una cama de 250×250×250 **no cabe girada**, y conviene decirlo: los tres
+ * lados de esa cama miden 250, y la dimensión mayor de la pieza (300) no entra
+ * en ninguno de los tres ejes. Girar cambia el eje, no la longitud. Lo que sí
+ * funciona es una cama con un eje más largo —250×300×250— y ahí el veredicto
+ * es «cabe girada». Las dos cosas se comprueban, porque la primera es la que
+ * el brief daba por hecha.
+ */
+const camaLarga = cama([250, 300, 250]);
+ok(encaja([300, 100, 100], camaLarga).estado === 'cabe-girada', '300×100×100 en una cama de 250×300×250 cabe girada');
+ok(encaja([300, 100, 100], camaLarga).orientacion === 'yxz', 'la orientación que funciona es la que gira X e Y');
+ok(encaja([300, 100, 100], cama([250, 250, 250])).estado === 'no-cabe',
+  '300×100×100 en una cama de 250×250×250 no cabe en ninguna orientación');
+
+// 8c · no cabe
+ok(encaja([300, 300, 300], a1).estado === 'no-cabe', 'una pieza de 300×300×300 no cabe en la A1');
+ok(encaja([300, 300, 300], a1).orientacion === 'xyz', 'cuando no cabe, la orientación es la tal cual');
+
+// 8d · indeterminado
+ok(encaja([100, 100, 100], null).estado === 'indeterminado', 'sin máquina elegida no se puede determinar');
+ok(encaja([100, 100, 100], null).orientacion === undefined, 'el veredicto indeterminado no trae orientación');
+ok(encaja([100, 100, 100], mars).estado === 'indeterminado',
+  'la máquina de resina no tiene volumen útil: no se puede determinar');
+ok(encaja([100, 100, 100], mars).estado !== 'cabe' && encaja([100, 100, 100], mars).estado !== 'no-cabe',
+  'sin volumen útil no se afirma ni que cabe ni que no cabe');
+
+// 8e · el borde, sin redondear
+ok(encaja([250.4, 100, 100], mk4s).estado === 'no-cabe',
+  '250,4 mm en una cama de 250 mm no cabe: la comparación no redondea');
+ok(encaja([250, 100, 100], mk4s).estado === 'cabe', '250,0 mm en una cama de 250 mm cabe justo');
+
+// 8f · sin giro
+ok(encaja([300, 100, 100], camaLarga, { permitirGiro: false }).estado === 'no-cabe',
+  'sin giro, la pieza que cabría girada no cabe');
+ok(encaja([300, 100, 100], camaLarga, { permitirGiro: false }).orientacion === 'xyz',
+  'sin giro, la única orientación comparada es la tal cual');
+ok(encaja([100, 100, 100], a1, { permitirGiro: false }).estado === 'cabe',
+  'sin giro, lo que cabe tal cual sigue cabiendo');
+
+/*
+ * 9 · El aviso de G-code: el mismo veredicto, pero sin giros
+ *
+ * El G-code ya está teselado en coordenadas de cama: girar la pieza es una
+ * decisión del laminador que ocurre después, así que el aviso compara la
+ * orientación tal cual, sigue siendo bloqueante y no cambia su texto. Y si la
+ * máquina no tiene volumen útil fichado, no avisa: la ausencia de un dato no
+ * es un cero.
+ */
+const METADATOS = { filename: 'pieza.gcode', slicer: 'prusa', material: 'PLA', printTime: 3600 };
+
+/** Una trayectoria mínima: de ella sólo importa la caja envolvente. */
+const trayectoria = (x, y, z) => ({
+  tramos: [], capas: [],
+  caja: { min: { x: 0, y: 0, z: 0 }, max: { x, y, z } },
+  filamento: 0, depositado: 0, extrusionados: 0, viajes: 0, movimientos: 0, arcos: 0,
+  velocidadMaxima: 0, retracciones: 0, ventilador: null, pressureAdvance: null,
+  aceleracion: null, temperaturasHotend: [], temperaturasCama: [],
+});
+
+const avisoDeArea = (maquina, x, y, z) =>
+  preflight(METADATOS, trayectoria(x, y, z), maquina).find((a) => a.id === 'area-maquina');
+
+const avisoGrande = avisoDeArea(mk4s, 300, 100, 100);
+ok(avisoGrande !== undefined, 'una pieza que no cabe dispara el aviso de área');
+ok(avisoGrande && avisoGrande.nivel === 'bloqueante', 'el aviso de área sigue siendo bloqueante');
+ok(avisoGrande && avisoGrande.guia === undefined, 'el aviso de área ya no enlaza a ninguna guía');
+ok(avisoDeArea(mars, 300, 100, 100) === undefined,
+  'sin volumen útil no se avisa: la ausencia de un dato no es un cero');
+ok(avisoDeArea(a1, 100, 100, 100) === undefined, 'una pieza que cabe no dispara el aviso');
+ok(avisoDeArea(camaLarga, 300, 100, 100) !== undefined,
+  'el G-code no gira la pieza: la que sólo cabría girada avisa igual');
+
+// El texto redondea como hasta ahora; la comparación, no.
+const avisoBorde = avisoDeArea(mk4s, 250.4, 100, 100);
+ok(avisoBorde !== undefined, '250,4 mm en una cama de 250 mm dispara el aviso');
+ok(avisoBorde && avisoBorde.texto.includes('250×100×100 mm'),
+  'el texto del aviso redondea la medida, como siempre');
+ok(avisoBorde && avisoBorde.texto.includes('250×210×220 mm'),
+  'el texto del aviso enseña la cama de la máquina');
 
 console.log(`\n${fallos === 0 ? 'VERDE' : 'ROJO'}: ${fallos} fallos\n`);
 process.exit(fallos === 0 ? 0 : 1);

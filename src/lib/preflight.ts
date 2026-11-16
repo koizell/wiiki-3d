@@ -31,6 +31,7 @@
 import type { ProjectMetadata } from '../services/types';
 import type { Maquina } from '../content/maquinas/tipos';
 import type { Trayectoria } from '../services/GcodeTrayectoria';
+import { cabeEnLaMaquina } from './maquinas.ts';
 
 /** Nivel del aviso: determina el color y el orden en la lista. */
 export type NivelAviso = 'bloqueante' | 'importante' | 'atencion';
@@ -232,17 +233,27 @@ export function preflight(metadata: ProjectMetadata, trayectoria: Trayectoria | 
   }
 
   // --- 10. Área de impresión vs cama de la máquina ---
-  if (trayectoria && maquina && maquina.vol) {
+  if (trayectoria && maquina) {
     const caja = trayectoria.caja;
     const ancho = caja.max.x - caja.min.x;
     const profundo = caja.max.y - caja.min.y;
     const alto = caja.max.z - caja.min.z;
-    if (ancho > maquina.vol[0] || profundo > maquina.vol[1] || alto > maquina.vol[2]) {
+    // El G-code ya está teselado en coordenadas de cama: girar la pieza es una
+    // decisión del laminador que ocurre **después**, así que aquí no se gira y el
+    // aviso sigue siendo bloqueante, exactamente como hasta ahora.
+    //
+    // Y si la máquina no tiene volumen útil fichado, el veredicto sale
+    // `indeterminado` y no se avisa: la ausencia de un dato no es un cero.
+    const encaje = cabeEnLaMaquina([ancho, profundo, alto], maquina, { permitirGiro: false });
+    const vol = maquina.vol;
+    if (encaje.estado === 'no-cabe' && vol) {
       avisos.push({
         id: 'area-maquina',
         nivel: 'bloqueante',
-        texto: `La pieza mide ${Math.round(ancho)}×${Math.round(profundo)}×${Math.round(alto)} mm y la cama de tu ${maquina.marca} ${maquina.modelo} es ${maquina.vol[0]}×${maquina.vol[1]}×${maquina.vol[2]} mm. No cabe: escala la pieza o cambia de máquina.`,
-        guia: 'voladizos-y-soportes',
+        // Sin enlace a ninguna guía: la de voladizos y soportes no trata del
+        // tamaño de la pieza, y una guía de escala y encaje es un trabajo
+        // aparte, con su propio ciclo en la wiki.
+        texto: `La pieza mide ${Math.round(ancho)}×${Math.round(profundo)}×${Math.round(alto)} mm y la cama de tu ${maquina.marca} ${maquina.modelo} es ${vol[0]}×${vol[1]}×${vol[2]} mm. No cabe: escala la pieza o cambia de máquina.`,
       });
     }
   }
