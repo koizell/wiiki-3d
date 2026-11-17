@@ -114,30 +114,26 @@ hay config de OpenCode del proyecto ahí que sí deba versionarse.
 
 ## El grafo de conocimiento
 
-Hay un [Graphify](https://github.com/Graphify-Labs/graphify) instalado que
-construye un grafo del repo en `graphify-out/`. `AGENTS.md` le dice al agente que
-lo consulte antes de ir grepeando.
+El CLI oficial [Graphify](https://github.com/Graphify-Labs/graphify) construye un
+grafo local del repo en `graphify-out/`. `AGENTS.md` indica cómo consultarlo.
 
 ### Instalación
 
-Son tres comandos, y **los tres hacen falta**:
+Con Python 3.11–3.14 y `uv`, desde la raíz del proyecto:
 
 ```bash
-# 1. El CLI. El paquete de PyPI se llama graphifyy con doble y;
-#    el binario se llama graphify con una sola. Sin pipx, con uv:
-uv tool install graphifyy
-
-# 2. El skill de usuario, en ~/.config/opencode/skills/graphify/.
-#    Sin esto el comando /graphify no existe.
-graphify install --platform opencode
-
-# 3. Construir el grafo
-graphify . --project --code-only
+UV_CACHE_DIR="$PWD/.local/graphify-cache" uv venv .local/graphify-venv
+UV_CACHE_DIR="$PWD/.local/graphify-cache" uv pip install \
+  --python .local/graphify-venv/bin/python --only-binary :all: \
+  --index-url https://pypi.org/simple 'graphifyy==0.9.111'
+sh scripts/graphify.sh extract . --code-only
 ```
 
-El paso 2 no es opcional aunque parezca redundante. `graphify opencode install`
-es otro comando, y sólo escribe `AGENTS.md` y el plugin: **no instala el skill**.
-Verificado en la 0.9.74.
+El paquete oficial en PyPI se llama `graphifyy`; el binario se llama `graphify`.
+El entorno y la caché están ignorados por Git. El wrapper fija el backend en
+`none` y desactiva el registro global de consultas. No instala skill ni plugin;
+por tanto, no proporciona el comando `/graphify`. La versión principal está
+fijada, pero las dependencias transitivas no están bloqueadas.
 
 ### El plugin no se instala, y es una decisión
 
@@ -157,7 +153,7 @@ cause=PluginModule.LoadError: Plugin must export a default definition with an id
 Lo que hace ese plugin, si funcionara, es inyectar un `echo "[graphify] knowledge
 graph at…"` en el primer comando de shell de la sesión. Es un recordatorio, no una
 consulta: no lee el grafo, no responde preguntas y no dispara el skill. La
-integración funciona por `AGENTS.md` y por el skill, y está comprobada: en la
+integración histórica funcionaba por `AGENTS.md` y por el skill: en la
 transcripción de una sesión real, las cuatro primeras llamadas del agente fueron al
 grafo antes de tocar ningún fichero.
 
@@ -167,7 +163,7 @@ Por eso:
 - `.opencode/opencode.json` **no se versiona**, porque su única clave era `plugin`.
   Versionar el registro de un plugin que no existe sólo daría un aviso más en cada
   arranque.
-- `AGENTS.md` **sí se versiona**, porque es lo que hace que la integración funcione.
+- `AGENTS.md` **sí se versiona**, con instrucciones para usar el CLI local.
 
 Si algún día hace falta el recordatorio automático, portarlo son quince líneas
 (`Plugin.define`, `ctx.tool.hook`, y la clave `plugin` → `plugins`) más una
@@ -175,10 +171,8 @@ dependencia de `@opencode/plugin` que hay que revisar con cada versión de OpenC
 
 ### Qué cubre y qué no
 
-`--code-only` indexa los 39 ficheros de código con el AST local, sin clave de API.
-Sin esa bandera, Graphify pide una clave (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`,
-`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`) para extraer los ficheros
-no-código, y aquí no hay ninguna.
+`--code-only` indexa los ficheros de código con el AST local, sin clave de API.
+El wrapper desactiva los backends de LLM incluso si hay claves en el entorno.
 
 Lo que **no** cubre, y conviene saberlo antes de confiar en una respuesta:
 
@@ -208,11 +202,11 @@ toma decisiones sobre una foto vieja, y no avisa: los comandos no fallan, devuel
 una respuesta que era correcta antes.
 
 ```bash
-graphify update .          # tras cambiar código, antes de dar por buena una respuesta
-graphify cluster-only .    # si cambia el informe y quieres reetiquetar comunidades
+sh scripts/graphify.sh update .          # tras cambiar código
+sh scripts/graphify.sh cluster-only .    # reagrupar comunidades sin API
 ```
 
-Con 23 comunidades y sin clave de API, las etiquetas salen como `Community N`
+Sin backend de LLM, las etiquetas pueden salir como `Community N`
 — es lo que dice `graphify cluster-only .`: *"no LLM backend configured; keeping
 Community N placeholders"*. Se pueden leer, pero no describen nada; el grafo sigue
 siendo útil por los nodos y las aristas.
