@@ -306,6 +306,7 @@ export const warping: Guia = {
       cuando: { material: ['pla', 'pla-cf', 'petg', 'abs', 'pc', 'pa'] },
       fuente: 'Bambu Lab',
       alcance: 'Los tres pasos resuelven ~80 % según el fabricante. El ventilador no está en esa lista.',
+      enlaza: { guia: 'placas', etiqueta: 'Ver la limpieza según tu chapa' },
     },
     {
       id: 'nivelar',
@@ -421,6 +422,7 @@ export const warping: Guia = {
       fuente: 'Bambu Lab',
       alcance:
         'Es un «y/o» de la fuente: la puerta basta, o la tapa basta. Para PETG el umbral de la fuente es 60 °C, no 45; esta regla no lo cubre. En ABS, ASA, PC y PA la cámara se mantiene cerrada y caliente, no abierta.',
+      enlaza: { guia: 'enclosure-y-warping', etiqueta: 'Ver cuándo abrir o cerrar el enclosure' },
     },
   ],
 
